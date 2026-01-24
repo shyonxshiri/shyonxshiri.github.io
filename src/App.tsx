@@ -34,7 +34,7 @@ const DIGITAL_MEDIA = [
   },
 ];
 
-const MODELING_MEDIA = [
+const MODELING_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/Broken_NPC.MP4",
@@ -51,7 +51,7 @@ const MODELING_MEDIA = [
   },
 ];
 
-const GRAPHIC_MEDIA = [
+const GRAPHIC_MEDIA: MediaItem[] = [
   {
     type: "image",
     src: "/assets/Cover_Art.JPG",
@@ -70,7 +70,7 @@ const GRAPHIC_MEDIA = [
   },
 ];
 
-const CAMERA_MEDIA = [
+const CAMERA_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/NABU_PUFFER_AD.mp4",
@@ -279,13 +279,13 @@ function Hero() {
     <div className="relative w-full">
       {/* MAIN HERO CONTENT */}
       <div className="relative z-10 w-full grid md:grid-cols-2 gap-10 items-center">
-        {/* LEFT: title with pulsating glow */}
-        <div>
-          <div className="relative inline-block">
+       {/* LEFT: title with pulsating glow */}
+<div className="flex flex-col items-center sm:items-start">
+          <div className="relative inline-block text-center sm:text-left">
             {/* Main title */}
             <motion.h1
               layout
-              className="relative z-10 font-[KiwiSoda] font-normal leading-tight text-left"
+              className="relative z-10 font-[KiwiSoda] font-normal leading-tight text-center sm:text-left"
             >
               {/* Bigger name */}
               <span className="block text-4xl sm:text-5xl md:text-7xl lg:text-8xl">
@@ -358,7 +358,7 @@ function Hero() {
 function AutoAspectTile({
   item,
 }: {
-  item: { type: "image" | "video"; src: string; alt?: string };
+ item: { type: "image" | "video"; src: string; alt?: string };
 }) {
   const [ratio, setRatio] = React.useState<number | null>(null);
 
