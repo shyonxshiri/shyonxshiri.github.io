@@ -704,7 +704,7 @@ function Contact() {
           >
             <Instagram className="w-5 h-5" /> Instagram
           </a>
-          <a
+<a
   href="/Shyon_Shiri_Resume_2026.pdf"
   target="_blank"
   rel="noopener noreferrer"
@@ -714,7 +714,8 @@ function Contact() {
              focus:outline-none focus:ring-2 focus:ring-offset-2
              focus:ring-slate-400 dark:focus:ring-offset-0"
 >
-  <FileText className="w-5 h-5" /> Resume
+  <FileText className="w-5 h-5" />
+  Resume
 </a>
         </div>
       </div>
