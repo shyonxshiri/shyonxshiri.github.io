@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Briefcase, User, Mail, Linkedin, Instagram } from "lucide-react";
+import { Home, Briefcase, User, Mail, Linkedin, Instagram, FileText } from "lucide-react";
 
 // --- Config ---------------------------------------------------------------
 
@@ -704,6 +704,18 @@ function Contact() {
           >
             <Instagram className="w-5 h-5" /> Instagram
           </a>
+          <a
+  href="/Shyon_Shiri_Resume_2026.pdf"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold
+             border border-slate-200/60 dark:border-white/10
+             hover:bg-slate-900/5 dark:hover:bg-white/10
+             focus:outline-none focus:ring-2 focus:ring-offset-2
+             focus:ring-slate-400 dark:focus:ring-offset-0"
+>
+  <FileText className="w-5 h-5" /> Resume
+</a>
         </div>
       </div>
       <div className="rounded-3xl border border-white/10 p-6 bg-white/60 dark:bg-white/5 backdrop-blur">
