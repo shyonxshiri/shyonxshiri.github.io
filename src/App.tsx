@@ -62,11 +62,16 @@ const GRAPHIC_MEDIA: MediaItem[] = [
   },
   {
     type: "video",
-    src: "/assets/Shiri_Video_Game.MP4",
+    src: "/assets/Nabu_Poster_Banner.mov",
   },
   {
     type: "video",
-    src: "/assets/Nabu_Poster_Banner.mov",
+    src: "/assets/Shiri_Video_Game.MP4",
+  },
+  {
+    type: "image",
+    src: "/assets/Mina_Website.png",
+    link: "https://minasech.net"
   },
 ];
 
@@ -87,6 +92,7 @@ type MediaItem = {
   type: "image" | "video";
   src: string;
   alt?: string;
+  link?: string; //
 };
 
 const PROGRAMMING_MEDIA: MediaItem[] = [
@@ -358,7 +364,7 @@ function Hero() {
 function AutoAspectTile({
   item,
 }: {
- item: { type: "image" | "video"; src: string; alt?: string };
+  item: MediaItem;
 }) {
   const [ratio, setRatio] = React.useState<number | null>(null);
 
@@ -368,6 +374,8 @@ function AutoAspectTile({
     if (Number.isFinite(r) && r > 0) setRatio(r);
   };
 
+  const Wrapper = item.link ? "a" : "div";
+
   return (
     <motion.article
       className="group rounded-3xl overflow-hidden border border-white/10 bg-slate-950/60 backdrop-blur"
@@ -375,38 +383,46 @@ function AutoAspectTile({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
     >
-      {/* The wrapper becomes the SAME shape as the file itself */}
-      <div
-        className="w-full"
-        style={{
-          aspectRatio: ratio ?? 16 / 9, // fallback until loaded
-        }}
+      <Wrapper
+        {...(item.link
+          ? {
+              href: item.link,
+              target: "_blank",
+              rel: "noopener noreferrer",
+            }
+          : {})}
+        className="block w-full h-full cursor-pointer"
       >
-        {item.type === "image" ? (
-          <img
-            src={item.src}
-            alt={item.alt ?? ""}
-            loading="lazy"
-            className="w-full h-full object-contain block"
-            onLoad={(e) => {
-              const img = e.currentTarget;
-              setSafeRatio(img.naturalWidth, img.naturalHeight);
-            }}
-          />
-        ) : (
-          <video
-            src={item.src}
-            controls
-            playsInline
-            preload="metadata"
-            className="w-full h-full object-contain block"
-            onLoadedMetadata={(e) => {
-              const v = e.currentTarget;
-              setSafeRatio(v.videoWidth, v.videoHeight);
-            }}
-          />
-        )}
-      </div>
+        <div
+          className="w-full"
+          style={{ aspectRatio: ratio ?? 16 / 9 }}
+        >
+          {item.type === "image" ? (
+            <img
+              src={item.src}
+              alt={item.alt ?? ""}
+              loading="lazy"
+              className="w-full h-full object-contain block transition-transform duration-300 group-hover:scale-[1.02]"
+              onLoad={(e) => {
+                const img = e.currentTarget;
+                setSafeRatio(img.naturalWidth, img.naturalHeight);
+              }}
+            />
+          ) : (
+            <video
+              src={item.src}
+              controls
+              playsInline
+              preload="metadata"
+              className="w-full h-full object-contain block"
+              onLoadedMetadata={(e) => {
+                const v = e.currentTarget;
+                setSafeRatio(v.videoWidth, v.videoHeight);
+              }}
+            />
+          )}
+        </div>
+      </Wrapper>
     </motion.article>
   );
 }
