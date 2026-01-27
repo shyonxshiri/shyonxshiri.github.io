@@ -62,11 +62,11 @@ const GRAPHIC_MEDIA: MediaItem[] = [
   },
   {
     type: "video",
-    src: "/assets/Nabu_Poster_Banner.mov",
+    src: "/assets/Nabu_Poster_Banner.mp4",
   },
   {
     type: "video",
-    src: "/assets/Shiri_Video_Game.MP4",
+    src: "/assets/Shiri_Video_Game.mp4",
   },
   {
     type: "image",
