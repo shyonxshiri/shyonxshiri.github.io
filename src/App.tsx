@@ -369,11 +369,7 @@ function Hero() {
   );
 }
 
-function AutoAspectTile({
-  item,
-}: {
-  item: MediaItem;
-}) {
+function AutoAspectTile({ item }: { item: MediaItem }) {
   const [ratio, setRatio] = React.useState<number | null>(null);
 
   const setSafeRatio = (w: number, h: number) => {
@@ -386,11 +382,32 @@ function AutoAspectTile({
 
   return (
     <motion.article
-      className="group rounded-3xl overflow-hidden border border-white/10 bg-slate-950/60 backdrop-blur"
+      className="group relative rounded-3xl overflow-hidden border border-white/10 bg-slate-950/60 backdrop-blur"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
     >
+      {/* 🔹 TITLE OVERLAY */}
+      {item.title && (
+        <div
+          className="
+            pointer-events-none
+            absolute top-0 left-0 right-0
+            z-20
+            bg-gradient-to-b from-black/70 via-black/40 to-transparent
+            opacity-0
+            group-hover:opacity-100
+            transition-opacity duration-300
+          "
+        >
+          <div className="px-4 py-3">
+            <p className="text-sm font-semibold text-white tracking-wide">
+              {item.title}
+            </p>
+          </div>
+        </div>
+      )}
+
       <Wrapper
         {...(item.link
           ? {
@@ -401,8 +418,9 @@ function AutoAspectTile({
           : {})}
         className="block w-full h-full cursor-pointer"
       >
+        {/* 🔹 MEDIA LAYER */}
         <div
-          className="w-full"
+          className="relative z-0 w-full"
           style={{ aspectRatio: ratio ?? 16 / 9 }}
         >
           {item.type === "image" ? (
@@ -614,31 +632,9 @@ function Work() {
 function ProjectDetailModelingMedia() {
   return (
     <section className="mt-10">
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {MODELING_MEDIA.map((item) => (
-          <motion.article
-            key={item.src}
-            className="group rounded-3xl overflow-hidden border border-white/10 bg-slate-950/60 backdrop-blur"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.15 }}
-          >
-            {item.type === "image" ? (
-              <img
-                src={item.src}
-                alt={item.alt ?? ""}
-                className="w-full h-full object-cover block"
-              />
-            ) : (
-              <div className="aspect-video w-full">
-                <video
-                  src={item.src}
-                  controls
-                  className="w-full h-full object-cover rounded-3xl block"
-                />
-              </div>
-            )}
-          </motion.article>
+      <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {MODELING_MEDIA.map((item, index) => (
+          <AutoAspectTile key={item.src ?? index} item={item} />
         ))}
       </div>
     </section>
