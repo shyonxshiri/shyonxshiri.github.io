@@ -38,16 +38,17 @@ const MODELING_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/Broken_NPC.MP4",
-    alt: "Rendered scene depicting GTA in game errors",
+    title: "Rendered scene depicting GTA in game errors",
   },
   {
     type: "video",
     src: "/assets/Blender_Case_Video.mov",
-    alt: "Custom Apple product case prototypes",
+    title: "Custom Apple product case prototypes",
   },
   {
     type: "image",
     src: "/assets/Venom.PNG",
+    title: "Venom Artwork",
   },
 ];
 
@@ -55,18 +56,22 @@ const GRAPHIC_MEDIA: MediaItem[] = [
   {
     type: "image",
     src: "/assets/Cover_Art.JPG",
+    title: "Cover Art",
   },
   {
     type: "image",
     src: "/assets/Cover_Art_2.jpg",
+    title: "Cover Art 2",
   },
   {
     type: "video",
     src: "/assets/Nabu_Poster_Banner.mp4",
+    title: "Nabu Poster Banner",
   },
   {
     type: "video",
     src: "/assets/Shiri_Video_Game.mp4",
+    title: "Shiri Video Game",
   },
   {
     type: "image",
@@ -79,10 +84,12 @@ const CAMERA_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/NABU_PUFFER_AD.mp4",
+    title: "NABU Puffer Jacket Ad",
   },
   {
     type: "video",
     src: "/assets/NABU_SALE_AD.mp4",
+    title: "NABU Promotional AD",
   },
 ];
 
@@ -93,6 +100,7 @@ type MediaItem = {
   src: string;
   alt?: string;
   link?: string; //
+  title?: string;
 };
 
 const PROGRAMMING_MEDIA: MediaItem[] = [
