@@ -291,7 +291,7 @@ function Hero() {
             {/* Main title */}
             <motion.h1
               layout
-              className="relative z-10 font-[KiwiSoda] font-normal leading-tight text-center sm:text-left"
+              className="relative z-10 font-[KiwiSoda] pixel-shadow-glow font-normal leading-tight text-center sm:text-left"
             >
               {/* Bigger name */}
               <span className="block text-4xl sm:text-5xl md:text-7xl lg:text-8xl">
@@ -299,7 +299,7 @@ function Hero() {
               </span>
 
               {/* Smaller subtitle */}
-              <span className="block mt-1 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400">
+              <span className="block pixel-shadow-glow mt-1 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400">
                 Graphic Designer
               </span>
             </motion.h1>
