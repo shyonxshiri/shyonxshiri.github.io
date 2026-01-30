@@ -38,17 +38,17 @@ const MODELING_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/Broken_NPC.MP4",
-    title: "Rendered scene depicting GTA in game errors",
+    title: "Scene depicting Grand Theft Auto San Andreas in game errors. Rendered in Blender",
   },
   {
     type: "video",
     src: "/assets/Blender_Case_Video.mov",
-    title: "Custom Apple product case prototypes",
+    title: "Custom Apple Product Case Prototypes",
   },
   {
     type: "image",
     src: "/assets/Venom.PNG",
-    title: "Venom Artwork",
+    title: "Rendered 3D Model",
   },
 ];
 
@@ -56,7 +56,7 @@ const GRAPHIC_MEDIA: MediaItem[] = [
   {
     type: "image",
     src: "/assets/Cover_Art.JPG",
-    title: "Cover Art",
+    title: "Song Cover Art",
   },
   {
     type: "image",
@@ -66,16 +66,17 @@ const GRAPHIC_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/Nabu_Poster_Banner.mp4",
-    title: "Nabu Poster Banner",
+    title: "Clothing Brand Promotional Video made in Adobe After Effects",
   },
   {
     type: "video",
     src: "/assets/Shiri_Video_Game.mp4",
-    title: "Shiri Video Game",
+    title: "Video Game Demo made in Adobe After Effects",
   },
   {
     type: "image",
     src: "/assets/Mina_Website.png",
+    title: "UI/UX Design and Website Devlopment",
     link: "https://minasech.net"
   },
 ];
@@ -84,12 +85,12 @@ const CAMERA_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/NABU_PUFFER_AD.mp4",
-    title: "NABU Puffer Jacket Ad",
+    title: "CClothing Brand Puffer Jacket Promotional Video",
   },
   {
     type: "video",
     src: "/assets/NABU_SALE_AD.mp4",
-    title: "NABU Promotional AD",
+    title: "Clothing Brand Promotional Video",
   },
 ];
 
@@ -104,21 +105,21 @@ type MediaItem = {
 };
 
 const PROGRAMMING_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/New_Radar_Sensor_front.jpg" },
-  { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg" },
-  { type: "video", src: "/assets/New_Radar_Sensor.mp4" },
-  { type: "image", src: "/assets/New_LED_Box_Front.jpg" },
-  { type: "image", src: "/assets/New_LED_Box_Back.jpg" },
-  { type: "video", src: "/assets/New_LED_Box.mp4" },
+  { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Distance Radar Sensor Front View" },
+  { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Distance Radar Sensor Back View" },
+  { type: "video", src: "/assets/New_Radar_Sensor.mp4", title: "Distance Radar Sensor Functionality" },
+  { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "LED System Front View" },
+  { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "LED System Back View" },
+  { type: "video", src: "/assets/New_LED_Box.mp4", title: "LED System Functionality" },
 ];
 
 const SCULPTURES_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/Shyon_Sculpture.jpg" },
-  { type: "image", src: "/assets/Shyon_Glass.JPG" },
+  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Weld Fabricated Sculpture" },
+  { type: "image", src: "/assets/Shyon_Glass.JPG", title: "Custom Designed Vase" },
 ];
 
 const MODELS_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/3D_Models_Cover_Pic.jpg" },
+  { type: "image", src: "/assets/3D_Models_Cover_Pic.jpg", title: "16:1 Scale Glow in the Dark Lego Skeleton" },
 ];
 
 const FABRICATION_MEDIA: Record<string, MediaItem[]> = {
@@ -387,27 +388,6 @@ function AutoAspectTile({ item }: { item: MediaItem }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
     >
-      {/* 🔹 TITLE OVERLAY */}
-      {item.title && (
-        <div
-          className="
-            pointer-events-none
-            absolute top-0 left-0 right-0
-            z-20
-            bg-gradient-to-b from-black/70 via-black/40 to-transparent
-            opacity-0
-            group-hover:opacity-100
-            transition-opacity duration-300
-          "
-        >
-          <div className="px-4 py-3">
-            <p className="text-sm font-semibold text-white tracking-wide">
-              {item.title}
-            </p>
-          </div>
-        </div>
-      )}
-
       <Wrapper
         {...(item.link
           ? {
@@ -418,9 +398,9 @@ function AutoAspectTile({ item }: { item: MediaItem }) {
           : {})}
         className="block w-full h-full cursor-pointer"
       >
-        {/* 🔹 MEDIA LAYER */}
+        {/* MEDIA */}
         <div
-          className="relative z-0 w-full"
+          className="w-full"
           style={{ aspectRatio: ratio ?? 16 / 9 }}
         >
           {item.type === "image" ? (
@@ -428,7 +408,7 @@ function AutoAspectTile({ item }: { item: MediaItem }) {
               src={item.src}
               alt={item.alt ?? ""}
               loading="lazy"
-              className="w-full h-full object-contain block transition-transform duration-300 group-hover:scale-[1.02]"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
               onLoad={(e) => {
                 const img = e.currentTarget;
                 setSafeRatio(img.naturalWidth, img.naturalHeight);
@@ -436,18 +416,37 @@ function AutoAspectTile({ item }: { item: MediaItem }) {
             />
           ) : (
             <video
-              src={item.src}
-              controls
-              playsInline
-              preload="metadata"
-              className="w-full h-full object-contain block"
-              onLoadedMetadata={(e) => {
-                const v = e.currentTarget;
-                setSafeRatio(v.videoWidth, v.videoHeight);
-              }}
-            />
+  src={item.src}
+  controls
+  playsInline
+  preload="metadata"
+  className="w-full h-full object-cover"
+  onLoadedMetadata={(e) => {
+    const v = e.currentTarget;
+    setSafeRatio(v.videoWidth, v.videoHeight);
+  }}
+/>
           )}
         </div>
+
+        {/* OVERLAY */}
+        {item.title && (
+          <div className="
+            pointer-events-none
+            absolute inset-0
+            flex items-start
+            bg-gradient-to-b from-black/70 via-black/30 to-transparent
+            opacity-0
+            group-hover:opacity-100
+            transition-opacity duration-300
+          ">
+            <div className="p-4">
+              <h4 className="text-sm font-semibold tracking-wide text-white drop-shadow">
+                {item.title}
+              </h4>
+            </div>
+          </div>
+        )}
       </Wrapper>
     </motion.article>
   );
