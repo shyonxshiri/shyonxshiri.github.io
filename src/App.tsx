@@ -38,11 +38,13 @@ const MODELING_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/Broken_NPC.MP4",
+    poster: "/assets/Broken_NPC.jpg",
     title: "Scene depicting Grand Theft Auto San Andreas in game errors. Rendered in Blender",
   },
   {
     type: "video",
     src: "/assets/Blender_Case_Video.mov",
+    poster: "/assets/Blender_Case.jpg",
     title: "Custom Apple Product Case Prototypes",
   },
   {
@@ -66,11 +68,13 @@ const GRAPHIC_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/Nabu_Poster_Banner.mp4",
+    poster: "/assets/Nabu_Poster_Banner.jpg",
     title: "Clothing Brand Promotional Video made in Adobe After Effects",
   },
   {
     type: "video",
     src: "/assets/Shiri_Video_Game.mp4",
+    poster: "/assets/Shiri_Video_Game.jpg",
     title: "Video Game Demo made in Adobe After Effects",
   },
   {
@@ -85,11 +89,13 @@ const CAMERA_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/NABU_PUFFER_AD.mp4",
-    title: "CClothing Brand Puffer Jacket Promotional Video",
+    poster: "/assets/NABU_PUFFER_AD.jpg",
+    title: "Clothing Brand Puffer Jacket Promotional Video",
   },
   {
     type: "video",
     src: "/assets/NABU_SALE_AD.mp4",
+    poster: "/assets/NABU_SALE_AD.jpg",
     title: "Clothing Brand Promotional Video",
   },
 ];
@@ -102,15 +108,16 @@ type MediaItem = {
   alt?: string;
   link?: string; //
   title?: string;
+  poster?: string;
 };
 
 const PROGRAMMING_MEDIA: MediaItem[] = [
   { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Distance Radar Sensor Front View" },
   { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Distance Radar Sensor Back View" },
-  { type: "video", src: "/assets/New_Radar_Sensor.mp4", title: "Distance Radar Sensor Functionality" },
+  { type: "video", src: "/assets/New_Radar_Sensor.mp4", title: "Distance Radar Sensor Functionality", poster: "/assets/New_Radar_Sensor_front.jpg" },
   { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "LED System Front View" },
   { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "LED System Back View" },
-  { type: "video", src: "/assets/New_LED_Box.mp4", title: "LED System Functionality" },
+  { type: "video", src: "/assets/New_LED_Box.mp4", title: "LED System Functionality", poster: "/assets/New_LED_Box_Front.jpg" }, 
 ];
 
 const SCULPTURES_MEDIA: MediaItem[] = [
@@ -308,9 +315,10 @@ function Hero() {
               </span>
 
               {/* Smaller subtitle */}
-              <span className="block pixel-shadow-glow mt-1 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400">
+              <span className="block mt-1 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400 pixel-shadow-glow">
                 Graphic Designer
               </span>
+
             </motion.h1>
 
             {/* Pulsating glow under both lines */}
@@ -476,7 +484,7 @@ function Work() {
     <div className="w-full">
       <div className="flex items-end justify-between gap-6">
         <div>
-          <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal">
+          <h2 className="font-[KiwiSoda] pixel-shadow-glow text-3xl md:text-5xl font-normal">
             My Work
           </h2>
         </div>
@@ -672,7 +680,7 @@ function ProjectDetailCameraWork() {
 function About() {
   return (
     <div className="max-w-3xl">
-      <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal">About</h2>
+      <h2 className="font-[KiwiSoda] pixel-shadow-glow text-3xl md:text-5xl font-normal">About</h2>
       <p className="mt-4 text-slate-600 dark:text-slate-300">
         I am a Bay Area–based graphic designer with a Bachelor of Arts in Studio
         Practice with a focus in Graphic Design. My passion for design stems from
@@ -693,7 +701,7 @@ function Contact() {
   return (
     <div className="w-full grid md:grid-cols-2 gap-8 items-center">
       <div>
-        <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal">
+        <h2 className="font-[KiwiSoda] pixel-shadow-glow text-3xl md:text-5xl font-normal">
           Let’s collaborate
         </h2>
         <p className="mt-4 text-slate-600 dark:text-slate-300">
