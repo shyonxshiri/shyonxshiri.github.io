@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home, Briefcase, User, Mail, Linkedin, Instagram, FileText } from "lucide-react";
 
@@ -55,16 +55,6 @@ const MODELING_MEDIA: MediaItem[] = [
 ];
 
 const GRAPHIC_MEDIA: MediaItem[] = [
-  {
-    type: "image",
-    src: "/assets/Cover_Art.JPG",
-    title: "Song Cover Art",
-  },
-  {
-    type: "image",
-    src: "/assets/Cover_Art_2.jpg",
-    title: "Cover Art 2",
-  },
   {
     type: "video",
     src: "/assets/Nabu_Poster_Banner.mp4",
@@ -381,10 +371,17 @@ function Hero() {
 function AutoAspectTile({ item }: { item: MediaItem }) {
   const [ratio, setRatio] = React.useState<number | null>(null);
 
+  const videoRef = useRef<HTMLVideoElement | null>(null); // ✅ ADD THIS
+
   const setSafeRatio = (w: number, h: number) => {
     if (!w || !h) return;
     const r = w / h;
     if (Number.isFinite(r) && r > 0) setRatio(r);
+  };
+   const handlePlay = () => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = false; // turn sound ON
+    videoRef.current.play();
   };
 
   const Wrapper = item.link ? "a" : "div";
@@ -423,16 +420,14 @@ function AutoAspectTile({ item }: { item: MediaItem }) {
               }}
             />
           ) : (
-            <video
+           <video
+  ref={videoRef}
   src={item.src}
-  controls
+  poster={item.poster}
+  muted
   playsInline
-  preload="metadata"
+  preload="none"
   className="w-full h-full object-cover"
-  onLoadedMetadata={(e) => {
-    const v = e.currentTarget;
-    setSafeRatio(v.videoWidth, v.videoHeight);
-  }}
 />
           )}
         </div>
@@ -687,12 +682,6 @@ function About() {
         my fasicnation for creating, whether it&apos;s for visual storytelling or
         personal projects.
       </p>
-      <p className="mt-4 text-slate-600 dark:text-slate-300">
-        Design is just a short summarization to describe my broad set of
-        capabilities. I work across several mediums including UI/UX Design, 3D
-        Modeling, Visual Production, Welding, Sculpting, and Coding. Often times
-        I take on related roles ranging from photographer to creative director.
-      </p>
     </div>
   );
 }
@@ -705,8 +694,6 @@ function Contact() {
           Let’s collaborate
         </h2>
         <p className="mt-4 text-slate-600 dark:text-slate-300">
-          If my work peaks your interest, contact me and we can discuss bringing
-          your ideas to fruition.
         </p>
         <div className="mt-6 flex gap-3 flex-wrap">
           <a
