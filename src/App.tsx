@@ -8,12 +8,12 @@ import { Home, Briefcase, User, Mail, Linkedin, Instagram, FileText } from "luci
 const DIGITAL_MEDIA = [
   {
     id: "3d-modeling",
-    title: "3D Modeling",
+    title: "3D Rendering",
     tag: "Design & Printing",
     img: "/assets/3D_Modeling_Cover.PNG",
     objectPosition: "50% 50%",
     description:
-      "Concept driven 3D work varying from visual renders to fully functional 3D printed prototypes.",
+      "Concept driven 3D visuals created entirely using Blender.",
   },
   {
     id: "digital-media",
@@ -21,7 +21,7 @@ const DIGITAL_MEDIA = [
     tag: "Graphic Design",
     img: "/assets/Digital_Media_Cover.jpg",
     objectPosition: "50% 50%",
-    description: "Digital branding, logo devlopment, and UI/UX design.",
+    description: "Motion graphics and design work ranging from promotional videos to UI/UX web development.",
   },
   {
     id: "camera-work",
@@ -39,18 +39,23 @@ const MODELING_MEDIA: MediaItem[] = [
     type: "video",
     src: "/assets/Broken_NPC.MP4",
     poster: "/assets/Broken_NPC.jpg",
-    title: "Scene depicting Grand Theft Auto San Andreas in game errors. Rendered in Blender",
+    title: "The Broken NPC",
+    description: "A detailed 3D scene depicting in-game rendering errors and glitches from the video game, GTA San Andreas, created and rendered entirely using Blender.",
+    aspectRatio: 16 / 9,
   },
   {
     type: "video",
     src: "/assets/Blender_Case_Video.mov",
     poster: "/assets/Blender_Case.jpg",
     title: "Custom Apple Product Case Prototypes",
+    description: "Unique 3D designed Apple product case prototypes, developed using Blender.",
+    aspectRatio: 16 / 9,
   },
   {
     type: "image",
     src: "/assets/Venom.PNG",
     title: "Rendered 3D Model",
+    description: "A high-quality 3D rendered movie character model showcasing detailed modeling and texturing techniques made using Blender",
   },
 ];
 
@@ -59,18 +64,21 @@ const GRAPHIC_MEDIA: MediaItem[] = [
     type: "video",
     src: "/assets/Nabu_Poster_Banner.mp4",
     poster: "/assets/Nabu_Poster_Banner.jpg",
-    title: "Clothing Brand Promotional Video made in Adobe After Effects",
+    title: "Clothing Brand Promotional Video",
+    description: "A dynamic promotional video for a clothing brand, crafted with professional animation and transitions in Adobe After Effects.",
   },
   {
     type: "video",
     src: "/assets/Shiri_Video_Game.mp4",
-    poster: "/assets/Shiri_Video_Game.jpg",
-    title: "Video Game Demo made in Adobe After Effects",
+    poster: "/assets/Shiri_VIdeo_Game.jpg",
+    title: "Video Game Demo",
+    description: "A video created by animating and assembling a collection of images in Adobe After Effects.",
   },
   {
     type: "image",
     src: "/assets/Mina_Website.png",
-    title: "UI/UX Design and Website Devlopment",
+    title: "UI/UX",
+    description: "Full-stack website design and development including React frontend, responsive UI/UX design, backend integration, and deployment optimization.",
     link: "https://minasech.net"
   },
 ];
@@ -81,12 +89,16 @@ const CAMERA_MEDIA: MediaItem[] = [
     src: "/assets/NABU_PUFFER_AD.mp4",
     poster: "/assets/NABU_PUFFER_AD.jpg",
     title: "Clothing Brand Puffer Jacket Promotional Video",
+    description: "Professional promotional video for a clothing brand's puffer jacket collection, shot and edited with cinematic quality.",
+    aspectRatio: 9 / 16,
   },
   {
     type: "video",
     src: "/assets/NABU_SALE_AD.mp4",
     poster: "/assets/NABU_SALE_AD.jpg",
     title: "Clothing Brand Promotional Video",
+    description: "Engaging promotional content showcasing the clothing brand's latest collection and seasonal offerings.",
+    aspectRatio: 9 / 16,
   },
 ];
 
@@ -99,24 +111,26 @@ type MediaItem = {
   link?: string; //
   title?: string;
   poster?: string;
+  description?: string;
+  aspectRatio?: number;
 };
 
 const PROGRAMMING_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Distance Radar Sensor Front View" },
-  { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Distance Radar Sensor Back View" },
-  { type: "video", src: "/assets/New_Radar_Sensor.mp4", title: "Distance Radar Sensor Functionality", poster: "/assets/New_Radar_Sensor_front.jpg" },
-  { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "LED System Front View" },
-  { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "LED System Back View" },
-  { type: "video", src: "/assets/New_LED_Box.mp4", title: "LED System Functionality", poster: "/assets/New_LED_Box_Front.jpg" }, 
+  { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Distance Radar Sensor Front View", description: "Front view of the Distance Radar Sensor hardware, showcasing the sensor assembly and interface design.", aspectRatio: 1 },
+  { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Distance Radar Sensor Back View", description: "Back view of the Distance Radar Sensor, revealing the internal circuitry and connection ports.", aspectRatio: 1 },
+  { type: "video", src: "/assets/New_Radar_Sensor.mp4", title: "Distance Radar Sensor Functionality", description: "Live demonstration of the Distance Radar Sensor in action, detecting objects and measuring distances in real-time.", poster: "/assets/New_Radar_Sensor_front.jpg", aspectRatio: 9 / 16 },
+  { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "LED System Front View", description: "Front view of the LED System control box with illuminated interface elements.", aspectRatio: 1 },
+  { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "LED System Back View", description: "Back view of the LED System showing power connections and microcontroller integration.", aspectRatio: 1 },
+  { type: "video", src: "/assets/New_LED_Box.mp4", title: "LED System Functionality", description: "Interactive demonstration of the LED System controlling multiple RGB lights with custom programming.", poster: "/assets/New_LED_Box_Front.jpg", aspectRatio: 9 / 16 }, 
 ];
 
 const SCULPTURES_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Weld Fabricated Sculpture" },
-  { type: "image", src: "/assets/Shyon_Glass.JPG", title: "Custom Designed Vase" },
+  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Weld Fabricated Sculpture", description: "A hand-welded metal sculpture exploring geometric forms and structural balance through arc welding techniques.", aspectRatio: 3 / 4 },
+  { type: "image", src: "/assets/Shyon_Glass.JPG", title: "Custom Designed Vase", description: "A custom-designed glass vase combining artistic form with functional design, showcasing craftsmanship.", aspectRatio: 3 / 4 },
 ];
 
 const MODELS_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/3D_Models_Cover_Pic.jpg", title: "16:1 Scale Glow in the Dark Lego Skeleton" },
+  { type: "image", src: "/assets/3D_Models_Cover_Pic.jpg", title: "16:1 Scale Glow in the Dark Lego Skeleton", description: "A meticulously assembled 1:6 scale LEGO skeleton featuring glow-in-the-dark elements, combining building precision with creative design.", aspectRatio: 16 / 9 },
 ];
 
 const FABRICATION_MEDIA: Record<string, MediaItem[]> = {
@@ -368,40 +382,48 @@ function Hero() {
   );
 }
 
-function AutoAspectTile({ item }: { item: MediaItem }) {
-  const [ratio, setRatio] = React.useState<number | null>(null);
-
-  const videoRef = useRef<HTMLVideoElement | null>(null); // ✅ ADD THIS
+function AutoAspectTile({ 
+  item, 
+  onMediaClick 
+}: { 
+  item: MediaItem;
+  onMediaClick?: (item: MediaItem) => void;
+}) {
+  const [ratio, setRatio] = React.useState<number | null>(item.aspectRatio ?? null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const setSafeRatio = (w: number, h: number) => {
     if (!w || !h) return;
     const r = w / h;
     if (Number.isFinite(r) && r > 0) setRatio(r);
   };
-   const handlePlay = () => {
-    if (!videoRef.current) return;
-    videoRef.current.muted = false; // turn sound ON
-    videoRef.current.play();
-  };
 
-  const Wrapper = item.link ? "a" : "div";
+  const Wrapper = item.link && !onMediaClick ? "a" : "div";
+
+  const handleClick = () => {
+    if (onMediaClick) {
+      onMediaClick(item);
+    }
+  };
 
   return (
     <motion.article
-      className="group relative rounded-3xl overflow-hidden border border-white/10 bg-slate-950/60 backdrop-blur"
+      ref={containerRef}
+      className="group relative rounded-3xl overflow-hidden border border-white/10 bg-slate-950/60 backdrop-blur cursor-pointer"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
+      onClick={handleClick}
     >
       <Wrapper
-        {...(item.link
+        {...(item.link && !onMediaClick
           ? {
               href: item.link,
               target: "_blank",
               rel: "noopener noreferrer",
             }
           : {})}
-        className="block w-full h-full cursor-pointer"
+        className="block w-full h-full"
       >
         {/* MEDIA */}
         <div
@@ -416,46 +438,147 @@ function AutoAspectTile({ item }: { item: MediaItem }) {
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
               onLoad={(e) => {
                 const img = e.currentTarget;
-                setSafeRatio(img.naturalWidth, img.naturalHeight);
+                if (!item.aspectRatio) {
+                  setSafeRatio(img.naturalWidth, img.naturalHeight);
+                }
               }}
             />
           ) : (
-           <video
-  ref={videoRef}
-  src={item.src}
-  poster={item.poster}
-  muted
-  playsInline
-  preload="none"
-  className="w-full h-full object-cover"
-/>
+            <div className="relative w-full h-full bg-black/40">
+              {/* poster - aspect ratio determined by image dimensions */}
+              <img
+                src={item.poster}
+                alt={item.title ?? ""}
+                className="w-full h-full object-cover"
+                style={{ objectPosition: "center" }}
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  setSafeRatio(img.naturalWidth, img.naturalHeight);
+                }}
+              />
+
+              {/* play button overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div
+                  className="w-16 h-16 rounded-full bg-black/60 backdrop-blur
+                             flex items-center justify-center
+                             transition-transform group-hover:scale-110"
+                >
+                  <svg
+                    className="w-7 h-7 text-white ml-1"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* OVERLAY */}
-        {item.title && (
-          <div className="
-            pointer-events-none
-            absolute inset-0
-            flex items-start
-            bg-gradient-to-b from-black/70 via-black/30 to-transparent
-            opacity-0
-            group-hover:opacity-100
-            transition-opacity duration-300
-          ">
-            <div className="p-4">
-              <h4 className="text-sm font-semibold tracking-wide text-white drop-shadow">
-                {item.title}
-              </h4>
-            </div>
-          </div>
-        )}
+        {/* Title Overlay */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl bg-gradient-to-b from-black/60 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-start justify-center pt-4">
+          <h4 className="text-xs font-medium text-white text-center px-3 line-clamp-2">
+            {item.title}
+          </h4>
+        </div>
       </Wrapper>
     </motion.article>
   );
 }
 
+function MediaModal({ 
+  item, 
+  onClose 
+}: { 
+  item: MediaItem;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="relative bg-slate-900/95 border border-white/10 rounded-3xl max-w-4xl max-h-[90vh] overflow-auto"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/60 backdrop-blur hover:bg-black/80 flex items-center justify-center text-white transition"
+        >
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        <div className="flex flex-col">
+          {/* Media display */}
+          <div className="relative bg-black/40 flex items-center justify-center min-h-80">
+            {item.type === "image" ? (
+              <img
+                src={item.src}
+                alt={item.title ?? ""}
+                className="max-w-full max-h-[70vh] object-contain"
+              />
+            ) : (
+              <video
+                src={item.src}
+                controls
+                className="max-w-full max-h-[70vh] object-contain"
+                autoPlay
+              />
+            )}
+          </div>
+
+          {/* Title and description */}
+          <div className="p-6 space-y-4">
+            {item.title && (
+              <h3 className="text-xl font-semibold text-white">
+                {item.title}
+              </h3>
+            )}
+            {item.description && (
+              <p className="text-slate-300">
+                {item.description}
+              </p>
+            )}
+            {item.link && (
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-4 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition"
+              >
+                Visit Website
+              </a>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function Work() {
+  const [activeVideo, setActiveVideo] = useState<MediaItem | null>(null);
   const [category, setCategory] = useState<"digital" | "handmade">("digital");
   const [openProject, setOpenProject] = useState<string | null>(null);
   const [openHandmade, setOpenHandmade] = useState<string | null>(null);
@@ -580,7 +703,7 @@ function Work() {
   <section className="mt-10">
   <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
     {(FABRICATION_MEDIA[openHandmade] || []).map((item, index) => (
-      <AutoAspectTile key={item.src ?? index} item={item} />
+      <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={setActiveVideo} />
     ))}
   </div>
 </section>
@@ -597,7 +720,7 @@ function Work() {
       transition={{ duration: 0.35, ease: "easeInOut" }}
       className="overflow-hidden"
     >
-      <ProjectDetailModelingMedia />
+      <ProjectDetailModelingMedia onMediaClick={setActiveVideo} />
     </motion.div>
   )}
 
@@ -610,7 +733,7 @@ function Work() {
       transition={{ duration: 0.35, ease: "easeInOut" }}
       className="overflow-hidden"
     >
-      <ProjectDetailDigitalMedia />
+      <ProjectDetailDigitalMedia onMediaClick={setActiveVideo} />
     </motion.div>
   )}
 
@@ -623,27 +746,36 @@ function Work() {
       transition={{ duration: 0.35, ease: "easeInOut" }}
       className="overflow-hidden"
     >
-      <ProjectDetailCameraWork />
+      <ProjectDetailCameraWork onMediaClick={setActiveVideo} />
     </motion.div>
   )}
 </AnimatePresence>
+
+      <AnimatePresence>
+        {activeVideo && (
+          <MediaModal 
+            item={activeVideo} 
+            onClose={() => setActiveVideo(null)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function ProjectDetailModelingMedia() {
+function ProjectDetailModelingMedia({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
   return (
     <section className="mt-10">
       <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {MODELING_MEDIA.map((item, index) => (
-          <AutoAspectTile key={item.src ?? index} item={item} />
+          <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={onMediaClick} />
         ))}
       </div>
     </section>
   );
 }
 
-function ProjectDetailDigitalMedia() {
+function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 10 }}
@@ -653,19 +785,19 @@ function ProjectDetailDigitalMedia() {
     >
       <div className="grid items-start gap-4 md:grid-cols-3">
         {GRAPHIC_MEDIA.map((item, index) => (
-          <AutoAspectTile key={item.src ?? index} item={item} />
+          <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={onMediaClick} />
         ))}
       </div>
     </motion.section>
   );
 }
 
-function ProjectDetailCameraWork() {
+function ProjectDetailCameraWork({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
   return (
     <section className="mt-8 space-y-6">
       <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {CAMERA_MEDIA.map((item, index) => (
-          <AutoAspectTile key={item.src ?? index} item={item} />
+          <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={onMediaClick} />
         ))}
       </div>
     </section>
