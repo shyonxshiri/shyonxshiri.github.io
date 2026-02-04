@@ -65,7 +65,7 @@ const GRAPHIC_MEDIA: MediaItem[] = [
     src: "/assets/Nabu_Poster_Banner.mp4",
     poster: "/assets/Nabu_Poster_Banner.jpg",
     title: "Clothing Brand Promotional Video",
-    description: "A dynamic promotional video for a clothing brand, crafted with professional animation and transitions in Adobe After Effects.",
+    description: "A dynamic promotional video for NABU clothing, crafted with professional animation and transitions in Adobe After Effects.",
   },
   {
     type: "video",
@@ -77,8 +77,8 @@ const GRAPHIC_MEDIA: MediaItem[] = [
   {
     type: "image",
     src: "/assets/Mina_Website.png",
-    title: "UI/UX",
-    description: "Full-stack website design and development including React frontend, responsive UI/UX design, backend integration, and deployment optimization.",
+    title: "UI/UX Web Development",
+    description: "Full-stack website design and development including React frontend, responsive interface design, backend integration, and deployment optimization.",
     link: "https://minasech.net"
   },
 ];
@@ -87,9 +87,9 @@ const CAMERA_MEDIA: MediaItem[] = [
   {
     type: "video",
     src: "/assets/NABU_PUFFER_AD.mp4",
-    poster: "/assets/NABU_PUFFER_AD.jpg",
-    title: "Clothing Brand Puffer Jacket Promotional Video",
-    description: "Professional promotional video for a clothing brand's puffer jacket collection, shot and edited with cinematic quality.",
+    poster: "/assets/NABU_Puffer_AD.jpg",
+    title: "Clothing Brand Promotional Video",
+    description: "Professional promotional video for NABU's puffer jacket collection, shot and edited with cinematic quality.",
     aspectRatio: 9 / 16,
   },
   {
@@ -97,7 +97,7 @@ const CAMERA_MEDIA: MediaItem[] = [
     src: "/assets/NABU_SALE_AD.mp4",
     poster: "/assets/NABU_SALE_AD.jpg",
     title: "Clothing Brand Promotional Video",
-    description: "Engaging promotional content showcasing the clothing brand's latest collection and seasonal offerings.",
+    description: "Engaging promotional content showcasing NABU's latest collection and seasonal offerings.",
     aspectRatio: 9 / 16,
   },
 ];
@@ -113,24 +113,26 @@ type MediaItem = {
   poster?: string;
   description?: string;
   aspectRatio?: number;
+  objectPosition?: string;
 };
 
 const PROGRAMMING_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Distance Radar Sensor Front View", description: "Front view of the Distance Radar Sensor hardware, showcasing the sensor assembly and interface design.", aspectRatio: 1 },
-  { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Distance Radar Sensor Back View", description: "Back view of the Distance Radar Sensor, revealing the internal circuitry and connection ports.", aspectRatio: 1 },
+  { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Distance Radar Sensor Front View", description: "Front view of my distance radar, showcasing the sensor assembly and interface design." },
+  { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Distance Radar Sensor Back View", description: "Back view of the Distance Radar Sensor, revealing the internal circuitry and connection ports." },
   { type: "video", src: "/assets/New_Radar_Sensor.mp4", title: "Distance Radar Sensor Functionality", description: "Live demonstration of the Distance Radar Sensor in action, detecting objects and measuring distances in real-time.", poster: "/assets/New_Radar_Sensor_front.jpg", aspectRatio: 9 / 16 },
-  { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "LED System Front View", description: "Front view of the LED System control box with illuminated interface elements.", aspectRatio: 1 },
-  { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "LED System Back View", description: "Back view of the LED System showing power connections and microcontroller integration.", aspectRatio: 1 },
+  { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "LED System Front View", description: "Front view of the LED System control box with illuminated interface elements." },
+  { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "LED System Back View", description: "Back view of the LED System showing power connections and microcontroller integration." },
   { type: "video", src: "/assets/New_LED_Box.mp4", title: "LED System Functionality", description: "Interactive demonstration of the LED System controlling multiple RGB lights with custom programming.", poster: "/assets/New_LED_Box_Front.jpg", aspectRatio: 9 / 16 }, 
 ];
 
 const SCULPTURES_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Weld Fabricated Sculpture", description: "A hand-welded metal sculpture exploring geometric forms and structural balance through arc welding techniques.", aspectRatio: 3 / 4 },
+  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", description: "Hand-fabricated through metalworking techniques — welding, grinding, sanding, and surface finishing — this steel sculpture references consumer tech culture by evoking an Apple Store-style display with a metal hand and cuff, symbolizing the chokehold and sense of confinement technology can impose on people.", aspectRatio: 3 / 4 },
   { type: "image", src: "/assets/Shyon_Glass.JPG", title: "Custom Designed Vase", description: "A custom-designed glass vase combining artistic form with functional design, showcasing craftsmanship.", aspectRatio: 3 / 4 },
 ];
 
 const MODELS_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/3D_Models_Cover_Pic.jpg", title: "16:1 Scale Glow in the Dark Lego Skeleton", description: "A meticulously assembled 1:6 scale LEGO skeleton featuring glow-in-the-dark elements, combining building precision with creative design.", aspectRatio: 16 / 9 },
+  { type: "image", src: "/assets/3D_Models_Cover_Pic.jpg", title: "16:1 Scale Glow in the Dark Lego Skeleton", description: "A meticulously assembled 1:6 scale LEGO skeleton featuring glow-in-the-dark elements, combining building precision with creative design.", aspectRatio: 16 / 9, objectPosition: "center 70%" },
+  { type: "image", src: "/assets/3D_Chair_Model.jpg", title: "3D Modeled Chair", description: "A functional chair model that doubles as a phone stand. Designed in Blender with careful attention to geometry and structural form.", objectPosition: "center 50%" },
 ];
 
 const FABRICATION_MEDIA: Record<string, MediaItem[]> = {
@@ -158,7 +160,7 @@ const HANDMADE_WORKS = [
   {
     title: "3D Models",
     img: "/assets/3D_Models_Cover_Pic.jpg",
-    description: "3D printed model design and fabrication.",
+    description: "3D models designed for printing, functionality, and aesthetics.",
     objectPosition: "center 80%", // moved slightly down to avoid cutoff
   },
 ];
@@ -170,14 +172,46 @@ type PortraitTile = {
 };
 
 const PORTRAIT_IMAGES = [
-  { src: "/assets/Shyon_Pic_1.jpg", alt: "Portrait 1" },
-  { src: "/assets/Shyon_Pic_2.JPG", alt: "Portrait 2" },
-  { src: "/assets/Shyon_Pic_3.JPG", alt: "Portrait 3" },
-  { src: "/assets/Shyon_Pic_4.jpg", alt: "Portrait 4" },
-  { src: "/assets/Shyon_Pic_5.jpg", alt: "Portrait 5" },
-  { src: "/assets/Shyon_Pic_12.jpg", alt: "Portrait 6" },
-  { src: "/assets/Shyon_Pic_7.jpg", alt: "Portrait 7" },
-  { src: "/assets/Shyon_Pic_8.JPG", alt: "Portrait 8" },
+  {
+    src: "/assets/Shyon_Pic_1.jpg",
+    alt: "Portrait 1",
+    frame: "70% 30% 65% 35% / 55% 65% 35% 45%",
+  },
+  {
+    src: "/assets/Shyon_Pic_2.JPG",
+    alt: "Portrait 2",
+    frame: "35% 65% 25% 75% / 70% 30% 65% 35%",
+  },
+  {
+    src: "/assets/Shyon_Pic_3.JPG",
+    alt: "Portrait 3",
+    frame: "80% 20% 60% 40% / 45% 75% 25% 55%",
+  },
+  {
+    src: "/assets/Shyon_Pic_13.jpg",
+    alt: "Portrait 4",
+    frame: "28% 72% 40% 60% / 80% 20% 70% 30%",
+  },
+  {
+    src: "/assets/Shyon_Pic_5.jpg",
+    alt: "Portrait 5",
+    frame: "60% 40% 20% 80% / 90% 15% 65% 35%",
+  },
+  {
+    src: "/assets/Shyon_Pic_12.jpg",
+    alt: "Portrait 6",
+    frame: "75% 25% 45% 55% / 35% 85% 15% 65%",
+  },
+  {
+    src: "/assets/Shyon_Pic_7.jpg",
+    alt: "Portrait 7",
+    frame: "25% 75% 55% 45% / 60% 40% 80% 20%",
+  },
+  {
+    src: "/assets/Shyon_Pic_8.JPG",
+    alt: "Portrait 8",
+    frame: "85% 15% 70% 30% / 50% 60% 20% 80%",
+  },
 ];
 
 const PORTRAIT_SIZES = ["w-40 h-56", "w-32 h-44", "w-36 h-48", "w-32 h-40"];
@@ -221,6 +255,7 @@ function useActiveSection() {
 
 export default function PortfolioUniqueNav() {
   const [active] = useActiveSection();
+  const [currentPage, setCurrentPage] = useState<"home" | "work" | "about" | "contact">("home");
 
   // Force dark mode once on mount
   useEffect(() => {
@@ -228,40 +263,132 @@ export default function PortfolioUniqueNav() {
   }, []);
 
   return (
-    <div className="relative min-h-screen text-sky-800 dark:text-slate-200 bg-white dark:bg-[#0e1116]">
-      {/* Background */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden [mask-image:radial-gradient(ellipse_at_center,black,transparent_65%)]">
-        <div className="absolute -inset-[10%] opacity-20 dark:opacity-30" />
-        <div className="absolute inset-0 hidden dark:block" aria-hidden>
-          <div className="absolute -inset-24 blur-3xl opacity-40 bg-[radial-gradient(600px_400px_at_20%_20%,rgba(14,165,233,.25),transparent),radial-gradient(600px_400px_at_80%_80%,rgba(34,211,238,.20),transparent)]" />
-        </div>
+  <div className="relative min-h-screen overflow-x-hidden text-sky-800 dark:text-slate-200 bg-white dark:bg-[#0e1116]">
+      {/* Solid full-screen background layer */}
+      <div className="fixed inset-0 z-0 bg-[#0e1116]" aria-hidden />
+
+      {/* Animated Dust Particles Background */}
+      <div className="fixed inset-0 z-10 pointer-events-none overflow-hidden">
+        {[...Array(80)].map((_, i) => {
+          const size = Math.random() * 6 + 2; // 2px to 8px
+          const duration = Math.random() * 3 + 3; // 3s to 6s
+          const delay = Math.random() * 1.5; // 0s to 1.5s
+          const startX = Math.random() * 100;
+          const startY = Math.random() * 100;
+          const seedOpacity = Math.random() * 0.7 + 0.15;
+          const seedScale = Math.random() * 0.25 + 0.9;
+          const seedX = (Math.random() * 2 - 1) * 20;
+          const seedY = (Math.random() * 2 - 1) * 20;
+          const driftX1 = (Math.random() * 2 - 1) * 40;
+          const driftY1 = (Math.random() * 2 - 1) * 40;
+          const driftX2 = (Math.random() * 2 - 1) * 40;
+          const driftY2 = (Math.random() * 2 - 1) * 40;
+          const phase = Math.random() * Math.PI * 2;
+          
+          return (
+            <motion.div
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                width: `${size}px`,
+                height: `${size}px`,
+                background: `rgba(150, 220, 255, ${Math.random() * 0.28 + 0.08})`,
+                left: `${startX}%`,
+                top: `${startY}%`,
+                filter: "blur(2px)",
+                opacity: seedOpacity,
+              }}
+              initial={{ opacity: seedOpacity, x: seedX, y: seedY, scale: seedScale }}
+              animate={{
+                opacity: [seedOpacity, 0.85, 0],
+                x: [seedX, seedX + driftX1, seedX + driftX2, seedX],
+                y: [seedY, seedY + driftY1, seedY + driftY2, seedY],
+                scale: [seedScale, 1.08, 0.9, seedScale],
+              }}
+              transition={{
+                duration,
+                ease: "easeInOut",
+                repeat: Infinity,
+                delay,
+                times: [0, 0.45, 1],
+              }}
+            />
+          );
+        })}
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-slate-900/40 border-b border-white/10">
-        <div className="w-full px-6 py-3 flex items-center justify-center">
+      {/* Fixed Logo - floating above everything */}
+      <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none h-24 sm:h-32">
+        <button
+          onClick={() => setCurrentPage("home")}
+          className="absolute left-1/2 pointer-events-auto cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-400 rounded-lg transition-all h-16 w-40 sm:h-20 sm:w-52"
+          style={{ 
+            transform: "translate(-50%, -50%)",
+            top: "50%"
+          }}
+        >
+          {/* Base white logo */}
           <img
             src="/assets/Shiri_Logo.png"
-            alt="Shiri Logo"
-            className="h-20 w-auto object-contain"
+            alt="Shiri Logo White"
+            className="absolute inset-0 w-full h-full object-contain"
           />
-        </div>
-      </header>
+          {/* Black logo fades in/out */}
+          <motion.img
+            src="/assets/Shiri_Logo_Black.png"
+            alt="Shiri Logo Black"
+            className="absolute inset-0 w-full h-full object-contain"
+            animate={{
+              opacity: [0, 0, 1, 1, 0],
+            }}
+            transition={{
+              duration: 8,
+              times: [0, 0.45, 0.55, 0.95, 1],
+              ease: "easeInOut",
+              repeat: Infinity,
+            }}
+          />
+        </button>
+      </div>
 
-      {/* Main sections */}
-      <main className="pb-16">
-        <Section id="home" active={active === "home"}>
-          <Hero />
-        </Section>
-        <Section id="work" active={active === "work"}>
-          <Work />
-        </Section>
-        <Section id="about" active={active === "about"}>
-          <About />
-        </Section>
-        <Section id="contact" active={active === "contact"}>
-          <Contact />
-        </Section>
+      {/* Header Container - Bezel style with shadow */}
+        <div
+          className="fixed top-0 left-0 right-0 z-40 backdrop-blur-sm h-24 sm:h-32"
+          style={{
+            background:
+              "radial-gradient(ellipse 900px 80px at 50% 0%, rgba(30, 41, 59, 0.9), rgba(20, 30, 50, 0.6) 70%, rgba(14, 17, 22, 0.2) 100%)",
+            borderBottomLeftRadius: "3rem",
+            borderBottomRightRadius: "3rem",
+            boxShadow: "inset 0 1px 6px rgba(255, 255, 255, 0.08), 0 10px 26px rgba(0, 0, 0, 0.75)",
+          }}
+        />
+
+      {/* Main Content */}
+  <main className="relative z-20 pb-16 pt-28 sm:pt-32">
+        <AnimatePresence mode="wait">
+          {currentPage === "home" && (
+            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+              <Section id="home" active={active === "home"}>
+                <Hero setPage={setCurrentPage} />
+              </Section>
+            </motion.div>
+          )}
+          {currentPage === "work" && (
+            <motion.div key="work" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="max-w-6xl mx-auto px-4">
+              <Work />
+            </motion.div>
+          )}
+          {currentPage === "about" && (
+            <motion.div key="about" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="max-w-6xl mx-auto px-4">
+              <About />
+            </motion.div>
+          )}
+          {currentPage === "contact" && (
+            <motion.div key="contact" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="max-w-6xl mx-auto px-4">
+              <Contact />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
@@ -279,7 +406,7 @@ function Section({
   active: boolean;
 }) {
   return (
-    <section id={id} className="relative py-24 scroll-mt-24">
+    <section id={id} className="relative py-24 scroll-mt-32">
       <div className="absolute inset-0">
         <motion.div
           aria-hidden
@@ -300,82 +427,76 @@ function Section({
   );
 }
 
-function Hero() {
+function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
   return (
-    <div className="relative w-full">
-      {/* MAIN HERO CONTENT */}
-      <div className="relative z-10 w-full grid md:grid-cols-2 gap-10 items-center">
-       {/* LEFT: title with pulsating glow */}
-<div className="flex flex-col items-center sm:items-start">
-          <div className="relative inline-block text-center sm:text-left">
-            {/* Main title */}
-            <motion.h1
-              layout
-              className="relative z-10 font-[KiwiSoda] pixel-shadow-glow font-normal leading-tight text-center sm:text-left"
-            >
-              {/* Bigger name */}
-              <span className="block text-4xl sm:text-5xl md:text-7xl lg:text-8xl">
-                Shyon Shiri
-              </span>
+    <div className="relative w-full pt-10 sm:pt-14 md:pt-20">
+      {/* MAIN HERO CONTENT: 2-column grid with title left and buttons right */}
+      <div className="relative z-10 w-full grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto px-4">
+        
+        {/* LEFT: Title with pulsating glow */}
+        <div className="flex flex-col items-center md:items-start">
+          {/* Main title */}
+          <motion.h1
+            layout
+            className="relative z-10 font-[KiwiSoda] pixel-shadow-glow-intense font-normal leading-tight"
+          >
+            {/* Bigger name */}
+            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
+              Shyon Shiri
+            </span>
 
-              {/* Smaller subtitle */}
-              <span className="block mt-1 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400 pixel-shadow-glow">
-                Graphic Designer
-              </span>
-
-            </motion.h1>
-
-            {/* Pulsating glow under both lines */}
-            <motion.div
-              className="
-                pointer-events-none
-                absolute inset-x-[-40px]
-                top-6
-                h-28
-                blur-3xl
-                bg-gradient-to-b from-sky-400/80 via-cyan-400/60 to-transparent
-              "
-              initial={{ opacity: 0.55, scale: 1 }}
-              animate={{
-                opacity: [0.55, 0.9, 0.55],
-                scale: [1, 1.12, 1],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                repeatType: "mirror",
-                ease: "easeInOut",
-              }}
-            />
-          </div>
+            {/* Smaller subtitle */}
+            <span className="block mt-1 text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400 pixel-shadow-glow-intense">
+              Graphic Designer
+            </span>
+          </motion.h1>
         </div>
 
-        {/* RIGHT: portrait mosaic (unchanged) */}
+        {/* RIGHT: Buttons - Glass orb style */}
         <motion.div
-          className="relative max-w-xl mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          className="flex flex-row gap-6 items-center justify-center"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
         >
-          <div className="flex flex-wrap gap-4 justify-center">
-            {PORTRAIT_IMAGES.slice(0, 8).map((img, i) => {
-              const sizeClass = PORTRAIT_SIZES[i % PORTRAIT_SIZES.length];
-              const offsetClass = i === 1 ? "mt-8" : "";
+          {/* Work Button */}
+          <motion.button
+            onClick={() => setPage("work")}
+            className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden"
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.94 }}
+          >
+            <span className="absolute -inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_55%)] opacity-70" />
+            <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_60%_20%,rgba(125,211,252,0.6),transparent_55%)]" />
+            <span className="absolute inset-0 rounded-full ring-1 ring-white/20 group-hover:ring-sky-200/40 transition-all" />
+            <Briefcase className="relative z-10 w-6 h-6" />
+          </motion.button>
 
-              return (
-                <div
-                  key={img.src}
-                  className={`${sizeClass} ${offsetClass} origin-center relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/40 shadow-2xl`}
-                >
-                  <img
-                    src={img.src}
-                    alt={img.alt}
-                    className="w-full h-full object-cover transition-transform duration-300 ease-out hover:scale-110"
-                  />
-                </div>
-              );
-            })}
-          </div>
+          {/* About Button */}
+          <motion.button
+            onClick={() => setPage("about")}
+            className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden"
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.94 }}
+          >
+            <span className="absolute -inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_55%)] opacity-70" />
+            <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_60%_20%,rgba(125,211,252,0.6),transparent_55%)]" />
+            <span className="absolute inset-0 rounded-full ring-1 ring-white/20 group-hover:ring-sky-200/40 transition-all" />
+            <User className="relative z-10 w-6 h-6" />
+          </motion.button>
+
+          {/* Contact Button */}
+          <motion.button
+            onClick={() => setPage("contact")}
+            className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden"
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.94 }}
+          >
+            <span className="absolute -inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_55%)] opacity-70" />
+            <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_60%_20%,rgba(125,211,252,0.6),transparent_55%)]" />
+            <span className="absolute inset-0 rounded-full ring-1 ring-white/20 group-hover:ring-sky-200/40 transition-all" />
+            <Mail className="relative z-10 w-6 h-6" />
+          </motion.button>
         </motion.div>
       </div>
     </div>
@@ -436,6 +557,7 @@ function AutoAspectTile({
               alt={item.alt ?? ""}
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              style={{ objectPosition: item.objectPosition ?? "center" }}
               onLoad={(e) => {
                 const img = e.currentTarget;
                 if (!item.aspectRatio) {
@@ -480,7 +602,11 @@ function AutoAspectTile({
         {/* Title Overlay */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl bg-gradient-to-b from-black/60 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-start justify-center pt-4">
           <h4 className="text-xs font-medium text-white text-center px-3 line-clamp-2">
-            {item.title}
+            {item.title === "Product, not Consumer" ? (
+              <span className="italic">{item.title}</span>
+            ) : (
+              item.title
+            )}
           </h4>
         </div>
       </Wrapper>
@@ -552,7 +678,11 @@ function MediaModal({
           <div className="p-6 space-y-4">
             {item.title && (
               <h3 className="text-xl font-semibold text-white">
-                {item.title}
+                {item.title === "Product, not Consumer" ? (
+                  <span className="italic">{item.title}</span>
+                ) : (
+                  item.title
+                )}
               </h3>
             )}
             {item.description && (
@@ -584,7 +714,7 @@ function Work() {
   const [openHandmade, setOpenHandmade] = useState<string | null>(null);
 
   const tabs = [
-    { id: "digital", label: "Design" },
+    { id: "digital", label: "Design Systems & Visuals" },
     { id: "handmade", label: "Interactive Media & Fabrication" },
   ] as const;
 
@@ -599,10 +729,10 @@ function Work() {
   };
 
   return (
-    <div className="w-full">
+  <div className="w-full pt-12 sm:pt-16">
       <div className="flex items-end justify-between gap-6">
         <div>
-          <h2 className="font-[KiwiSoda] pixel-shadow-glow text-3xl md:text-5xl font-normal">
+          <h2 className="font-[KiwiSoda] pixel-shadow-glow-intense text-3xl md:text-5xl font-normal">
             My Work
           </h2>
         </div>
@@ -805,24 +935,76 @@ function ProjectDetailCameraWork({ onMediaClick }: { onMediaClick: (item: MediaI
 }
 
 function About() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(4); // Start with Pic 5 (index 4)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % PORTRAIT_IMAGES.length);
+    }, 4000); // Change image every 4 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentImage = PORTRAIT_IMAGES[currentImageIndex];
+
   return (
-    <div className="max-w-3xl">
-      <h2 className="font-[KiwiSoda] pixel-shadow-glow text-3xl md:text-5xl font-normal">About</h2>
-      <p className="mt-4 text-slate-600 dark:text-slate-300">
-        I am a Bay Area–based graphic designer with a Bachelor of Arts in Studio
-        Practice with a focus in Graphic Design. My passion for design stems from
-        my fasicnation for creating, whether it&apos;s for visual storytelling or
-        personal projects.
-      </p>
+  <div className="w-full grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto pt-16 sm:pt-20">
+      {/* Left: Text Content */}
+      <div>
+  <h2 className="font-[KiwiSoda] pixel-shadow-glow-intense text-3xl md:text-5xl font-normal">About</h2>
+        <p className="mt-4 text-slate-600 dark:text-slate-300">
+          I am a Bay Area–based graphic designer with a Bachelor of Arts in Studio
+          Practice with a focus in Graphic Design. My passion for design stems from
+          my fasicnation for creating, whether it&apos;s for visual storytelling or
+          personal projects.
+        </p>
+      </div>
+
+      {/* Right: Image Carousel */}
+      <motion.div
+        className="relative mx-auto"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="relative w-full flex items-center justify-center">
+          <motion.div
+            className="relative"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <motion.div
+              className="w-56 sm:w-72 md:w-80 h-80 sm:h-[450px] md:h-[520px] origin-center relative overflow-hidden border border-white/10 bg-slate-900/40 shadow-2xl"
+              animate={{ borderRadius: currentImage.frame }}
+              transition={{ duration: 1.2 }}
+              style={{ borderRadius: currentImage.frame }}
+            >
+              <AnimatePresence mode="sync">
+                <motion.img
+                  key={currentImageIndex}
+                  src={currentImage.src}
+                  alt={currentImage.alt}
+                  className="w-full h-full object-cover absolute inset-0"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.2 }}
+                />
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 }
 
 function Contact() {
   return (
-    <div className="w-full grid md:grid-cols-2 gap-8 items-center">
+  <div className="w-full grid md:grid-cols-2 gap-8 items-center pt-24 sm:pt-28">
       <div>
-        <h2 className="font-[KiwiSoda] pixel-shadow-glow text-3xl md:text-5xl font-normal">
+  <h2 className="font-[KiwiSoda] pixel-shadow-glow-intense text-3xl md:text-5xl font-normal">
           Let’s collaborate
         </h2>
         <p className="mt-4 text-slate-600 dark:text-slate-300">

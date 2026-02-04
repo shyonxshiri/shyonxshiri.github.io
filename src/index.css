@@ -48,9 +48,103 @@ html {
     0 0 24px rgba(56, 189, 248, 0.35);
 }
 
+.pixel-shadow-glow-intense {
+  animation: glowPulse 3s ease-in-out infinite;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.9),
+    0 0 30px rgba(56, 189, 248, 1),
+    0 0 60px rgba(56, 189, 248, 1),
+    0 0 90px rgba(56, 189, 248, 0.8),
+    0 0 120px rgba(56, 189, 248, 0.6);
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    text-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.9),
+      0 0 20px rgba(56, 189, 248, 0.6),
+      0 0 40px rgba(56, 189, 248, 0.4),
+      0 0 60px rgba(56, 189, 248, 0.2),
+      0 0 80px rgba(56, 189, 248, 0.1);
+  }
+  50% {
+    text-shadow:
+      0 2px 0 rgba(0, 0, 0, 0.9),
+      0 0 30px rgba(56, 189, 248, 1),
+      0 0 60px rgba(56, 189, 248, 1),
+      0 0 90px rgba(56, 189, 248, 0.8),
+      0 0 120px rgba(56, 189, 248, 0.6);
+  }
+}
+
 .pixel-glow {
   filter:
     drop-shadow(0 2px 0 rgba(0, 0, 0, 0.9))
     drop-shadow(0 0 12px rgba(56, 189, 248, 0.6))
     drop-shadow(0 0 24px rgba(56, 189, 248, 0.35));
+}
+
+/* Liquid Metal Background Animations */
+@keyframes float1 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(150px, -80px) rotate(180deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+@keyframes float2 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-120px, 100px) rotate(180deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+@keyframes float3 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(100px, 120px) rotate(180deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translateX(-20%) translateY(0);
+  }
+  50% {
+    transform: translateX(20%) translateY(-50px);
+  }
+  100% {
+    transform: translateX(-20%) translateY(0);
+  }
+}
+
+.liquid-blob-1 {
+  animation: float1 20s ease-in-out infinite;
+}
+
+.liquid-blob-2 {
+  animation: float2 25s ease-in-out infinite;
+}
+
+.liquid-blob-3 {
+  animation: float3 30s ease-in-out infinite;
+}
+
+.liquid-drift {
+  animation: drift 15s ease-in-out infinite;
 }
