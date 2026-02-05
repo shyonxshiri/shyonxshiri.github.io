@@ -251,6 +251,62 @@ function useActiveSection() {
   return [active] as const;
 }
 
+// --- Cursor-Tracking Button Component ---
+
+function CursorTrackingButton({
+  onClick,
+  icon: Icon,
+}: {
+  onClick: () => void;
+  icon: React.ComponentType<{ className: string }>;
+}) {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const shineRef = useRef<HTMLSpanElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!buttonRef.current || !shineRef.current) return;
+    
+    const rect = buttonRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    setMousePos({ x, y });
+    
+    // Update the radial gradient to follow cursor
+    shineRef.current.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(125,211,252,0.8) 0%, transparent 60%)`;
+  };
+
+  const handleMouseLeave = () => {
+    if (shineRef.current) {
+      shineRef.current.style.background = `radial-gradient(circle at 60% 20%, rgba(125,211,252,0.6), transparent 50%)`;
+    }
+  };
+
+  return (
+    <motion.button
+      ref={buttonRef}
+      onClick={onClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden"
+      whileHover={{ scale: 1.12 }}
+      whileTap={{ scale: 0.94 }}
+    >
+      <span className="absolute -inset-2 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_50%)] opacity-70" />
+      <span 
+        ref={shineRef}
+        className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(circle at 60% 20%, rgba(125,211,252,0.6), transparent 50%)`,
+        }}
+      />
+      <span className="absolute inset-0 rounded-full ring-1 ring-white/20 group-hover:ring-sky-200/40 transition-all" />
+      <Icon className="relative z-10 w-6 h-6" />
+    </motion.button>
+  );
+}
+
 // --- Root Component --------------------------------------------------------
 
 export default function PortfolioUniqueNav() {
@@ -264,8 +320,27 @@ export default function PortfolioUniqueNav() {
 
   return (
   <div className="relative min-h-screen overflow-x-hidden text-sky-800 dark:text-slate-200 bg-white dark:bg-[#0e1116]">
-      {/* Solid full-screen background layer */}
-      <div className="fixed inset-0 z-0 bg-[#0e1116]" aria-hidden />
+      {/* Solid dark base background */}
+      <div className="fixed inset-0 z-0 bg-[#0a0e1a]" aria-hidden />
+
+      {/* Large gradient circles - positioned beyond viewport to eliminate edges */}
+      <div 
+        className="fixed -top-1/2 -right-1/4 w-full h-full z-1 pointer-events-none"
+        style={{
+          background: "radial-gradient(circle at center, rgba(14,165,233,0.15) 0%, transparent 70%)",
+          filter: "blur(40px)",
+        }}
+        aria-hidden
+      />
+      
+      <div 
+        className="fixed -bottom-1/3 -left-1/4 w-full h-full z-1 pointer-events-none"
+        style={{
+          background: "radial-gradient(circle at center, rgba(34,211,238,0.1) 0%, transparent 60%)",
+          filter: "blur(50px)",
+        }}
+        aria-hidden
+      />
 
       {/* Animated Dust Particles Background */}
       <div className="fixed inset-0 z-10 pointer-events-none overflow-hidden">
@@ -319,49 +394,48 @@ export default function PortfolioUniqueNav() {
 
       {/* Fixed Logo - floating above everything */}
       <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none h-24 sm:h-32">
-        <button
-          onClick={() => setCurrentPage("home")}
-          className="absolute left-1/2 pointer-events-auto cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-400 rounded-lg transition-all h-16 w-40 sm:h-20 sm:w-52"
-          style={{ 
-            transform: "translate(-50%, -50%)",
-            top: "50%"
-          }}
-        >
-          {/* Base white logo */}
-          <img
-            src="/assets/Shiri_Logo.png"
-            alt="Shiri Logo White"
-            className="absolute inset-0 w-full h-full object-contain"
-          />
-          {/* Black logo fades in/out */}
-          <motion.img
-            src="/assets/Shiri_Logo_Black.png"
-            alt="Shiri Logo Black"
-            className="absolute inset-0 w-full h-full object-contain"
-            animate={{
-              opacity: [0, 0, 1, 1, 0],
-            }}
-            transition={{
-              duration: 8,
-              times: [0, 0.45, 0.55, 0.95, 1],
-              ease: "easeInOut",
-              repeat: Infinity,
-            }}
-          />
-        </button>
+        <div className="absolute left-1/2 top-1/2" style={{ transform: "translate(-50%, -50%)" }}>
+          <motion.button
+            onClick={() => setCurrentPage("home")}
+            className="pointer-events-auto cursor-pointer outline-none focus:outline-none rounded-lg transition-all h-16 w-40 sm:h-20 sm:w-52"
+            style={{ boxShadow: "none" }}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {/* Base white logo */}
+            <img
+              src="/assets/Shiri_Logo.png"
+              alt="Shiri Logo White"
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+            <motion.img
+              src="/assets/Shiri_Logo_Black.png"
+              alt="Shiri Logo Black"
+              className="absolute inset-0 w-full h-full object-contain"
+              animate={{
+                opacity: [0, 0, 1, 1, 0],
+              }}
+              transition={{
+                duration: 8,
+                times: [0, 0.45, 0.55, 0.95, 1],
+                ease: "easeInOut",
+                repeat: Infinity,
+              }}
+            />
+          </motion.button>
+        </div>
       </div>
 
       {/* Header Container - Bezel style with shadow */}
-        <div
-          className="fixed top-0 left-0 right-0 z-40 backdrop-blur-sm h-24 sm:h-32"
-          style={{
-            background:
-              "radial-gradient(ellipse 900px 80px at 50% 0%, rgba(30, 41, 59, 0.9), rgba(20, 30, 50, 0.6) 70%, rgba(14, 17, 22, 0.2) 100%)",
-            borderBottomLeftRadius: "3rem",
-            borderBottomRightRadius: "3rem",
-            boxShadow: "inset 0 1px 6px rgba(255, 255, 255, 0.08), 0 10px 26px rgba(0, 0, 0, 0.75)",
-          }}
-        />
+      <div
+        className="fixed top-0 left-0 right-0 z-40 backdrop-blur-sm h-24 sm:h-32"
+        style={{
+          background: "rgba(20, 30, 50, 0.45)",
+          borderBottomLeftRadius: "3rem",
+          borderBottomRightRadius: "3rem",
+          boxShadow: "0 10px 26px rgba(0, 0, 0, 0.75)",
+        }}
+      />
 
       {/* Main Content */}
   <main className="relative z-20 pb-16 pt-28 sm:pt-32">
@@ -407,19 +481,6 @@ function Section({
 }) {
   return (
     <section id={id} className="relative py-24 scroll-mt-32">
-      <div className="absolute inset-0">
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute -inset-20 blur-3xl"
-          animate={{ opacity: active ? 0.6 : 0.2, scale: active ? 1 : 0.98 }}
-          transition={{ type: "spring", stiffness: 80, damping: 20 }}
-          style={{
-            background:
-              "radial-gradient(600px 400px at 20% 20%, rgba(14,165,233,.22), transparent)," +
-              "radial-gradient(600px 400px at 80% 80%, rgba(34,211,238,.18), transparent)",
-          }}
-        />
-      </div>
       <div className="relative max-w-6xl mx-auto h-full grid place-items-center px-4">
         {children}
       </div>
@@ -429,7 +490,7 @@ function Section({
 
 function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
   return (
-    <div className="relative w-full pt-10 sm:pt-14 md:pt-20">
+    <div className="relative w-full pt-20 sm:pt-28 md:pt-36">
       {/* MAIN HERO CONTENT: 2-column grid with title left and buttons right */}
       <div className="relative z-10 w-full grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto px-4">
         
@@ -438,7 +499,7 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
           {/* Main title */}
           <motion.h1
             layout
-            className="relative z-10 font-[KiwiSoda] pixel-shadow-glow-intense font-normal leading-tight"
+            className="relative z-10 font-[KiwiSoda] pixel-shadow-glow-intense font-normal leading-tight bounce-text"
           >
             {/* Bigger name */}
             <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
@@ -459,44 +520,9 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
         >
-          {/* Work Button */}
-          <motion.button
-            onClick={() => setPage("work")}
-            className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden"
-            whileHover={{ scale: 1.12 }}
-            whileTap={{ scale: 0.94 }}
-          >
-            <span className="absolute -inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_55%)] opacity-70" />
-            <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_60%_20%,rgba(125,211,252,0.6),transparent_55%)]" />
-            <span className="absolute inset-0 rounded-full ring-1 ring-white/20 group-hover:ring-sky-200/40 transition-all" />
-            <Briefcase className="relative z-10 w-6 h-6" />
-          </motion.button>
-
-          {/* About Button */}
-          <motion.button
-            onClick={() => setPage("about")}
-            className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden"
-            whileHover={{ scale: 1.12 }}
-            whileTap={{ scale: 0.94 }}
-          >
-            <span className="absolute -inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_55%)] opacity-70" />
-            <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_60%_20%,rgba(125,211,252,0.6),transparent_55%)]" />
-            <span className="absolute inset-0 rounded-full ring-1 ring-white/20 group-hover:ring-sky-200/40 transition-all" />
-            <User className="relative z-10 w-6 h-6" />
-          </motion.button>
-
-          {/* Contact Button */}
-          <motion.button
-            onClick={() => setPage("contact")}
-            className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden"
-            whileHover={{ scale: 1.12 }}
-            whileTap={{ scale: 0.94 }}
-          >
-            <span className="absolute -inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_55%)] opacity-70" />
-            <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_60%_20%,rgba(125,211,252,0.6),transparent_55%)]" />
-            <span className="absolute inset-0 rounded-full ring-1 ring-white/20 group-hover:ring-sky-200/40 transition-all" />
-            <Mail className="relative z-10 w-6 h-6" />
-          </motion.button>
+          <CursorTrackingButton onClick={() => setPage("work")} icon={Briefcase} />
+          <CursorTrackingButton onClick={() => setPage("about")} icon={User} />
+          <CursorTrackingButton onClick={() => setPage("contact")} icon={Mail} />
         </motion.div>
       </div>
     </div>
@@ -732,7 +758,7 @@ function Work() {
   <div className="w-full pt-12 sm:pt-16">
       <div className="flex items-end justify-between gap-6">
         <div>
-          <h2 className="font-[KiwiSoda] pixel-shadow-glow-intense text-3xl md:text-5xl font-normal">
+          <h2 className="font-[KiwiSoda] pixel-shadow-glow-intense text-3xl md:text-5xl font-normal bounce-text">
             My Work
           </h2>
         </div>
@@ -951,7 +977,7 @@ function About() {
   <div className="w-full grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto pt-16 sm:pt-20">
       {/* Left: Text Content */}
       <div>
-  <h2 className="font-[KiwiSoda] pixel-shadow-glow-intense text-3xl md:text-5xl font-normal">About</h2>
+  <h2 className="font-[KiwiSoda] pixel-shadow-glow-intense text-3xl md:text-5xl font-normal bounce-text">About</h2>
         <p className="mt-4 text-slate-600 dark:text-slate-300">
           I am a Bay Area–based graphic designer with a Bachelor of Arts in Studio
           Practice with a focus in Graphic Design. My passion for design stems from
@@ -1004,7 +1030,7 @@ function Contact() {
   return (
   <div className="w-full grid md:grid-cols-2 gap-8 items-center pt-24 sm:pt-28">
       <div>
-  <h2 className="font-[KiwiSoda] pixel-shadow-glow-intense text-3xl md:text-5xl font-normal">
+  <h2 className="font-[KiwiSoda] pixel-shadow-glow-intense text-3xl md:text-5xl font-normal bounce-text">
           Let’s collaborate
         </h2>
         <p className="mt-4 text-slate-600 dark:text-slate-300">
