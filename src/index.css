@@ -50,6 +50,12 @@ html {
 
 .pixel-shadow-glow-intense {
   animation: glowPulse 3s ease-in-out infinite;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.9),
+    0 0 30px rgba(56, 189, 248, 1),
+    0 0 60px rgba(56, 189, 248, 1),
+    0 0 90px rgba(56, 189, 248, 0.8),
+    0 0 120px rgba(56, 189, 248, 0.6);
 }
 
 @keyframes glowPulse {
@@ -143,39 +149,28 @@ html {
   animation: drift 15s ease-in-out infinite;
 }
 
-/* Gentle Bounce Animation - Synced with Glow Pulse */
-@keyframes gentle-bounce {
+@keyframes bounceTextWithGlow {
   0%, 100% {
     transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes combined-glow-bounce {
-  0%, 100% {
     text-shadow:
       0 2px 0 rgba(0, 0, 0, 0.9),
       0 0 20px rgba(56, 189, 248, 0.6),
       0 0 40px rgba(56, 189, 248, 0.4),
       0 0 60px rgba(56, 189, 248, 0.2),
       0 0 80px rgba(56, 189, 248, 0.1);
-    transform: translateY(0);
   }
   50% {
+    transform: translateY(-8px);
     text-shadow:
       0 2px 0 rgba(0, 0, 0, 0.9),
       0 0 30px rgba(56, 189, 248, 1),
       0 0 60px rgba(56, 189, 248, 1),
       0 0 90px rgba(56, 189, 248, 0.8),
       0 0 120px rgba(56, 189, 248, 0.6);
-    transform: translateY(-8px);
   }
 }
 
 .bounce-text {
-  animation: combined-glow-bounce 3s ease-in-out infinite;
+  animation: bounceTextWithGlow 3s ease-in-out infinite;
 }
-
 
