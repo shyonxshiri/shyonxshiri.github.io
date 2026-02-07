@@ -751,8 +751,17 @@ function MediaModal({
   item: MediaItem;
   onClose: () => void;
 }) {
-  const [showCarousel, setShowCarousel] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  // Create a combined media array: video first, then related images
+  const allMedia = [
+    { type: "video" as const, src: item.src, title: item.title ?? "Video" },
+    ...(item.relatedImages?.map((img) => ({
+      type: "image" as const,
+      src: img.src,
+      title: img.title,
+    })) ?? []),
+  ];
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -763,17 +772,14 @@ function MediaModal({
   }, [onClose]);
 
   const handlePrevImage = () => {
-    if (item.relatedImages) {
-      setCurrentImageIndex((prev) => (prev - 1 + item.relatedImages!.length) % item.relatedImages!.length);
-    }
+    setCurrentMediaIndex((prev) => (prev - 1 + allMedia.length) % allMedia.length);
   };
 
   const handleNextImage = () => {
-    if (item.relatedImages) {
-      setCurrentImageIndex((prev) => (prev + 1) % item.relatedImages!.length);
-      if (currentImageIndex === 0) setShowCarousel(true);
-    }
+    setCurrentMediaIndex((prev) => (prev + 1) % allMedia.length);
   };
+
+  const currentMedia = allMedia[currentMediaIndex];
 
   return (
     <motion.div
@@ -806,7 +812,7 @@ function MediaModal({
           {/* Media with arrows on sides */}
           <div className="flex items-center justify-center gap-6 mb-6">
             {/* Left Arrow */}
-            {item.relatedImages && item.relatedImages.length > 0 && (
+            {allMedia.length > 1 && (
               <button
                 onClick={handlePrevImage}
                 className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition"
@@ -819,26 +825,20 @@ function MediaModal({
 
             {/* Video/Image Display */}
             <div className="flex-1 flex items-center justify-center bg-black/40 rounded-2xl min-h-96">
-              {showCarousel && item.relatedImages && item.relatedImages.length > 0 ? (
-                // Show carousel images
+              {currentMedia.type === "image" ? (
                 <motion.img
-                  key={currentImageIndex}
-                  src={item.relatedImages[currentImageIndex].src}
-                  alt={item.relatedImages[currentImageIndex].title}
+                  key={currentMediaIndex}
+                  src={currentMedia.src}
+                  alt={currentMedia.title}
                   className="max-w-full max-h-96 object-contain"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 />
-              ) : item.type === "image" ? (
-                <img
-                  src={item.src}
-                  alt={item.title ?? ""}
-                  className="max-w-full max-h-96 object-contain"
-                />
               ) : (
                 <video
-                  src={item.src}
+                  key={currentMediaIndex}
+                  src={currentMedia.src}
                   controls
                   className="max-w-full max-h-96 object-contain"
                   autoPlay
@@ -847,7 +847,7 @@ function MediaModal({
             </div>
 
             {/* Right Arrow */}
-            {item.relatedImages && item.relatedImages.length > 0 && (
+            {allMedia.length > 1 && (
               <button
                 onClick={handleNextImage}
                 className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition"
@@ -859,10 +859,10 @@ function MediaModal({
             )}
           </div>
 
-          {/* Image Counter */}
-          {showCarousel && item.relatedImages && item.relatedImages.length > 0 && (
+          {/* Media Counter */}
+          {allMedia.length > 1 && (
             <div className="text-center mb-4 text-sm text-slate-400">
-              {item.relatedImages[currentImageIndex].title}
+              {currentMedia.title} ({currentMediaIndex + 1} of {allMedia.length})
             </div>
           )}
 
