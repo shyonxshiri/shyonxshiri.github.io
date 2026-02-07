@@ -378,7 +378,7 @@ function PageNavigation({ direction, pageName, onClick }: PageNavProps) {
   return (
     <motion.button
       onClick={onClick}
-      className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-400 rounded-lg transition-all"
+      className="cursor-pointer outline-none transition-all"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
@@ -753,9 +753,9 @@ function MediaModal({
 }) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  // Create a combined media array: video first, then related images
+  // Create a combined media array: start with the main item, then related images
   const allMedia = [
-    { type: "video" as const, src: item.src, title: item.title ?? "Video" },
+    { type: item.type, src: item.src, title: item.title ?? "Media" },
     ...(item.relatedImages?.map((img) => ({
       type: "image" as const,
       src: img.src,
@@ -842,6 +842,8 @@ function MediaModal({
                   controls
                   className="max-w-full max-h-96 object-contain"
                   autoPlay
+                  muted
+                  playsInline
                 />
               )}
             </div>
@@ -921,9 +923,9 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
   };
 
   return (
-  <div className="w-full pt-12 sm:pt-16 relative">
+  <div className="w-full pt-12 sm:pt-16">
       {/* Navigation */}
-      <div className="absolute top-0 left-0 right-0 flex justify-between items-center px-4 mb-8">
+      <div className="flex justify-between items-center px-4 mb-3">
         <div></div>
         <PageNavigation 
           direction="next" 
@@ -932,7 +934,7 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         />
       </div>
 
-      <div className="flex items-end justify-between gap-6">
+      <div className="flex items-end justify-between gap-6 px-4">
         <div>
           <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text">
             My Work
@@ -940,7 +942,7 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         </div>
       </div>
 
-      <div className="mt-6 flex gap-2">
+      <div className="mt-3 flex gap-2 flex-wrap px-4 sm:px-0">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -1168,9 +1170,9 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
   const currentImage = PORTRAIT_IMAGES[currentImageIndex];
 
   return (
-  <div className="w-full grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto pt-16 sm:pt-20 relative">
+  <div className="w-full pt-16 sm:pt-20">
       {/* Navigation */}
-      <div className="absolute top-0 left-0 right-0 flex justify-between items-center px-4 mb-8">
+      <div className="flex justify-between items-center px-4 mb-3">
         <PageNavigation 
           direction="prev" 
           pageName="My Work" 
@@ -1183,6 +1185,8 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
         />
       </div>
 
+      {/* Grid wrapper for content */}
+      <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto px-4 md:px-0">
       {/* Left: Text Content */}
       <div>
   <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text">About</h2>
@@ -1230,15 +1234,16 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
           </motion.div>
         </div>
       </motion.div>
+      </div>
     </div>
   );
 }
 
 function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
   return (
-  <div className="w-full grid md:grid-cols-2 gap-8 items-center pt-24 sm:pt-28 relative">
+  <div className="w-full pt-24 sm:pt-28">
       {/* Navigation */}
-      <div className="absolute top-0 left-0 right-0 flex justify-between items-center px-4 mb-8">
+      <div className="flex justify-between items-center px-4 mb-3">
         <PageNavigation 
           direction="prev" 
           pageName="About" 
@@ -1247,6 +1252,8 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
         <div></div>
       </div>
 
+      {/* Grid wrapper for content */}
+      <div className="grid md:grid-cols-2 gap-8 items-center px-4 md:px-0">
       <div>
   <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text">
           Let’s collaborate
@@ -1318,6 +1325,7 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
           </label>
           <PrimaryButton type="submit">Send</PrimaryButton>
         </form>
+      </div>
       </div>
     </div>
   );
