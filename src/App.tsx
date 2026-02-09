@@ -87,26 +87,22 @@ const SHIRI_DESIGNS: MediaItem[] = [
   {
     type: "image",
     src: "/assets/Shiri_Design_1.PNG",
-    title: "Clothing Line Design 1",
-    description: "Design exploration 1",
+    title: "Clothing Line Mock Up",
   },
   {
     type: "image",
     src: "/assets/Shiri_Design_2.PNG",
-    title: "Clothing Line Design 2",
-    description: "Design exploration 2",
+    title: "Clothing Line Mock Up",
   },
   {
     type: "image",
     src: "/assets/Shiri_Design_3.PNG",
-    title: "Clothing Line Design 3",
-    description: "Design exploration 3",
+    title: "Clothing Line Mock Up",
   },
   {
     type: "image",
     src: "/assets/Shiri_Design_4.PNG",
-    title: "Clothing Line Design 4",
-    description: "Design exploration 4",
+    title: "Clothing Line Mock Up",
   },
 ];
 
@@ -879,7 +875,7 @@ function MediaModal({
                 )}
               </h3>
             )}
-            {item.description && (
+            {item.description && item.title !== "Clothing Line Mock Up" && (
               <p className="text-sm text-slate-300">
                 {item.description}
               </p>

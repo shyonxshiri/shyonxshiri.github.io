@@ -51,6 +51,20 @@ button {
   }
 }
 
+/* Mobile/Touch Device Interactivity - Apply hover states on active/focus for touch devices */
+@media (hover: none) and (pointer: coarse) {
+  /* Apply active states to buttons to mimic hover effects on touch */
+  button:active,
+  button:focus {
+    transition: all 0.2s ease-out;
+  }
+  
+  /* Ensure interactive tiles show effects on touch */
+  article:active {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  }
+}
+
 /* Optimize animations performance */
 @media (prefers-reduced-motion: no-preference) {
   * {
@@ -201,5 +215,54 @@ button {
 
 .bounce-text {
   animation: bounceTextWithGlow 3s ease-in-out infinite;
+}
+
+/* Enhanced Mobile/Touch Interactivity */
+@media (hover: none) and (pointer: coarse) {
+  /* Make :active state work like :hover for all interactive elements */
+  
+  /* Media tiles - make them respond to touch with the same effects as hover */
+  article[class*="group"]:active img {
+    transform: scale(1.03);
+  }
+  
+  /* Play button overlay on touch */
+  article:active .w-16.h-16.rounded-full.bg-black\/60 {
+    transform: scale(1.1);
+  }
+  
+  /* Tab/Project buttons */
+  div[role="tab"]:active {
+    background-color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Regular buttons */
+  button:active {
+    opacity: 0.9;
+  }
+  
+  /* Specific button hover state replacements */
+  button[class*="hover:bg-black"]:active {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+  
+  button[class*="hover:bg-white"]:active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  button[class*="hover:brightness"]:active {
+    filter: brightness(1.1);
+  }
+  
+  button[class*="hover:-translate"]:active {
+    transform: translateY(-0.125rem);
+  }
+  
+  /* Ensure smooth transitions on touch */
+  button:active,
+  article:active {
+    transition: all 0.15s ease-out;
+  }
 }
 
