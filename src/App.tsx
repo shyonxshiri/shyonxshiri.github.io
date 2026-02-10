@@ -3,6 +3,18 @@ import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home, Briefcase, User, Mail, Linkedin, Instagram, FileText } from "lucide-react";
 
+// --- Haptic Feedback Utility ---------------------------------------------------------------
+const triggerHaptic = (intensity: "light" | "medium" | "heavy" = "medium") => {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    const patterns: { [key: string]: number } = {
+      light: 10,
+      medium: 30,
+      heavy: 50,
+    };
+    navigator.vibrate(patterns[intensity]);
+  }
+};
+
 // --- Config ---------------------------------------------------------------
 
 const DIGITAL_MEDIA = [
@@ -335,6 +347,7 @@ function ShimmerButton({
 
   const handleTouchStart = (e: React.TouchEvent<HTMLButtonElement>) => {
     setIsTouching(true);
+    triggerHaptic("light");
     if (!buttonRef.current) return;
     
     const touch = e.touches[0];
@@ -371,7 +384,10 @@ function ShimmerButton({
   return (
     <motion.button
       ref={buttonRef}
-      onClick={onClick}
+      onClick={() => {
+        triggerHaptic("medium");
+        onClick();
+      }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -412,7 +428,10 @@ function PageNavigation({ direction, pageName, onClick }: PageNavProps) {
   
   return (
     <motion.button
-      onClick={onClick}
+      onClick={() => {
+        triggerHaptic("light");
+        onClick();
+      }}
       className="cursor-pointer outline-none transition-all"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
@@ -444,7 +463,7 @@ export default function PortfolioUniqueNav() {
 
       {/* Animated Dust Particles Background */}
       <div className="fixed inset-0 z-10 pointer-events-none overflow-hidden">
-        {[...Array(80)].map((_, i) => {
+        {[...Array(typeof window !== "undefined" && window.innerWidth < 768 ? 30 : 80)].map((_, i) => {
           const size = Math.random() * 6 + 2; // 2px to 8px
           const duration = Math.random() * 3 + 3; // 3s to 6s
           const delay = Math.random() * 1.5; // 0s to 1.5s
@@ -495,7 +514,10 @@ export default function PortfolioUniqueNav() {
       {/* Fixed Logo - floating above everything */}
       <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none h-24 sm:h-32">
         <motion.button
-          onClick={() => setCurrentPage("home")}
+          onClick={() => {
+            triggerHaptic("medium");
+            setCurrentPage("home");
+          }}
           className="absolute left-1/2 pointer-events-auto cursor-pointer h-16 w-40 sm:h-20 sm:w-52 logo-button"
           style={{ 
             top: "50%",
@@ -507,7 +529,7 @@ export default function PortfolioUniqueNav() {
           whileHover={{ scale: 1.4, filter: "drop-shadow(0 0 12px rgba(56, 189, 248, 0.5))" }}
           whileTap={{ scale: 1.3 }}
           animate={{ x: "-50%", y: "-50%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          transition={{ type: "spring", stiffness: 200, damping: 25 }}
         >
           {/* Base white logo */}
           <img
@@ -999,17 +1021,21 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         {allProjectItems.map((project, index) => (
           <motion.div
             key={project.id}
-            className="rounded-xl border border-white/10 overflow-hidden bg-white/5 backdrop-blur"
+            className="rounded-xl border border-white/10 overflow-hidden bg-white/5 backdrop-blur transition-shadow"
             initial={false}
             animate={{ 
               boxShadow: expandedIndex === index 
-                ? "0 0 30px rgba(56, 189, 248, 0.2)" 
+                ? "0 0 20px rgba(56, 189, 248, 0.15)" 
                 : "0 0 0px rgba(56, 189, 248, 0)"
             }}
+            transition={{ duration: 0.2 }}
           >
             {/* Project Header - Clickable */}
             <motion.button
-              onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+              onClick={() => {
+                triggerHaptic("light");
+                setExpandedIndex(expandedIndex === index ? null : index);
+              }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
               className="w-full px-4 sm:px-6 py-5 sm:py-6 flex items-center gap-4 text-left transition-colors origin-center"

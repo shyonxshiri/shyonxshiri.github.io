@@ -29,8 +29,8 @@ body {
   /* Better font rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Enable GPU acceleration for animations */
-  will-change: transform;
+  /* Reduce motion for better performance on mobile */
+  animation-duration: 0.1s;
 }
 
 /* Optional smoother text rendering */
