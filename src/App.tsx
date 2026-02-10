@@ -1110,23 +1110,9 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
 function ProjectDetailModelingMedia({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
   return (
     <section className="space-y-6">
-      <div className="grid lg:grid-cols-2 gap-5">
-        {/* First item - Takes 2 rows on desktop */}
-        <div key={MODELING_MEDIA[0].src ?? 0} className="space-y-2 lg:row-span-2">
-          <div>
-            <h5 className="text-sm font-semibold text-white">{MODELING_MEDIA[0].title}</h5>
-            {MODELING_MEDIA[0].description && (
-              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{MODELING_MEDIA[0].description}</p>
-            )}
-          </div>
-          <div className="rounded-lg overflow-hidden border border-white/10 h-full">
-            <AutoAspectTile item={MODELING_MEDIA[0]} onMediaClick={onMediaClick} />
-          </div>
-        </div>
-
-        {/* Remaining items stacked on the right */}
-        {MODELING_MEDIA.slice(1).map((item, index) => (
-          <div key={item.src ?? index + 1} className="space-y-2">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {MODELING_MEDIA.map((item, index) => (
+          <div key={item.src ?? index} className="space-y-2">
             <div>
               <h5 className="text-sm font-semibold text-white">{item.title}</h5>
               {item.description && (
@@ -1153,51 +1139,54 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
     >
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Nabu Banner - Takes 2 rows on desktop */}
-        <div className="space-y-2 lg:row-span-2">
+        <div className="space-y-2">
           <div>
             <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[0].title}</h5>
             {GRAPHIC_MEDIA[0].description && (
               <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[0].description}</p>
             )}
           </div>
-          <div className="rounded-lg overflow-hidden border border-white/10 h-full">
+          <div className="rounded-lg overflow-hidden border border-white/10">
             <AutoAspectTile item={GRAPHIC_MEDIA[0]} onMediaClick={onMediaClick} />
           </div>
         </div>
 
-        {/* Video Game Demo */}
-        <div className="space-y-2">
-          <div>
-            <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[1].title}</h5>
-            {GRAPHIC_MEDIA[1].description && (
-              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[1].description}</p>
-            )}
+        {/* Right column wrapper for stacked items */}
+        <div className="flex flex-col gap-5">
+          {/* Video Game Demo */}
+          <div className="space-y-2">
+            <div>
+              <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[1].title}</h5>
+              {GRAPHIC_MEDIA[1].description && (
+                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[1].description}</p>
+              )}
+            </div>
+            <div className="rounded-lg overflow-hidden border border-white/10">
+              <AutoAspectTile item={GRAPHIC_MEDIA[1]} onMediaClick={onMediaClick} />
+            </div>
           </div>
-          <div className="rounded-lg overflow-hidden border border-white/10">
-            <AutoAspectTile item={GRAPHIC_MEDIA[1]} onMediaClick={onMediaClick} />
-          </div>
-        </div>
 
-        {/* Mina Website */}
-        <div className="space-y-2">
-          <div>
-            <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[2].title}</h5>
-            {GRAPHIC_MEDIA[2].description && (
-              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[2].description}</p>
-            )}
-            {GRAPHIC_MEDIA[2].link && (
-              <a
-                href={GRAPHIC_MEDIA[2].link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-2 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white text-xs font-medium rounded-lg transition"
-              >
-                Visit Website →
-              </a>
-            )}
-          </div>
-          <div className="rounded-lg overflow-hidden border border-white/10">
-            <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
+          {/* Mina Website */}
+          <div className="space-y-2">
+            <div>
+              <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[2].title}</h5>
+              {GRAPHIC_MEDIA[2].description && (
+                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[2].description}</p>
+              )}
+              {GRAPHIC_MEDIA[2].link && (
+                <a
+                  href={GRAPHIC_MEDIA[2].link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-2 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white text-xs font-medium rounded-lg transition"
+                >
+                  Visit Website →
+                </a>
+              )}
+            </div>
+            <div className="rounded-lg overflow-hidden border border-white/10">
+              <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
+            </div>
           </div>
         </div>
       </div>
