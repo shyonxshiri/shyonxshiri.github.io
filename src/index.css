@@ -42,11 +42,42 @@ html {
 /* Optimize buttons and interactive elements for touch */
 button {
   -webkit-touch-callout: none;
+  /* iOS: Prevent tap delay */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-callout: none;
+  /* Better touch feedback */
+  cursor: pointer;
+  /* Ensure buttons are at least 44x44px for touch targets (Apple HIG) */
+  min-height: 44px;
+  min-width: 44px;
 }
 
-/* Prevent double-tap zoom delay on buttons */
-@media (hover: none) {
-  button {
+/* All interactive elements get touch optimization */
+a, button, [role="button"], [role="tab"] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Logo button - no border, outline, or focus ring at all */
+.logo-button {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.logo-button:focus,
+.logo-button:focus-visible,
+.logo-button:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Prevent double-tap zoom delay on buttons and links */
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"], [role="tab"] {
     touch-action: manipulation;
   }
 }
@@ -83,6 +114,7 @@ button {
 
 .glow-ring {
   animation: glowRing 1.6s ease-in-out infinite alternate;
+  will-change: box-shadow;
 }
 .pixel-shadow-glow {
   text-shadow:
@@ -127,7 +159,7 @@ button {
     drop-shadow(0 0 24px rgba(56, 189, 248, 0.35));
 }
 
-/* Liquid Metal Background Animations */
+/* Liquid Metal Background Animations - DISABLED for performance */
 @keyframes float1 {
   0% {
     transform: translate(0, 0) rotate(0deg);
@@ -176,22 +208,6 @@ button {
   }
 }
 
-.liquid-blob-1 {
-  animation: float1 20s ease-in-out infinite;
-}
-
-.liquid-blob-2 {
-  animation: float2 25s ease-in-out infinite;
-}
-
-.liquid-blob-3 {
-  animation: float3 30s ease-in-out infinite;
-}
-
-.liquid-drift {
-  animation: drift 15s ease-in-out infinite;
-}
-
 @keyframes bounceTextWithGlow {
   0%, 100% {
     transform: translateY(0);
@@ -217,52 +233,69 @@ button {
   animation: bounceTextWithGlow 3s ease-in-out infinite;
 }
 
-/* Enhanced Mobile/Touch Interactivity */
+/* Enhanced Mobile/Touch Interactivity - Apple Level */
 @media (hover: none) and (pointer: coarse) {
   /* Make :active state work like :hover for all interactive elements */
   
   /* Media tiles - make them respond to touch with the same effects as hover */
   article[class*="group"]:active img {
     transform: scale(1.03);
-  }
-  
-  /* Play button overlay on touch */
-  article:active .w-16.h-16.rounded-full.bg-black\/60 {
-    transform: scale(1.1);
+    transition: transform 0.15s ease-out;
   }
   
   /* Tab/Project buttons */
   div[role="tab"]:active {
     background-color: rgba(255, 255, 255, 0.7);
     border-color: rgba(255, 255, 255, 0.2);
+    transition: background-color 0.15s ease-out;
   }
   
   /* Regular buttons */
   button:active {
     opacity: 0.9;
+    transition: opacity 0.15s ease-out;
   }
   
-  /* Specific button hover state replacements */
-  button[class*="hover:bg-black"]:active {
-    background-color: rgba(0, 0, 0, 0.8);
+  /* Touch-specific improvements for smooth feedback */
+  * {
+    /* Remove tap delay completely */
+    -webkit-tap-highlight-color: transparent;
   }
   
-  button[class*="hover:bg-white"]:active {
-    background-color: rgba(255, 255, 255, 0.2);
+  /* Improve interactive tile responsiveness */
+  [class*="cursor-pointer"]:active {
+    transform: scale(0.98);
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
-  button[class*="hover:brightness"]:active {
-    filter: brightness(1.1);
-  }
-  
-  button[class*="hover:-translate"]:active {
-    transform: translateY(-0.125rem);
-  }
-  
-  /* Ensure smooth transitions on touch */
-  button:active,
-  article:active {
-    transition: all 0.15s ease-out;
-  }
+}
+
+/* Apple-style touch enhancements for all platforms */
+button,
+[role="button"],
+a,
+[role="tab"],
+[class*="cursor-pointer"],
+article {
+  /* Enable GPU acceleration selectively */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Enhanced focus states for accessibility + touch */
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid rgba(56, 189, 248, 0.8);
+  outline-offset: 2px;
+}
+
+/* Smooth press-in effect for buttons */
+button:active,
+[role="button"]:active {
+  /* Subtle inset shadow for press effect */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 

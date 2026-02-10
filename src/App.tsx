@@ -111,7 +111,7 @@ const CAMERA_MEDIA: MediaItem[] = [
     type: "video",
     src: "/assets/NABU_PUFFER_AD.mp4",
     poster: "/assets/NABU_Puffer_AD.jpg",
-    title: "NABU Promotional Video",
+    title: "NABU 2026 Teaser",
     description: "Professional promotional video for NABU's puffer jacket collection, shot and edited with cinematic quality.",
     aspectRatio: 9 / 16,
   },
@@ -119,21 +119,21 @@ const CAMERA_MEDIA: MediaItem[] = [
     type: "video",
     src: "/assets/NABU_SALE_AD.mp4",
     poster: "/assets/NABU_SALE_AD.jpg",
-    title: "NABU Promotional Video",
+    title: "NABU 2025 Summer Collection",
     description: "Engaging promotional content showcasing NABU's latest collection and seasonal offerings.",
     aspectRatio: 9 / 16,
   },
   {
     type: "image",
     src: "/assets/Stevie_Pic.JPG",
-    title: "NABU Spring 2023 Collection",
+    title: "NABU 2023 Spring Collection",
     description: "Professional portrait photography showcasing design systems and visual aesthetics.",
   },
   {
     type: "image",
     src: "/assets/Max_Pic.JPG",
     title: "Candid Studio Portrait",
-    description: "A vibrant studio portrait capturing authentic moments and natural expressions with professional lighting.",
+    description: "A vibrant portrait capturing authentic moments and natural expressions with professional lighting.",
   },
 ];
 
@@ -316,6 +316,7 @@ function ShimmerButton({
 }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [isTouching, setIsTouching] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -332,6 +333,41 @@ function ShimmerButton({
     setMousePos({ x: percentX, y: percentY });
   };
 
+  const handleTouchStart = (e: React.TouchEvent<HTMLButtonElement>) => {
+    setIsTouching(true);
+    if (!buttonRef.current) return;
+    
+    const touch = e.touches[0];
+    const rect = buttonRef.current.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    
+    const percentX = (x / rect.width) * 100;
+    const percentY = (y / rect.height) * 100;
+    
+    setMousePos({ x: percentX, y: percentY });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLButtonElement>) => {
+    if (!buttonRef.current) return;
+    
+    const touch = e.touches[0];
+    const rect = buttonRef.current.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    
+    const percentX = (x / rect.width) * 100;
+    const percentY = (y / rect.height) * 100;
+    
+    setMousePos({ x: percentX, y: percentY });
+  };
+
+  const handleTouchEnd = () => {
+    setIsTouching(false);
+  };
+
+  const showGradient = isHovering || isTouching;
+
   return (
     <motion.button
       ref={buttonRef}
@@ -339,20 +375,23 @@ function ShimmerButton({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
       whileHover={{ scale: 1.12 }}
       whileTap={{ scale: 0.94 }}
     >
       <span className="absolute -inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_55%)] opacity-70" />
       <span 
-        className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        className={`absolute inset-0 rounded-full transition-opacity duration-300 ${showGradient ? 'opacity-100' : 'opacity-0'}`}
         style={{
-          background: isHovering 
+          background: showGradient
             ? `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(125,211,252,0.6), transparent 55%)`
             : `radial-gradient(circle at 60% 20%, rgba(125,211,252,0.6), transparent 55%)`
         }}
       />
-      <span className="absolute inset-0 rounded-full ring-1 ring-white/20 group-hover:ring-sky-200/40 transition-all" />
+      <span className={`absolute inset-0 rounded-full ring-1 transition-all ${showGradient ? 'ring-sky-200/40' : 'ring-white/20'}`} />
       <div className="relative z-10">
         {icon}
       </div>
@@ -455,22 +494,20 @@ export default function PortfolioUniqueNav() {
 
       {/* Fixed Logo - floating above everything */}
       <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none h-24 sm:h-32">
-        <button
+        <motion.button
           onClick={() => setCurrentPage("home")}
-          className="absolute left-1/2 pointer-events-auto cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-400 rounded-lg h-16 w-40 sm:h-20 sm:w-52"
+          className="absolute left-1/2 pointer-events-auto cursor-pointer h-16 w-40 sm:h-20 sm:w-52 logo-button"
           style={{ 
             top: "50%",
-            transform: "translate(-50%, -50%) scale(1)",
-            transition: "transform 0.3s ease, filter 0.3s ease",
+            outline: "none",
+            border: "none",
+            boxShadow: "none",
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translate(-50%, -50%) scale(1.4)";
-            e.currentTarget.style.filter = "drop-shadow(0 0 12px rgba(56, 189, 248, 0.5))";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translate(-50%, -50%) scale(1)";
-            e.currentTarget.style.filter = "drop-shadow(0 0 0px rgba(56, 189, 248, 0))";
-          }}
+          initial={{ scale: 1, filter: "drop-shadow(0 0 0px rgba(56, 189, 248, 0))" }}
+          whileHover={{ scale: 1.4, filter: "drop-shadow(0 0 12px rgba(56, 189, 248, 0.5))" }}
+          whileTap={{ scale: 1.3 }}
+          animate={{ x: "-50%", y: "-50%" }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {/* Base white logo */}
           <img
@@ -492,7 +529,7 @@ export default function PortfolioUniqueNav() {
               repeat: Infinity,
             }}
           />
-        </button>
+        </motion.button>
       </div>
 
       {/* Header Container - Bezel style with shadow */}
@@ -899,29 +936,46 @@ function MediaModal({
 
 function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
   const [activeVideo, setActiveVideo] = useState<MediaItem | null>(null);
-  const [category, setCategory] = useState<"digital" | "handmade">("digital");
-  const [openProject, setOpenProject] = useState<string | null>(null);
-  const [openHandmade, setOpenHandmade] = useState<string | null>(null);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-  const tabs = [
-    { id: "digital", label: "Design Systems & Visuals" },
-    { id: "handmade", label: "Interactive Media & Fabrication" },
-  ] as const;
-
-  const handleProjectClick = (id: string) => {
-    setOpenProject((prev) => (prev === id ? null : id));
-    setOpenHandmade(null); // keep behavior clean
-  };
-
-  const handleHandmadeClick = (title: string) => {
-    setOpenHandmade((prev) => (prev === title ? null : title));
-    setOpenProject(null); // keep behavior clean
-  };
+  // Combine all projects with their metadata
+  const allProjectItems = [
+    ...DIGITAL_MEDIA.map((p, idx) => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      img: p.img,
+      objectPosition: p.objectPosition,
+      category: "Design Systems & Visuals" as const,
+      content: (
+        <div>
+          {p.id === "3d-modeling" && <ProjectDetailModelingMedia onMediaClick={setActiveVideo} />}
+          {p.id === "digital-media" && <ProjectDetailDigitalMedia onMediaClick={setActiveVideo} />}
+          {p.id === "camera-work" && <ProjectDetailCameraWork onMediaClick={setActiveVideo} />}
+        </div>
+      ),
+    })),
+    ...HANDMADE_WORKS.map((p, idx) => ({
+      id: p.title.toLowerCase().replace(/\s+/g, "-"),
+      title: p.title,
+      description: p.description,
+      img: p.img,
+      objectPosition: p.objectPosition,
+      category: "Interactive Media & Fabrication" as const,
+      content: (
+        <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {(FABRICATION_MEDIA[p.title as keyof typeof FABRICATION_MEDIA] || []).map((item, index) => (
+            <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={setActiveVideo} />
+          ))}
+        </div>
+      ),
+    })),
+  ];
 
   return (
-  <div className="w-full pt-12 sm:pt-16">
+    <div className="w-full min-h-screen py-16 sm:py-20">
       {/* Navigation */}
-      <div className="flex justify-between items-center px-4 mb-3">
+      <div className="flex justify-between items-center px-4 mb-0 -mt-8">
         <div></div>
         <PageNavigation 
           direction="next" 
@@ -930,157 +984,117 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         />
       </div>
 
-      <div className="flex items-end justify-between gap-6 px-4">
-        <div>
-          <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text">
-            My Work
-          </h2>
-        </div>
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-16">
+        <h2 className="font-[KiwiSoda] text-4xl sm:text-5xl md:text-6xl font-normal bounce-text mb-4">
+          My Work
+        </h2>
+        <p className="text-slate-400 text-lg max-w-2xl">
+          Explore my projects across design systems, digital media, and fabrication work.
+        </p>
       </div>
 
-      <div className="mt-3 flex gap-2 flex-wrap px-4 sm:px-0">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => {
-              setCategory(t.id as any);
-              setOpenProject(null);
-              setOpenHandmade(null); // ✅ important reset
+      {/* Accordion-style Projects */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-4">
+        {allProjectItems.map((project, index) => (
+          <motion.div
+            key={project.id}
+            className="rounded-xl border border-white/10 overflow-hidden bg-white/5 backdrop-blur"
+            initial={false}
+            animate={{ 
+              boxShadow: expandedIndex === index 
+                ? "0 0 30px rgba(56, 189, 248, 0.2)" 
+                : "0 0 0px rgba(56, 189, 248, 0)"
             }}
-            className={`px-3 py-1.5 rounded-xl text-sm border transition ${
-              category === t.id
-                ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white border-transparent"
-                : "bg-white/60 dark:bg-white/5 border-white/10 hover:bg-white/70 dark:hover:bg-white/10"
-            }`}
           >
-            {t.label}
-          </button>
+            {/* Project Header - Clickable */}
+            <motion.button
+              onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full px-4 sm:px-6 py-5 sm:py-6 flex items-center gap-4 text-left transition-colors origin-center"
+            >
+              {/* Thumbnail */}
+              <div className="hidden sm:block w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 border border-white/10">
+                <img 
+                  src={project.img} 
+                  alt={project.title}
+                  className="w-full h-full object-cover"
+                  style={{ objectPosition: project.objectPosition ?? "center" }}
+                />
+              </div>
+
+              {/* Project Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-1">
+                  <h3 className="text-lg sm:text-xl font-semibold text-white truncate">
+                    {project.title}
+                  </h3>
+                  <span className="text-xs px-2 py-1 rounded-full bg-sky-500/20 text-sky-300 whitespace-nowrap">
+                    {project.category}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-400 line-clamp-2">
+                  {project.description}
+                </p>
+              </div>
+
+              {/* Expand Icon */}
+              <motion.div
+                animate={{ rotate: expandedIndex === index ? 180 : 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="flex-shrink-0 ml-auto"
+              >
+                <svg 
+                  className="w-5 h-5 text-sky-400" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </motion.div>
+            </motion.button>
+
+            {/* Expanded Content */}
+            <AnimatePresence>
+              {expandedIndex === index && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-4 sm:px-6 py-8 border-t border-white/10 bg-white/[0.02]">
+                    {/* Full Image on Mobile */}
+                    <div className="sm:hidden mb-6 rounded-lg overflow-hidden border border-white/10">
+                      <img 
+                        src={project.img} 
+                        alt={project.title}
+                        className="w-full object-cover aspect-video"
+                        style={{ objectPosition: project.objectPosition ?? "center" }}
+                      />
+                    </div>
+
+                    {/* Content Grid */}
+                    <div className="space-y-6">
+                      <div className="bg-white/5 rounded-lg p-4 sm:p-6 space-y-6">
+                        {project.content}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         ))}
       </div>
 
-      {/* CARDS GRID (ONLY CARDS LIVE INSIDE THIS GRID) */}
-      <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {category === "digital" &&
-          DIGITAL_MEDIA.map((p) => {
-            const isActive = openProject === p.id;
-            return (
-              <motion.article
-                key={p.id}
-                onClick={() => handleProjectClick(p.id)}
-                className={`cursor-pointer group rounded-2xl overflow-hidden bg-white/60 dark:bg-white/5 backdrop-blur hover:shadow-xl hover:-translate-y-0.5 transition border ${
-                  isActive ? "border-sky-400 glow-ring" : "border-white/10"
-                }`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
-              >
-                <div className="relative aspect-video">
-                  <img
-                    src={p.img}
-                    alt={p.title}
-                    className="w-full h-full object-cover"
-                    style={{ objectPosition: p.objectPosition ?? "50% 50%" }}
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg">{p.title}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
-                    {p.description}
-                  </p>
-                </div>
-              </motion.article>
-            );
-          })}
+      {/* Footer Spacing */}
+      <div className="mt-20" />
 
-        {category === "handmade" &&
-          HANDMADE_WORKS.map((p) => {
-            const isActive = openHandmade === p.title;
-
-            return (
-              <motion.article
-                key={p.title}
-                onClick={() => handleHandmadeClick(p.title)}
-                className={`cursor-pointer group rounded-2xl overflow-hidden bg-white/60 dark:bg-white/5 
-                  backdrop-blur hover:shadow-xl hover:-translate-y-0.5 transition border 
-                  ${isActive ? "border-sky-400 glow-ring" : "border-white/10"}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
-              >
-                <div className="relative aspect-video overflow-hidden">
-                  <img
-                    src={p.img}
-                    alt={p.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ objectPosition: p.objectPosition || "center" }}
-                  />
-                </div>
-
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg">{p.title}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
-                    {p.description}
-                  </p>
-                </div>
-              </motion.article>
-            );
-          })}
-      </div>
-
-
-<AnimatePresence initial={false}>
-  {category === "handmade" && openHandmade && (
-  <section className="mt-10">
-  <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
-    {(FABRICATION_MEDIA[openHandmade] || []).map((item, index) => (
-      <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={setActiveVideo} />
-    ))}
-  </div>
-</section>
-)}
-</AnimatePresence>
-
-      <AnimatePresence mode="wait" initial={false}>
-  {category === "digital" && openProject === "3d-modeling" && (
-    <motion.div
-      key="digital-3d"
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: "auto", opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="overflow-hidden"
-    >
-      <ProjectDetailModelingMedia onMediaClick={setActiveVideo} />
-    </motion.div>
-  )}
-
-  {category === "digital" && openProject === "digital-media" && (
-    <motion.div
-      key="digital-graphic"
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: "auto", opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="overflow-hidden"
-    >
-      <ProjectDetailDigitalMedia onMediaClick={setActiveVideo} />
-    </motion.div>
-  )}
-
-  {category === "digital" && openProject === "camera-work" && (
-    <motion.div
-      key="digital-camera"
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: "auto", opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="overflow-hidden"
-    >
-      <ProjectDetailCameraWork onMediaClick={setActiveVideo} />
-    </motion.div>
-  )}
-</AnimatePresence>
-
+      {/* Media Modal */}
       <AnimatePresence>
         {activeVideo && (
           <MediaModal 
@@ -1095,10 +1109,34 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
 
 function ProjectDetailModelingMedia({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
   return (
-    <section className="mt-10">
-      <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {MODELING_MEDIA.map((item, index) => (
-          <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={onMediaClick} />
+    <section className="space-y-6">
+      <div className="grid lg:grid-cols-2 gap-5">
+        {/* First item - Takes 2 rows on desktop */}
+        <div key={MODELING_MEDIA[0].src ?? 0} className="space-y-2 lg:row-span-2">
+          <div>
+            <h5 className="text-sm font-semibold text-white">{MODELING_MEDIA[0].title}</h5>
+            {MODELING_MEDIA[0].description && (
+              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{MODELING_MEDIA[0].description}</p>
+            )}
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10 h-full">
+            <AutoAspectTile item={MODELING_MEDIA[0]} onMediaClick={onMediaClick} />
+          </div>
+        </div>
+
+        {/* Remaining items stacked on the right */}
+        {MODELING_MEDIA.slice(1).map((item, index) => (
+          <div key={item.src ?? index + 1} className="space-y-2">
+            <div>
+              <h5 className="text-sm font-semibold text-white">{item.title}</h5>
+              {item.description && (
+                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{item.description}</p>
+              )}
+            </div>
+            <div className="rounded-lg overflow-hidden border border-white/10">
+              <AutoAspectTile item={item} onMediaClick={onMediaClick} />
+            </div>
+          </div>
         ))}
       </div>
     </section>
@@ -1111,28 +1149,72 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 4 }}
-      className="mt-8"
+      className="space-y-6"
     >
-      <div className="grid items-start gap-4 grid-cols-1 md:grid-cols-6">
-        {/* Nabu Banner - Column 1, spans 2 rows */}
-        <div className="md:col-span-2 md:row-span-2">
-          <AutoAspectTile item={GRAPHIC_MEDIA[0]} onMediaClick={onMediaClick} />
+      <div className="grid lg:grid-cols-2 gap-5">
+        {/* Nabu Banner - Takes 2 rows on desktop */}
+        <div className="space-y-2 lg:row-span-2">
+          <div>
+            <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[0].title}</h5>
+            {GRAPHIC_MEDIA[0].description && (
+              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[0].description}</p>
+            )}
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10 h-full">
+            <AutoAspectTile item={GRAPHIC_MEDIA[0]} onMediaClick={onMediaClick} />
+          </div>
         </div>
-        
-        {/* Video Game Demo - Column 2, Row 1 */}
-        <div className="md:col-span-2">
-          <AutoAspectTile item={GRAPHIC_MEDIA[1]} onMediaClick={onMediaClick} />
+
+        {/* Video Game Demo */}
+        <div className="space-y-2">
+          <div>
+            <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[1].title}</h5>
+            {GRAPHIC_MEDIA[1].description && (
+              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[1].description}</p>
+            )}
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <AutoAspectTile item={GRAPHIC_MEDIA[1]} onMediaClick={onMediaClick} />
+          </div>
         </div>
-        
-        {/* Mina Website - Column 3, Row 1 */}
-        <div className="md:col-span-2">
-          <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
+
+        {/* Mina Website */}
+        <div className="space-y-2">
+          <div>
+            <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[2].title}</h5>
+            {GRAPHIC_MEDIA[2].description && (
+              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[2].description}</p>
+            )}
+            {GRAPHIC_MEDIA[2].link && (
+              <a
+                href={GRAPHIC_MEDIA[2].link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white text-xs font-medium rounded-lg transition"
+              >
+                Visit Website →
+              </a>
+            )}
+          </div>
+          <div className="rounded-lg overflow-hidden border border-white/10">
+            <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
+          </div>
         </div>
-        
-        {/* Shiri Designs 2x2 Grid - Columns 2-3, Row 2 (bottom half) */}
-        <div className="md:col-span-4 grid gap-4 grid-cols-2">
+      </div>
+
+      {/* Shiri Designs */}
+      <div className="space-y-3">
+        <h5 className="text-sm font-semibold text-white">Design Concepts</h5>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {SHIRI_DESIGNS.map((item, index) => (
-            <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={onMediaClick} />
+            <div key={item.src ?? index} className="space-y-1">
+              <div className="rounded-lg overflow-hidden border border-white/10">
+                <AutoAspectTile item={item} onMediaClick={onMediaClick} />
+              </div>
+              {item.title && (
+                <p className="text-xs text-slate-400 line-clamp-1">{item.title}</p>
+              )}
+            </div>
           ))}
         </div>
       </div>
@@ -1142,10 +1224,20 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
 
 function ProjectDetailCameraWork({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
   return (
-    <section className="mt-8 space-y-6">
-      <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <section className="space-y-6">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {CAMERA_MEDIA.map((item, index) => (
-          <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={onMediaClick} />
+          <div key={item.src ?? index} className="space-y-2">
+            <div>
+              <h5 className="text-sm font-semibold text-white">{item.title}</h5>
+              {item.description && (
+                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{item.description}</p>
+              )}
+            </div>
+            <div className="rounded-lg overflow-hidden border border-white/10">
+              <AutoAspectTile item={item} onMediaClick={onMediaClick} />
+            </div>
+          </div>
         ))}
       </div>
     </section>
@@ -1168,7 +1260,7 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
   return (
   <div className="w-full pt-16 sm:pt-20">
       {/* Navigation */}
-      <div className="flex justify-between items-center px-4 mb-3">
+      <div className="flex justify-between items-center px-4 mb-0 -mt-8">
         <PageNavigation 
           direction="prev" 
           pageName="My Work" 
@@ -1239,7 +1331,7 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
   return (
   <div className="w-full pt-24 sm:pt-28">
       {/* Navigation */}
-      <div className="flex justify-between items-center px-4 mb-3">
+      <div className="flex justify-between items-center px-4 mb-0 -mt-8">
         <PageNavigation 
           direction="prev" 
           pageName="About" 
