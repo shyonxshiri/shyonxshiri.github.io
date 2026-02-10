@@ -29,8 +29,6 @@ body {
   /* Better font rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Reduce motion for better performance on mobile */
-  animation-duration: 0.1s;
 }
 
 /* Optional smoother text rendering */
@@ -266,6 +264,30 @@ a, button, [role="button"], [role="tab"] {
   [class*="cursor-pointer"]:active {
     transform: scale(0.98);
     transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* iPad-specific fixes (has both hover AND touch) */
+@media (hover: hover) and (pointer: fine) and (max-width: 1024px) {
+  /* iPad - enable touch-like behavior */
+  button {
+    touch-action: manipulation;
+  }
+  
+  /* Prevent double-tap zoom delay on iPad buttons */
+  button, a, [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* iPad: Show feedback on tap/focus */
+  button:active,
+  button:focus,
+  [role="button"]:active,
+  [role="button"]:focus {
+    opacity: 0.8;
+    transform: scale(0.98);
+    transition: all 0.15s ease-out;
   }
 }
 

@@ -400,14 +400,14 @@ function ShimmerButton({
     >
       <span className="absolute -inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_55%)] opacity-70" />
       <span 
-        className={`absolute inset-0 rounded-full transition-opacity duration-300 ${showGradient ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 rounded-full transition-opacity duration-150 ${showGradient ? 'opacity-100' : 'opacity-0'}`}
         style={{
           background: showGradient
             ? `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(125,211,252,0.6), transparent 55%)`
             : `radial-gradient(circle at 60% 20%, rgba(125,211,252,0.6), transparent 55%)`
         }}
       />
-      <span className={`absolute inset-0 rounded-full ring-1 transition-all ${showGradient ? 'ring-sky-200/40' : 'ring-white/20'}`} />
+      <span className={`absolute inset-0 rounded-full ring-1 transition-colors duration-150 ${showGradient ? 'ring-sky-200/40' : 'ring-white/20'}`} />
       <div className="relative z-10">
         {icon}
       </div>
@@ -572,24 +572,24 @@ export default function PortfolioUniqueNav() {
   <main className="relative z-20 pb-16 pt-28 sm:pt-32" style={{ paddingTop: "max(8rem, calc(env(safe-area-inset-top) + 8rem))" }}>
         <AnimatePresence mode="wait">
           {currentPage === "home" && (
-            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               <Section id="home" active={active === "home"}>
                 <Hero setPage={setCurrentPage} />
               </Section>
             </motion.div>
           )}
           {currentPage === "work" && (
-            <motion.div key="work" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="max-w-6xl mx-auto px-4">
+            <motion.div key="work" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto px-4">
               <Work setPage={setCurrentPage} />
             </motion.div>
           )}
           {currentPage === "about" && (
-            <motion.div key="about" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="max-w-6xl mx-auto px-4">
+            <motion.div key="about" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto px-4">
               <About setPage={setCurrentPage} />
             </motion.div>
           )}
           {currentPage === "contact" && (
-            <motion.div key="contact" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="max-w-6xl mx-auto px-4">
+            <motion.div key="contact" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto px-4">
               <Contact setPage={setCurrentPage} />
             </motion.div>
           )}
@@ -1089,7 +1089,7 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
                   <div className="px-4 sm:px-6 py-8 border-t border-white/10 bg-white/[0.02]">
