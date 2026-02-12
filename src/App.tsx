@@ -59,8 +59,8 @@ const MODELING_MEDIA: MediaItem[] = [
     type: "video",
     src: "/assets/Blender_Case_Video.mov",
     poster: "/assets/Blender_Case.jpg",
-    title: "Custom Apple Product Case Prototypes",
-    description: "Unique 3D designed Apple product case prototypes, developed using Blender.",
+    title: "Apple Accessory Prototypes",
+    description: "3D designed Apple product case prototypes, developed using Blender.",
     aspectRatio: 16 / 9,
   },
   {
@@ -89,7 +89,7 @@ const GRAPHIC_MEDIA: MediaItem[] = [
   {
     type: "image",
     src: "/assets/Mina_Website.png",
-    title: "UI/UX Web Development",
+    title: "UI/UX",
     description: "Full-stack website design and development including React frontend, responsive interface design, backend integration, and deployment optimization.",
     link: "https://minasech.net"
   },
@@ -143,21 +143,27 @@ const CAMERA_MEDIA: MediaItem[] = [
   },
   {
     type: "image",
-    src: "/assets/Max_Pic.JPG",
-    title: "Candid Studio Portrait",
-    description: "A vibrant portrait capturing authentic moments and natural expressions with professional lighting.",
+    src: "/assets/Adverstisement_Project.jpg",
+    title: "Campaign Project",
+    description: "A conceptual brand advertisement utilizing environmental storytelling and scenic composition to promote a product. Developed to emulate the visual sophistication and marketing strategies employed by well-known brands.",
   },
   {
     type: "image",
     src: "/assets/Photography_Asset.jpg",
-    title: "Abstract Photography",
+    title: "Abstract Scene",
     description: "An experimental scene exploring the interplay of form and shadow, creating an ethereal moment.",
   },
   {
     type: "image",
     src: "/assets/Photography_Asset_2.jpg",
-    title: "Culinary Photography",
+    title: "Culinary Art",
     description: "A display of Iran's iconic dish, presented with thoughtful composition and rich visual detail.",
+  },
+  {
+    type: "image",
+    src: "/assets/Max_Pic.JPG",
+    title: "Candid Studio Portrait",
+    description: "A vibrant portrait capturing authentic moments and natural expressions with professional lighting.",
   },
 ];
 
@@ -180,7 +186,7 @@ const PROGRAMMING_MEDIA: MediaItem[] = [
   { 
     type: "video", 
     src: "/assets/New_Radar_Sensor.mp4", 
-    title: "Distance Radar Sensor Functionality", 
+    title: "Distance Radar Sensor", 
     description: "Live demonstration of the Distance Radar Sensor in action, detecting objects and measuring distances in real-time.", 
     poster: "/assets/New_Radar_Sensor_front.jpg", 
     aspectRatio: 9 / 16,
@@ -192,7 +198,7 @@ const PROGRAMMING_MEDIA: MediaItem[] = [
   { 
     type: "video", 
     src: "/assets/New_LED_Box.mp4", 
-    title: "LED System Functionality", 
+    title: "LED System", 
     description: "Interactive demonstration of the LED System controlling multiple RGB lights with custom programming.", 
     poster: "/assets/New_LED_Box_Front.jpg", 
     aspectRatio: 9 / 16,
@@ -204,12 +210,15 @@ const PROGRAMMING_MEDIA: MediaItem[] = [
 ];
 
 const SCULPTURES_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", description: "Hand-fabricated through metalworking techniques — welding, grinding, sanding, and surface finishing — this steel sculpture references consumer tech culture by evoking an Apple Store-style display with a metal hand and cuff, symbolizing the chokehold and sense of confinement technology can impose on people.", aspectRatio: 3 / 4 },
-  { type: "image", src: "/assets/Shyon_Glass.JPG", title: "Custom Designed Vase", description: "A custom-designed glass vase combining artistic form with functional design, showcasing craftsmanship.", aspectRatio: 3 / 4 },
+  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", description: "Hand-fabricated through metalworking techniques — welding, grinding, sanding, and surface finishing — this steel sculpture references consumer tech culture by evoking an Apple Store-style display with a metal hand and cuff, symbolizing the chokehold and sense of confinement technology can impose on people.", aspectRatio: 4 / 5 },
+  { type: "image", src: "/assets/Shyon_Glass.JPG", title: "Custom Designed Vase", description: "A custom-designed glass vase combining artistic form with functional design, showcasing craftsmanship.", aspectRatio: 4 / 5 },
 ];
 
 const MODELS_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/3D_Models_Cover_Pic.jpg", title: "16:1 Scale Glow in the Dark Lego Skeleton", description: "A meticulously assembled 1:6 scale LEGO skeleton featuring glow-in-the-dark elements, combining building precision with creative design.", aspectRatio: 16 / 9, objectPosition: "center 70%" },
+  { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", description: "A custom-designed Airpod case model showcasing unique form and functional design.", objectPosition: "center 50%", aspectRatio: 1 / 1.2 },
+  { type: "image", src: "/assets/My_Case.JPG", title: "Custom Phone Case", description: "A personalized phone case design featuring custom branding and structural optimization for protection and aesthetics.", objectPosition: "center 50%" },
+  { type: "image", src: "/assets/TeaCup.JPG", title: "3D Rendered Tea Cup", description: "A detailed 3D rendered tea cup model showcasing professional modeling and texturing created using Blender." },
+  { type: "image", src: "/assets/El_Camino.JPG", title: "3D Modeled El Camino", description: "A detailed 3D model of a classic El Camino vehicle showcasing automotive design and technical modeling expertise.", objectPosition: "center 50%" },
   { type: "image", src: "/assets/3D_Chair_Model.jpg", title: "3D Modeled Chair", description: "A functional chair model that doubles as a phone stand. Designed in Blender with careful attention to geometry and structural form.", objectPosition: "center 50%" },
 ];
 
@@ -821,7 +830,35 @@ function MediaModal({
     })) ?? []),
   ];
 
-  useEffect(() => {
+  // Calculate base size based on aspect ratio
+  const aspectRatio = item.aspectRatio || 1;
+  
+  // Start with a base size and scale down if aspect ratio is smaller
+  let baseWidth = 500;
+  let baseHeight = baseWidth / aspectRatio;
+  
+  // If aspect ratio is very small (more portrait), reduce base size
+  if (aspectRatio < 0.8) {
+    baseWidth = 350;
+    baseHeight = baseWidth / aspectRatio;
+  }
+  
+  const maxAvailableWidth = window.innerWidth * 0.55; // Right side of layout
+  const maxAvailableHeight = window.innerHeight * 0.7;
+  
+  // Scale down if exceeds available space
+  let finalWidth = baseWidth;
+  let finalHeight = baseHeight;
+  
+  if (baseWidth > maxAvailableWidth) {
+    finalWidth = maxAvailableWidth;
+    finalHeight = finalWidth / aspectRatio;
+  }
+  
+  if (baseHeight > maxAvailableHeight) {
+    finalHeight = maxAvailableHeight;
+    finalWidth = finalHeight * aspectRatio;
+  }  useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -841,119 +878,119 @@ function MediaModal({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      style={{ paddingTop: "6rem" }}
+      style={{ paddingTop: "6rem", paddingBottom: "2rem" }}
     >
       <motion.div
-        className="relative bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 rounded-3xl w-full max-w-3xl"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
+        className="relative w-11/12 max-w-6xl flex items-center justify-center"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
         onClick={(e) => e.stopPropagation()}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "3rem",
+          maxHeight: "calc(100vh - 8rem)",
+        }}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-slate-700/60 backdrop-blur hover:bg-slate-600/80 flex items-center justify-center text-white transition"
+          className="absolute top-12 right-0 z-20 w-10 h-10 rounded-full flex items-center justify-center text-white transition hover:scale-110"
         >
-          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
 
-        <div className="flex flex-col p-6">
-          {/* Media with arrows on sides */}
-          <div className="flex items-center justify-center gap-6 mb-6">
-            {/* Left Arrow */}
-            {allMedia.length > 1 && (
-              <button
-                onClick={handlePrevImage}
-                className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition"
-              >
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-            )}
-
-            {/* Video/Image Display */}
-            <div className="flex-1 flex items-center justify-center bg-black/40 rounded-2xl min-h-96">
-              {currentMedia.type === "image" ? (
-                <motion.img
-                  key={currentMediaIndex}
-                  src={currentMedia.src}
-                  alt={currentMedia.title}
-                  className="max-w-full max-h-96 object-contain"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
+        {/* Left: Text content */}
+        <div className="flex flex-col justify-center items-start flex-shrink-0" style={{ width: aspectRatio < 1.2 ? "25%" : "33.33%", paddingRight: "1.5rem", maxHeight: "100%", overflow: "hidden" }}>
+          {item.title && (
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight break-words">
+              {item.title === "Product, not Consumer" ? (
+                <span className="italic">{item.title}</span>
               ) : (
-                <video
-                  key={currentMediaIndex}
-                  src={currentMedia.src}
-                  controls
-                  className="max-w-full max-h-96 object-contain"
-                  autoPlay
-                  muted
-                  playsInline
-                />
+                item.title
               )}
-            </div>
-
-            {/* Right Arrow */}
-            {allMedia.length > 1 && (
-              <button
-                onClick={handleNextImage}
-                className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition"
-              >
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-            )}
-          </div>
-
-          {/* Media Counter */}
-          {allMedia.length > 1 && (
-            <div className="text-center mb-4 text-sm text-white">
-              {currentMedia.title} ({currentMediaIndex + 1} of {allMedia.length})
-            </div>
+            </h2>
           )}
-
-          {/* Bottom: Title and Description */}
-          <div className="border-t border-white/10 pt-6 space-y-3">
-            {item.title && (
-              <h3 className="text-lg font-semibold text-white">
-                {item.title === "Product, not Consumer" ? (
-                  <span className="italic">{item.title}</span>
-                ) : (
-                  item.title
-                )}
-              </h3>
-            )}
-            {item.description && item.title !== "Clothing Line Mock Up" && (
-              <p className="text-sm text-white">
-                {item.description}
-              </p>
-            )}
-            {item.link && (
-              <a
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-4 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg transition"
-              >
-                Visit Website
-              </a>
-            )}
-          </div>
+          {item.description && item.title !== "Clothing Line Mock Up" && (
+            <p className="text-lg text-white/90 leading-relaxed">
+              {item.description}
+            </p>
+          )}
         </div>
+
+        {/* Right: Media content */}
+        <div className="flex items-center justify-center flex-shrink-0" style={{ width: finalWidth, height: finalHeight, minHeight: 0, minWidth: 0 }}>
+          {currentMedia.type === "image" ? (
+            <motion.img
+              key={currentMediaIndex}
+              src={currentMedia.src}
+              alt={currentMedia.title}
+              className="max-w-full max-h-full object-contain rounded-3xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+          ) : (
+            <video
+              key={currentMediaIndex}
+              src={currentMedia.src}
+              controls
+              className="max-w-full max-h-full object-contain rounded-3xl"
+              autoPlay
+              muted
+              playsInline
+            />
+          )}
+        </div>
+
+        {/* Link below media (if exists) */}
+        {item.link && (
+          <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition"
+            >
+              Visit Website
+            </a>
+          </div>
+        )}
+
+        {/* Navigation - Bottom center */}
+        {allMedia.length > 1 && (
+          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-4" style={{ bottom: aspectRatio < 1 ? "-4rem" : "0" }}>
+            <button
+              onClick={handlePrevImage}
+              className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span className="text-white/70 text-sm">
+              {currentMediaIndex + 1} / {allMedia.length}
+            </span>
+            <button
+              onClick={handleNextImage}
+              className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );
@@ -990,7 +1027,19 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       content: (
         <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {(FABRICATION_MEDIA[p.title as keyof typeof FABRICATION_MEDIA] || []).map((item, index) => (
-            <AutoAspectTile key={item.src ?? index} item={item} onMediaClick={setActiveVideo} />
+            <div key={item.src ?? index}>
+              {item.title && (
+                <h4 className="text-white font-semibold text-sm mb-2">
+                  {item.title}
+                </h4>
+              )}
+              {item.description && (
+                <p className="text-white/70 text-xs mb-3 line-clamp-2">
+                  {item.description}
+                </p>
+              )}
+              <AutoAspectTile item={item} onMediaClick={setActiveVideo} />
+            </div>
           ))}
         </div>
       ),
