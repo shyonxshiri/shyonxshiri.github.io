@@ -20,8 +20,8 @@ body,
 }
 
 body {
-  /* match your dark background so nothing white peeks out */
-  background-color: #0e1116;
+  /* match your light background so nothing white peeks out */
+  background-color: #e8e8e8;
   /* Prevent iOS text size adjustment */
   -webkit-text-size-adjust: 100%;
   /* Improve touch performance */
@@ -229,6 +229,27 @@ a, button, [role="button"], [role="tab"] {
 
 .bounce-text {
   animation: bounceTextWithGlow 3s ease-in-out infinite;
+}
+
+/* Bounce text for black KiwiSoda on light backgrounds - with blue glow */
+@keyframes bounceTextWithGlowDark {
+  0%, 100% {
+    transform: translateY(0);
+    text-shadow:
+      0 0 12px rgba(0, 180, 255, 0.7),
+      0 0 24px rgba(0, 180, 255, 0.5);
+  }
+  50% {
+    transform: translateY(-8px);
+    text-shadow:
+      0 0 18px rgba(0, 180, 255, 1),
+      0 0 36px rgba(0, 180, 255, 0.8),
+      0 0 54px rgba(0, 180, 255, 0.6);
+  }
+}
+
+.bounce-text-dark {
+  animation: bounceTextWithGlowDark 3s ease-in-out infinite;
 }
 
 /* Enhanced Mobile/Touch Interactivity - Apple Level */

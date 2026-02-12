@@ -151,13 +151,13 @@ const CAMERA_MEDIA: MediaItem[] = [
     type: "image",
     src: "/assets/Photography_Asset.jpg",
     title: "Abstract Photography",
-    description: "An experimental scene exploring the intersection of form, angle, and shadow. Creating a visually ethereal moment.",
+    description: "An experimental scene exploring the interplay of form and shadow, creating an ethereal moment.",
   },
   {
     type: "image",
     src: "/assets/Photography_Asset_2.jpg",
     title: "Culinary Photography",
-    description: "A celebration of Iran's iconic dish, presented with thoughtful composition and rich visual detail.",
+    description: "A display of Iran's iconic dish, presented with thoughtful composition and rich visual detail.",
   },
 ];
 
@@ -406,7 +406,7 @@ function ShimmerButton({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-white/15 via-sky-400/20 to-cyan-300/20 border border-white/20 shadow-[0_8px_30px_rgba(56,189,248,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
+      className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 shadow-[0_8px_30px_rgba(0,180,255,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
       whileHover={{ scale: 1.12 }}
       whileTap={{ scale: 0.94 }}
     >
@@ -448,7 +448,7 @@ function PageNavigation({ direction, pageName, onClick }: PageNavProps) {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
-      <h3 className="font-[KiwiSoda] text-lg md:text-xl font-normal bounce-text flex items-center gap-2 whitespace-nowrap px-4 py-2">
+      <h3 className="font-[KiwiSoda] text-lg md:text-xl font-normal bounce-text-dark flex items-center gap-2 whitespace-nowrap px-4 py-2" style={{ color: "#1a1a1a" }}>
         {!isNext && "← "}
         {pageName}
         {isNext && " →"}
@@ -469,9 +469,9 @@ export default function PortfolioUniqueNav() {
   }, []);
 
   return (
-  <div className="relative min-h-screen overflow-x-hidden text-sky-800 dark:text-slate-200 bg-white dark:bg-[#050a15]">
+  <div className="relative min-h-screen overflow-x-hidden text-slate-700 dark:text-slate-200 bg-white dark:bg-[#050a15]">
       {/* Solid full-screen background layer */}
-      <div className="fixed inset-0 z-0 bg-[#050a15]" aria-hidden />
+      <div className="fixed inset-0 z-0 bg-[#e8e8e8]" aria-hidden />
 
       {/* Animated Dust Particles Background */}
       <div className="fixed inset-0 z-10 pointer-events-none overflow-hidden">
@@ -498,7 +498,7 @@ export default function PortfolioUniqueNav() {
               style={{
                 width: `${size}px`,
                 height: `${size}px`,
-                background: `rgba(150, 220, 255, ${Math.random() * 0.28 + 0.08})`,
+                background: `rgba(0, 0, 0, ${Math.random() * 0.28 + 0.08})`,
                 left: `${startX}%`,
                 top: `${startY}%`,
                 filter: "blur(2px)",
@@ -656,6 +656,7 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
           <motion.h1
             layout
             className="relative z-10 font-[KiwiSoda] font-normal leading-tight bounce-text"
+            style={{ color: "#1a1a1a" }}
           >
             {/* Bigger name */}
             <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
@@ -796,16 +797,6 @@ function AutoAspectTile({
           )}
         </div>
 
-        {/* Title Overlay */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl bg-gradient-to-b from-black/60 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-start justify-center pt-4">
-          <h4 className="text-xs font-medium text-white text-center px-3 line-clamp-2">
-            {item.title === "Product, not Consumer" ? (
-              <span className="italic">{item.title}</span>
-            ) : (
-              item.title
-            )}
-          </h4>
-        </div>
       </Wrapper>
     </motion.article>
   );
@@ -858,7 +849,7 @@ function MediaModal({
       style={{ paddingTop: "6rem" }}
     >
       <motion.div
-        className="relative bg-slate-900/95 border border-white/10 rounded-3xl w-full max-w-3xl"
+        className="relative bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 rounded-3xl w-full max-w-3xl"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
@@ -867,7 +858,7 @@ function MediaModal({
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/60 backdrop-blur hover:bg-black/80 flex items-center justify-center text-white transition"
+          className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-slate-700/60 backdrop-blur hover:bg-slate-600/80 flex items-center justify-center text-white transition"
         >
           <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <line x1="18" y1="6" x2="6" y2="18" />
@@ -930,7 +921,7 @@ function MediaModal({
 
           {/* Media Counter */}
           {allMedia.length > 1 && (
-            <div className="text-center mb-4 text-sm text-slate-400">
+            <div className="text-center mb-4 text-sm text-white">
               {currentMedia.title} ({currentMediaIndex + 1} of {allMedia.length})
             </div>
           )}
@@ -947,7 +938,7 @@ function MediaModal({
               </h3>
             )}
             {item.description && item.title !== "Clothing Line Mock Up" && (
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-white">
                 {item.description}
               </p>
             )}
@@ -1020,10 +1011,10 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
 
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-16">
-        <h2 className="font-[KiwiSoda] text-4xl sm:text-5xl md:text-6xl font-normal bounce-text mb-4">
+        <h2 className="font-[KiwiSoda] text-4xl sm:text-5xl md:text-6xl font-normal bounce-text mb-4" style={{ color: "#1a1a1a" }}>
           My Work
         </h2>
-        <p className="text-slate-400 text-lg max-w-2xl">
+        <p className="text-slate-700 text-lg max-w-2xl">
           Explore my projects across design systems, digital media, and fabrication work.
         </p>
       </div>
@@ -1033,7 +1024,7 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         {allProjectItems.map((project, index) => (
           <motion.div
             key={project.id}
-            className="rounded-xl border border-white/10 overflow-hidden bg-white/5 backdrop-blur transition-shadow"
+            className="rounded-xl border border-slate-500/60 overflow-hidden bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 transition-shadow"
             initial={false}
             animate={{ 
               boxShadow: expandedIndex === index 
@@ -1072,7 +1063,7 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
                     {project.category}
                   </span>
                 </div>
-                <p className="text-sm text-slate-400 line-clamp-2">
+                <p className="text-sm text-white line-clamp-2">
                   {project.description}
                 </p>
               </div>
@@ -1154,7 +1145,7 @@ function ProjectDetailModelingMedia({ onMediaClick }: { onMediaClick: (item: Med
             <div>
               <h5 className="text-sm font-semibold text-white">{item.title}</h5>
               {item.description && (
-                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{item.description}</p>
+                <p className="text-xs text-white mt-0.5 line-clamp-2">{item.description}</p>
               )}
             </div>
             <div className="rounded-lg overflow-hidden border border-white/10">
@@ -1181,7 +1172,7 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
           <div>
             <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[0].title}</h5>
             {GRAPHIC_MEDIA[0].description && (
-              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[0].description}</p>
+              <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[0].description}</p>
             )}
           </div>
           <div className="rounded-lg overflow-hidden border border-white/10">
@@ -1196,7 +1187,7 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
             <div>
               <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[1].title}</h5>
               {GRAPHIC_MEDIA[1].description && (
-                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[1].description}</p>
+                <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[1].description}</p>
               )}
             </div>
             <div className="rounded-lg overflow-hidden border border-white/10">
@@ -1209,7 +1200,7 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
             <div>
               <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[2].title}</h5>
               {GRAPHIC_MEDIA[2].description && (
-                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[2].description}</p>
+                <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[2].description}</p>
               )}
               {GRAPHIC_MEDIA[2].link && (
                 <a
@@ -1239,7 +1230,7 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
                 <AutoAspectTile item={item} onMediaClick={onMediaClick} />
               </div>
               {item.title && (
-                <p className="text-xs text-slate-400 line-clamp-1">{item.title}</p>
+                <p className="text-xs text-white line-clamp-1">{item.title}</p>
               )}
             </div>
           ))}
@@ -1258,7 +1249,7 @@ function ProjectDetailCameraWork({ onMediaClick }: { onMediaClick: (item: MediaI
             <div>
               <h5 className="text-sm font-semibold text-white">{item.title}</h5>
               {item.description && (
-                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{item.description}</p>
+                <p className="text-xs text-white mt-0.5 line-clamp-2">{item.description}</p>
               )}
             </div>
             <div className="rounded-lg overflow-hidden border border-white/10">
@@ -1304,8 +1295,8 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
       <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto px-4 md:px-0">
       {/* Left: Text Content */}
       <div>
-  <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text">About</h2>
-        <p className="mt-4 text-slate-600 dark:text-slate-300">
+  <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text" style={{ color: "#1a1a1a" }}>About</h2>
+        <p className="mt-4 text-slate-700 dark:text-slate-700">
           I am a Bay Area–based graphic designer with a Bachelor of Arts in Studio
           Practice with a focus in Graphic Design. My passion for design stems from
           my fasicnation for creating, whether it&apos;s for visual storytelling or
@@ -1370,10 +1361,10 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
       {/* Grid wrapper for content */}
       <div className="grid md:grid-cols-2 gap-8 items-center px-4 md:px-0">
       <div>
-  <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text">
+  <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text" style={{ color: "#1a1a1a" }}>
           Let’s collaborate
         </h2>
-        <p className="mt-4 text-slate-600 dark:text-slate-300">
+        <p className="mt-4 text-slate-700 dark:text-slate-700">
         </p>
         <div className="mt-6 flex gap-3 flex-wrap">
           <a
@@ -1386,7 +1377,7 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
             href="https://www.linkedin.com/in/shyonshiri/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold border border-slate-200/60 dark:border-white/10 hover:bg-slate-900/5 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 dark:focus:ring-offset-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0"
           >
             <Linkedin className="w-5 h-5" /> LinkedIn
           </a>
@@ -1394,7 +1385,7 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
             href="https://www.instagram.com/shyonshiri?igsh=MWNhdWY4dGRoajVqdg%3D%3D&utm_source=qr"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold border border-slate-200/60 dark:border-white/10 hover:bg-slate-900/5 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 dark:focus:ring-offset-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0"
           >
             <Instagram className="w-5 h-5" /> Instagram
           </a>
@@ -1403,17 +1394,18 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
   target="_blank"
   rel="noopener noreferrer"
   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold
-             border border-slate-200/60 dark:border-white/10
-             hover:bg-slate-900/5 dark:hover:bg-white/10
+             bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50
+             border border-slate-500/60 text-white
+             hover:brightness-110
              focus:outline-none focus:ring-2 focus:ring-offset-2
-             focus:ring-slate-400 dark:focus:ring-offset-0"
+             focus:ring-sky-500 dark:focus:ring-offset-0"
 >
   <FileText className="w-5 h-5" />
   Resume
 </a>
         </div>
       </div>
-      <div className="rounded-3xl border border-white/10 p-6 bg-white/60 dark:bg-white/5 backdrop-blur">
+      <div className="rounded-3xl border border-slate-500/60 p-6 bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50">
         <form className="grid gap-4">
           <label className="grid gap-2 text-sm">
             <span>Name</span>
