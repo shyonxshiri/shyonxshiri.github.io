@@ -147,6 +147,18 @@ const CAMERA_MEDIA: MediaItem[] = [
     title: "Candid Studio Portrait",
     description: "A vibrant portrait capturing authentic moments and natural expressions with professional lighting.",
   },
+  {
+    type: "image",
+    src: "/assets/Photography_Asset.jpg",
+    title: "Abstract Photography",
+    description: "An experimental scene exploring the intersection of form, angle, and shadow. Creating a visually ethereal moment.",
+  },
+  {
+    type: "image",
+    src: "/assets/Photography_Asset_2.jpg",
+    title: "Culinary Photography",
+    description: "A celebration of Iran's iconic dish, presented with thoughtful composition and rich visual detail.",
+  },
 ];
 
 // --- Handmade Media Collections ------------------------------------------
