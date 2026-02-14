@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Briefcase, User, Mail, Linkedin, Instagram, FileText } from "lucide-react";
+import { Briefcase, User, Mail, Linkedin, Instagram, FileText } from "lucide-react";
 
 // --- Haptic Feedback Utility ---------------------------------------------------------------
 const triggerHaptic = (intensity: "light" | "medium" | "heavy" = "medium") => {
@@ -252,12 +252,6 @@ const HANDMADE_WORKS = [
   },
 ];
 
-type PortraitTile = {
-  src: string;
-  alt: string;
-  style: React.CSSProperties;
-};
-
 const PORTRAIT_IMAGES = [
   {
     src: "/assets/Shyon_Pic_1.jpg",
@@ -302,41 +296,6 @@ const PORTRAIT_IMAGES = [
 ];
 
 const PORTRAIT_SIZES = ["w-40 h-56", "w-32 h-44", "w-36 h-48", "w-32 h-40"];
-
-const sections = [
-  { id: "home", label: "Home", icon: Home },
-  { id: "work", label: "Work", icon: Briefcase },
-  { id: "about", label: "About", icon: User },
-  { id: "contact", label: "Contact", icon: Mail },
-] as const;
-
-// --- Hooks ----------------------------------------------------------------
-
-function useActiveSection() {
-  const [active, setActive] = useState<(typeof sections)[number]["id"]>(
-    sections[0].id
-  );
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setActive(entry.target.id as any);
-        });
-      },
-      { threshold: 0.6 }
-    );
-
-    sections.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  return [active] as const;
-}
 
 // --- ShimmerButton Component -----------------------------------------------
 
@@ -415,7 +374,7 @@ function ShimmerButton({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="group relative w-16 h-16 rounded-full bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 shadow-[0_8px_30px_rgba(0,180,255,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
+      className="shimmer-button group relative w-16 h-16 rounded-full bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 shadow-[0_8px_30px_rgba(0,180,255,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
       whileHover={{ scale: 1.12 }}
       whileTap={{ scale: 0.94 }}
     >
@@ -453,11 +412,16 @@ function PageNavigation({ direction, pageName, onClick }: PageNavProps) {
         triggerHaptic("light");
         onClick();
       }}
-      className="cursor-pointer outline-none transition-all"
+      className="cursor-pointer outline-none transition-all focus:outline-none border-none bg-transparent"
+      style={{ 
+        WebkitTapHighlightColor: "transparent",
+        WebkitAppearance: "none",
+        appearance: "none"
+      }}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
-      <h3 className="font-[KiwiSoda] text-lg md:text-xl font-normal bounce-text-dark flex items-center gap-2 whitespace-nowrap px-4 py-2" style={{ color: "#1a1a1a" }}>
+      <h3 className="font-[KiwiSoda] text-lg md:text-xl font-normal bounce-text-dark flex items-center gap-2 whitespace-nowrap px-4 py-2 rounded transition-colors hover:text-sky-400" style={{ color: "#1a1a1a" }}>
         {!isNext && "← "}
         {pageName}
         {isNext && " →"}
@@ -469,7 +433,6 @@ function PageNavigation({ direction, pageName, onClick }: PageNavProps) {
 // --- Root Component --------------------------------------------------------
 
 export default function PortfolioUniqueNav() {
-  const [active] = useActiveSection();
   const [currentPage, setCurrentPage] = useState<"home" | "work" | "about" | "contact">("home");
 
   // Force dark mode once on mount
@@ -498,7 +461,6 @@ export default function PortfolioUniqueNav() {
           const driftY1 = (Math.random() * 2 - 1) * 40;
           const driftX2 = (Math.random() * 2 - 1) * 40;
           const driftY2 = (Math.random() * 2 - 1) * 40;
-          const phase = Math.random() * Math.PI * 2;
           
           return (
             <motion.div
@@ -594,7 +556,7 @@ export default function PortfolioUniqueNav() {
         <AnimatePresence mode="wait">
           {currentPage === "home" && (
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-              <Section id="home" active={active === "home"}>
+              <Section id="home">
                 <Hero setPage={setCurrentPage} />
               </Section>
             </motion.div>
@@ -625,11 +587,11 @@ export default function PortfolioUniqueNav() {
 function Section({
   id,
   children,
-  active,
+  active = true,
 }: {
   id: string;
   children: React.ReactNode;
-  active: boolean;
+  active?: boolean;
 }) {
   return (
     <section id={id} className="relative py-24 scroll-mt-32">
@@ -1456,26 +1418,26 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
       </div>
       <div className="rounded-3xl border border-slate-500/60 p-6 bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50">
         <form className="grid gap-4">
-          <label className="grid gap-2 text-sm">
+          <label className="grid gap-2 text-sm text-white">
             <span>Name</span>
             <input
-              className="px-3 py-2 rounded-lg bg-transparent border border-slate-300/50 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="px-3 py-2 rounded-lg bg-transparent border border-slate-300/50 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white placeholder-slate-300"
               placeholder="Your name"
             />
           </label>
-          <label className="grid gap-2 text-sm">
+          <label className="grid gap-2 text-sm text-white">
             <span>Email</span>
             <input
               type="email"
-              className="px-3 py-2 rounded-lg bg-transparent border border-slate-300/50 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="px-3 py-2 rounded-lg bg-transparent border border-slate-300/50 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white placeholder-slate-300"
               placeholder="you@domain.com"
             />
           </label>
-          <label className="grid gap-2 text-sm">
+          <label className="grid gap-2 text-sm text-white">
             <span>Message</span>
             <textarea
               rows={5}
-              className="px-3 py-2 rounded-lg bg-transparent border border-slate-300/50 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="px-3 py-2 rounded-lg bg-transparent border border-slate-300/50 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white placeholder-slate-300"
               placeholder="Project goals, timeline, budget…"
             />
           </label>
@@ -1498,21 +1460,6 @@ function PrimaryButton({
       type={rest.type ?? "button"}
       {...rest}
       className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 shadow hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0"
-    >
-      {children}
-    </button>
-  );
-}
-
-function GhostButton({
-  children,
-  ...rest
-}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      type={rest.type ?? "button"}
-      {...rest}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold border border-slate-200/60 dark:border-white/10 hover:bg-slate-900/5 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 dark:focus:ring-offset-0"
     >
       {children}
     </button>

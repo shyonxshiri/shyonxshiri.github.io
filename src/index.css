@@ -46,9 +46,12 @@ button {
   -webkit-user-callout: none;
   /* Better touch feedback */
   cursor: pointer;
-  /* Ensure buttons are at least 44x44px for touch targets (Apple HIG) */
-  min-height: 44px;
-  min-width: 44px;
+  /* Remove default button appearance */
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
 }
 
 /* All interactive elements get touch optimization */
@@ -56,6 +59,32 @@ a, button, [role="button"], [role="tab"] {
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove all default button styling and focus rings - but not for custom styled buttons */
+button:not(.shimmer-button):not(.logo-button) {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: transparent !important;
+}
+
+button:not(.shimmer-button):not(.logo-button):focus,
+button:not(.shimmer-button):not(.logo-button):focus-visible,
+button:not(.shimmer-button):not(.logo-button):focus-within,
+button:not(.shimmer-button):not(.logo-button):active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Shimmer button - preserve all styling */
+.shimmer-button {
+  outline: none;
+  border: none;
+  box-shadow: 0 8px 30px rgba(0, 180, 255, 0.25);
 }
 
 /* Logo button - no border, outline, or focus ring at all */
