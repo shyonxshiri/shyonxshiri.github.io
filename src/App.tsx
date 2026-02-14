@@ -54,6 +54,7 @@ const MODELING_MEDIA: MediaItem[] = [
     title: "The Broken NPC",
     description: "A detailed 3D scene depicting in-game rendering errors and glitches from the video game, GTA San Andreas, created and rendered entirely using Blender.",
     aspectRatio: 16 / 9,
+    year: 2024,
   },
   {
     type: "video",
@@ -62,12 +63,18 @@ const MODELING_MEDIA: MediaItem[] = [
     title: "Apple Accessory Prototypes",
     description: "3D designed Apple product case prototypes, developed using Blender.",
     aspectRatio: 16 / 9,
+    year: 2024,
+    relatedLinks: [
+      { category: "MODELS_MEDIA", index: 0, title: "Airpod Case" },
+      { category: "MODELS_MEDIA", index: 1, title: "iPhone Case" }
+    ]
   },
   {
     type: "image",
     src: "/assets/Venom.PNG",
     title: "Rendered 3D Model",
     description: "A high-quality 3D rendered movie character model showcasing detailed modeling and texturing techniques made using Blender",
+    year: 2024,
   },
 ];
 
@@ -78,6 +85,7 @@ const GRAPHIC_MEDIA: MediaItem[] = [
     poster: "/assets/Nabu_Poster_Banner.jpg",
     title: "NABU Promotional Video",
     description: "A dynamic promotional video for NABU clothing, crafted with professional animation and transitions in Adobe After Effects.",
+    year: 2023,
   },
   {
     type: "video",
@@ -85,12 +93,14 @@ const GRAPHIC_MEDIA: MediaItem[] = [
     poster: "/assets/Shiri_VIdeo_Game.jpg",
     title: "Video Game Demo",
     description: "A video created by animating and assembling a collection of images in Adobe After Effects.",
+    year: 2024,
   },
   {
     type: "image",
     src: "/assets/Mina_Website.png",
     title: "UI/UX",
     description: "Full-stack website design and development including React frontend, responsive interface design, backend integration, and deployment optimization.",
+    year: 2025,
     link: "https://minasech.net"
   },
 ];
@@ -126,6 +136,7 @@ const CAMERA_MEDIA: MediaItem[] = [
     title: "NABU 2026 Teaser",
     description: "Professional promotional video for NABU's puffer jacket collection, shot and edited with cinematic quality.",
     aspectRatio: 9 / 16,
+    year: 2025,
   },
   {
     type: "video",
@@ -134,36 +145,42 @@ const CAMERA_MEDIA: MediaItem[] = [
     title: "NABU 2025 Summer Collection",
     description: "Engaging promotional content showcasing NABU's latest collection and seasonal offerings.",
     aspectRatio: 9 / 16,
+    year: 2025,
   },
   {
     type: "image",
     src: "/assets/Stevie_Pic.JPG",
     title: "NABU 2023 Spring Collection",
     description: "Professional portrait photography showcasing design systems and visual aesthetics.",
+    year: 2022,
   },
   {
     type: "image",
     src: "/assets/Adverstisement_Project.jpg",
     title: "Campaign Project",
     description: "A conceptual brand advertisement utilizing environmental storytelling and scenic composition to promote a product. Developed to emulate the visual sophistication and marketing strategies employed by well-known brands.",
+    year: 2024,
   },
   {
     type: "image",
     src: "/assets/Photography_Asset.jpg",
     title: "Abstract Scene",
     description: "An experimental scene exploring the interplay of form and shadow, creating an ethereal moment.",
+    year: 2021,
   },
   {
     type: "image",
     src: "/assets/Photography_Asset_2.jpg",
     title: "Culinary Art",
     description: "A display of Iran's iconic dish, presented with thoughtful composition and rich visual detail.",
+    year: 2021,
   },
   {
     type: "image",
     src: "/assets/Max_Pic.JPG",
     title: "Candid Studio Portrait",
     description: "A vibrant portrait capturing authentic moments and natural expressions with professional lighting.",
+    year: 2024,
   },
 ];
 
@@ -179,7 +196,10 @@ type MediaItem = {
   description?: string;
   aspectRatio?: number;
   objectPosition?: string;
+  scale?: number;
   relatedImages?: { src: string; title: string }[];
+  relatedLinks?: { category: string; index: number; title: string }[];
+  year?: number;
 };
 
 const PROGRAMMING_MEDIA: MediaItem[] = [
@@ -190,6 +210,7 @@ const PROGRAMMING_MEDIA: MediaItem[] = [
     description: "Live demonstration of the Distance Radar Sensor in action, detecting objects and measuring distances in real-time.", 
     poster: "/assets/New_Radar_Sensor_front.jpg", 
     aspectRatio: 9 / 16,
+    year: 2024,
     relatedImages: [
       { src: "/assets/New_Radar_Sensor_front.jpg", title: "Front View" },
       { src: "/assets/New_Radar_Sensor_Back.jpg", title: "Back View" }
@@ -202,6 +223,7 @@ const PROGRAMMING_MEDIA: MediaItem[] = [
     description: "Interactive demonstration of the LED System controlling multiple RGB lights with custom programming.", 
     poster: "/assets/New_LED_Box_Front.jpg", 
     aspectRatio: 9 / 16,
+    year: 2024,
     relatedImages: [
       { src: "/assets/New_LED_Box_Front.jpg", title: "Front View" },
       { src: "/assets/New_LED_Box_Back.jpg", title: "Back View" }
@@ -210,16 +232,16 @@ const PROGRAMMING_MEDIA: MediaItem[] = [
 ];
 
 const SCULPTURES_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", description: "Hand-fabricated through metalworking techniques — welding, grinding, sanding, and surface finishing — this steel sculpture references consumer tech culture by evoking an Apple Store-style display with a metal hand and cuff, symbolizing the chokehold and sense of confinement technology can impose on people.", aspectRatio: 4 / 5 },
-  { type: "image", src: "/assets/Shyon_Glass.JPG", title: "Custom Designed Vase", description: "A custom-designed glass vase combining artistic form with functional design, showcasing craftsmanship.", aspectRatio: 4 / 5 },
+  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", description: "Hand-fabricated through metalworking techniques — welding, grinding, sanding, and surface finishing — this steel sculpture references consumer tech culture by evoking an Apple Store-style display with a metal hand and cuff, symbolizing the chokehold and sense of confinement technology can impose on people.", aspectRatio: 4 / 5, year: 2024 },
+  { type: "image", src: "/assets/Shyon_Glass.JPG", title: "Custom Designed Vase", description: "A custom-designed glass vase combining artistic form with functional design, showcasing craftsmanship.", aspectRatio: 4 / 5, year: 2024 },
 ];
 
 const MODELS_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", description: "A custom-designed Airpod case model showcasing unique form and functional design.", objectPosition: "center 50%", aspectRatio: 1 / 1.2 },
-  { type: "image", src: "/assets/My_Case.JPG", title: "Custom Phone Case", description: "A personalized phone case design featuring custom branding and structural optimization for protection and aesthetics.", objectPosition: "center 50%" },
-  { type: "image", src: "/assets/TeaCup.JPG", title: "3D Rendered Tea Cup", description: "A detailed 3D rendered tea cup model showcasing professional modeling and texturing created using Blender." },
-  { type: "image", src: "/assets/El_Camino.JPG", title: "3D Modeled El Camino", description: "A detailed 3D model of a classic El Camino vehicle showcasing automotive design and technical modeling expertise.", objectPosition: "center 50%" },
-  { type: "image", src: "/assets/3D_Chair_Model.jpg", title: "3D Modeled Chair", description: "A functional chair model that doubles as a phone stand. Designed in Blender with careful attention to geometry and structural form.", objectPosition: "center 50%" },
+  { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", description: "An airpod case model showcasing unique form and functional design.", objectPosition: "center 50%", aspectRatio: 1 / 1.2, year: 2026, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
+  { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", description: "A finalized rendition of my case prototype designed to replicate the style of liquid metal, showcasing advanced material aesthetics and structural optimization.", objectPosition: "center 0%", year: 2025, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
+  { type: "image", src: "/assets/TeaCup.JPG", title: "Tea Spill Decor", description: "A home decor sculpture based on original 3D artwork, finished with precision craftsmanship and premium materials.", year: 2026 },
+  { type: "image", src: "/assets/El_Camino.JPG", title: "Chevy El Camino 9:1 scale", description: "A detailed 3D model of a classic El Camino showcasing automotive design and technical modeling expertise.", objectPosition: "center 50%", year: 2026 },
+  { type: "image", src: "/assets/3D_Chair_Model.jpg", title: "Phone Stand Chair", description: "A functional chair model that doubles as a phone stand. Designed in Blender with careful attention to geometry and structural form.", objectPosition: "center 50%", year: 2026 },
 ];
 
 const FABRICATION_MEDIA: Record<string, MediaItem[]> = {
@@ -508,8 +530,8 @@ export default function PortfolioUniqueNav() {
             border: "none",
             boxShadow: "none",
           }}
-          initial={{ scale: 1, filter: "drop-shadow(0 0 0px rgba(56, 189, 248, 0))" }}
-          whileHover={{ scale: 1.4, filter: "drop-shadow(0 0 12px rgba(56, 189, 248, 0.5))" }}
+          initial={{ scale: 1 }}
+          whileHover={{ scale: 1.4 }}
           whileTap={{ scale: 1.3 }}
           animate={{ x: "-50%", y: "-50%" }}
           transition={{ type: "spring", stiffness: 200, damping: 25 }}
@@ -552,7 +574,7 @@ export default function PortfolioUniqueNav() {
       />
 
       {/* Main Content */}
-  <main className="relative z-20 pb-16 pt-28 sm:pt-32" style={{ paddingTop: "max(8rem, calc(env(safe-area-inset-top) + 8rem))" }}>
+  <main className={`relative z-20 pb-16 pt-28 sm:pt-32 ${currentPage === "contact" ? "overflow-hidden h-screen" : ""}`} style={{ paddingTop: "max(8rem, calc(env(safe-area-inset-top) + 8rem))" }}>
         <AnimatePresence mode="wait">
           {currentPage === "home" && (
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
@@ -697,9 +719,7 @@ function AutoAspectTile({
   return (
     <motion.article
       ref={containerRef}
-      className={`group relative rounded-3xl overflow-hidden cursor-pointer ${
-        isShiriDesign ? "" : "border border-white/10 bg-slate-950/60 backdrop-blur"
-      }`}
+      className="group relative rounded-3xl overflow-hidden cursor-pointer"
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
@@ -726,7 +746,7 @@ function AutoAspectTile({
               alt={item.alt ?? ""}
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-              style={{ objectPosition: item.objectPosition ?? "center" }}
+              style={{ objectPosition: item.objectPosition ?? "center", transform: item.scale ? `scale(${item.scale})` : "scale(1)", transformOrigin: item.objectPosition ?? "center" }}
               onLoad={(e) => {
                 const img = e.currentTarget;
                 if (!item.aspectRatio) {
@@ -775,10 +795,12 @@ function AutoAspectTile({
 
 function MediaModal({ 
   item, 
-  onClose 
+  onClose,
+  onNavigate
 }: { 
   item: MediaItem;
   onClose: () => void;
+  onNavigate?: (category: string, index: number) => void;
 }) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
@@ -875,13 +897,18 @@ function MediaModal({
         {/* Left: Text content */}
         <div className="flex flex-col justify-center items-start flex-shrink-0" style={{ width: aspectRatio < 1.2 ? "25%" : "33.33%", paddingRight: "1.5rem", maxHeight: "100%", overflow: "hidden" }}>
           {item.title && (
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight break-words">
-              {item.title === "Product, not Consumer" ? (
-                <span className="italic">{item.title}</span>
-              ) : (
-                item.title
+            <div>
+              <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight break-words">
+                {item.title === "Product, not Consumer" ? (
+                  <span className="italic">{item.title}</span>
+                ) : (
+                  item.title
+                )}
+              </h2>
+              {item.year && (
+                <p className="text-sm text-white/60 mb-4">{item.year}</p>
               )}
-            </h2>
+            </div>
           )}
           {item.description && item.title !== "Clothing Line Mock Up" && (
             <p className="text-lg text-white/90 leading-relaxed">
@@ -926,6 +953,25 @@ function MediaModal({
             >
               Visit Website
             </a>
+          </div>
+        )}
+
+        {/* Related Links - Navigation buttons */}
+        {item.relatedLinks && item.relatedLinks.length > 0 && (
+          <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col gap-3 items-center" style={{ bottom: item.relatedLinks.length === 1 ? "-3rem" : "-7rem" }}>
+            {item.relatedLinks.map((link, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  if (onNavigate) {
+                    onNavigate(link.category, link.index);
+                  }
+                }}
+                className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold rounded-lg transition whitespace-nowrap"
+              >
+                → {link.title}
+              </button>
+            ))}
           </div>
         )}
 
@@ -1139,7 +1185,17 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         {activeVideo && (
           <MediaModal 
             item={activeVideo} 
-            onClose={() => setActiveVideo(null)} 
+            onClose={() => setActiveVideo(null)}
+            onNavigate={(category, index) => {
+              const categoryMap: Record<string, MediaItem[]> = {
+                "MODELING_MEDIA": MODELING_MEDIA,
+                "MODELS_MEDIA": MODELS_MEDIA,
+              };
+              const items = categoryMap[category];
+              if (items && items[index]) {
+                setActiveVideo(items[index]);
+              }
+            }}
           />
         )}
       </AnimatePresence>
@@ -1358,7 +1414,7 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
 
 function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
   return (
-  <div className="w-full pt-24 sm:pt-28">
+  <div className="w-full pt-24 sm:pt-28 min-h-screen flex flex-col overflow-hidden">
       {/* Navigation */}
       <div className="flex justify-between items-center px-4 mb-0 -mt-8">
         <PageNavigation 
@@ -1369,81 +1425,44 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
         <div></div>
       </div>
 
-      {/* Grid wrapper for content */}
-      <div className="grid md:grid-cols-2 gap-8 items-center px-4 md:px-0">
-      <div>
-  <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text" style={{ color: "#1a1a1a" }}>
+      {/* Centered content */}
+      <div className="flex-1 flex flex-col items-center justify-start px-4 pt-32">
+        <h2 className="font-[KiwiSoda] text-6xl md:text-7xl lg:text-8xl font-normal bounce-text text-center" style={{ color: "#1a1a1a" }}>
           Let’s collaborate
         </h2>
-        <p className="mt-4 text-slate-700 dark:text-slate-700">
-        </p>
-        <div className="mt-6 flex gap-3 flex-wrap">
+        <div className="mt-12 flex gap-4 flex-wrap justify-center">
           <a
             href="mailto:shyon2001@gmail.com"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 shadow hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 shadow hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0 text-lg"
           >
-            <Mail className="w-5 h-5" /> Email Me
+            <Mail className="w-6 h-6" /> Email Me
           </a>
           <a
             href="https://www.linkedin.com/in/shyonshiri/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0 text-lg"
           >
-            <Linkedin className="w-5 h-5" /> LinkedIn
+            <Linkedin className="w-6 h-6" /> LinkedIn
           </a>
           <a
             href="https://www.instagram.com/shyonshiri?igsh=MWNhdWY4dGRoajVqdg%3D%3D&utm_source=qr"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0 text-lg"
           >
-            <Instagram className="w-5 h-5" /> Instagram
+            <Instagram className="w-6 h-6" /> Instagram
           </a>
 <a
   href="/Shyon_Shiri_Resume_2026.pdf"
   target="_blank"
   rel="noopener noreferrer"
-  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold
-             bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50
-             border border-slate-500/60 text-white
-             hover:brightness-110
-             focus:outline-none focus:ring-2 focus:ring-offset-2
-             focus:ring-sky-500 dark:focus:ring-offset-0"
+  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0 text-lg"
 >
-  <FileText className="w-5 h-5" />
+  <FileText className="w-6 h-6" />
   Resume
 </a>
         </div>
-      </div>
-      <div className="rounded-3xl border border-slate-500/60 p-6 bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50">
-        <form className="grid gap-4">
-          <label className="grid gap-2 text-sm text-white">
-            <span>Name</span>
-            <input
-              className="px-3 py-2 rounded-lg bg-transparent border border-slate-300/50 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white placeholder-slate-300"
-              placeholder="Your name"
-            />
-          </label>
-          <label className="grid gap-2 text-sm text-white">
-            <span>Email</span>
-            <input
-              type="email"
-              className="px-3 py-2 rounded-lg bg-transparent border border-slate-300/50 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white placeholder-slate-300"
-              placeholder="you@domain.com"
-            />
-          </label>
-          <label className="grid gap-2 text-sm text-white">
-            <span>Message</span>
-            <textarea
-              rows={5}
-              className="px-3 py-2 rounded-lg bg-transparent border border-slate-300/50 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white placeholder-slate-300"
-              placeholder="Project goals, timeline, budget…"
-            />
-          </label>
-          <PrimaryButton type="submit">Send</PrimaryButton>
-        </form>
-      </div>
       </div>
     </div>
   );
