@@ -89,7 +89,7 @@ const GRAPHIC_MEDIA: MediaItem[] = [
   },
   {
     type: "video",
-    src: "/assets/Shiri_Video_Game.mp4",
+    src: "/assets/Shiri_Video_Game.mov",
     poster: "/assets/Shiri_VIdeo_Game.jpg",
     title: "Video Game Demo",
     description: "A video created by animating and assembling a collection of images in Adobe After Effects.",
@@ -110,21 +110,25 @@ const SHIRI_DESIGNS: MediaItem[] = [
     type: "image",
     src: "/assets/Shiri_Design_1.PNG",
     title: "Clothing Line Mock Up",
+    year: 2024,
   },
   {
     type: "image",
     src: "/assets/Shiri_Design_2.PNG",
     title: "Clothing Line Mock Up",
+    year: 2024,
   },
   {
     type: "image",
     src: "/assets/Shiri_Design_3.PNG",
     title: "Clothing Line Mock Up",
+    year: 2024,
   },
   {
     type: "image",
     src: "/assets/Shiri_Design_4.PNG",
     title: "Clothing Line Mock Up",
+    year: 2024,
   },
 ];
 
