@@ -949,7 +949,9 @@ function MediaModal({
               muted
               playsInline
               style={{ maxHeight: window.innerWidth < 1024 ? "35vh" : "100%" }}
-            />
+            >
+              Your browser does not support the video tag.
+            </video>
           )}
         </div>
 
