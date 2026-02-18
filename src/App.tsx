@@ -898,7 +898,7 @@ function MediaModal({
         </button>
 
         {/* Left: Text content */}
-        <div className="flex flex-col justify-center items-start flex-shrink-0 w-full lg:w-auto" style={{ width: "100%", paddingRight: window.innerWidth >= 1024 ? "1.5rem" : "0", maxHeight: "100%", overflow: "hidden" }}>
+        <div className="flex flex-col justify-center items-start flex-shrink-0 w-full lg:w-1/3" style={{ paddingRight: window.innerWidth >= 1024 ? "1.5rem" : "0", maxHeight: "100%", overflow: "hidden" }}>
           {item.title && (
             <div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight break-words">
@@ -921,8 +921,8 @@ function MediaModal({
         </div>
 
         {/* Right: Media content */}
-        <div className="flex items-center justify-center flex-shrink-0 w-full lg:w-auto" style={{ 
-          width: window.innerWidth < 1024 ? "100%" : finalWidth, 
+        <div className="flex items-center justify-center flex-shrink-0 w-full lg:flex-1" style={{ 
+          width: window.innerWidth < 1024 ? "100%" : "auto", 
           height: window.innerWidth < 1024 ? "auto" : finalHeight, 
           minHeight: 0, 
           minWidth: 0,
