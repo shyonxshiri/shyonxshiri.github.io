@@ -237,8 +237,8 @@ const SCULPTURES_MEDIA: MediaItem[] = [
 ];
 
 const MODELS_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", description: "An airpod case model showcasing unique form and functional design.", objectPosition: "center 50%", aspectRatio: 1 / 1.2, year: 2026, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
-  { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", description: "A finalized rendition of my case prototype designed to replicate the style of liquid metal, showcasing advanced material aesthetics and structural optimization.", objectPosition: "center 0%", year: 2025, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
+  { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", description: "A finalized rendition of my Airpod case prototype, designed to resemble the style of liquid metal.", objectPosition: "center 50%", aspectRatio: 1 / 1.2, year: 2026, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
+  { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", description: "A finalized rendition of my iPhone case prototype, designed to resemble the style of liquid metal.", objectPosition: "center 0%", year: 2025, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
   { type: "image", src: "/assets/TeaCup.JPG", title: "Tea Spill Decor", description: "A home decor sculpture based on original 3D artwork, finished with precision craftsmanship and premium materials.", year: 2026 },
   { type: "image", src: "/assets/El_Camino.JPG", title: "Chevy El Camino 9:1 scale", description: "A detailed 3D model of a classic El Camino showcasing automotive design and technical modeling expertise.", objectPosition: "center 50%", year: 2026 },
   { type: "image", src: "/assets/3D_Chair_Model.jpg", title: "Phone Stand Chair", description: "A functional chair model that doubles as a phone stand. Designed in Blender with careful attention to geometry and structural form.", objectPosition: "center 50%", year: 2026 },
@@ -715,6 +715,8 @@ function AutoAspectTile({
   };
 
   const isShiriDesign = item.src.includes("Shiri_Design");
+  // Disable link wrapper if onMediaClick is provided (modal mode)
+  const shouldDisableLink = onMediaClick && item.link;
   
   return (
     <motion.article
@@ -726,7 +728,7 @@ function AutoAspectTile({
       onClick={handleClick}
     >
       <Wrapper
-        {...(item.link && !onMediaClick
+        {...(!shouldDisableLink && item.link && !onMediaClick
           ? {
               href: item.link,
               target: "_blank",
@@ -867,10 +869,10 @@ function MediaModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      style={{ paddingTop: "6rem", paddingBottom: "2rem" }}
+      style={{ paddingTop: window.innerWidth < 768 ? "8rem" : "6rem", paddingBottom: "2rem", paddingLeft: "1rem", paddingRight: "1rem" }}
     >
       <motion.div
-        className="relative w-11/12 max-w-6xl flex items-center justify-center"
+        className="relative w-11/12 max-w-6xl flex flex-col lg:flex-row items-center justify-center lg:items-center"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -879,8 +881,9 @@ function MediaModal({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "3rem",
+          gap: window.innerWidth < 1024 ? "1.5rem" : "3rem",
           maxHeight: "calc(100vh - 8rem)",
+          flexDirection: window.innerWidth < 1024 ? "column" : "row",
         }}
       >
         {/* Close button */}
@@ -895,10 +898,10 @@ function MediaModal({
         </button>
 
         {/* Left: Text content */}
-        <div className="flex flex-col justify-center items-start flex-shrink-0" style={{ width: aspectRatio < 1.2 ? "25%" : "33.33%", paddingRight: "1.5rem", maxHeight: "100%", overflow: "hidden" }}>
+        <div className="flex flex-col justify-center items-start flex-shrink-0 w-full lg:w-auto" style={{ width: "100%", paddingRight: window.innerWidth >= 1024 ? "1.5rem" : "0", maxHeight: "100%", overflow: "hidden" }}>
           {item.title && (
             <div>
-              <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight break-words">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight break-words">
                 {item.title === "Product, not Consumer" ? (
                   <span className="italic">{item.title}</span>
                 ) : (
@@ -911,14 +914,20 @@ function MediaModal({
             </div>
           )}
           {item.description && item.title !== "Clothing Line Mock Up" && (
-            <p className="text-lg text-white/90 leading-relaxed">
+            <p className="text-base sm:text-lg text-white/90 leading-relaxed">
               {item.description}
             </p>
           )}
         </div>
 
         {/* Right: Media content */}
-        <div className="flex items-center justify-center flex-shrink-0" style={{ width: finalWidth, height: finalHeight, minHeight: 0, minWidth: 0 }}>
+        <div className="flex items-center justify-center flex-shrink-0 w-full lg:w-auto" style={{ 
+          width: window.innerWidth < 1024 ? "100%" : finalWidth, 
+          height: window.innerWidth < 1024 ? "auto" : finalHeight, 
+          minHeight: 0, 
+          minWidth: 0,
+          maxWidth: "100%"
+        }}>
           {currentMedia.type === "image" ? (
             <motion.img
               key={currentMediaIndex}
@@ -928,6 +937,7 @@ function MediaModal({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              style={{ maxHeight: window.innerWidth < 1024 ? "35vh" : "100%" }}
             />
           ) : (
             <video
@@ -938,13 +948,14 @@ function MediaModal({
               autoPlay
               muted
               playsInline
+              style={{ maxHeight: window.innerWidth < 1024 ? "35vh" : "100%" }}
             />
           )}
         </div>
 
         {/* Link below media (if exists) */}
         {item.link && (
-          <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
+          <div className="relative mt-6 flex justify-center w-full lg:w-auto">
             <a
               href={item.link}
               target="_blank"
@@ -1269,16 +1280,6 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
               {GRAPHIC_MEDIA[2].description && (
                 <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[2].description}</p>
               )}
-              {GRAPHIC_MEDIA[2].link && (
-                <a
-                  href={GRAPHIC_MEDIA[2].link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-2 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white text-xs font-medium rounded-lg transition"
-                >
-                  Visit Website →
-                </a>
-              )}
             </div>
             <div className="rounded-lg overflow-hidden border border-white/10">
               <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
@@ -1364,10 +1365,7 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
       <div>
   <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text" style={{ color: "#1a1a1a" }}>About</h2>
         <p className="mt-4 text-slate-700 dark:text-slate-700">
-          I am a Bay Area–based graphic designer with a Bachelor of Arts in Studio
-          Practice with a focus in Graphic Design. My passion for design stems from
-          my fasicnation for creating, whether it&apos;s for visual storytelling or
-          personal projects.
+          I am a graphic designer and programmer based in the Bay Area, passionate about creating through several mediums whether it be for work or personal projects.
         </p>
       </div>
 
