@@ -29,12 +29,19 @@ body {
   /* Better font rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Enable hardware acceleration for smooth scrolling on mobile */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
 }
 
 /* Optional smoother text rendering */
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Enable GPU acceleration */
+  transform: translateZ(0);
 }
 
 /* Optimize buttons and interactive elements for touch */
@@ -71,10 +78,10 @@ button:not(.shimmer-button):not(.logo-button) {
   background: transparent !important;
 }
 
-button:not(.shimmer-button):not(.logo-button):focus,
-button:not(.shimmer-button):not(.logo-button):focus-visible,
-button:not(.shimmer-button):not(.logo-button):focus-within,
-button:not(.shimmer-button):not(.logo-button):active {
+button:not(.shimmer-button):not(.logo-button):not(.home-button):focus,
+button:not(.shimmer-button):not(.logo-button):not(.home-button):focus-visible,
+button:not(.shimmer-button):not(.logo-button):not(.home-button):focus-within,
+button:not(.shimmer-button):not(.logo-button):not(.home-button):active {
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
@@ -100,6 +107,41 @@ button:not(.shimmer-button):not(.logo-button):active {
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+/* Home button - clean modern styling */
+.home-button {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease-out;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform, opacity, background-color;
+}
+
+.home-button:hover {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.home-button:focus,
+.home-button:focus-visible,
+.home-button:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Mobile touch feedback for home button */
+@media (hover: none) and (pointer: coarse) {
+  .home-button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
 }
 
 /* Prevent double-tap zoom delay on buttons and links */
@@ -371,3 +413,117 @@ button:active,
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* ===== CROSS-DEVICE OPTIMIZATION ===== */
+
+/* Optimize for small phones (< 768px) */
+@media (max-width: 767px) {
+  /* Slightly larger touch targets on small screens */
+  button, [role="button"], a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Reduce animation complexity on low-end devices */
+  @media (max-width: 480px) {
+    * {
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+    
+    /* Simplify animations on very small screens */
+    .bounce-text, .bounce-text-dark {
+      animation-duration: 4s;
+    }
+  }
+}
+
+/* Optimize for iPad and medium tablets (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Better spacing for tablet layout */
+  button, [role="button"] {
+    touch-action: manipulation;
+  }
+  
+  /* Ensure smooth interactions on iPad */
+  * {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* Optimize for desktop and large screens (> 1024px) */
+@media (min-width: 1025px) {
+  /* Enable hover states only on desktop */
+  button:hover, [role="button"]:hover {
+    transition: all 0.2s ease-out;
+  }
+}
+
+/* Prevent layout shift on all devices */
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+/* Prevent iOS momentum scrolling issues */
+@supports (-webkit-touch-callout: none) {
+  html {
+    scroll-behavior: auto;
+  }
+  
+  /* Fix for iOS rubber-band effect */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Text selection only where needed */
+  p, span, h1, h2, h3, h4, h5, h6 {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+/* Performance optimization: Use GPU acceleration for animated elements */
+.glow-ring,
+.pixel-shadow-glow,
+.pixel-shadow-glow-intense,
+.bounce-text,
+.bounce-text-dark {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+  will-change: text-shadow, transform;
+}
+
+/* Ensure smooth color transitions */
+button, [role="button"], a, [role="tab"] {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fix for notch and safe areas */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Optimize image rendering */
+img {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Smooth video element rendering */
+video {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* ===== END CROSS-DEVICE OPTIMIZATION ===== */

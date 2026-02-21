@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, User, Mail, Linkedin, Instagram, FileText } from "lucide-react";
+import { Briefcase, User, Mail, Linkedin, Instagram, FileText, Home } from "lucide-react";
 
 // --- Haptic Feedback Utility ---------------------------------------------------------------
 const triggerHaptic = (intensity: "light" | "medium" | "heavy" = "medium") => {
@@ -13,6 +13,31 @@ const triggerHaptic = (intensity: "light" | "medium" | "heavy" = "medium") => {
     };
     navigator.vibrate(patterns[intensity]);
   }
+};
+
+// --- Device Optimization Hook ---------------------------------------------------------------
+const useDeviceOptimizations = () => {
+  useEffect(() => {
+    // Disable double-tap zoom on iOS for faster touch response
+    const touchHandler = (e: TouchEvent) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
+    
+    // Optimize for reduced-motion preference
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      document.documentElement.style.scrollBehavior = "auto";
+    }
+    
+    // Enable passive touch listeners for better scroll performance
+    document.addEventListener("touchmove", touchHandler, { passive: true });
+    
+    return () => {
+      document.removeEventListener("touchmove", touchHandler);
+    };
+  }, []);
 };
 
 // --- Config ---------------------------------------------------------------
@@ -250,7 +275,7 @@ const MODELS_MEDIA: MediaItem[] = [
 
 const FABRICATION_MEDIA: Record<string, MediaItem[]> = {
   Programming: PROGRAMMING_MEDIA,
-  Sculptures: SCULPTURES_MEDIA,
+  Crafting: SCULPTURES_MEDIA,
   "3D Models": MODELS_MEDIA,
 };
 
@@ -264,7 +289,7 @@ const HANDMADE_WORKS = [
     objectPosition: "center 70%", // shows more of top area
   },
   {
-    title: "Sculptures",
+    title: "Crafting",
     img: "/assets/Shyon_Sculpture.jpg",
     description:
       "Handmade sculptures exploring form, balance, and physical interaction.",
@@ -461,6 +486,9 @@ function PageNavigation({ direction, pageName, onClick }: PageNavProps) {
 export default function PortfolioUniqueNav() {
   const [currentPage, setCurrentPage] = useState<"home" | "work" | "about" | "contact">("home");
 
+  // Apply device optimizations
+  useDeviceOptimizations();
+
   // Force dark mode once on mount
   useEffect(() => {
     document.documentElement.classList.add("dark");
@@ -520,46 +548,29 @@ export default function PortfolioUniqueNav() {
         })}
       </div>
 
-      {/* Fixed Logo - floating above everything */}
-      <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none h-24 sm:h-32">
+      {/* Fixed Home Button - floating above everything */}
+      <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none h-auto flex items-center justify-center" style={{ paddingTop: "max(env(safe-area-inset-top), 1rem)", paddingBottom: "0.75rem" }}>
         <motion.button
           onClick={() => {
             triggerHaptic("medium");
             setCurrentPage("home");
           }}
-          className="absolute left-1/2 pointer-events-auto cursor-pointer h-16 w-40 sm:h-20 sm:w-52 logo-button"
+          className="pointer-events-auto cursor-pointer h-12 w-12 sm:h-14 sm:w-14 home-button flex items-center justify-center rounded-full transition-all duration-200 active:scale-95"
           style={{ 
-            top: "50%",
             outline: "none",
             border: "none",
             boxShadow: "none",
+            background: "rgba(255, 255, 255, 0.15)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
           }}
-          initial={{ scale: 1 }}
-          whileHover={{ scale: 1.4 }}
-          whileTap={{ scale: 1.3 }}
-          animate={{ x: "-50%", y: "-50%" }}
-          transition={{ type: "spring", stiffness: 200, damping: 25 }}
+          initial={{ scale: 1, opacity: 0.9 }}
+          whileHover={{ scale: 1.15, opacity: 1, background: "rgba(255, 255, 255, 0.25)" }}
+          whileTap={{ scale: 0.95, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          aria-label="Go to home"
         >
-          {/* Base white logo */}
-          <img
-            src="/assets/Shiri_Logo.png"
-            alt="Shiri Logo White"
-            className="absolute inset-0 w-full h-full object-contain"
-          />
-          <motion.img
-            src="/assets/Shiri_Logo_Black.png"
-            alt="Shiri Logo Black"
-            className="absolute inset-0 w-full h-full object-contain"
-            animate={{
-              opacity: [0, 0, 1, 1, 0],
-            }}
-            transition={{
-              duration: 8,
-              times: [0, 0.45, 0.55, 0.95, 1],
-              ease: "easeInOut",
-              repeat: Infinity,
-            }}
-          />
+          <Home className="w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={2} />
         </motion.button>
       </div>
 
@@ -578,7 +589,7 @@ export default function PortfolioUniqueNav() {
       />
 
       {/* Main Content */}
-  <main className={`relative z-20 pb-16 pt-28 sm:pt-32 ${currentPage === "contact" ? "overflow-hidden h-screen" : ""}`} style={{ paddingTop: "max(8rem, calc(env(safe-area-inset-top) + 8rem))" }}>
+  <main className={`relative z-20 pb-16 pt-24 sm:pt-28 ${currentPage === "contact" ? "overflow-hidden h-screen" : ""}`} style={{ paddingTop: "max(7rem, calc(env(safe-area-inset-top) + 5.5rem))" }}>
         <AnimatePresence mode="wait">
           {currentPage === "home" && (
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
