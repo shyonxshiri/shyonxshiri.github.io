@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Briefcase, User, Mail, Linkedin, Instagram, FileText, Home } from "lucide-react";
 
+// Cache bust v2 - ensure My_Case.jpg loads on live site
 // --- Haptic Feedback Utility ---------------------------------------------------------------
 const triggerHaptic = (intensity: "light" | "medium" | "heavy" = "medium") => {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) {
