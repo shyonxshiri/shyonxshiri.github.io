@@ -631,17 +631,17 @@ function Section({
   active?: boolean;
 }) {
   return (
-    <section id={id} className="relative py-24 scroll-mt-32">
-      <div className="absolute inset-0">
+    <section id={id} className="relative py-24 scroll-mt-32 overflow-hidden">
+      <div className="absolute inset-0 max-w-6xl mx-auto">
         <motion.div
           aria-hidden
-          className="pointer-events-none absolute -inset-20 blur-3xl"
-          animate={{ opacity: active ? 0.6 : 0.2, scale: active ? 1 : 0.98 }}
+          className="pointer-events-none absolute inset-0 blur-3xl"
+          animate={{ opacity: active ? 0.4 : 0.1, scale: active ? 1 : 0.95 }}
           transition={{ type: "spring", stiffness: 80, damping: 20 }}
           style={{
             background:
-              "radial-gradient(600px 400px at 20% 20%, rgba(14,165,233,.22), transparent)," +
-              "radial-gradient(600px 400px at 80% 80%, rgba(34,211,238,.18), transparent)",
+              "radial-gradient(400px 300px at 30% 40%, rgba(14,165,233,.15), transparent)," +
+              "radial-gradient(400px 300px at 70% 60%, rgba(34,211,238,.10), transparent)",
           }}
         />
       </div>
