@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, User, Mail, Linkedin, Instagram, FileText, Home } from "lucide-react";
+import { Briefcase, User, Mail, Linkedin, FileText, Home } from "lucide-react";
 
 // Cache bust v2 - ensure My_Case.jpg loads on live site
 // --- Haptic Feedback Utility ---------------------------------------------------------------
@@ -128,6 +128,14 @@ const GRAPHIC_MEDIA: MediaItem[] = [
     description: "Full-stack website design and development including React frontend, responsive interface design, backend integration, and deployment optimization.",
     year: 2025,
     link: "https://minasech.net"
+  },
+  {
+    type: "image",
+    src: "/assets/Everly_Cover_Image.png",
+    title: "Everly Care Home",
+    description: "Professional website design for a compassionate living community providing senior care services.",
+    year: 2025,
+    link: "https://everlycarehome.com"
   },
 ];
 
@@ -269,15 +277,12 @@ const SCULPTURES_MEDIA: MediaItem[] = [
 const MODELS_MEDIA: MediaItem[] = [
   { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", description: "A finalized rendition of my Airpod case prototype, designed to resemble the style of liquid metal.", objectPosition: "center 50%", aspectRatio: 1 / 1.2, year: 2026, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
   { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", description: "A finalized rendition of my iPhone case prototype, designed to resemble the style of liquid metal.", objectPosition: "center 0%", year: 2025, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
-  { type: "image", src: "/assets/TeaCup.JPG", title: "Tea Spill Decor", description: "A home decor sculpture based on original 3D artwork, finished with precision craftsmanship and premium materials.", year: 2026 },
-  { type: "image", src: "/assets/El_Camino.JPG", title: "Chevy El Camino 9:1 scale", description: "A detailed 3D model of a classic El Camino showcasing automotive design and technical modeling expertise.", objectPosition: "center 50%", year: 2026 },
-  { type: "image", src: "/assets/3D_Chair_Model.jpg", title: "Phone Stand Chair", description: "A functional chair model that doubles as a phone stand. Designed in Blender with careful attention to geometry and structural form.", objectPosition: "center 50%", year: 2026 },
 ];
 
 const FABRICATION_MEDIA: Record<string, MediaItem[]> = {
   Programming: PROGRAMMING_MEDIA,
-  Crafting: SCULPTURES_MEDIA,
-  "3D Models": MODELS_MEDIA,
+  Fabrication: SCULPTURES_MEDIA,
+  "3D Modelling": MODELS_MEDIA,
 };
 
 // CATEGORY CARDS (do not change — these control framing)
@@ -290,14 +295,14 @@ const HANDMADE_WORKS = [
     objectPosition: "center 70%", // shows more of top area
   },
   {
-    title: "Crafting",
+    title: "Fabrication",
     img: "/assets/Shyon_Sculpture.jpg",
     description:
       "Handmade sculptures exploring form, balance, and physical interaction.",
     objectPosition: "center 45%", // shows more of the lower area
   },
   {
-    title: "3D Models",
+    title: "3D Modelling",
     img: "/assets/3D_Models_Cover_Pic.jpg",
     description: "3D models designed for printing, functionality, and aesthetics.",
     objectPosition: "center 80%", // moved slightly down to avoid cutoff
@@ -306,48 +311,11 @@ const HANDMADE_WORKS = [
 
 const PORTRAIT_IMAGES = [
   {
-    src: "/assets/Shyon_Pic_1.jpg",
-    alt: "Portrait 1",
-    frame: "70% 30% 65% 35% / 55% 65% 35% 45%",
-  },
-  {
     src: "/assets/Shyon_Pic_2.JPG",
-    alt: "Portrait 2",
-    frame: "35% 65% 25% 75% / 70% 30% 65% 35%",
-  },
-  {
-    src: "/assets/Shyon_Pic_3.JPG",
-    alt: "Portrait 3",
-    frame: "80% 20% 60% 40% / 45% 75% 25% 55%",
-  },
-  {
-    src: "/assets/Shyon_Pic_5.jpg",
-    alt: "Portrait 4",
+    alt: "Portrait",
     frame: "60% 40% 50% 50% / 65% 35% 55% 45%",
   },
-  {
-    src: "/assets/Shyon_Pic_13.jpg",
-    alt: "Portrait 5",
-    frame: "28% 72% 40% 60% / 80% 20% 70% 30%",
-  },
-  {
-    src: "/assets/Shyon_Pic_12.jpg",
-    alt: "Portrait 6",
-    frame: "75% 25% 45% 55% / 35% 85% 15% 65%",
-  },
-  {
-    src: "/assets/Shyon_Pic_7.jpg",
-    alt: "Portrait 7",
-    frame: "25% 75% 55% 45% / 60% 40% 80% 20%",
-  },
-  {
-    src: "/assets/Shyon_Pic_8.JPG",
-    alt: "Portrait 8",
-    frame: "85% 15% 70% 30% / 50% 60% 20% 80%",
-  },
 ];
-
-const PORTRAIT_SIZES = ["w-40 h-56", "w-32 h-44", "w-36 h-48", "w-32 h-40"];
 
 // --- ShimmerButton Component -----------------------------------------------
 
@@ -426,7 +394,7 @@ function ShimmerButton({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="shimmer-button group relative w-16 h-16 rounded-full bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 shadow-[0_8px_30px_rgba(0,180,255,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
+      className="shimmer-button group relative w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 shadow-[0_8px_30px_rgba(0,180,255,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
       whileHover={{ scale: 1.12 }}
       whileTap={{ scale: 0.94 }}
     >
@@ -494,6 +462,17 @@ export default function PortfolioUniqueNav() {
   useEffect(() => {
     document.documentElement.classList.add("dark");
   }, []);
+
+  // Disable scroll on body for all pages except work
+  useEffect(() => {
+    if (currentPage !== "work") {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+  }, [currentPage]);
 
   return (
   <div className="relative min-h-screen overflow-x-hidden text-slate-700 dark:text-slate-200 bg-white dark:bg-[#050a15]">
@@ -590,7 +569,7 @@ export default function PortfolioUniqueNav() {
       />
 
       {/* Main Content */}
-  <main className={`relative z-20 pb-16 pt-24 sm:pt-28 ${currentPage === "contact" ? "overflow-hidden h-screen" : ""}`} style={{ paddingTop: "max(7rem, calc(env(safe-area-inset-top) + 5.5rem))" }}>
+  <main className={`relative z-20 pb-16 pt-24 sm:pt-28 ${currentPage !== "work" ? "overflow-hidden h-screen" : ""}`} style={{ paddingTop: "max(7rem, calc(env(safe-area-inset-top) + 5.5rem))" }}>
         <AnimatePresence mode="wait">
           {currentPage === "home" && (
             <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
@@ -655,12 +634,12 @@ function Section({
 
 function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
   return (
-    <div className="relative w-full pt-16 sm:pt-20 md:pt-24">
+    <div className="relative w-full pt-4 sm:pt-16 md:pt-24">
       {/* MAIN HERO CONTENT: 2-column grid with title left and content right */}
       <div className="relative z-10 w-full grid md:grid-cols-2 gap-8 items-start max-w-6xl mx-auto px-4">
         
-        {/* LEFT: Title with pulsating glow */}
-        <div className="flex flex-col items-center md:items-start">
+        {/* LEFT: Title with buttons below */}
+        <div className="flex flex-col items-center gap-10">
           {/* Main title */}
           <motion.h1
             layout
@@ -677,28 +656,58 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
               Graphic Designer
             </span>
           </motion.h1>
-        </div>
 
-        {/* RIGHT: Buttons */}
-        <motion.div
-          className="flex flex-col gap-4 items-center justify-center mt-6"
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          {/* Buttons */}
-          <div className="flex flex-row gap-6 items-center justify-center">
+          {/* Buttons below title */}
+          <motion.div
+            className="flex flex-row gap-6 justify-center mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
             {/* Work Button */}
             <ShimmerButton onClick={() => setPage("work")} icon={<Briefcase className="w-6 h-6" />} />
-
 
             {/* About Button */}
             <ShimmerButton onClick={() => setPage("about")} icon={<User className="w-6 h-6" />} />
 
-
             {/* Contact Button */}
             <ShimmerButton onClick={() => setPage("contact")} icon={<Mail className="w-6 h-6" />} />
+          </motion.div>
+        </div>
 
+        {/* RIGHT: Portrait Image */}
+        <motion.div
+          className="relative mx-auto flex items-center md:items-start justify-center md:-mt-20"
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <div className="relative w-full flex items-center justify-center">
+            <motion.div
+              className="relative"
+            >
+              <motion.div
+                className="w-56 sm:w-72 md:w-80 h-80 sm:h-[450px] md:h-[520px] origin-center relative overflow-hidden bg-[#e8e8e8]"
+                style={{ 
+                  borderRadius: "60% 40% 50% 50% / 65% 35% 55% 45%",
+                  boxShadow: "inset 0 0 60px rgba(0, 0, 0, 0.4)"
+                }}
+              >
+                <motion.img
+                  src="/assets/Shyon_Pic_5.jpg"
+                  alt="Portrait"
+                  className="w-full h-full object-cover absolute inset-0"
+                />
+                {/* Gradient overlay to blend edges into background */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: "radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(232, 232, 232, 0.15) 80%, rgba(232, 232, 232, 0.4) 100%)",
+                    pointerEvents: "none"
+                  }}
+                />
+              </motion.div>
+            </motion.div>
           </div>
         </motion.div>
       </div>
@@ -861,11 +870,21 @@ function MediaModal({
     finalHeight = maxAvailableHeight;
     finalWidth = finalHeight * aspectRatio;
   }  useEffect(() => {
+    // Disable body scroll when modal opens
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
+    
+    return () => {
+      // Re-enable body scroll when modal closes
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      window.removeEventListener("keydown", handleEscape);
+    };
   }, [onClose]);
 
   const handlePrevImage = () => {
@@ -880,12 +899,24 @@ function MediaModal({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md"
+      className="fixed bg-black/40 backdrop-blur-md media-modal-fullscreen"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      style={{ paddingTop: window.innerWidth < 768 ? "8rem" : "6rem", paddingBottom: "2rem", paddingLeft: "1rem", paddingRight: "1rem" }}
+      style={{ 
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        padding: 0,
+        margin: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        width: "100%",
+        height: "100%",
+      }}
     >
       <motion.div
         className="relative w-11/12 max-w-6xl flex flex-col lg:flex-row items-center justify-center lg:items-center"
@@ -900,6 +931,14 @@ function MediaModal({
           gap: window.innerWidth < 1024 ? "1.5rem" : "3rem",
           maxHeight: "calc(100vh - 8rem)",
           flexDirection: window.innerWidth < 1024 ? "column" : "row",
+          paddingTop: window.innerWidth < 768 ? "8rem" : "6rem",
+          paddingBottom: "2rem",
+          paddingLeft: "0",
+          paddingRight: "0",
+          boxSizing: "border-box",
+          border: "none",
+          outline: "none",
+          background: "transparent",
         }}
       >
         {/* Close button */}
@@ -914,7 +953,7 @@ function MediaModal({
         </button>
 
         {/* Left: Text content */}
-        <div className="flex flex-col justify-center items-start flex-shrink-0 w-full lg:w-1/3" style={{ paddingRight: window.innerWidth >= 1024 ? "1.5rem" : "0", maxHeight: "100%", overflow: "hidden" }}>
+        <div className="flex flex-col justify-center items-start flex-shrink-0 w-full lg:w-1/3" style={{ paddingLeft: "1rem", paddingRight: "1rem", maxHeight: "100%", overflow: "hidden" }}>
           {item.title && (
             <div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight break-words">
@@ -942,7 +981,9 @@ function MediaModal({
           height: window.innerWidth < 1024 ? "auto" : finalHeight, 
           minHeight: 0, 
           minWidth: 0,
-          maxWidth: "100%"
+          maxWidth: "100%",
+          paddingLeft: "1rem",
+          paddingRight: "1rem"
         }}>
           {currentMedia.type === "image" ? (
             <motion.img
@@ -1060,9 +1101,9 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       description: p.description,
       img: p.img,
       objectPosition: p.objectPosition,
-      category: "Interactive Media & Fabrication" as const,
+      category: "Interactive Media" as const,
       content: (
-        <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-2">
           {(FABRICATION_MEDIA[p.title as keyof typeof FABRICATION_MEDIA] || []).map((item, index) => (
             <div key={item.src ?? index}>
               {item.title && (
@@ -1303,6 +1344,19 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
               <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
             </div>
           </div>
+
+          {/* Everly Care Home */}
+          <div className="space-y-2">
+            <div>
+              <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[3].title}</h5>
+              {GRAPHIC_MEDIA[3].description && (
+                <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[3].description}</p>
+              )}
+            </div>
+            <div className="rounded-lg overflow-hidden border border-white/10">
+              <AutoAspectTile item={GRAPHIC_MEDIA[3]} onMediaClick={onMediaClick} />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1349,17 +1403,7 @@ function ProjectDetailCameraWork({ onMediaClick }: { onMediaClick: (item: MediaI
 }
 
 function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(4); // Start with Pic 5 (index 4)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % PORTRAIT_IMAGES.length);
-    }, 4000); // Change image every 4 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const currentImage = PORTRAIT_IMAGES[currentImageIndex];
+  const currentImage = PORTRAIT_IMAGES[0];
 
   return (
   <div className="w-full pt-16 sm:pt-20">
@@ -1377,48 +1421,39 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
         />
       </div>
 
-      {/* Grid wrapper for content */}
-      <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto px-4 md:px-0">
+      {/* Grid wrapper for content - pushed down */}
+      <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto px-4 md:px-0 mt-12">
       {/* Left: Text Content */}
       <div>
   <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text" style={{ color: "#1a1a1a" }}>About</h2>
         <p className="mt-4 text-slate-700 dark:text-slate-700">
-          I am a graphic designer and programmer based in the Bay Area, passionate about creating through several mediums whether it be for work or personal projects.
+          I am a graphic designer and creative technologist based in the Bay Area with over a decade of experience across diverse mediums. My journey began in 2013 when I created a 3D model in Maya as part of a middle school project, and since then, I've developed a broad skill set spanning digital design, 3D modeling, motion graphics, interactive media, and fabrication. My work reflects a commitment to exploring the intersection of visual design and hands-on creation.
+        </p>
+        <p className="mt-4 text-slate-700 dark:text-slate-700">
+          I'm driven by a genuine passion for making and a curiosity to experiment with new tools and techniques. Rather than chasing recognition, I create because I enjoy the process itself, whether it's designing a brand identity, building interactive hardware, or exploring experimental 3D forms. For me, design is less about the finished product and more about the creative exploration that gets me there.
         </p>
       </div>
 
       {/* Right: Image Carousel */}
       <motion.div
         className="relative mx-auto"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
       >
         <div className="relative w-full flex items-center justify-center">
           <motion.div
             className="relative"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 }}
           >
             <motion.div
-              className="w-56 sm:w-72 md:w-80 h-80 sm:h-[450px] md:h-[520px] origin-center relative overflow-hidden border border-white/10 bg-slate-900/40 shadow-2xl"
-              animate={{ borderRadius: currentImage.frame }}
-              transition={{ duration: 1.2 }}
-              style={{ borderRadius: currentImage.frame }}
+              className="w-56 sm:w-72 md:w-80 h-80 sm:h-[450px] md:h-[520px] origin-center relative overflow-hidden border border-white/10 bg-slate-900/40"
+              style={{ 
+                borderRadius: currentImage.frame,
+                boxShadow: "0 0 30px rgba(128, 128, 128, 0.5), inset 0 0 20px rgba(128, 128, 128, 0.3)"
+              }}
             >
-              <AnimatePresence mode="sync">
-                <motion.img
-                  key={currentImageIndex}
-                  src={currentImage.src}
-                  alt={currentImage.alt}
-                  className="w-full h-full object-cover absolute inset-0"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.2 }}
-                />
-              </AnimatePresence>
+              <motion.img
+                src={currentImage.src}
+                alt={currentImage.alt}
+                className="w-full h-full object-cover absolute inset-0"
+              />
             </motion.div>
           </motion.div>
         </div>
@@ -1461,16 +1496,8 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
           >
             <Linkedin className="w-6 h-6" /> LinkedIn
           </a>
-          <a
-            href="https://www.instagram.com/shyonshiri?igsh=MWNhdWY4dGRoajVqdg%3D%3D&utm_source=qr"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0 text-lg"
-          >
-            <Instagram className="w-6 h-6" /> Instagram
-          </a>
 <a
-  href="/Shyon_Shiri_Resume_2026.pdf"
+  href="/assets/My_Resume.pdf"
   target="_blank"
   rel="noopener noreferrer"
   className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0 text-lg"
@@ -1481,23 +1508,6 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
         </div>
       </div>
     </div>
-  );
-}
-
-// --- Buttons --------------------------------------------------------------
-
-function PrimaryButton({
-  children,
-  ...rest
-}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      type={rest.type ?? "button"}
-      {...rest}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 shadow hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-0"
-    >
-      {children}
-    </button>
   );
 }
 
