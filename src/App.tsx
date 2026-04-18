@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, User, Mail, Linkedin, FileText, Home } from "lucide-react";
+import { Briefcase, User, Mail, Linkedin, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import CubeTab from "./CubeTab";
 
 // Cache bust v2 - ensure My_Case.jpg loads on live site
 // --- Haptic Feedback Utility ---------------------------------------------------------------
@@ -14,6 +15,48 @@ const triggerHaptic = (intensity: "light" | "medium" | "heavy" = "medium") => {
     };
     navigator.vibrate(patterns[intensity]);
   }
+};
+
+// --- Gesture Detection Hook ---------------------------------------------------------------
+const useSwipeGesture = (onSwipeUp?: () => void, onSwipeDown?: () => void, onSwipeLeft?: () => void, onSwipeRight?: () => void) => {
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  };
+  
+  const handleTouchEnd = (e: TouchEvent) => {
+    const touchEnd = {
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY,
+    };
+    
+    const deltaX = touchEnd.x - touchStartRef.current.x;
+    const deltaY = touchEnd.y - touchStartRef.current.y;
+    const threshold = 50;
+    
+    // Vertical swipes
+    if (Math.abs(deltaY) > threshold && Math.abs(deltaY) > Math.abs(deltaX)) {
+      if (deltaY > 0 && onSwipeUp) {
+        onSwipeUp();
+      } else if (deltaY < 0 && onSwipeDown) {
+        onSwipeDown();
+      }
+    }
+    // Horizontal swipes
+    else if (Math.abs(deltaX) > threshold) {
+      if (deltaX > 0 && onSwipeLeft) {
+        onSwipeLeft();
+      } else if (deltaX < 0 && onSwipeRight) {
+        onSwipeRight();
+      }
+    }
+  };
+  
+  return { handleTouchStart, handleTouchEnd };
 };
 
 // --- Device Optimization Hook ---------------------------------------------------------------
@@ -41,6 +84,25 @@ const useDeviceOptimizations = () => {
   }, []);
 };
 
+// --- Device Type Detection Hook ---------------------------------------------------------------
+const useDeviceType = () => {
+  const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  
+  useEffect(() => {
+    const checkDevice = () => {
+      const width = window.innerWidth;
+      if (width < 640) setDevice('mobile');
+      else if (width < 1024) setDevice('tablet');
+      else setDevice('desktop');
+    };
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
+  
+  return device;
+};
+
 // --- Config ---------------------------------------------------------------
 
 const DIGITAL_MEDIA = [
@@ -49,7 +111,8 @@ const DIGITAL_MEDIA = [
     title: "3D Rendering",
     tag: "Design & Printing",
     img: "/assets/3D_Modeling_Cover.PNG",
-    objectPosition: "50% 50%",
+    objectPosition: "45% 50%",
+    scale: 1.25,
     description:
       "Concept driven 3D visuals created entirely using Blender.",
   },
@@ -209,7 +272,7 @@ const CAMERA_MEDIA: MediaItem[] = [
   {
     type: "image",
     src: "/assets/Photography_Asset_2.jpg",
-    title: "Culinary Art",
+    title: "Culinary Praise",
     description: "A display of Iran's iconic dish, presented with thoughtful composition and rich visual detail.",
     year: 2021,
   },
@@ -244,8 +307,8 @@ const PROGRAMMING_MEDIA: MediaItem[] = [
   { 
     type: "video", 
     src: "/assets/New_Radar_Sensor.mp4", 
-    title: "Distance Radar Sensor", 
-    description: "Live demonstration of the Distance Radar Sensor in action, detecting objects and measuring distances in real-time.", 
+    title: "HMI Sensor System", 
+    description: "For my final project in <i>Topics in Human-Machine Interfaces</i>, I developed an interactive radar module that converts ultrasonic data into real-time feedback. As part of our rubric, I configured the micro-board to maintain a steady 5V power output to support the simultaneous load of the sensor, LCD, and speaker. This build focuses on human-machine interactivity, using a digital display, a sensor, and a speaker to communicate distance. All placed in a custom 3D printed enclosure.", 
     poster: "/assets/New_Radar_Sensor_front.jpg", 
     aspectRatio: 9 / 16,
     year: 2024,
@@ -257,8 +320,8 @@ const PROGRAMMING_MEDIA: MediaItem[] = [
   { 
     type: "video", 
     src: "/assets/New_LED_Box.mp4", 
-    title: "LED System", 
-    description: "Interactive demonstration of the LED System controlling multiple RGB lights with custom programming.", 
+    title: "Custom RGB Controller", 
+    description: "This project served as a practical test of what we learned in my <i>Topics in Human-Machine Interfaces</i> class. The goal was to demonstrate a solid understanding of the course material by building a functional system from scratch. I was thorough with meeting the technical requirements for the micro-board's power ratios and wire placement, then designing and 3D printing a geometric casing to function as housing for it all.", 
     poster: "/assets/New_LED_Box_Front.jpg", 
     aspectRatio: 9 / 16,
     year: 2024,
@@ -305,7 +368,8 @@ const HANDMADE_WORKS = [
     title: "3D Modelling",
     img: "/assets/3D_Models_Cover_Pic.jpg",
     description: "3D models designed for printing, functionality, and aesthetics.",
-    objectPosition: "center 80%", // moved slightly down to avoid cutoff
+    objectPosition: "45% 100%",
+    scale: 1.25,
   },
 ];
 
@@ -394,7 +458,7 @@ function ShimmerButton({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="shimmer-button group relative w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 shadow-[0_8px_30px_rgba(0,180,255,0.25)] backdrop-blur-xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
+      className="shimmer-button group relative w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-white/15 via-white/10 to-white/15 border border-white/25 shadow-[0_8px_30px_rgba(0,180,255,0.15)] backdrop-blur-2xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
       whileHover={{ scale: 1.12 }}
       whileTap={{ scale: 0.94 }}
     >
@@ -452,8 +516,34 @@ function PageNavigation({ direction, pageName, onClick }: PageNavProps) {
 
 // --- Root Component --------------------------------------------------------
 
+const PAGE_ORDER = ["home", "work", "about", "contact"] as const;
+
 export default function PortfolioUniqueNav() {
   const [currentPage, setCurrentPage] = useState<"home" | "work" | "about" | "contact">("home");
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
+  const [prevPage, setPrevPage] = useState<"home" | "work" | "about" | "contact">("home");
+  const device = useDeviceType();
+  const isScrollingRef = useRef(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentPageRef = useRef(currentPage);
+  const mainDivRef = useRef<HTMLDivElement>(null);
+  
+  const pageOrder = PAGE_ORDER;
+
+  // Keep currentPageRef in sync with state
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+    
+    // Only delay prevPage update when transitioning FROM work TO home
+    if (prevPage === "work" && currentPage === "home") {
+      const timer = setTimeout(() => {
+        setPrevPage(currentPageRef.current);
+      }, 600);
+      return () => clearTimeout(timer);
+    } else {
+      setPrevPage(currentPageRef.current);
+    }
+  }, [currentPage, prevPage]);
 
   // Apply device optimizations
   useDeviceOptimizations();
@@ -463,9 +553,9 @@ export default function PortfolioUniqueNav() {
     document.documentElement.classList.add("dark");
   }, []);
 
-  // Disable scroll on body for all pages except work
+  // Disable scroll on body for work/about/contact pages only
   useEffect(() => {
-    if (currentPage !== "work") {
+    if (currentPage !== "home" && currentPage !== "work") {
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
     } else {
@@ -474,13 +564,123 @@ export default function PortfolioUniqueNav() {
     }
   }, [currentPage]);
 
-  return (
-  <div className="relative min-h-screen overflow-x-hidden text-slate-700 dark:text-slate-200 bg-white dark:bg-[#050a15]">
-      {/* Solid full-screen background layer */}
-      <div className="fixed inset-0 z-0 bg-[#e8e8e8]" aria-hidden />
+  // Handle page navigation with direction tracking
+  const navigateTo = (page: "home" | "work" | "about" | "contact") => {
+    const currentIndex = pageOrder.indexOf(currentPage);
+    const nextIndex = pageOrder.indexOf(page);
+    setDirection(nextIndex > currentIndex ? "forward" : "backward");
+    setCurrentPage(page);
+  };
 
-      {/* Animated Dust Particles Background */}
-      <div className="fixed inset-0 z-10 pointer-events-none overflow-hidden">
+  // Swipe handlers for page navigation on mobile/tablet
+  const { handleTouchStart, handleTouchEnd } = useSwipeGesture(
+    // swipeUp (next page)
+    () => {
+      if (device === "mobile" || device === "tablet") {
+        const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
+        if (currentIndex < pageOrder.length - 1) {
+          isScrollingRef.current = true;
+          const nextPage = pageOrder[currentIndex + 1];
+          setDirection("forward");
+          setCurrentPage(nextPage);
+          
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => {
+            isScrollingRef.current = false;
+          }, 1500);
+        }
+      }
+    },
+    // swipeDown (previous page)
+    () => {
+      if (device === "mobile" || device === "tablet") {
+        const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
+        if (currentIndex > 0) {
+          isScrollingRef.current = true;
+          const prevPage = pageOrder[currentIndex - 1];
+          setDirection("backward");
+          setCurrentPage(prevPage);
+          
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => {
+            isScrollingRef.current = false;
+          }, 1500);
+        }
+      }
+    }
+  );
+
+  
+
+  return (
+  <motion.div 
+    ref={mainDivRef}
+    className={`fixed inset-0 w-screen h-screen text-slate-700 dark:text-slate-200 overflow-hidden`}
+    style={{ zIndex: 5 }}
+    animate={{ 
+      backgroundColor: (prevPage === "work" && currentPage === "home")
+        ? "#000000"
+        : currentPage === "home" && prevPage === "home"
+          ? "transparent"
+          : currentPage === "work"
+            ? "#0f172a"
+            : "#ffffff"
+    }}
+    transition={{ 
+      duration: (prevPage === "work" && currentPage === "home") ? 0.6 : 0.3,
+      ease: "easeInOut"
+    }}
+    onWheel={(e) => {
+      e.preventDefault();
+      
+      if (isScrollingRef.current) return;
+      
+      const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
+      
+      if (e.deltaY > 0) {
+        if (currentIndex < pageOrder.length - 1) {
+          isScrollingRef.current = true;
+          const nextPage = pageOrder[currentIndex + 1];
+          setDirection("forward");
+          setCurrentPage(nextPage);
+          
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => {
+            isScrollingRef.current = false;
+          }, 1500);
+        }
+      } else if (e.deltaY < 0) {
+        if (currentIndex > 0) {
+          isScrollingRef.current = true;
+          const prevPage = pageOrder[currentIndex - 1];
+          setDirection("backward");
+          setCurrentPage(prevPage);
+          
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => {
+            isScrollingRef.current = false;
+          }, 1500);
+        }
+      }
+    }}
+    onTouchStart={(e) => {
+      if (device !== "desktop") {
+        handleTouchStart(e.nativeEvent);
+      }
+    }}
+    onTouchEnd={(e) => {
+      if (device !== "desktop") {
+        handleTouchEnd(e.nativeEvent);
+      }
+    }}
+  >
+      {/* Dust Particles only - background colors handled by wrapper */}
+      <motion.div 
+        className="fixed inset-0 w-screen h-screen z-10 pointer-events-none overflow-hidden"
+        initial={{ opacity: 1 }}
+        animate={{ opacity: currentPage === "home" ? 0 : 1 }}
+        transition={{ duration: 0.9 }}
+      >
         {[...Array(typeof window !== "undefined" && window.innerWidth < 768 ? 30 : 80)].map((_, i) => {
           const size = Math.random() * 6 + 2; // 2px to 8px
           const duration = Math.random() * 3 + 3; // 3s to 6s
@@ -503,7 +703,9 @@ export default function PortfolioUniqueNav() {
               style={{
                 width: `${size}px`,
                 height: `${size}px`,
-                background: `rgba(0, 0, 0, ${Math.random() * 0.28 + 0.08})`,
+                background: currentPage === "work" 
+                  ? `rgba(255, 255, 255, ${Math.random() * 0.28 + 0.08})`
+                  : `rgba(0, 0, 0, ${Math.random() * 0.28 + 0.08})`,
                 left: `${startX}%`,
                 top: `${startY}%`,
                 filter: "blur(2px)",
@@ -526,76 +728,53 @@ export default function PortfolioUniqueNav() {
             />
           );
         })}
-      </div>
-
-      {/* Fixed Home Button - floating above everything */}
-      <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none h-auto flex items-center justify-center" style={{ paddingTop: "max(env(safe-area-inset-top), 1rem)", paddingBottom: "0.75rem" }}>
-        <motion.button
-          onClick={() => {
-            triggerHaptic("medium");
-            setCurrentPage("home");
-          }}
-          className="pointer-events-auto cursor-pointer h-12 w-12 sm:h-14 sm:w-14 home-button flex items-center justify-center rounded-full transition-all duration-200 active:scale-95"
-          style={{ 
-            outline: "none",
-            border: "none",
-            boxShadow: "none",
-            background: "rgba(255, 255, 255, 0.15)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-          }}
-          initial={{ scale: 1, opacity: 0.9 }}
-          whileHover={{ scale: 1.15, opacity: 1, background: "rgba(255, 255, 255, 0.25)" }}
-          whileTap={{ scale: 0.95, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          aria-label="Go to home"
-        >
-          <Home className="w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={2} />
-        </motion.button>
-      </div>
-
-      {/* Header Container - Bezel style with shadow */}
-      <div
-        className="fixed top-0 left-0 right-0 z-40 backdrop-blur-sm"
-        style={{
-          background: "rgba(20, 30, 50, 0.45)",
-          borderBottomLeftRadius: "3rem",
-          borderBottomRightRadius: "3rem",
-          boxShadow: "0 10px 26px rgba(0, 0, 0, 0.75)",
-          paddingTop: "max(env(safe-area-inset-top), 1.5rem)",
-          paddingBottom: "1.5rem",
-          minHeight: "max(7.5rem, calc(env(safe-area-inset-top) + 7.5rem))",
-        }}
-      />
+      </motion.div>
 
       {/* Main Content */}
-  <main className={`relative z-20 pb-16 pt-24 sm:pt-28 ${currentPage !== "work" ? "overflow-hidden h-screen" : ""}`} style={{ paddingTop: "max(7rem, calc(env(safe-area-inset-top) + 5.5rem))" }}>
+  <main className={`relative z-20 pb-0 overflow-visible`} style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 2rem))" }}>
         <AnimatePresence mode="wait">
           {currentPage === "home" && (
-            <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-              <Section id="home">
-                <Hero setPage={setCurrentPage} />
-              </Section>
-            </motion.div>
+            <Hero setPage={navigateTo} />
           )}
           {currentPage === "work" && (
-            <motion.div key="work" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto px-4">
-              <Work setPage={setCurrentPage} />
+            <motion.div 
+              key="work" 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              transition={{ duration: 0.9, ease: [0.34, 1.56, 0.64, 1] }}
+              className="w-full"
+            >
+              <Work setPage={navigateTo} />
             </motion.div>
           )}
           {currentPage === "about" && (
-            <motion.div key="about" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto px-4">
-              <About setPage={setCurrentPage} />
+            <motion.div 
+              key="about" 
+              initial={{ opacity: 0, scale: direction === "forward" ? 0.7 : 1.3 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              exit={{ opacity: 0, scale: direction === "forward" ? 1.3 : 0.7 }} 
+              transition={{ duration: 0.9, ease: [0.34, 1.56, 0.64, 1] }}
+              className="max-w-6xl mx-auto px-4"
+            >
+              <About setPage={navigateTo} />
             </motion.div>
           )}
           {currentPage === "contact" && (
-            <motion.div key="contact" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="max-w-6xl mx-auto px-4">
-              <Contact setPage={setCurrentPage} />
+            <motion.div 
+              key="contact" 
+              initial={{ opacity: 0, scale: direction === "forward" ? 0.7 : 1.3 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              exit={{ opacity: 0, scale: direction === "forward" ? 1.3 : 0.7 }} 
+              transition={{ duration: 0.9, ease: [0.34, 1.56, 0.64, 1] }}
+              className="max-w-6xl mx-auto px-4"
+            >
+              <Contact setPage={navigateTo} />
             </motion.div>
           )}
         </AnimatePresence>
       </main>
-    </div>
+    </motion.div>
   );
 }
 
@@ -633,85 +812,102 @@ function Section({
 }
 
 function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
+  const [windowWidth, setWindowWidth] = React.useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth;
+    }
+    return 1024;
+  });
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Calculate background position based on viewport width for progressive left crop
+  const getBackgroundPosition = () => {
+    if (windowWidth >= 1024) {
+      return "center 2%";
+    } else {
+      // Smoothly shift right as screen gets smaller (from 1024px down to 320px mobile)
+      const progress = Math.max(0, (1024 - windowWidth) / (1024 - 320));
+      const shiftAmount = progress * 48; // Gradually shift up to 48%
+      return `calc(50% + ${shiftAmount}%) 50%`;
+    }
+  };
+
+  // Calculate title left position smoothly based on viewport width
+  const getTitleLeftPosition = () => {
+    if (windowWidth >= 1024) {
+      return "20%"; // Desktop position
+    } else {
+      // Smoothly transition from md:left-[20%] to left-4 as screen gets smaller
+      const progress = Math.max(0, (1024 - windowWidth) / (1024 - 320));
+      const leftPercent = 20 - (progress * 22); // From 20% down to ~-2% at mobile (clamped to 1%)
+      return `${Math.max(1, leftPercent)}%`;
+    }
+  };
+
+  // Preload the background image to prevent flash on load
+  React.useEffect(() => {
+    const img = new Image();
+    img.src = '/assets/IMG_2282.JPG';
+  }, []);
+
   return (
-    <div className="relative w-full pt-4 sm:pt-16 md:pt-24">
-      {/* MAIN HERO CONTENT: 2-column grid with title left and content right */}
-      <div className="relative z-10 w-full grid md:grid-cols-2 gap-8 items-start max-w-6xl mx-auto px-4">
-        
-        {/* LEFT: Title with buttons below */}
-        <div className="flex flex-col items-center gap-10">
-          {/* Main title */}
-          <motion.h1
-            layout
-            className="relative z-10 font-[KiwiSoda] font-normal leading-tight bounce-text"
-            style={{ color: "#1a1a1a" }}
-          >
-            {/* Bigger name */}
-            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
-              Shyon Shiri
-            </span>
-
-            {/* Smaller subtitle */}
-            <span className="block mt-1 text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400 bounce-text">
-              Graphic Designer
-            </span>
-          </motion.h1>
-
-          {/* Buttons below title */}
-          <motion.div
-            className="flex flex-row gap-6 justify-center mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            {/* Work Button */}
-            <ShimmerButton onClick={() => setPage("work")} icon={<Briefcase className="w-6 h-6" />} />
-
-            {/* About Button */}
-            <ShimmerButton onClick={() => setPage("about")} icon={<User className="w-6 h-6" />} />
-
-            {/* Contact Button */}
-            <ShimmerButton onClick={() => setPage("contact")} icon={<Mail className="w-6 h-6" />} />
-          </motion.div>
-        </div>
-
-        {/* RIGHT: Portrait Image */}
-        <motion.div
-          className="relative mx-auto flex items-center md:items-start justify-center md:-mt-20"
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
+    <motion.div 
+      id="home"
+      key="hero"
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }} 
+      transition={{ 
+        duration: 0.9, 
+        ease: [0.34, 1.56, 0.64, 1]
+      }}
+      className="fixed z-20 flex items-center overflow-hidden"
+      style={{
+        backgroundColor: "#0f172a",
+        backgroundImage: "url('/assets/IMG_2282.JPG')",
+        backgroundSize: "cover",
+        backgroundPosition: getBackgroundPosition(),
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
+    >
+      {/* Title and buttons overlay - positioned absolutely */}
+      <div 
+        className="absolute z-30 top-1/2 md:top-[47%] -translate-y-1/2 flex flex-col items-start md:items-center justify-center gap-4 sm:gap-6 w-auto"
+        style={{ left: getTitleLeftPosition() }}
+      >
+        <motion.h1
+          layout
+          className="font-[KiwiSoda] font-normal leading-tight bounce-text text-center"
+          style={{ color: "#1a1a1a" }}
         >
-          <div className="relative w-full flex items-center justify-center">
-            <motion.div
-              className="relative"
-            >
-              <motion.div
-                className="w-56 sm:w-72 md:w-80 h-80 sm:h-[450px] md:h-[520px] origin-center relative overflow-hidden bg-[#e8e8e8]"
-                style={{ 
-                  borderRadius: "60% 40% 50% 50% / 65% 35% 55% 45%",
-                  boxShadow: "inset 0 0 60px rgba(0, 0, 0, 0.4)"
-                }}
-              >
-                <motion.img
-                  src="/assets/Shyon_Pic_5.jpg"
-                  alt="Portrait"
-                  className="w-full h-full object-cover absolute inset-0"
-                />
-                {/* Gradient overlay to blend edges into background */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: "radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(232, 232, 232, 0.15) 80%, rgba(232, 232, 232, 0.4) 100%)",
-                    pointerEvents: "none"
-                  }}
-                />
-              </motion.div>
-            </motion.div>
-          </div>
-        </motion.div>
+          {/* Bigger name - responsive sizing */}
+          <span className="block text-5xl sm:text-5xl md:text-7xl lg:text-8xl">
+            Shyon Shiri
+          </span>
+
+          {/* Smaller subtitle - responsive sizing */}
+          <span className="block mt-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400 bounce-text">
+            Graphic Designer
+          </span>
+        </motion.h1>
+
+        {/* End of Hero content */}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -746,11 +942,12 @@ function AutoAspectTile({
   return (
     <motion.article
       ref={containerRef}
-      className="group relative rounded-3xl overflow-hidden cursor-pointer"
+      className={`group relative rounded-3xl overflow-hidden cursor-pointer ${onMediaClick ? "bg-transparent backdrop-filter-none" : ""}`}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       onClick={handleClick}
+      style={onMediaClick ? { background: "transparent", backdropFilter: "none" } : undefined}
     >
       <Wrapper
         {...(!shouldDisableLink && item.link && !onMediaClick
@@ -760,11 +957,12 @@ function AutoAspectTile({
               rel: "noopener noreferrer",
             }
           : {})}
-        className="block w-full h-full"
+        className={`block w-full h-full ${onMediaClick ? "bg-transparent" : ""}`}
+        style={onMediaClick ? { background: "transparent" } : undefined}
       >
         {/* MEDIA */}
         <div
-          className="w-full"
+          className="w-full bg-transparent"
           style={{ aspectRatio: ratio ?? 16 / 9 }}
         >
           {item.type === "image" ? (
@@ -829,6 +1027,7 @@ function MediaModal({
   onClose: () => void;
   onNavigate?: (category: string, index: number) => void;
 }) {
+  const device = useDeviceType();
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
   // Create a combined media array: start with the main item, then related images
@@ -850,12 +1049,12 @@ function MediaModal({
   
   // If aspect ratio is very small (more portrait), reduce base size
   if (aspectRatio < 0.8) {
-    baseWidth = 350;
+    baseWidth = 480;
     baseHeight = baseWidth / aspectRatio;
   }
   
   const maxAvailableWidth = window.innerWidth * 0.55; // Right side of layout
-  const maxAvailableHeight = window.innerHeight * 0.7;
+  const maxAvailableHeight = window.innerHeight * 0.65;
   
   // Scale down if exceeds available space
   let finalWidth = baseWidth;
@@ -899,7 +1098,7 @@ function MediaModal({
 
   return (
     <motion.div
-      className="fixed bg-black/40 backdrop-blur-md media-modal-fullscreen"
+      className="fixed bg-black/40 backdrop-blur-md media-modal-fullscreen pointer-events-auto"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -907,15 +1106,19 @@ function MediaModal({
       style={{ 
         position: "fixed",
         inset: 0,
-        zIndex: 9999,
+        zIndex: 99999,
         padding: 0,
         margin: 0,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        overflow: "hidden",
-        width: "100%",
-        height: "100%",
+        overflow: "auto",
+        width: "100vw",
+        height: "100vh",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
       }}
     >
       <motion.div
@@ -928,11 +1131,11 @@ function MediaModal({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: window.innerWidth < 1024 ? "1.5rem" : "3rem",
-          maxHeight: "calc(100vh - 8rem)",
+          gap: window.innerWidth < 1024 ? "-0.5rem" : "-1rem",
+          maxHeight: "calc(100vh - 10rem)",
           flexDirection: window.innerWidth < 1024 ? "column" : "row",
-          paddingTop: window.innerWidth < 768 ? "8rem" : "6rem",
-          paddingBottom: "2rem",
+          paddingTop: window.innerWidth < 768 ? "6rem" : "4rem",
+          paddingBottom: "4rem",
           paddingLeft: "0",
           paddingRight: "0",
           boxSizing: "border-box",
@@ -953,10 +1156,10 @@ function MediaModal({
         </button>
 
         {/* Left: Text content */}
-        <div className="flex flex-col justify-center items-start flex-shrink-0 w-full lg:w-1/3" style={{ paddingLeft: "1rem", paddingRight: "1rem", maxHeight: "100%", overflow: "hidden" }}>
+        <div className="flex flex-col justify-center items-start flex-shrink-0 w-full lg:w-1/3" style={{ paddingLeft: "1rem", paddingRight: "0", maxHeight: "100%", overflow: "hidden" }}>
           {item.title && (
             <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight break-words">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2 leading-tight break-words">
                 {item.title === "Product, not Consumer" ? (
                   <span className="italic">{item.title}</span>
                 ) : (
@@ -964,14 +1167,12 @@ function MediaModal({
                 )}
               </h2>
               {item.year && (
-                <p className="text-sm text-white/60 mb-4">{item.year}</p>
+                <p className="text-sm text-white/60 mb-3">{item.year}</p>
               )}
             </div>
           )}
           {item.description && item.title !== "Clothing Line Mock Up" && (
-            <p className="text-base sm:text-lg text-white/90 leading-relaxed">
-              {item.description}
-            </p>
+            <p className="text-base sm:text-lg text-white/90 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.description }} />
           )}
         </div>
 
@@ -982,7 +1183,7 @@ function MediaModal({
           minHeight: 0, 
           minWidth: 0,
           maxWidth: "100%",
-          paddingLeft: "1rem",
+          paddingLeft: "0",
           paddingRight: "1rem"
         }}>
           {currentMedia.type === "image" ? (
@@ -1047,7 +1248,7 @@ function MediaModal({
 
         {/* Navigation - Bottom center */}
         {allMedia.length > 1 && (
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-4" style={{ bottom: aspectRatio < 1 ? "-4rem" : "0" }}>
+          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-4" style={{ bottom: "-0.5rem" }}>
             <button
               onClick={handlePrevImage}
               className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition"
@@ -1074,9 +1275,122 @@ function MediaModal({
   );
 }
 
+function ProjectModal({ 
+  project,
+  projectId,
+  onClose
+}: { 
+  project: any;
+  projectId: string;
+  onClose: () => void;
+}) {
+  const device = useDeviceType();
+  // Individual scaling for each project
+  let scaleValue = 0.75;
+  switch(projectId) {
+    case "3d-modeling":
+      scaleValue = 0.90; // 3D Rendering - ORIGINAL
+      break;
+    case "digital-media":
+      scaleValue = 0.88; // Digital Media
+      break;
+    case "camera-work":
+      scaleValue = 0.95; // Camera Work
+      break;
+    case "programming":
+      scaleValue = 0.55; // Programming - ORIGINAL (you want this smaller, what scale?)
+      break;
+    case "fabrication":
+      scaleValue = 0.60; // Fabrication - ORIGINAL
+      break;
+    case "3d-modelling":
+      scaleValue = 0.62; // 3D Modelling
+      break;
+  }
+
+  useEffect(() => {
+    // Disable body scroll when modal opens
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEscape);
+    
+    return () => {
+      // Re-enable body scroll when modal closes
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
+
+  return (
+    <motion.div
+      className="fixed backdrop-blur-xl media-modal-fullscreen pointer-events-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{ 
+        position: "fixed",
+        inset: 0,
+        zIndex: 99999,
+        padding: 0,
+        margin: 0,
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        overflow: device === "desktop" ? "hidden" : "auto",
+        width: "100vw",
+        height: "100vh",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        background: "rgba(0, 0, 0, 0.3)",
+      }}
+    >
+      <motion.div
+        className="relative w-11/12 max-w-full flex flex-col items-center p-8"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{ marginTop: projectId === "camera-work" ? "110px" : projectId === "3d-modeling" ? "210px" : "90px", overflow: device === "desktop" ? "hidden" : "visible" }}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className={`absolute z-50 p-2 hover:bg-white/10 rounded-full transition-colors ${projectId === "digital-media" ? "top-0 right-0" : "top-4 right-4"}`}
+        >
+          <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        {/* Project description */}
+        {project.description && (
+          <p className="text-sm md:text-base text-white/80 mb-8 text-center max-w-2xl">
+            {project.description}
+          </p>
+        )}
+
+        {/* Project content - scaled based on project type */}
+        <div style={{ width: "100%", transform: `scale(${scaleValue})`, transformOrigin: "top" }}>
+          {project.content}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
   const [activeVideo, setActiveVideo] = useState<MediaItem | null>(null);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const device = useDeviceType();
 
   // Combine all projects with their metadata
   const allProjectItems = [
@@ -1086,6 +1400,7 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       description: p.description,
       img: p.img,
       objectPosition: p.objectPosition,
+      scale: p.scale,
       category: "Design Systems & Visuals" as const,
       content: (
         <div>
@@ -1101,21 +1416,12 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       description: p.description,
       img: p.img,
       objectPosition: p.objectPosition,
+      scale: (p as any).scale,
       category: "Interactive Media" as const,
       content: (
         <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-2">
           {(FABRICATION_MEDIA[p.title as keyof typeof FABRICATION_MEDIA] || []).map((item, index) => (
             <div key={item.src ?? index}>
-              {item.title && (
-                <h4 className="text-white font-semibold text-sm mb-2">
-                  {item.title}
-                </h4>
-              )}
-              {item.description && (
-                <p className="text-white/70 text-xs mb-3 line-clamp-2">
-                  {item.description}
-                </p>
-              )}
               <AutoAspectTile item={item} onMediaClick={setActiveVideo} />
             </div>
           ))}
@@ -1124,148 +1430,69 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
     })),
   ];
 
+  const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null);
+
   return (
-    <div className="w-full min-h-screen py-16 sm:py-20">
-      {/* Navigation */}
-      <div className="flex justify-between items-center px-4 mb-0 -mt-8">
-        <div></div>
-        <PageNavigation 
-          direction="next" 
-          pageName="About" 
-          onClick={() => setPage("about")}
-        />
+    <div className="flex flex-col w-full" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <h2 className="font-[KiwiSoda] text-5xl font-normal bounce-text pt-20 px-4 ml-8 md:ml-32" style={{ color: "#ffffff" }}>My Work</h2>
+      
+      {/* Tab Carousel */}
+      <div className="mt-12 px-4">
+        <CubeTab items={allProjectItems} onItemClick={setSelectedProjectIndex} selectedIndex={selectedProjectIndex} />
       </div>
 
-      {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-16">
-        <h2 className="font-[KiwiSoda] text-4xl sm:text-5xl md:text-6xl font-normal bounce-text mb-4" style={{ color: "#1a1a1a" }}>
-          My Work
-        </h2>
-        <p className="text-slate-700 text-lg max-w-2xl">
-          Explore my projects across design systems, digital media, and fabrication work.
-        </p>
-      </div>
+      {/* Project Modal */}
+      <AnimatePresence mode="wait">
+        {selectedProjectIndex !== null && allProjectItems[selectedProjectIndex] && (
+          <ProjectModal 
+            project={allProjectItems[selectedProjectIndex]} 
+            projectId={allProjectItems[selectedProjectIndex].id}
+            onClose={() => setSelectedProjectIndex(null)} 
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Accordion-style Projects */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-4">
-        {allProjectItems.map((project, index) => (
-          <motion.div
-            key={project.id}
-            className="rounded-xl border border-slate-500/60 overflow-hidden bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 transition-shadow"
-            initial={false}
-            animate={{ 
-              boxShadow: expandedIndex === index 
-                ? "0 0 20px rgba(56, 189, 248, 0.15)" 
-                : "0 0 0px rgba(56, 189, 248, 0)"
-            }}
-            transition={{ duration: 0.2 }}
-          >
-            {/* Project Header - Clickable */}
-            <motion.button
-              onClick={() => {
-                triggerHaptic("light");
-                setExpandedIndex(expandedIndex === index ? null : index);
-              }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full px-4 sm:px-6 py-5 sm:py-6 flex items-center gap-4 text-left transition-colors origin-center"
-            >
-              {/* Thumbnail */}
-              <div className="hidden sm:block w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 border border-white/10">
-                <img 
-                  src={project.img} 
-                  alt={project.title}
-                  className="w-full h-full object-cover"
-                  style={{ objectPosition: project.objectPosition ?? "center" }}
-                />
-              </div>
+      {/* Drag Indicator - All Devices */}
+      <motion.div 
+        className="flex items-center justify-center gap-3 mt-8 mb-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+      >
+        <div 
+          className="bounce-text"
+          style={{ 
+            filter: "drop-shadow(0 0 8px rgba(56, 189, 248, 0.9)) drop-shadow(0 0 16px rgba(56, 189, 248, 0.7))"
+          }}
+        >
+          <ChevronLeft size={32} style={{ color: "#ffffff" }} />
+        </div>
+        <span 
+          className="font-[KiwiSoda] bounce-text" 
+          style={{ 
+            color: "#ffffff", 
+            fontSize: "20px", 
+            letterSpacing: "0.5px"
+          }}
+        >
+          {device === "desktop" ? "Drag tab to explore" : "Scroll tab to explore"}
+        </span>
+        <div 
+          className="bounce-text"
+          style={{ 
+            filter: "drop-shadow(0 0 8px rgba(56, 189, 248, 0.9)) drop-shadow(0 0 16px rgba(56, 189, 248, 0.7))"
+          }}
+        >
+          <ChevronRight size={32} style={{ color: "#ffffff" }} />
+        </div>
+      </motion.div>
 
-              {/* Project Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-1">
-                  <h3 className="text-lg sm:text-xl font-semibold text-white truncate">
-                    {project.title}
-                  </h3>
-                  <span className="text-xs px-2 py-1 rounded-full bg-sky-500/20 text-sky-300 whitespace-nowrap">
-                    {project.category}
-                  </span>
-                </div>
-                <p className="text-sm text-white line-clamp-2">
-                  {project.description}
-                </p>
-              </div>
-
-              {/* Expand Icon */}
-              <motion.div
-                animate={{ rotate: expandedIndex === index ? 180 : 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="flex-shrink-0 ml-auto"
-              >
-                <svg 
-                  className="w-5 h-5 text-sky-400" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </motion.div>
-            </motion.button>
-
-            {/* Expanded Content */}
-            <AnimatePresence>
-              {expandedIndex === index && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="px-4 sm:px-6 py-8 border-t border-white/10 bg-white/[0.02]">
-                    {/* Full Image on Mobile */}
-                    <div className="sm:hidden mb-6 rounded-lg overflow-hidden border border-white/10">
-                      <img 
-                        src={project.img} 
-                        alt={project.title}
-                        className="w-full object-cover aspect-video"
-                        style={{ objectPosition: project.objectPosition ?? "center" }}
-                      />
-                    </div>
-
-                    {/* Content Grid */}
-                    <div className="space-y-6">
-                      <div className="bg-white/5 rounded-lg p-4 sm:p-6 space-y-6">
-                        {project.content}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Footer Spacing */}
-      <div className="mt-20" />
-
-      {/* Media Modal */}
+      {/* Media Modal 2 - displays when an asset is clicked */}
       <AnimatePresence>
         {activeVideo && (
           <MediaModal 
             item={activeVideo} 
-            onClose={() => setActiveVideo(null)}
-            onNavigate={(category, index) => {
-              const categoryMap: Record<string, MediaItem[]> = {
-                "MODELING_MEDIA": MODELING_MEDIA,
-                "MODELS_MEDIA": MODELS_MEDIA,
-              };
-              const items = categoryMap[category];
-              if (items && items[index]) {
-                setActiveVideo(items[index]);
-              }
-            }}
+            onClose={() => setActiveVideo(null)} 
           />
         )}
       </AnimatePresence>
@@ -1276,18 +1503,10 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
 function ProjectDetailModelingMedia({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
   return (
     <section className="space-y-6">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 items-end">
         {MODELING_MEDIA.map((item, index) => (
-          <div key={item.src ?? index} className="space-y-2">
-            <div>
-              <h5 className="text-sm font-semibold text-white">{item.title}</h5>
-              {item.description && (
-                <p className="text-xs text-white mt-0.5 line-clamp-2">{item.description}</p>
-              )}
-            </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
-              <AutoAspectTile item={item} onMediaClick={onMediaClick} />
-            </div>
+          <div key={item.src ?? index} className="w-full">
+            <AutoAspectTile item={item} onMediaClick={onMediaClick} />
           </div>
         ))}
       </div>
@@ -1301,79 +1520,48 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 4 }}
-      className="space-y-6"
+      className="scale-75 origin-top"
+      style={{ marginLeft: '-20px' }}
     >
-      <div className="grid lg:grid-cols-2 gap-5">
-        {/* Nabu Banner - Takes 2 rows on desktop */}
-        <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Column 1: Shiri designs 1 & 2 stacked */}
+        <div className="flex flex-col gap-5">
           <div>
-            <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[0].title}</h5>
-            {GRAPHIC_MEDIA[0].description && (
-              <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[0].description}</p>
-            )}
+            <AutoAspectTile item={SHIRI_DESIGNS[0]} onMediaClick={onMediaClick} />
           </div>
-          <div className="rounded-lg overflow-hidden border border-white/10">
+          <div>
+            <AutoAspectTile item={SHIRI_DESIGNS[1]} onMediaClick={onMediaClick} />
+          </div>
+        </div>
+
+        {/* Column 2: Nabu only */}
+        <div className="flex flex-col gap-5">
+          <div>
             <AutoAspectTile item={GRAPHIC_MEDIA[0]} onMediaClick={onMediaClick} />
           </div>
         </div>
 
-        {/* Right column wrapper for stacked items */}
+        {/* Column 3: Video Game Demo, Mina, Everly */}
         <div className="flex flex-col gap-5">
-          {/* Video Game Demo */}
-          <div className="space-y-2">
-            <div>
-              <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[1].title}</h5>
-              {GRAPHIC_MEDIA[1].description && (
-                <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[1].description}</p>
-              )}
-            </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
-              <AutoAspectTile item={GRAPHIC_MEDIA[1]} onMediaClick={onMediaClick} />
-            </div>
+          <div>
+            <AutoAspectTile item={GRAPHIC_MEDIA[1]} onMediaClick={onMediaClick} />
           </div>
-
-          {/* Mina Website */}
-          <div className="space-y-2">
-            <div>
-              <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[2].title}</h5>
-              {GRAPHIC_MEDIA[2].description && (
-                <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[2].description}</p>
-              )}
-            </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
-              <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
-            </div>
+          <div>
+            <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
           </div>
-
-          {/* Everly Care Home */}
-          <div className="space-y-2">
-            <div>
-              <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[3].title}</h5>
-              {GRAPHIC_MEDIA[3].description && (
-                <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[3].description}</p>
-              )}
-            </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
-              <AutoAspectTile item={GRAPHIC_MEDIA[3]} onMediaClick={onMediaClick} />
-            </div>
+          <div>
+            <AutoAspectTile item={GRAPHIC_MEDIA[3]} onMediaClick={onMediaClick} />
           </div>
         </div>
-      </div>
 
-      {/* Shiri Designs */}
-      <div className="space-y-3">
-        <h5 className="text-sm font-semibold text-white">Design Concepts</h5>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {SHIRI_DESIGNS.map((item, index) => (
-            <div key={item.src ?? index} className="space-y-1">
-              <div className="rounded-lg overflow-hidden border border-white/10">
-                <AutoAspectTile item={item} onMediaClick={onMediaClick} />
-              </div>
-              {item.title && (
-                <p className="text-xs text-white line-clamp-1">{item.title}</p>
-              )}
-            </div>
-          ))}
+        {/* Column 4: Shiri designs 3 & 4 stacked */}
+        <div className="flex flex-col gap-5" style={{ marginTop: '0px' }}>
+          <div>
+            <AutoAspectTile item={SHIRI_DESIGNS[2]} onMediaClick={onMediaClick} />
+          </div>
+          <div>
+            <AutoAspectTile item={SHIRI_DESIGNS[3]} onMediaClick={onMediaClick} />
+          </div>
         </div>
       </div>
     </motion.section>
@@ -1381,21 +1569,60 @@ function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: Medi
 }
 
 function ProjectDetailCameraWork({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
+  const [windowWidth, setWindowWidth] = React.useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+
+  React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Calculate responsive margins to keep Campaign and Abstract in fixed position
+  const getMarginForIndex = (index: number) => {
+    if (index === 9) return "-320px"; // Campaign - keep fixed
+    if (index === 14) return "-180px"; // Abstract - keep fixed
+    if (index === 0) return "40px";
+    return "0";
+  };
+
+  // Reorder: 5-column grid with Candid on left, Culinary Praise on right with Campaign and Abstract below
+  const reorderedMedia = [
+    CAMERA_MEDIA[6], // Candid Studio Portrait - Col 0
+    CAMERA_MEDIA[0], // NABU 2026 Teaser - Col 1
+    CAMERA_MEDIA[1], // NABU 2025 Summer - Col 2
+    CAMERA_MEDIA[2], // NABU 2023 Spring - Col 3
+    CAMERA_MEDIA[5], // Culinary Praise - Col 4
+    null, // Empty - Col 0, Row 2
+    null, // Empty - Col 1, Row 2
+    null, // Empty - Col 2, Row 2
+    null, // Empty - Col 3, Row 2
+    CAMERA_MEDIA[3], // Campaign Project - Col 4, Row 2
+    null, // Empty - Col 0, Row 3
+    null, // Empty - Col 1, Row 3
+    null, // Empty - Col 2, Row 3
+    null, // Empty - Col 3, Row 3
+    CAMERA_MEDIA[4], // Abstract Scene - Col 4, Row 3
+  ];
+
   return (
     <section className="space-y-6">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {CAMERA_MEDIA.map((item, index) => (
-          <div key={item.src ?? index} className="space-y-2">
-            <div>
-              <h5 className="text-sm font-semibold text-white">{item.title}</h5>
-              {item.description && (
-                <p className="text-xs text-white mt-0.5 line-clamp-2">{item.description}</p>
-              )}
-            </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {reorderedMedia.map((item, index) => (
+          item ? (
+            <div 
+              key={item.src ?? index} 
+              className="space-y-2"
+              style={
+                (index === 4 || index === 9 || index === 14) 
+                  ? { transform: "scale(0.85)", transformOrigin: "top center", marginTop: index === 9 ? "-320px" : index === 14 ? "-180px" : "0" }
+                  : {}
+              }
+            >
               <AutoAspectTile item={item} onMediaClick={onMediaClick} />
             </div>
-          </div>
+          ) : (
+            <div key={`empty-${index}`} />
+          )
         ))}
       </div>
     </section>
@@ -1404,59 +1631,55 @@ function ProjectDetailCameraWork({ onMediaClick }: { onMediaClick: (item: MediaI
 
 function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
   const currentImage = PORTRAIT_IMAGES[0];
+  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const getPhotoMargin = () => {
+    if (windowWidth >= 1024) {
+      return "0px";
+    } else {
+      const progress = Math.max(0, (1024 - windowWidth) / (1024 - 320));
+      const marginAmount = progress * 120;
+      return `${marginAmount}px`;
+    }
+  };
 
   return (
-  <div className="w-full pt-16 sm:pt-20">
-      {/* Navigation */}
-      <div className="flex justify-between items-center px-4 mb-0 -mt-8">
-        <PageNavigation 
-          direction="prev" 
-          pageName="My Work" 
-          onClick={() => setPage("work")}
-        />
-        <PageNavigation 
-          direction="next" 
-          pageName="Contact" 
-          onClick={() => setPage("contact")}
-        />
-      </div>
-
-      {/* Grid wrapper for content - pushed down */}
-      <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto px-4 md:px-0 mt-12">
+  <div className="w-full pt-16 overflow-visible">
+      <h2 className="font-[KiwiSoda] text-5xl font-normal bounce-text ml-8 md:ml-32 px-4 mb-8" style={{ color: "#1a1a1a" }}>About</h2>
+      {/* Grid wrapper for content */}
+      <div className="grid grid-cols-2 gap-4 md:gap-8 items-start max-w-7xl ml-8 md:ml-32 mr-4 md:mr-0 px-4 md:px-0 overflow-visible">
       {/* Left: Text Content */}
-      <div>
-  <h2 className="font-[KiwiSoda] text-3xl md:text-5xl font-normal bounce-text" style={{ color: "#1a1a1a" }}>About</h2>
-        <p className="mt-4 text-slate-700 dark:text-slate-700">
+      <div className="pt-0 md:pt-8">
+        <p className="mt-0 text-sm md:text-base text-slate-700 dark:text-slate-700">
           I am a graphic designer and creative technologist based in the Bay Area with over a decade of experience across diverse mediums. My journey began in 2013 when I created a 3D model in Maya as part of a middle school project, and since then, I've developed a broad skill set spanning digital design, 3D modeling, motion graphics, interactive media, and fabrication. My work reflects a commitment to exploring the intersection of visual design and hands-on creation.
         </p>
-        <p className="mt-4 text-slate-700 dark:text-slate-700">
+        <p className="mt-4 text-sm md:text-base text-slate-700 dark:text-slate-700">
           I'm driven by a genuine passion for making and a curiosity to experiment with new tools and techniques. Rather than chasing recognition, I create because I enjoy the process itself, whether it's designing a brand identity, building interactive hardware, or exploring experimental 3D forms. For me, design is less about the finished product and more about the creative exploration that gets me there.
         </p>
       </div>
 
-      {/* Right: Image Carousel */}
+      {/* Right: Image */}
       <motion.div
-        className="relative mx-auto"
+        className="w-56 sm:w-72 md:w-80 h-80 sm:h-[450px] md:h-[520px] origin-center relative border border-white/10 mx-auto"
+        style={{ 
+          borderRadius: currentImage.frame,
+          boxShadow: "0 0 20px rgba(128, 128, 128, 0.6)",
+          overflow: "visible",
+          marginTop: getPhotoMargin()
+        }}
       >
-        <div className="relative w-full flex items-center justify-center">
-          <motion.div
-            className="relative"
-          >
-            <motion.div
-              className="w-56 sm:w-72 md:w-80 h-80 sm:h-[450px] md:h-[520px] origin-center relative overflow-hidden border border-white/10 bg-slate-900/40"
-              style={{ 
-                borderRadius: currentImage.frame,
-                boxShadow: "0 0 30px rgba(128, 128, 128, 0.5), inset 0 0 20px rgba(128, 128, 128, 0.3)"
-              }}
-            >
-              <motion.img
-                src={currentImage.src}
-                alt={currentImage.alt}
-                className="w-full h-full object-cover absolute inset-0"
-              />
-            </motion.div>
-          </motion.div>
-        </div>
+        <motion.img
+          src={currentImage.src}
+          alt={currentImage.alt}
+          className="w-full h-full object-cover"
+          style={{ borderRadius: currentImage.frame }}
+        />
       </motion.div>
       </div>
     </div>
@@ -1465,19 +1688,9 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
 
 function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
   return (
-  <div className="w-full pt-24 sm:pt-28 min-h-screen flex flex-col overflow-hidden">
-      {/* Navigation */}
-      <div className="flex justify-between items-center px-4 mb-0 -mt-8">
-        <PageNavigation 
-          direction="prev" 
-          pageName="About" 
-          onClick={() => setPage("about")}
-        />
-        <div></div>
-      </div>
-
+  <div className="w-full min-h-screen flex flex-col items-center pt-60">
       {/* Centered content */}
-      <div className="flex-1 flex flex-col items-center justify-start px-4 pt-32">
+      <div className="flex flex-col items-center justify-center px-4">
         <h2 className="font-[KiwiSoda] text-6xl md:text-7xl lg:text-8xl font-normal bounce-text text-center" style={{ color: "#1a1a1a" }}>
           Let’s collaborate
         </h2>

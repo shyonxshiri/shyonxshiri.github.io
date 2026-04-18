@@ -99,7 +99,7 @@ export default function ProjectDetailDigitalMedia({ onMediaClick }: ProjectDetai
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 4 }}
-      className="space-y-6"
+      className="space-y-4"
     >
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Nabu Banner - Takes 2 rows on desktop */}
@@ -148,7 +148,7 @@ export default function ProjectDetailDigitalMedia({ onMediaClick }: ProjectDetai
       {/* Shiri Designs */}
       <div className="space-y-3">
         <h5 className="text-sm font-semibold text-white">Design Concepts</h5>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
           {SHIRI_DESIGNS.map((item, index) => (
             <div key={item.src ?? index} className="space-y-1">
               <div className="rounded-lg overflow-hidden border border-white/10">

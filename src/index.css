@@ -15,18 +15,16 @@ body,
 #root {
   margin: 0;
   padding: 0;
-  height: 100%;
   width: 100%;
-  overflow-x: hidden;
+  height: 100%;
+  overflow: hidden;
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;     /* Firefox */
 }
 
-/* Hide scrollbar while keeping scroll functionality */
 html {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;     /* Firefox */
-  overflow-y: scroll;  /* Reserve space but hide scrollbar */
 }
 
 html::-webkit-scrollbar,
@@ -38,8 +36,8 @@ body::-webkit-scrollbar,
 }
 
 body {
-  /* match your light background so nothing white peeks out */
-  background-color: #e8e8e8;
+  /* Transparent - let the page background show */
+  background-color: transparent;
   /* Prevent iOS text size adjustment */
   -webkit-text-size-adjust: 100%;
   /* Improve touch performance */
@@ -52,9 +50,9 @@ body {
   backface-visibility: hidden;
   -webkit-perspective: 1000;
   perspective: 1000;
-  overflow: hidden;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 /* Optional smoother text rendering */
@@ -63,12 +61,12 @@ html {
   -moz-osx-font-smoothing: grayscale;
   /* Enable GPU acceleration */
   transform: translateZ(0);
+  /* Smooth scroll behavior */
+  scroll-behavior: smooth;
 }
 
 /* Force fixed modals to cover entire screen */
 [style*="position: fixed"][style*="inset: 0"] {
-  width: 100vw !important;
-  height: 100vh !important;
   left: 0 !important;
   top: 0 !important;
   right: 0 !important;
