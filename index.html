@@ -4,7 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Shyon Shiri — Portfolio</title>
+    
+    <!-- DNS Preconnect for faster resolution -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    
+    <!-- Critical Asset Preloading -->
     <link rel="preload" as="image" href="/assets/IMG_2282.JPG" />
+    <link rel="preload" as="image" href="/assets/Shyon_About_Pic.jpg" />
+    
+    <!-- Work Page Category Cards Preload (high priority) -->
+    <link rel="preload" as="image" href="/assets/Camera_Work_Cover.JPG" />
+    <link rel="preload" as="image" href="/assets/Digital_Media_Cover.jpg" />
+    <link rel="preload" as="image" href="/assets/3D_Modeling_Cover.PNG" />
+    
+    <!-- Optimize rendering performance -->
     <style>
       html, body, #root {
         background-color: transparent !important;
@@ -13,6 +27,18 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
+      }
+      
+      /* Enable GPU acceleration for animations */
+      .motion-div, [class*="motion"], video {
+        will-change: transform;
+        transform: translate3d(0, 0, 0);
+      }
+      
+      /* Optimize video playback */
+      video {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
       }
     </style>
   </head>

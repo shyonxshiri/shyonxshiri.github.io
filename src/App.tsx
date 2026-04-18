@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Briefcase, User, Mail, Linkedin, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import CubeTab from "./CubeTab";
+import { useInitialPreload } from "./useAssetPreloader";
 
 // Cache bust v2 - ensure My_Case.jpg loads on live site
 // --- Haptic Feedback Utility ---------------------------------------------------------------
@@ -548,6 +549,9 @@ export default function PortfolioUniqueNav() {
   // Apply device optimizations
   useDeviceOptimizations();
 
+  // Preload assets on mount
+  useInitialPreload();
+
   // Force dark mode once on mount
   useEffect(() => {
     document.documentElement.classList.add("dark");
@@ -882,6 +886,10 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         left: 0,
         right: 0,
         bottom: 0,
+        width: "100%",
+        height: "100%",
+        minHeight: "100vh",
+        minWidth: "100vw"
       }}
     >
       {/* Title and buttons overlay - positioned absolutely */}
@@ -1201,11 +1209,13 @@ function MediaModal({
             <video
               key={currentMediaIndex}
               src={currentMedia.src}
+              poster={item.poster}
               controls
               className="max-w-full max-h-full object-contain rounded-3xl"
               autoPlay
               muted
               playsInline
+              preload="metadata"
               style={{ maxHeight: window.innerWidth < 1024 ? "35vh" : "100%" }}
             >
               Your browser does not support the video tag.
