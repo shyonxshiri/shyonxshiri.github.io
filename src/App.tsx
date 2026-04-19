@@ -671,7 +671,8 @@ export default function PortfolioUniqueNav() {
   return (
   <motion.div 
     ref={mainDivRef}
-    className={`relative min-h-screen text-slate-700 dark:text-slate-200 overflow-x-hidden`}
+    className={`fixed inset-0 text-slate-700 dark:text-slate-200 overflow-hidden`}
+    style={{ width: "100vw", height: "100vh" }}
     animate={{ 
       backgroundColor: (prevPage === "work" && currentPage === "home")
         ? "#000000"
@@ -732,9 +733,6 @@ export default function PortfolioUniqueNav() {
       }
     }}
   >
-      {/* Fixed full-screen background layer */}
-      <div className="fixed inset-0 z-0 bg-[#0e1116]" aria-hidden />
-
       {/* Dust Particles only - background colors handled by wrapper */}
       <motion.div 
         className="fixed inset-0 z-10 pointer-events-none overflow-hidden"
@@ -790,7 +788,7 @@ export default function PortfolioUniqueNav() {
       </motion.div>
 
       {/* Main Content */}
-  <main className="relative z-20 pb-16 pt-28 sm:pt-32">
+  <main className="fixed inset-0 z-20 overflow-hidden" style={{ width: "100vw", height: "100vh" }}>
         <AnimatePresence mode="wait">
           {currentPage === "home" && (
             <Hero setPage={navigateTo} />
@@ -924,7 +922,7 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         duration: 0.9, 
         ease: [0.34, 1.56, 0.64, 1]
       }}
-      className="relative z-10 flex items-center overflow-hidden"
+      className="fixed inset-0 z-10 flex items-center overflow-hidden"
       style={{
         backgroundColor: "#0f172a",
         backgroundImage: "url('/assets/IMG_2282.JPG')",
@@ -932,8 +930,8 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         backgroundPosition: getBackgroundPosition(),
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
-        width: "100%",
-        minHeight: "100vh"
+        width: "100vw",
+        height: "100vh"
       }}
     >
       {/* Title and buttons overlay - positioned absolutely */}
@@ -1487,77 +1485,9 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
   const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null);
 
   return (
-    <div className="flex flex-col w-full min-h-screen fixed inset-0" style={{ 
-      scrollbarWidth: 'none', 
-      msOverflowStyle: 'none',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      width: '100vw',
-      height: '100vh',
-      margin: 0,
-      padding: 0,
+    <div className="fixed inset-0 w-screen h-screen overflow-hidden" style={{ 
       backgroundColor: '#0f172a',
-      zIndex: 20,
-      overflow: 'hidden'
     }}>
-      {/* Dust Particles for Work Page */}
-      <div className="fixed inset-0 w-screen h-screen pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
-        {[...Array(typeof window !== "undefined" && window.innerWidth < 768 ? 60 : 80)].map((_, i) => {
-          const size = Math.random() * 6 + 2;
-          const duration = Math.random() * 3 + 3;
-          const delay = Math.random() * 1.5;
-          const startX = Math.random() * 100;
-          const startY = Math.random() * 100;
-          const seedOpacity = Math.random() * 0.5 + 0.2;
-          const seedScale = Math.random() * 0.25 + 0.9;
-          const seedX = (Math.random() * 2 - 1) * 20;
-          const seedY = (Math.random() * 2 - 1) * 20;
-          const driftX1 = (Math.random() * 2 - 1) * 40;
-          const driftY1 = (Math.random() * 2 - 1) * 40;
-          const driftX2 = (Math.random() * 2 - 1) * 40;
-          const driftY2 = (Math.random() * 2 - 1) * 40;
-          
-          // On mobile, exclude particles in carousel area (roughly 20% to 80% X, 30% to 65% Y)
-          const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-          const isInCarouselArea = isMobile && startX > 20 && startX < 80 && startY > 30 && startY < 65;
-          
-          if (isInCarouselArea) return null;
-          
-          return (
-            <motion.div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                width: `${size}px`,
-                height: `${size}px`,
-                background: `rgba(255, 255, 255, ${Math.random() * 0.4 + 0.15})`,
-                left: `${startX}%`,
-                top: `${startY}%`,
-                filter: "blur(2px)",
-                opacity: seedOpacity,
-              }}
-              initial={{ opacity: seedOpacity, x: seedX, y: seedY, scale: seedScale }}
-              animate={{
-                opacity: seedOpacity,
-                x: [seedX, seedX + driftX1, seedX + driftX2, seedX],
-                y: [seedY, seedY + driftY1, seedY + driftY2, seedY],
-                scale: [seedScale, 1.08, 0.9, seedScale],
-              }}
-              transition={{
-                duration,
-                ease: "easeInOut",
-                repeat: Infinity,
-                delay,
-                times: [0, 0.45, 1],
-              }}
-            />
-          );
-        })}
-      </div>
-
       <h2 className="font-[KiwiSoda] text-5xl font-normal bounce-text pt-28 md:pt-40 px-4 ml-8 md:ml-32" style={{ color: "#ffffff" }}>My Work</h2>
       
       {/* Tab Carousel */}
@@ -1813,22 +1743,10 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
 
   return (
   <motion.div 
-    className="" 
+    className="fixed inset-0 w-screen h-screen overflow-hidden" 
     style={{ 
       backgroundColor: '#ffffff',
-      position: 'absolute',
-      inset: 0,
-      width: '100%',
-      height: '100%',
-      scrollbarWidth: 'none',
-      msOverflowStyle: 'none',
-      overflow: 'hidden',
-      boxSizing: 'border-box',
-      display: 'flex',
-      flexDirection: 'column'
     }}
-    initial={{ opacity: 1 }}
-    animate={{ opacity: 1 }}
   >
       <style>{`
         div::-webkit-scrollbar { display: none; }
@@ -1852,7 +1770,7 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
           transition={{ duration: 0.6 }}
         >
           <motion.h2 
-            className="font-[KiwiSoda] font-normal bounce-text mb-8" 
+            className="font-[KiwiSoda] font-normal bounce-text mb-8 mt-8 md:mt-0" 
             style={{ 
               color: "#1a1a1a",
               fontSize: `${scaling.headingSize}px`,
@@ -1864,7 +1782,7 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
           </motion.h2>
 
           <motion.div 
-            className="pt-0 mt-6 md:mt-20"
+            className="pt-0 mt-20 md:mt-20"
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
           >
@@ -1922,12 +1840,11 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
 
   return (
   <div 
-    className="w-full h-screen flex flex-col items-center justify-center overflow-hidden" 
+    className="fixed inset-0 w-screen h-screen flex flex-col items-center justify-center overflow-hidden" 
     style={{ 
       backgroundColor: '#ffffff',
       scrollbarWidth: 'none',
-      msOverflowStyle: 'none',
-      position: 'relative'
+      msOverflowStyle: 'none'
     }}
   >
       <style>{`
