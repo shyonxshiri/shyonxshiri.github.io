@@ -60,6 +60,18 @@
     <link rel="stylesheet" crossorigin href="/assets/index-D_jOpTUm.css">
   </head>
   <body>
+    <script>
+      // Set proper height for iOS Safari fullscreen
+      function setViewportHeight() {
+        const height = window.innerHeight;
+        document.documentElement.style.height = height + 'px';
+        document.body.style.height = height + 'px';
+        document.getElementById('root')?.style.setProperty('height', height + 'px', 'important');
+      }
+      setViewportHeight();
+      window.addEventListener('resize', setViewportHeight);
+      window.addEventListener('orientationchange', setViewportHeight);
+    </script>
     <div id="root"></div>
   </body>
 </html>
