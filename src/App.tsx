@@ -523,6 +523,22 @@ export default function PortfolioUniqueNav() {
   const [currentPage, setCurrentPage] = useState<"home" | "work" | "about" | "contact">("home");
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const [prevPage, setPrevPage] = useState<"home" | "work" | "about" | "contact">("home");
+  const [particles, setParticles] = useState<Array<{
+    id: number;
+    size: number;
+    duration: number;
+    delay: number;
+    startX: number;
+    startY: number;
+    seedOpacity: number;
+    seedScale: number;
+    seedX: number;
+    seedY: number;
+    driftX1: number;
+    driftY1: number;
+    driftX2: number;
+    driftY2: number;
+  }> | null>(null);
   const device = useDeviceType();
   const isScrollingRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -530,6 +546,30 @@ export default function PortfolioUniqueNav() {
   const mainDivRef = useRef<HTMLDivElement>(null);
   
   const pageOrder = PAGE_ORDER;
+
+  // Generate particles once on mount - they persist across all pages
+  useEffect(() => {
+    if (particles === null) {
+      const particleCount = typeof window !== "undefined" && window.innerWidth < 768 ? 60 : 80;
+      const newParticles = [...Array(particleCount)].map((_, i) => ({
+        id: i,
+        size: Math.random() * 6 + 2,
+        duration: Math.random() * 3 + 3,
+        delay: Math.random() * 1.5,
+        startX: Math.random() * 100,
+        startY: Math.random() * 100,
+        seedOpacity: Math.random() * 0.5 + 0.2,
+        seedScale: Math.random() * 0.25 + 0.9,
+        seedX: (Math.random() * 2 - 1) * 20,
+        seedY: (Math.random() * 2 - 1) * 20,
+        driftX1: (Math.random() * 2 - 1) * 40,
+        driftY1: (Math.random() * 2 - 1) * 40,
+        driftX2: (Math.random() * 2 - 1) * 40,
+        driftY2: (Math.random() * 2 - 1) * 40,
+      }));
+      setParticles(newParticles);
+    }
+  }, [particles]);
 
   // Keep currentPageRef in sync with state
   useEffect(() => {
@@ -555,16 +595,28 @@ export default function PortfolioUniqueNav() {
   // Force dark mode once on mount
   useEffect(() => {
     document.documentElement.classList.add("dark");
+    // Add global scrollbar hiding styles
+    const style = document.createElement('style');
+    style.innerHTML = `
+      html::-webkit-scrollbar { display: none; }
+      body::-webkit-scrollbar { display: none; }
+      html, body { scrollbar-width: none; -ms-overflow-style: none; }
+    `;
+    document.head.appendChild(style);
   }, []);
 
-  // Disable scroll on body for work/about/contact pages only
+  // Disable scroll on body for about/contact pages only
   useEffect(() => {
-    if (currentPage !== "home" && currentPage !== "work") {
+    if (currentPage === "about" || currentPage === "contact") {
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
+      document.documentElement.style.scrollbarWidth = "none";
+      (document.documentElement.style as any).msOverflowStyle = "none";
     } else {
       document.body.style.overflow = "";
       document.documentElement.style.overflow = "";
+      document.documentElement.style.scrollbarWidth = "";
+      (document.documentElement.style as any).msOverflowStyle = "";
     }
   }, [currentPage]);
 
@@ -578,24 +630,7 @@ export default function PortfolioUniqueNav() {
 
   // Swipe handlers for page navigation on mobile/tablet
   const { handleTouchStart, handleTouchEnd } = useSwipeGesture(
-    // swipeUp (next page)
-    () => {
-      if (device === "mobile" || device === "tablet") {
-        const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
-        if (currentIndex < pageOrder.length - 1) {
-          isScrollingRef.current = true;
-          const nextPage = pageOrder[currentIndex + 1];
-          setDirection("forward");
-          setCurrentPage(nextPage);
-          
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => {
-            isScrollingRef.current = false;
-          }, 1500);
-        }
-      }
-    },
-    // swipeDown (previous page)
+    // swipeUp (previous page)
     () => {
       if (device === "mobile" || device === "tablet") {
         const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
@@ -611,6 +646,23 @@ export default function PortfolioUniqueNav() {
           }, 1500);
         }
       }
+    },
+    // swipeDown (next page)
+    () => {
+      if (device === "mobile" || device === "tablet") {
+        const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
+        if (currentIndex < pageOrder.length - 1) {
+          isScrollingRef.current = true;
+          const nextPage = pageOrder[currentIndex + 1];
+          setDirection("forward");
+          setCurrentPage(nextPage);
+          
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => {
+            isScrollingRef.current = false;
+          }, 1500);
+        }
+      }
     }
   );
 
@@ -619,8 +671,7 @@ export default function PortfolioUniqueNav() {
   return (
   <motion.div 
     ref={mainDivRef}
-    className={`fixed inset-0 w-screen h-screen text-slate-700 dark:text-slate-200 overflow-hidden`}
-    style={{ zIndex: 5 }}
+    className={`relative min-h-screen text-slate-700 dark:text-slate-200 overflow-x-hidden`}
     animate={{ 
       backgroundColor: (prevPage === "work" && currentPage === "home")
         ? "#000000"
@@ -638,6 +689,9 @@ export default function PortfolioUniqueNav() {
       e.preventDefault();
       
       if (isScrollingRef.current) return;
+      
+      // Ignore horizontal scroll events
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
       
       const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
       
@@ -678,55 +732,56 @@ export default function PortfolioUniqueNav() {
       }
     }}
   >
+      {/* Fixed full-screen background layer */}
+      <div className="fixed inset-0 z-0 bg-[#0e1116]" aria-hidden />
+
       {/* Dust Particles only - background colors handled by wrapper */}
       <motion.div 
-        className="fixed inset-0 w-screen h-screen z-10 pointer-events-none overflow-hidden"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: currentPage === "home" ? 0 : 1 }}
-        transition={{ duration: 0.9 }}
+        className="fixed inset-0 z-10 pointer-events-none overflow-hidden"
+        style={{ opacity: 1 }}
       >
-        {[...Array(typeof window !== "undefined" && window.innerWidth < 768 ? 30 : 80)].map((_, i) => {
-          const size = Math.random() * 6 + 2; // 2px to 8px
-          const duration = Math.random() * 3 + 3; // 3s to 6s
-          const delay = Math.random() * 1.5; // 0s to 1.5s
-          const startX = Math.random() * 100;
-          const startY = Math.random() * 100;
-          const seedOpacity = Math.random() * 0.7 + 0.15;
-          const seedScale = Math.random() * 0.25 + 0.9;
-          const seedX = (Math.random() * 2 - 1) * 20;
-          const seedY = (Math.random() * 2 - 1) * 20;
-          const driftX1 = (Math.random() * 2 - 1) * 40;
-          const driftY1 = (Math.random() * 2 - 1) * 40;
-          const driftX2 = (Math.random() * 2 - 1) * 40;
-          const driftY2 = (Math.random() * 2 - 1) * 40;
-          
+        {particles?.map((particle) => {
+          // Get color and opacity based on current page
+          let particleColor: string;
+          let particleOpacity: number;
+
+          if (currentPage === "work") {
+            particleColor = `rgba(255, 255, 255, 0.3)`;
+            particleOpacity = particle.seedOpacity;
+          } else if (currentPage === "home") {
+            particleColor = `rgba(255, 255, 255, 0.3)`;
+            particleOpacity = particle.seedOpacity;
+          } else {
+            // About and Contact pages - black particles
+            particleColor = `rgba(0, 0, 0, 1)`;
+            particleOpacity = typeof window !== "undefined" && window.innerWidth < 640 ? 0.20 : 0.25;
+          }
+
           return (
             <motion.div
-              key={i}
+              key={particle.id}
               className="absolute rounded-full"
               style={{
-                width: `${size}px`,
-                height: `${size}px`,
-                background: currentPage === "work" 
-                  ? `rgba(255, 255, 255, ${Math.random() * 0.28 + 0.08})`
-                  : `rgba(0, 0, 0, ${Math.random() * 0.28 + 0.08})`,
-                left: `${startX}%`,
-                top: `${startY}%`,
+                width: `${particle.size}px`,
+                height: `${particle.size}px`,
+                background: particleColor,
+                left: `${particle.startX}%`,
+                top: `${particle.startY}%`,
                 filter: "blur(2px)",
-                opacity: seedOpacity,
+                opacity: particleOpacity,
               }}
-              initial={{ opacity: seedOpacity, x: seedX, y: seedY, scale: seedScale }}
+              initial={{ opacity: particleOpacity, x: particle.seedX, y: particle.seedY, scale: particle.seedScale }}
               animate={{
-                opacity: [seedOpacity, 0.85, 0],
-                x: [seedX, seedX + driftX1, seedX + driftX2, seedX],
-                y: [seedY, seedY + driftY1, seedY + driftY2, seedY],
-                scale: [seedScale, 1.08, 0.9, seedScale],
+                opacity: particleOpacity,
+                x: [particle.seedX, particle.seedX + particle.driftX1, particle.seedX + particle.driftX2, particle.seedX],
+                y: [particle.seedY, particle.seedY + particle.driftY1, particle.seedY + particle.driftY2, particle.seedY],
+                scale: [particle.seedScale, 1.08, 0.9, particle.seedScale],
               }}
               transition={{
-                duration,
+                duration: particle.duration,
                 ease: "easeInOut",
                 repeat: Infinity,
-                delay,
+                delay: particle.delay,
                 times: [0, 0.45, 1],
               }}
             />
@@ -735,7 +790,7 @@ export default function PortfolioUniqueNav() {
       </motion.div>
 
       {/* Main Content */}
-  <main className={`relative z-20 pb-0 overflow-visible`} style={{ paddingTop: "max(3rem, calc(env(safe-area-inset-top) + 2rem))" }}>
+  <main className="relative z-20 pb-16 pt-28 sm:pt-32">
         <AnimatePresence mode="wait">
           {currentPage === "home" && (
             <Hero setPage={navigateTo} />
@@ -747,22 +802,18 @@ export default function PortfolioUniqueNav() {
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
               transition={{ duration: 0.9, ease: [0.34, 1.56, 0.64, 1] }}
-              className="w-full"
+              className="w-full relative"
             >
               <Work setPage={navigateTo} />
             </motion.div>
           )}
           {currentPage === "about" && (
-            <motion.div 
-              key="about" 
-              initial={{ opacity: 0, scale: direction === "forward" ? 0.7 : 1.3 }} 
-              animate={{ opacity: 1, scale: 1 }} 
-              exit={{ opacity: 0, scale: direction === "forward" ? 1.3 : 0.7 }} 
-              transition={{ duration: 0.9, ease: [0.34, 1.56, 0.64, 1] }}
-              className="max-w-6xl mx-auto px-4"
+            <div 
+              key="about"
+              className="w-full relative"
             >
               <About setPage={navigateTo} />
-            </motion.div>
+            </div>
           )}
           {currentPage === "contact" && (
             <motion.div 
@@ -770,8 +821,8 @@ export default function PortfolioUniqueNav() {
               initial={{ opacity: 0, scale: direction === "forward" ? 0.7 : 1.3 }} 
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: direction === "forward" ? 1.3 : 0.7 }} 
-              transition={{ duration: 0.9, ease: [0.34, 1.56, 0.64, 1] }}
-              className="max-w-6xl mx-auto px-4"
+              transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+              className="w-full relative"
             >
               <Contact setPage={navigateTo} />
             </motion.div>
@@ -839,7 +890,7 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
     } else {
       // Smoothly shift right as screen gets smaller (from 1024px down to 320px mobile)
       const progress = Math.max(0, (1024 - windowWidth) / (1024 - 320));
-      const shiftAmount = progress * 48; // Gradually shift up to 48%
+      const shiftAmount = progress * 35; // Gradually shift up to 35%
       return `calc(50% + ${shiftAmount}%) 50%`;
     }
   };
@@ -873,7 +924,7 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         duration: 0.9, 
         ease: [0.34, 1.56, 0.64, 1]
       }}
-      className="fixed z-20 flex items-center overflow-hidden"
+      className="relative z-10 flex items-center overflow-hidden"
       style={{
         backgroundColor: "#0f172a",
         backgroundImage: "url('/assets/IMG_2282.JPG')",
@@ -881,15 +932,8 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
         backgroundPosition: getBackgroundPosition(),
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
-        inset: 0,
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
         width: "100%",
-        height: "100%",
-        minHeight: "100vh",
-        minWidth: "100vw"
+        minHeight: "100vh"
       }}
     >
       {/* Title and buttons overlay - positioned absolutely */}
@@ -1443,11 +1487,81 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
   const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null);
 
   return (
-    <div className="flex flex-col w-full" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-      <h2 className="font-[KiwiSoda] text-5xl font-normal bounce-text pt-20 px-4 ml-8 md:ml-32" style={{ color: "#ffffff" }}>My Work</h2>
+    <div className="flex flex-col w-full min-h-screen fixed inset-0" style={{ 
+      scrollbarWidth: 'none', 
+      msOverflowStyle: 'none',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: '100vw',
+      height: '100vh',
+      margin: 0,
+      padding: 0,
+      backgroundColor: '#0f172a',
+      zIndex: 20,
+      overflow: 'hidden'
+    }}>
+      {/* Dust Particles for Work Page */}
+      <div className="fixed inset-0 w-screen h-screen pointer-events-none overflow-hidden" style={{ zIndex: 5 }}>
+        {[...Array(typeof window !== "undefined" && window.innerWidth < 768 ? 60 : 80)].map((_, i) => {
+          const size = Math.random() * 6 + 2;
+          const duration = Math.random() * 3 + 3;
+          const delay = Math.random() * 1.5;
+          const startX = Math.random() * 100;
+          const startY = Math.random() * 100;
+          const seedOpacity = Math.random() * 0.5 + 0.2;
+          const seedScale = Math.random() * 0.25 + 0.9;
+          const seedX = (Math.random() * 2 - 1) * 20;
+          const seedY = (Math.random() * 2 - 1) * 20;
+          const driftX1 = (Math.random() * 2 - 1) * 40;
+          const driftY1 = (Math.random() * 2 - 1) * 40;
+          const driftX2 = (Math.random() * 2 - 1) * 40;
+          const driftY2 = (Math.random() * 2 - 1) * 40;
+          
+          // On mobile, exclude particles in carousel area (roughly 20% to 80% X, 30% to 65% Y)
+          const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+          const isInCarouselArea = isMobile && startX > 20 && startX < 80 && startY > 30 && startY < 65;
+          
+          if (isInCarouselArea) return null;
+          
+          return (
+            <motion.div
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                width: `${size}px`,
+                height: `${size}px`,
+                background: `rgba(255, 255, 255, ${Math.random() * 0.4 + 0.15})`,
+                left: `${startX}%`,
+                top: `${startY}%`,
+                filter: "blur(2px)",
+                opacity: seedOpacity,
+              }}
+              initial={{ opacity: seedOpacity, x: seedX, y: seedY, scale: seedScale }}
+              animate={{
+                opacity: seedOpacity,
+                x: [seedX, seedX + driftX1, seedX + driftX2, seedX],
+                y: [seedY, seedY + driftY1, seedY + driftY2, seedY],
+                scale: [seedScale, 1.08, 0.9, seedScale],
+              }}
+              transition={{
+                duration,
+                ease: "easeInOut",
+                repeat: Infinity,
+                delay,
+                times: [0, 0.45, 1],
+              }}
+            />
+          );
+        })}
+      </div>
+
+      <h2 className="font-[KiwiSoda] text-5xl font-normal bounce-text pt-28 md:pt-40 px-4 ml-8 md:ml-32" style={{ color: "#ffffff" }}>My Work</h2>
       
       {/* Tab Carousel */}
-      <div className="mt-12 px-4">
+      <div className="mt-16 md:mt-24 px-4">
         <CubeTab items={allProjectItems} onItemClick={setSelectedProjectIndex} selectedIndex={selectedProjectIndex} />
       </div>
 
@@ -1464,7 +1578,7 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
 
       {/* Drag Indicator - All Devices */}
       <motion.div 
-        className="flex items-center justify-center gap-3 mt-8 mb-8"
+        className="flex items-center justify-center gap-3 mt-12 md:mt-12 mb-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
@@ -1649,56 +1763,177 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const getPhotoMargin = () => {
+  // Fluid scaling based on viewport width
+  const getScalingValues = () => {
     if (windowWidth >= 1024) {
-      return "0px";
+      // Desktop
+      return {
+        textSize: 16,
+        smallTextSize: 14,
+        photoWidth: 320,
+        photoHeight: 520,
+        photoMargin: 0,
+        photoBorder: 2,
+        padding: 32,
+        gap: 32,
+        headingSize: 48,
+      };
+    } else if (windowWidth <= 320) {
+      // Mobile - smaller text, more spacing
+      return {
+        textSize: 10.5,
+        smallTextSize: 10,
+        photoWidth: 160,
+        photoHeight: 240,
+        photoMargin: 140,
+        photoBorder: 1.5,
+        padding: 12,
+        gap: 16,
+        headingSize: 24,
+      };
     } else {
-      const progress = Math.max(0, (1024 - windowWidth) / (1024 - 320));
-      const marginAmount = progress * 120;
-      return `${marginAmount}px`;
+      // Tablet/transition - smoothly interpolate between desktop and mobile
+      const progress = (1024 - windowWidth) / (1024 - 320);
+      
+      return {
+        textSize: 16 - (progress * 5.5),
+        smallTextSize: 14 - (progress * 4),
+        photoWidth: 320 - (progress * 160),
+        photoHeight: 520 - (progress * 280),
+        photoMargin: progress * 140,
+        photoBorder: 2 - (progress * 0.5),
+        padding: 32 - (progress * 20),
+        gap: 32 - (progress * 16),
+        headingSize: 48 - (progress * 24),
+      };
     }
   };
 
-  return (
-  <div className="w-full pt-16 overflow-visible">
-      <h2 className="font-[KiwiSoda] text-5xl font-normal bounce-text ml-8 md:ml-32 px-4 mb-8" style={{ color: "#1a1a1a" }}>About</h2>
-      {/* Grid wrapper for content */}
-      <div className="grid grid-cols-2 gap-4 md:gap-8 items-start max-w-7xl ml-8 md:ml-32 mr-4 md:mr-0 px-4 md:px-0 overflow-visible">
-      {/* Left: Text Content */}
-      <div className="pt-0 md:pt-8">
-        <p className="mt-0 text-sm md:text-base text-slate-700 dark:text-slate-700">
-          I am a graphic designer and creative technologist based in the Bay Area with over a decade of experience across diverse mediums. My journey began in 2013 when I created a 3D model in Maya as part of a middle school project, and since then, I've developed a broad skill set spanning digital design, 3D modeling, motion graphics, interactive media, and fabrication. My work reflects a commitment to exploring the intersection of visual design and hands-on creation.
-        </p>
-        <p className="mt-4 text-sm md:text-base text-slate-700 dark:text-slate-700">
-          I'm driven by a genuine passion for making and a curiosity to experiment with new tools and techniques. Rather than chasing recognition, I create because I enjoy the process itself, whether it's designing a brand identity, building interactive hardware, or exploring experimental 3D forms. For me, design is less about the finished product and more about the creative exploration that gets me there.
-        </p>
-      </div>
+  const scaling = getScalingValues();
 
-      {/* Right: Image */}
-      <motion.div
-        className="w-56 sm:w-72 md:w-80 h-80 sm:h-[450px] md:h-[520px] origin-center relative border border-white/10 mx-auto"
-        style={{ 
-          borderRadius: currentImage.frame,
-          boxShadow: "0 0 20px rgba(128, 128, 128, 0.6)",
-          overflow: "visible",
-          marginTop: getPhotoMargin()
+  return (
+  <motion.div 
+    className="" 
+    style={{ 
+      backgroundColor: '#ffffff',
+      position: 'absolute',
+      inset: 0,
+      width: '100%',
+      height: '100%',
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none',
+      overflow: 'hidden',
+      boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column'
+    }}
+    initial={{ opacity: 1 }}
+    animate={{ opacity: 1 }}
+  >
+      <style>{`
+        div::-webkit-scrollbar { display: none; }
+      `}</style>
+
+      <div style={{ height: windowWidth >= 1024 ? '100px' : '64px', flexShrink: 0 }} />
+
+      {/* Grid wrapper for content */}
+      <div 
+        className="grid grid-cols-2 items-start overflow-visible mt-8 md:mt-20"
+        style={{
+          gap: `${scaling.gap}px`,
+          width: '100%',
+          boxSizing: 'border-box'
         }}
       >
-        <motion.img
-          src={currentImage.src}
-          alt={currentImage.alt}
-          className="w-full h-full object-cover"
-          style={{ borderRadius: currentImage.frame }}
-        />
-      </motion.div>
+        {/* Left Column: Title and Text Content */}
+        <motion.div 
+          style={{ marginLeft: windowWidth >= 1024 ? '128px' : `${scaling.padding}px` }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.h2 
+            className="font-[KiwiSoda] font-normal bounce-text mb-8" 
+            style={{ 
+              color: "#1a1a1a",
+              fontSize: `${scaling.headingSize}px`,
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            About
+          </motion.h2>
+
+          <motion.div 
+            className="pt-0 mt-6 md:mt-20"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+          <p 
+            className="mt-0 text-slate-700 dark:text-slate-700"
+            style={{ fontSize: `${scaling.textSize}px`, lineHeight: '1.6' }}
+          >
+            My journey into design started with a LEGO collection and a stop-motion app, turning simple bricks into narratives. That early obsession with building evolved into a career defined by a 'no-limits' approach to creation. Whether I'm coding a UI/UX interface, welding raw steel, or calibrating a 3D print on my Bambu Labs setup, I view every medium as a new language to master.
+          </p>
+          <p 
+            className="mt-4 text-slate-700 dark:text-slate-700"
+            style={{ fontSize: `${scaling.textSize}px`, lineHeight: '1.6' }}
+          >
+            I'm a perfectionist by nature, a trait that drives me to work rigorously until a project matches the exact vision I've engineered in my head. I thrive on the challenge of learning new tools to solve complex problems. When you work with me, you're getting a designer who is as comfortable with a soldering iron as they are with Adobe Illustrator, and someone who won't stop until the work meets my own high standards for excellence, as well as your own.
+          </p>
+          </motion.div>
+        </motion.div>
+
+        {/* Right: Image */}
+        <motion.div
+          className="origin-center relative mx-auto"
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6 }}
+          style={{ 
+            width: `${scaling.photoWidth}px`,
+            height: `${scaling.photoHeight}px`,
+            border: `${scaling.photoBorder}px solid rgba(255, 255, 255, 0.1)`,
+            borderRadius: currentImage.frame,
+            boxShadow: "0 0 20px rgba(128, 128, 128, 0.6)",
+            overflow: "visible",
+            marginTop: `${scaling.photoMargin + 24}px`,
+            zIndex: 30,
+          }}
+        >
+          <motion.img
+            src={currentImage.src}
+            alt={currentImage.alt}
+            className="w-full h-full object-cover"
+            style={{ borderRadius: currentImage.frame }}
+          />
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
+  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-  <div className="w-full min-h-screen flex flex-col items-center pt-60">
+  <div 
+    className="w-full h-screen flex flex-col items-center justify-center overflow-hidden" 
+    style={{ 
+      backgroundColor: '#ffffff',
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none',
+      position: 'relative'
+    }}
+  >
+      <style>{`
+        div::-webkit-scrollbar { display: none; }
+      `}</style>
+
       {/* Centered content */}
       <div className="flex flex-col items-center justify-center px-4">
         <h2 className="font-[KiwiSoda] text-6xl md:text-7xl lg:text-8xl font-normal bounce-text text-center" style={{ color: "#1a1a1a" }}>
