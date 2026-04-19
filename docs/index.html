@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shyon Shiri — Portfolio</title>
     
     <!-- DNS Preconnect for faster resolution -->
@@ -27,21 +27,8 @@
       }
       
       html, body, #root {
-        background-color: transparent !important;
-        margin: 0 !important;
-        padding: 0 !important;
         width: 100%;
-        height: 100vh;
-        min-height: 100vh;
-        -webkit-app-region: drag;
-        overflow: hidden;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
+        height: 100%;
       }
       
       /* Enable GPU acceleration for animations */
@@ -55,23 +42,11 @@
         backface-visibility: hidden;
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-DSVZYqJn.js"></script>
+    <script type="module" crossorigin src="/assets/index-Dm5d19Rj.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-VtH_uMWp.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-D_jOpTUm.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-DrxS7FCh.css">
   </head>
   <body>
-    <script>
-      // Set proper height for iOS Safari fullscreen
-      function setViewportHeight() {
-        const height = window.innerHeight;
-        document.documentElement.style.height = height + 'px';
-        document.body.style.height = height + 'px';
-        document.getElementById('root')?.style.setProperty('height', height + 'px', 'important');
-      }
-      setViewportHeight();
-      window.addEventListener('resize', setViewportHeight);
-      window.addEventListener('orientationchange', setViewportHeight);
-    </script>
     <div id="root"></div>
   </body>
 </html>
