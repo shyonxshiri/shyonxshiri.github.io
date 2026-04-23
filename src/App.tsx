@@ -758,12 +758,11 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       transition={{ duration: 0.55 }}
       className="portfolio-page"
       style={{
-        position: "fixed",
+        position: "absolute",
         inset: 0,
         width: "100%",
-        height: "100dvh" as any,
+        height: "100%",
         backgroundColor: "#0f172a",
-        zIndex: 20,
         overflow: "hidden",
       }}
     >
@@ -1089,14 +1088,13 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       transition={{ duration: 0.55 }}
       className="portfolio-page"
       style={{ 
-        position: "fixed",
+        position: "absolute",
         inset: 0,
         width: '100%',
-        height: "100dvh" as any,
+        height: '100%',
         backgroundColor: '#0f172a',
         display: 'flex',
         flexDirection: 'column',
-        zIndex: 20,
         overflow: 'hidden',
       }}
     >
@@ -1273,15 +1271,14 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
       transition={{ duration: 0.55 }}
       className="portfolio-page"
       style={{ 
-        position: "fixed",
+        position: "absolute",
         inset: 0,
         width: '100%',
-        height: "100dvh" as any,
+        height: '100%',
         backgroundColor: '#ffffff', 
         display: 'flex', 
         flexDirection: 'column', 
         justifyContent: 'center', 
-        zIndex: 20,
         overflow: 'hidden'
       }}
     >
@@ -1341,16 +1338,15 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
       transition={{ duration: 0.55 }}
       className="portfolio-page"
       style={{ 
-        position: "fixed",
+        position: "absolute",
         inset: 0,
         width: '100%',
-        height: "100dvh" as any,
+        height: '100%',
         backgroundColor: '#ffffff', 
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        zIndex: 20,
         overflow: 'hidden'
       }}
     >
