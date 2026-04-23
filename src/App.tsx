@@ -676,7 +676,15 @@ export default function PortfolioUniqueNav() {
       </div>
 
       {/* ── Main content — simple opacity fade, no translate ── */}
-      <main className="fixed inset-0 overflow-hidden" style={{ zIndex: 20, width: "100%", height: "100dvh" }}>
+      <main className="fixed inset-0 overflow-hidden" style={{ 
+        zIndex: 20, 
+        width: "100%", 
+        height: "100dvh",
+        backgroundColor: currentPage === "home" && prevPage === "home" ? "transparent"
+          : currentPage === "home" ? "#0f172a"
+          : currentPage === "work" ? "#0f172a"
+          : "#ffffff"
+      }}>
         <AnimatePresence mode="wait">
           {currentPage === "home" && <Hero key="home" setPage={navigateTo} />}
           {currentPage === "work" && <Work key="work" setPage={navigateTo} />}
