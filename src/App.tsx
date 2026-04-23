@@ -756,7 +756,7 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55 }}
-      className="portfolio-page flex items-center relative overflow-hidden"
+      className="portfolio-page relative overflow-hidden"
       style={{
         backgroundColor: "#0f172a",
       }}
@@ -765,11 +765,16 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       <img
         src="/assets/IMG_2282.JPG"
         alt="Hero background"
-        className="absolute inset-0 w-full h-full"
         style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
           objectFit: "cover",
           objectPosition: getObjectPosition(),
           zIndex: 1,
+          display: "block",
         }}
       />
 
