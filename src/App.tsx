@@ -1262,23 +1262,21 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
       exit="exit"
       transition={{ duration: 0.55 }}
       className="portfolio-page"
-      style={{ backgroundColor: '#ffffff' }}
+      style={{ backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}
     >
-      <div style={{ height: windowWidth >= 1024 ? '100px' : '64px', flexShrink: 0 }} />
-
       <div
-        className="grid grid-cols-2 items-start overflow-visible mt-8 md:mt-20"
+        className="grid grid-cols-2 items-start overflow-visible"
         style={{ gap: `${scaling.gap}px`, width: '100%', boxSizing: 'border-box' }}
       >
         <motion.div style={{ marginLeft: windowWidth >= 1024 ? '128px' : `${scaling.padding}px` }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }}>
           <motion.h2
-            className="font-[KiwiSoda] font-normal bounce-text mb-8 mt-8 md:mt-0"
+            className="font-[KiwiSoda] font-normal bounce-text mb-8"
             style={{ color: "#1a1a1a", fontSize: `${scaling.headingSize}px` }}
           >
             About
           </motion.h2>
 
-          <motion.div className="pt-0 mt-20 md:mt-20" exit={{ opacity: 0 }} transition={{ duration: 0.6 }}>
+          <motion.div exit={{ opacity: 0 }} transition={{ duration: 0.6 }}>
             <p className="mt-0 text-slate-700" style={{ fontSize: `${scaling.textSize}px`, lineHeight: '1.6' }}>
               My journey into design started with a LEGO collection and a stop-motion app, turning simple bricks into narratives. That early obsession with building evolved into a career defined by a 'no-limits' approach to creation. Whether I'm coding a UI/UX interface, welding raw steel, or calibrating a 3D print on my Bambu Labs setup, I view every medium as a new language to master.
             </p>
@@ -1299,7 +1297,6 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
             borderRadius: currentImage.frame,
             boxShadow: "0 0 20px rgba(128, 128, 128, 0.6)",
             overflow: "visible",
-            marginTop: `${scaling.photoMargin + 24}px`,
             zIndex: 30,
           }}
         >
@@ -1321,8 +1318,8 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55 }}
-      className="portfolio-page flex flex-col items-center justify-center"
-      style={{ backgroundColor: '#ffffff' }}
+      className="portfolio-page"
+      style={{ backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
     >
       <h2 className="font-[KiwiSoda] text-6xl md:text-7xl lg:text-8xl font-normal bounce-text text-center" style={{ color: "#1a1a1a" }}>
         Let's collaborate
