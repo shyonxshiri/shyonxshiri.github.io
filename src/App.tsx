@@ -764,7 +764,6 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55 }}
-      className="portfolio-page"
       style={{
         position: "absolute",
         inset: 0,
@@ -1094,7 +1093,6 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55 }}
-      className="portfolio-page"
       style={{ 
         position: "absolute",
         inset: 0,
@@ -1277,7 +1275,6 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55 }}
-      className="portfolio-page"
       style={{ 
         position: "absolute",
         inset: 0,
@@ -1344,7 +1341,6 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55 }}
-      className="portfolio-page"
       style={{ 
         position: "absolute",
         inset: 0,
