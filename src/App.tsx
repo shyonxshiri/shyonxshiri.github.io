@@ -499,11 +499,19 @@ export default function PortfolioUniqueNav() {
     style.innerHTML = `
       /* ─── Kill ALL scrollbars ─── */
       *, *::before, *::after { box-sizing: border-box; }
-      html, body {
+      html {
         margin: 0; padding: 0;
         overflow: hidden;
         overscroll-behavior: none;
         -webkit-overflow-scrolling: touch;
+        background-color: #0f172a;
+      }
+      body {
+        margin: 0; padding: 0;
+        overflow: hidden;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+        background-color: #0f172a;
       }
       html::-webkit-scrollbar,
       body::-webkit-scrollbar,
@@ -516,6 +524,8 @@ export default function PortfolioUniqueNav() {
         position: fixed;
         inset: 0;
         width: 100%;
+        margin: 0;
+        padding: 0;
         /* Fallback for browsers without dvh support */
         height: 100vh;
         /* Dynamic viewport height — fills the VISIBLE area even when Safari toolbar shrinks */
@@ -536,10 +546,13 @@ export default function PortfolioUniqueNav() {
     }
   }, []);
 
-  // Scroll lock only for about/contact (they don't scroll internally)
+  // Force html and body to have the correct background color based on page
   useEffect(() => {
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
+    const bgColor = currentPage === "work" ? "#0f172a"
+      : currentPage === "home" ? "#0f172a"
+      : "#ffffff";
+    document.documentElement.style.backgroundColor = bgColor;
+    document.body.style.backgroundColor = bgColor;
   }, [currentPage]);
 
   const navigateTo = (page: "home" | "work" | "about" | "contact") => {
