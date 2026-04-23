@@ -683,7 +683,13 @@ export default function PortfolioUniqueNav() {
         backgroundColor: currentPage === "home" && prevPage === "home" ? "transparent"
           : currentPage === "home" ? "#0f172a"
           : currentPage === "work" ? "#0f172a"
-          : "#ffffff"
+          : "#ffffff",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: "hidden",
       }}>
         <AnimatePresence mode="wait">
           {currentPage === "home" && <Hero key="home" setPage={navigateTo} />}
@@ -767,6 +773,8 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       style={{
         position: "absolute",
         inset: 0,
+        margin: 0,
+        padding: 0,
         width: "100%",
         height: "100%",
         backgroundColor: "#0f172a",
@@ -1096,6 +1104,8 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       style={{ 
         position: "absolute",
         inset: 0,
+        margin: 0,
+        padding: 0,
         width: '100%',
         height: '100%',
         backgroundColor: '#0f172a',
@@ -1278,6 +1288,8 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
       style={{ 
         position: "absolute",
         inset: 0,
+        margin: 0,
+        padding: 0,
         width: '100%',
         height: '100%',
         backgroundColor: '#ffffff', 
@@ -1344,6 +1356,8 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
       style={{ 
         position: "absolute",
         inset: 0,
+        margin: 0,
+        padding: 0,
         width: '100%',
         height: '100%',
         backgroundColor: '#ffffff', 
