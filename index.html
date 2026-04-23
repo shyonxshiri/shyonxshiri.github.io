@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Shyon Shiri — Portfolio</title>
     
     <!-- DNS Preconnect for faster resolution -->
@@ -27,20 +27,25 @@
       }
       
       html {
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
       }
 
       body {
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
+        position: fixed;
       }
 
       #root {
         width: 100vw;
         height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        overflow: hidden;
       }
       
       /* Enable GPU acceleration for animations */

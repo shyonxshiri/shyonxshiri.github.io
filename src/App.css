@@ -42,3 +42,18 @@
 .read-the-docs {
   color: #888;
 }
+
+.portfolio-page {
+  width: 100dvw;
+  height: 100dvh;
+}
+
+@media (min-width: 1024px) {
+  .campaign-item {
+    margin-top: -380px !important;
+  }
+  
+  .abstract-item {
+    margin-top: -170px !important;
+  }
+}
