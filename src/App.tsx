@@ -756,9 +756,16 @@ function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55 }}
-      className="portfolio-page relative overflow-hidden"
+      className="portfolio-page"
       style={{
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100vh",
+        height: "100dvh",
         backgroundColor: "#0f172a",
+        zIndex: 20,
+        overflow: "hidden",
       }}
     >
       {/* Background Image using img element for better control */}
@@ -1081,13 +1088,18 @@ function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contac
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55 }}
-      className="portfolio-page overflow-y-auto"
+      className="portfolio-page"
       style={{ 
-        backgroundColor: '#0f172a',
+        position: "fixed",
+        inset: 0,
         width: '100%',
+        height: '100vh',
         height: '100dvh',
+        backgroundColor: '#0f172a',
         display: 'flex',
         flexDirection: 'column',
+        zIndex: 20,
+        overflow: 'hidden',
       }}
     >
       <h2 className="font-[KiwiSoda] text-5xl font-normal bounce-text pt-28 md:pt-40 px-4 ml-8 md:ml-32" style={{ color: "#ffffff" }}>My Work</h2>
@@ -1262,7 +1274,19 @@ function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "conta
       exit="exit"
       transition={{ duration: 0.55 }}
       className="portfolio-page"
-      style={{ backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}
+      style={{ 
+        position: "fixed",
+        inset: 0,
+        width: '100%',
+        height: '100vh',
+        height: '100dvh',
+        backgroundColor: '#ffffff', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'center', 
+        zIndex: 20,
+        overflow: 'hidden'
+      }}
     >
       <div
         className="grid grid-cols-2 items-start overflow-visible"
@@ -1319,7 +1343,20 @@ function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "con
       exit="exit"
       transition={{ duration: 0.55 }}
       className="portfolio-page"
-      style={{ backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
+      style={{ 
+        position: "fixed",
+        inset: 0,
+        width: '100%',
+        height: '100vh',
+        height: '100dvh',
+        backgroundColor: '#ffffff', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        zIndex: 20,
+        overflow: 'hidden'
+      }}
     >
       <h2 className="font-[KiwiSoda] text-6xl md:text-7xl lg:text-8xl font-normal bounce-text text-center" style={{ color: "#1a1a1a" }}>
         Let's collaborate
