@@ -285,7 +285,7 @@ import{r as R,a as n,j as e,A as z,m as d}from"./vendor-DCHKMGkb.js";(function()
       line-height: 1.4 !important;
       margin-top: 8px !important;
     }
-    .ss-about-text-column { padding-top: 100px !important; }
+    .ss-about-text-column { padding-top: 60px !important; }
     /* reduce about page image cropping on mobile */
     .ss-about-photo { object-position: center 25% !important; }
   }
