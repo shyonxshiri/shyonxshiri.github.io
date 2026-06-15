@@ -537,7 +537,7 @@ export default function App() {
       if (next === pageIdx) return;
       cooldown.current = true;
       setPage(PAGE_ORDER[next]);
-      setTimeout(() => { cooldown.current = false; }, 900);
+      setTimeout(() => { cooldown.current = false; }, 1100);
     };
     window.addEventListener("wheel", onWheel, { passive: true });
     return () => window.removeEventListener("wheel", onWheel);
