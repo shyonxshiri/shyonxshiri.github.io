@@ -1,1400 +1,1515 @@
-import * as React from "react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, User, Mail, Linkedin, FileText, ChevronLeft, ChevronRight } from "lucide-react";
-import CubeTab from "./CubeTab";
-import { useInitialPreload } from "./useAssetPreloader";
 
-// --- Haptic Feedback Utility ---------------------------------------------------------------
-const triggerHaptic = (intensity: "light" | "medium" | "heavy" = "medium") => {
-  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-    const patterns: { [key: string]: number } = {
-      light: 10,
-      medium: 30,
-      heavy: 50,
-    };
-    navigator.vibrate(patterns[intensity]);
-  }
+/* ─────────────────────────────────────────────────────────────
+   TYPES
+───────────────────────────────────────────────────────────── */
+type Page = "home" | "work" | "about" | "contact";
+
+type MediaItem = {
+  type: "image" | "video";
+  src: string;
+  poster?: string;
+  title?: string;
+  desc?: string;
+  year?: number;
+  link?: string;
+  wide?: boolean;
+  objectPosition?: string;
+  scale?: number;
+  removeBackground?: boolean;
+  relatedItems?: string[];
+  hidden?: boolean;
+  aspectRatio?: string;
 };
 
-// --- Gesture Detection Hook ---------------------------------------------------------------
-const useSwipeGesture = (onSwipeUp?: () => void, onSwipeDown?: () => void, onSwipeLeft?: () => void, onSwipeRight?: () => void) => {
-  const touchStartRef = useRef({ x: 0, y: 0 });
-  
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-    };
-  };
-  
-  const handleTouchEnd = (e: TouchEvent) => {
-    const touchEnd = {
-      x: e.changedTouches[0].clientX,
-      y: e.changedTouches[0].clientY,
-    };
-    
-    const deltaX = touchEnd.x - touchStartRef.current.x;
-    const deltaY = touchEnd.y - touchStartRef.current.y;
-    const threshold = 50;
-    
-    if (Math.abs(deltaY) > threshold && Math.abs(deltaY) > Math.abs(deltaX)) {
-      if (deltaY > 0 && onSwipeUp) {
-        onSwipeUp();
-      } else if (deltaY < 0 && onSwipeDown) {
-        onSwipeDown();
-      }
-    } else if (Math.abs(deltaX) > threshold) {
-      if (deltaX > 0 && onSwipeLeft) {
-        onSwipeLeft();
-      } else if (deltaX < 0 && onSwipeRight) {
-        onSwipeRight();
-      }
-    }
-  };
-  
-  return { handleTouchStart, handleTouchEnd };
+type Project = {
+  id: string;
+  title: string;
+  tag: string;
+  img: string;
+  size: "tall" | "wide" | "sq";
+  objectPosition?: string;
+  media: MediaItem[];
 };
 
-// --- Device Optimization Hook ---------------------------------------------------------------
-const useDeviceOptimizations = () => {
-  useEffect(() => {
-    const touchHandler = (e: TouchEvent) => {
-      if (e.touches.length > 1) {
-        e.preventDefault();
-      }
-    };
-    
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) {
-      document.documentElement.style.scrollBehavior = "auto";
-    }
-    
-    document.addEventListener("touchmove", touchHandler, { passive: true });
-    
-    return () => {
-      document.removeEventListener("touchmove", touchHandler);
-    };
-  }, []);
-};
-
-// --- Device Type Detection Hook ---------------------------------------------------------------
-const useDeviceType = () => {
-  const [device, setDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
-  
-  useEffect(() => {
-    const checkDevice = () => {
-      const width = window.innerWidth;
-      if (width < 640) setDevice('mobile');
-      else if (width < 1024) setDevice('tablet');
-      else setDevice('desktop');
-    };
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
-  }, []);
-  
-  return device;
-};
-
-// --- Config ---------------------------------------------------------------
-
-const DIGITAL_MEDIA = [
+/* ─────────────────────────────────────────────────────────────
+   DATA
+───────────────────────────────────────────────────────────── */
+const PROJECTS: Project[] = [
   {
-    id: "3d-modeling",
+    id: "3d-rendering",
     title: "3D Rendering",
     tag: "Design & Printing",
-    img: "/assets/3D_Modeling_Cover.PNG",
-    objectPosition: "45% 50%",
-    scale: 1.25,
-    description:
-      "Concept driven 3D visuals created entirely using Blender.",
+    img: "/assets/Gemini_Generated_Image_8zizy08zizy08ziz.png",
+    size: "tall",
+    objectPosition: "75% 50%",
+    media: [
+      { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", wide: true },
+      { type: "video", src: "/assets/Blender_Case_Video.mov", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", wide: true, relatedItems: ["Custom Airpod Case", "Custom Phone Case"] },
+      { type: "image", src: "/assets/Venom.PNG", title: "Rendered 3D Model", year: 2024, desc: "High-quality 3D rendered movie character with detailed modeling and texturing in Blender." },
+    ],
   },
   {
     id: "digital-media",
     title: "Digital Media",
     tag: "Graphic Design",
     img: "/assets/Digital_Media_Cover.jpg",
-    objectPosition: "50% 50%",
-    description: "Motion graphics and design work ranging from promotional videos to UI/UX web development.",
+    size: "wide",
+    media: [
+      { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Dynamic promotional video for NABU clothing, crafted with professional animation in Adobe After Effects.", wide: true },
+      { type: "video", src: "/assets/Shiri_Video_Game.mov", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", year: 2024, desc: "Animated and assembled collection of images created in Adobe After Effects." },
+      { type: "image", src: "/assets/Mina_Website.png", title: "UI/UX — minasech.net", year: 2025, desc: "Full-stack website design including React frontend and responsive interface.", link: "https://minasech.net", wide: true },
+      { type: "image", src: "/assets/Everly_Cover_Image.png", title: "Everly Care Home", year: 2026, desc: "Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.", link: "https://everlycarehome.com", wide: true },
+    ],
   },
   {
     id: "camera-work",
-    title: "Camera Work",
-    tag: "Video & Photo Production",
+    title: "Studio Production",
+    tag: "Video & Photo",
     img: "/assets/Camera_Work_Cover.JPG",
-    objectPosition: "50% 50%",
-    description:
-      "A collection of my camera based projects, each focused on their specific atmosphere and story.",
-  },
-];
-
-const MODELING_MEDIA: MediaItem[] = [
-  {
-    type: "video",
-    src: "/assets/Broken_NPC.MP4",
-    poster: "/assets/Broken_NPC.jpg",
-    title: "The Broken NPC",
-    description: "A detailed 3D scene depicting in-game rendering errors and glitches from the video game, GTA San Andreas, created and rendered entirely using Blender.",
-    aspectRatio: 16 / 9,
-    year: 2024,
+    size: "tall",
+    media: [
+      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Professional promotional video for NABU's puffer jacket collection shot with cinematic quality." },
+      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Engaging promotional content showcasing NABU's latest collection." },
+      { type: "image", src: "/assets/Stevie_Pic.JPG", title: "NABU 2023 Spring Collection", year: 2022, desc: "Professional portrait photography showcasing design systems and visual aesthetics." },
+      { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "A vibrant portrait capturing authentic moments with professional lighting.", aspectRatio: "2/3" },
+      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Campaign Project", year: 2024, desc: "Conceptual brand advertisement utilizing environmental storytelling and scenic composition.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Photography_Asset.jpg", title: "Abstract Scene", year: 2021, desc: "Experimental scene exploring the interplay of form and shadow.", aspectRatio: "4/3" },
+      { type: "image", src: "/assets/Photography_Asset_2.jpg", title: "Culinary Praise", year: 2021, desc: "Iran's iconic dish presented with thoughtful composition and rich visual detail.", aspectRatio: "4/3" },
+      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", year: 2024, desc: "Professional photography exploring composition and lighting techniques.", aspectRatio: "16/12" },
+    ],
   },
   {
-    type: "video",
-    src: "/assets/Blender_Case_Video.mov",
-    poster: "/assets/Blender_Case.jpg",
-    title: "Apple Accessory Prototypes",
-    description: "3D designed Apple product case prototypes, developed using Blender.",
-    aspectRatio: 16 / 9,
-    year: 2024,
-    relatedLinks: [
-      { category: "MODELS_MEDIA", index: 0, title: "Airpod Case" },
-      { category: "MODELS_MEDIA", index: 1, title: "iPhone Case" }
-    ]
-  },
-  {
-    type: "image",
-    src: "/assets/Venom.PNG",
-    title: "Rendered 3D Model",
-    description: "A high-quality 3D rendered movie character model showcasing detailed modeling and texturing techniques made using Blender",
-    year: 2024,
-  },
-];
-
-const GRAPHIC_MEDIA: MediaItem[] = [
-  {
-    type: "video",
-    src: "/assets/Nabu_Poster_Banner.mp4",
-    poster: "/assets/Nabu_Poster_Banner.jpg",
-    title: "NABU Promotional Video",
-    description: "A dynamic promotional video for NABU clothing, crafted with professional animation and transitions in Adobe After Effects.",
-    year: 2023,
-  },
-  {
-    type: "video",
-    src: "/assets/Shiri_Video_Game.mov",
-    poster: "/assets/Shiri_VIdeo_Game.jpg",
-    title: "Video Game Demo",
-    description: "A video created by animating and assembling a collection of images in Adobe After Effects.",
-    year: 2024,
-  },
-  {
-    type: "image",
-    src: "/assets/Mina_Website.png",
-    title: "UI/UX",
-    description: "Full-stack website design and development including React frontend, responsive interface design, backend integration, and deployment optimization.",
-    year: 2025,
-    link: "https://minasech.net"
-  },
-  {
-    type: "image",
-    src: "/assets/Everly_Cover_Image.png",
-    title: "Everly Care Home",
-    description: "Professional website design for a compassionate living community providing senior care services.",
-    year: 2025,
-    link: "https://everlycarehome.com"
-  },
-];
-
-const SHIRI_DESIGNS: MediaItem[] = [
-  { type: "image", src: "/assets/Shiri_Design_1.PNG", title: "Clothing Line Mock Up", year: 2024 },
-  { type: "image", src: "/assets/Shiri_Design_2.PNG", title: "Clothing Line Mock Up", year: 2024 },
-  { type: "image", src: "/assets/Shiri_Design_3.PNG", title: "Clothing Line Mock Up", year: 2024 },
-  { type: "image", src: "/assets/Shiri_Design_4.PNG", title: "Clothing Line Mock Up", year: 2024 },
-];
-
-const CAMERA_MEDIA: MediaItem[] = [
-  {
-    type: "video",
-    src: "/assets/NABU_PUFFER_AD.mp4",
-    poster: "/assets/NABU_Puffer_AD.jpg",
-    title: "NABU 2026 Teaser",
-    description: "Professional promotional video for NABU's puffer jacket collection, shot and edited with cinematic quality.",
-    aspectRatio: 9 / 16,
-    year: 2025,
-  },
-  {
-    type: "video",
-    src: "/assets/NABU_SALE_AD.mp4",
-    poster: "/assets/NABU_SALE_AD.jpg",
-    title: "NABU 2025 Summer Collection",
-    description: "Engaging promotional content showcasing NABU's latest collection and seasonal offerings.",
-    aspectRatio: 9 / 16,
-    year: 2025,
-  },
-  {
-    type: "image",
-    src: "/assets/Stevie_Pic.JPG",
-    title: "NABU 2023 Spring Collection",
-    description: "Professional portrait photography showcasing design systems and visual aesthetics.",
-    year: 2022,
-  },
-  {
-    type: "image",
-    src: "/assets/Adverstisement_Project.jpg",
-    title: "Campaign Project",
-    description: "A conceptual brand advertisement utilizing environmental storytelling and scenic composition to promote a product.",
-    year: 2024,
-  },
-  {
-    type: "image",
-    src: "/assets/Photography_Asset.jpg",
-    title: "Abstract Scene",
-    description: "An experimental scene exploring the interplay of form and shadow, creating an ethereal moment.",
-    year: 2021,
-  },
-  {
-    type: "image",
-    src: "/assets/Photography_Asset_2.jpg",
-    title: "Culinary Praise",
-    description: "A display of Iran's iconic dish, presented with thoughtful composition and rich visual detail.",
-    year: 2021,
-  },
-  {
-    type: "image",
-    src: "/assets/Max_Pic.JPG",
-    title: "Candid Studio Portrait",
-    description: "A vibrant portrait capturing authentic moments and natural expressions with professional lighting.",
-    year: 2024,
-  },
-];
-
-type MediaItem = {
-  type: "image" | "video";
-  src: string;
-  alt?: string;
-  link?: string;
-  title?: string;
-  poster?: string;
-  description?: string;
-  aspectRatio?: number;
-  objectPosition?: string;
-  scale?: number;
-  relatedImages?: { src: string; title: string }[];
-  relatedLinks?: { category: string; index: number; title: string }[];
-  year?: number;
-};
-
-const PROGRAMMING_MEDIA: MediaItem[] = [
-  { 
-    type: "video", 
-    src: "/assets/New_Radar_Sensor.mp4", 
-    title: "HMI Sensor System", 
-    description: "For my final project in <i>Topics in Human-Machine Interfaces</i>, I developed an interactive radar module that converts ultrasonic data into real-time feedback. As part of our rubric, I configured the micro-board to maintain a steady 5V power output to support the simultaneous load of the sensor, LCD, and speaker. This build focuses on human-machine interactivity, using a digital display, a sensor, and a speaker to communicate distance. All placed in a custom 3D printed enclosure.", 
-    poster: "/assets/New_Radar_Sensor_front.jpg", 
-    aspectRatio: 9 / 16,
-    year: 2024,
-    relatedImages: [
-      { src: "/assets/New_Radar_Sensor_front.jpg", title: "Front View" },
-      { src: "/assets/New_Radar_Sensor_Back.jpg", title: "Back View" }
-    ]
-  },
-  { 
-    type: "video", 
-    src: "/assets/New_LED_Box.mp4", 
-    title: "Custom RGB Controller", 
-    description: "This project served as a practical test of what we learned in my <i>Topics in Human-Machine Interfaces</i> class. The goal was to demonstrate a solid understanding of the course material by building a functional system from scratch. I was thorough with meeting the technical requirements for the micro-board's power ratios and wire placement, then designing and 3D printing a geometric casing to function as housing for it all.", 
-    poster: "/assets/New_LED_Box_Front.jpg", 
-    aspectRatio: 9 / 16,
-    year: 2024,
-    relatedImages: [
-      { src: "/assets/New_LED_Box_Front.jpg", title: "Front View" },
-      { src: "/assets/New_LED_Box_Back.jpg", title: "Back View" }
-    ]
-  }, 
-];
-
-const SCULPTURES_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", description: "Hand-fabricated through metalworking techniques — welding, grinding, sanding, and surface finishing — this steel sculpture references consumer tech culture by evoking an Apple Store-style display with a metal hand and cuff, symbolizing the chokehold and sense of confinement technology can impose on people.", aspectRatio: 4 / 5, year: 2024 },
-  { type: "image", src: "/assets/Shyon_Glass.JPG", title: "Custom Designed Vase", description: "A custom-designed glass vase combining artistic form with functional design, showcasing craftsmanship.", aspectRatio: 4 / 5, year: 2024 },
-];
-
-const MODELS_MEDIA: MediaItem[] = [
-  { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", description: "A finalized rendition of my Airpod case prototype, designed to resemble the style of liquid metal.", objectPosition: "center 50%", aspectRatio: 1 / 1.2, year: 2026, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
-  { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", description: "A finalized rendition of my iPhone case prototype, designed to resemble the style of liquid metal.", objectPosition: "center 0%", year: 2025, relatedLinks: [{ category: "MODELING_MEDIA", index: 1, title: "Case Prototype Video" }] },
-];
-
-const FABRICATION_MEDIA: Record<string, MediaItem[]> = {
-  Programming: PROGRAMMING_MEDIA,
-  Fabrication: SCULPTURES_MEDIA,
-  "3D Modelling": MODELS_MEDIA,
-};
-
-const HANDMADE_WORKS = [
-  {
+    id: "programming",
     title: "Programming",
-    img: "/assets/Programming_Cover_Pic.jpg",
-    description: "Hardware focused interactive work using microcontrollers and sensors.",
-    objectPosition: "center 70%",
+    tag: "Hardware & HMI",
+    img: "/assets/New_Radar_Sensor_front.jpg",
+    size: "sq",
+    objectPosition: "45% 45%",
+    media: [
+      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", wide: true, relatedItems: ["Radar — Front View", "Radar — Back View"] },
+      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", wide: true, relatedItems: ["RGB Box — Front View", "RGB Box — Back View"] },
+      { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar — Front View", year: 2024, hidden: true },
+      { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar — Back View", year: 2024, hidden: true },
+      { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box — Front View", year: 2024, hidden: true },
+      { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box — Back View", year: 2024, hidden: true },
+    ],
   },
   {
+    id: "fabrication",
     title: "Fabrication",
+    tag: "Sculpture & Craft",
     img: "/assets/Shyon_Sculpture.jpg",
-    description: "Handmade sculptures exploring form, balance, and physical interaction.",
-    objectPosition: "center 45%",
+    size: "tall",
+    objectPosition: "45% 50%",
+    media: [
+      { type: "image", src: "/assets/Shyon_Sculptuyre.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture — welded, ground, sanded and finished." },
+    ],
   },
   {
+    id: "3d-modelling",
     title: "3D Modelling",
+    tag: "Print & Design",
     img: "/assets/3D_Models_Cover_Pic.jpg",
-    description: "3D models designed for printing, functionality, and aesthetics.",
-    objectPosition: "45% 100%",
-    scale: 1.25,
+    size: "wide",
+    objectPosition: "45% 90%",
+    media: [
+      { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", year: 2026, desc: "Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.", relatedItems: ["Apple Accessory Prototypes"] },
+      { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.", relatedItems: ["Apple Accessory Prototypes"] },
+    ],
   },
 ];
 
-const PORTRAIT_IMAGES = [
-  {
-    src: "/assets/Shyon_Pic_2.JPG",
-    alt: "Portrait",
-    frame: "60% 40% 50% 50% / 65% 35% 55% 45%",
-  },
-];
+const PAGE_ORDER: Page[] = ["home", "work", "about", "contact"];
 
-// --- ShimmerButton Component -----------------------------------------------
+/* ─────────────────────────────────────────────────────────────
+   GLOBAL STYLES (injected once)
+───────────────────────────────────────────────────────────── */
+const GLOBAL_CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap');
 
-function ShimmerButton({ onClick, icon }: { onClick: () => void; icon: React.ReactNode }) {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [isTouching, setIsTouching] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  :root {
+    --black: #060606;
+    --white: #f5f2ed;
+    --cream: #ede8e0;
+    --sky: #38bdf8;
+    --cyan: #22d3ee;
+    --accent: #ff4d1c;
+    --mid: #8a8a8a;
+    --ease-out: cubic-bezier(0.16,1,0.3,1);
+  }
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!buttonRef.current) return;
-    const rect = buttonRef.current.getBoundingClientRect();
-    setMousePos({ x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 });
-  };
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLButtonElement>) => {
-    setIsTouching(true);
-    triggerHaptic("light");
-    if (!buttonRef.current) return;
-    const touch = e.touches[0];
-    const rect = buttonRef.current.getBoundingClientRect();
-    setMousePos({ x: ((touch.clientX - rect.left) / rect.width) * 100, y: ((touch.clientY - rect.top) / rect.height) * 100 });
-  };
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--black);
+    color: var(--white);
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
+  }
 
-  const handleTouchMove = (e: React.TouchEvent<HTMLButtonElement>) => {
-    if (!buttonRef.current) return;
-    const touch = e.touches[0];
-    const rect = buttonRef.current.getBoundingClientRect();
-    setMousePos({ x: ((touch.clientX - rect.left) / rect.width) * 100, y: ((touch.clientY - rect.top) / rect.height) * 100 });
-  };
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  div::-webkit-scrollbar { display: none; }
+  html, body { scrollbar-width: none; -ms-overflow-style: none; }
 
-  const showGradient = isHovering || isTouching;
+  /* noise overlay */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 99998;
+    opacity: 0.032;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px;
+  }
 
-  return (
-    <motion.button
-      ref={buttonRef}
-      onClick={() => { triggerHaptic("medium"); onClick(); }}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={() => setIsTouching(false)}
-      className="shimmer-button group relative w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-white/15 via-white/10 to-white/15 border border-white/25 shadow-[0_8px_30px_rgba(0,180,255,0.15)] backdrop-blur-2xl flex items-center justify-center text-white focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all overflow-hidden active:ring-2 active:ring-sky-300"
-      whileHover={{ scale: 1.12 }}
-      whileTap={{ scale: 0.94 }}
-    >
-      <span className="absolute -inset-1 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_55%)] opacity-70" />
-      <span
-        className={`absolute inset-0 rounded-full transition-opacity duration-150 ${showGradient ? 'opacity-100' : 'opacity-0'}`}
-        style={{ background: showGradient ? `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(125,211,252,0.6), transparent 55%)` : `radial-gradient(circle at 60% 20%, rgba(125,211,252,0.6), transparent 55%)` }}
-      />
-      <span className={`absolute inset-0 rounded-full ring-1 transition-colors duration-150 ${showGradient ? 'ring-sky-200/40' : 'ring-white/20'}`} />
-      <div className="relative z-10">{icon}</div>
-    </motion.button>
-  );
-}
+  /* cursor */
+  #ss-cursor-dot {
+    position: fixed; top: 0; left: 0; z-index: 99999;
+    width: 8px; height: 8px;
+    background: var(--white);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%,-50%);
+    opacity: 0.8;
+  }
 
-// --- PageNavigation Component -----------------------------------------------
+  /* work rail drag cursor */
+  .ss-rail { cursor: none; }
+  .ss-rail:active { cursor: none; }
 
-interface PageNavProps {
-  direction: "next" | "prev";
-  pageName: string;
-  onClick: () => void;
-}
-
-function PageNavigation({ direction, pageName, onClick }: PageNavProps) {
-  const isNext = direction === "next";
-  return (
-    <motion.button
-      onClick={() => { triggerHaptic("light"); onClick(); }}
-      className="cursor-pointer outline-none transition-all focus:outline-none border-none bg-transparent"
-      style={{ WebkitTapHighlightColor: "transparent", WebkitAppearance: "none", appearance: "none" }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-    >
-      <h3 className="font-[KiwiSoda] text-lg md:text-xl font-normal bounce-text-dark flex items-center gap-2 whitespace-nowrap px-4 py-2 rounded transition-colors hover:text-sky-400" style={{ color: "#1a1a1a" }}>
-        {!isNext && "← "}{pageName}{isNext && " →"}
-      </h3>
-    </motion.button>
-  );
-}
-
-// --- Root Component --------------------------------------------------------
-
-const PAGE_ORDER = ["home", "work", "about", "contact"] as const;
-
-export default function PortfolioUniqueNav() {
-  const [currentPage, setCurrentPage] = useState<"home" | "work" | "about" | "contact">("home");
-  const [direction, setDirection] = useState<"forward" | "backward">("forward");
-  const [prevPage, setPrevPage] = useState<"home" | "work" | "about" | "contact">("home");
-  const [particles, setParticles] = useState<Array<{
-    id: number; size: number; duration: number; delay: number; startX: number; startY: number;
-    seedOpacity: number; seedScale: number; seedX: number; seedY: number;
-    driftX1: number; driftY1: number; driftX2: number; driftY2: number;
-  }> | null>(null);
-  const device = useDeviceType();
-  const isScrollingRef = useRef(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const currentPageRef = useRef(currentPage);
-  const mainDivRef = useRef<HTMLDivElement>(null);
-  const pageOrder = PAGE_ORDER;
-
-  // Generate particles once on mount
-  useEffect(() => {
-    if (particles === null) {
-      const particleCount = typeof window !== "undefined" && window.innerWidth < 768 ? 60 : 80;
-      const newParticles = [...Array(particleCount)].map((_, i) => ({
-        id: i,
-        size: Math.random() * 6 + 2,
-        duration: Math.random() * 3 + 3,
-        delay: 0,
-        startX: Math.random() * 100,
-        startY: Math.random() * 100,
-        seedOpacity: Math.random() * 0.5 + 0.2,
-        seedScale: Math.random() * 0.25 + 0.9,
-        seedX: (Math.random() * 2 - 1) * 20,
-        seedY: (Math.random() * 2 - 1) * 20,
-        driftX1: (Math.random() * 2 - 1) * 40,
-        driftY1: (Math.random() * 2 - 1) * 40,
-        driftX2: (Math.random() * 2 - 1) * 40,
-        driftY2: (Math.random() * 2 - 1) * 40,
-      }));
-      setParticles(newParticles);
+  @media (max-width: 1023px) {
+    /* WorkPage grid adjusts for tablet */
+    .ss-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
     }
-  }, [particles]);
+  }
 
-  // Keep currentPageRef in sync
-  useEffect(() => {
-    currentPageRef.current = currentPage;
-    if (prevPage === "work" && currentPage === "home") {
-      const timer = setTimeout(() => { setPrevPage(currentPageRef.current); }, 600);
-      return () => clearTimeout(timer);
-    } else {
-      setPrevPage(currentPageRef.current);
+  @media (max-width: 640px) {
+    /* WorkPage grid is single column on mobile */
+    .ss-grid {
+      grid-template-columns: 1fr !important;
     }
-  }, [currentPage, prevPage]);
+  }
 
-  useDeviceOptimizations();
-  useInitialPreload();
+  /* modal / viewer scrollbar hide */
+  .ss-modal-grid { scrollbar-width: none; }
+  .ss-modal-grid::-webkit-scrollbar { display: none; }
 
-  // Force dark mode + inject global styles once on mount
-  useEffect(() => {
-    document.documentElement.classList.add("dark");
+  /* scroll hint wheel */
+  @keyframes ss-wheel {
+    0%,100% { top: 5px; opacity: 1; }
+    60%      { top: 18px; opacity: .15; }
+  }
+  .ss-wheel-dot { animation: ss-wheel 1.8s ease-in-out infinite; }
 
-    const style = document.createElement('style');
-    style.id = 'portfolio-global-styles';
-    style.innerHTML = `
-      /* ─── Kill ALL scrollbars ─── */
-      *, *::before, *::after { box-sizing: border-box; }
-      html {
-        margin: 0; padding: 0;
-        overflow: hidden;
-        overscroll-behavior: none;
-        -webkit-overflow-scrolling: touch;
-        background-color: #0f172a;
-      }
-      body {
-        margin: 0; padding: 0;
-        overflow: hidden;
-        overscroll-behavior: none;
-        -webkit-overflow-scrolling: touch;
-        background-color: #0f172a;
-      }
-      html::-webkit-scrollbar,
-      body::-webkit-scrollbar,
-      div::-webkit-scrollbar { display: none; }
-      html, body { scrollbar-width: none; -ms-overflow-style: none; }
+  /* scroll hint arrow (mobile) */
+  @keyframes ss-arrow-bounce {
+    0%,100% { transform: translateY(0); opacity: 1; }
+    50%      { transform: translateY(8px); opacity: .3; }
+  }
 
-      /* ─── Safari full-height fix ─── */
-      /* 100dvh respects the collapsing browser chrome on iOS Safari */
-      .portfolio-root {
-        position: fixed;
-        inset: 0;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        /* Fallback for browsers without dvh support */
-        height: 100vh;
-        /* Dynamic viewport height — fills the VISIBLE area even when Safari toolbar shrinks */
-        height: 100dvh;
-        overflow: hidden;
-      }
-      .portfolio-page {
-        position: fixed;
-        inset: 0;
-        width: 100%;
-        height: 100vh;
-        height: 100dvh;
-        overflow: hidden;
-      }
-    `;
-    if (!document.getElementById('portfolio-global-styles')) {
-      document.head.appendChild(style);
+  /* drag hint arrow */
+  @keyframes ss-drift {
+    0%,100% { transform: translateX(0); }
+    50%      { transform: translateX(8px); }
+  }
+  .ss-drift { animation: ss-drift 2s ease-in-out infinite; }
+
+  /* contact btn fill */
+  .ss-contact-btn {
+    position: relative; overflow: hidden;
+    transition: color .4s ease, border-color .4s ease;
+  }
+  .ss-contact-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--sky);
+    transform: translateX(-105%);
+    transition: transform .5s var(--ease-out);
+    z-index: 0;
+  }
+  .ss-contact-btn:hover { color: var(--black) !important; border-color: var(--sky) !important; }
+  .ss-contact-btn:hover::before { transform: translateX(0); }
+  .ss-contact-btn > * { position: relative; z-index: 1; }
+  .ss-contact-btn span { position: relative; z-index: 1; }
+
+  /* tile hover scale */
+  .ss-tile img, .ss-tile video {
+    transform: scale(1.06);
+    transition: transform .6s var(--ease-out);
+  }
+  .ss-tile:hover img, .ss-tile:hover video { transform: scale(1); }
+
+  /* 3d rendering card zoom hover */
+  .ss-3d-rendering:hover img {
+    transform: scale(1.14) !important;
+  }
+
+  /* work card image */
+  .ss-card-img {
+    transform: scale(1.08);
+    transition: transform .7s var(--ease-out), filter .4s ease;
+    filter: brightness(.65) saturate(.85);
+  }
+  .ss-card:hover .ss-card-img {
+    transform: scale(1);
+    filter: brightness(.88) saturate(1);
+  }
+  .ss-card-overlay {
+    opacity: 0;
+    transition: opacity .35s ease;
+  }
+  .ss-card:hover .ss-card-overlay { opacity: 1; }
+
+  /* about photo */
+  .ss-about-photo {
+    transform: scale(1.12);
+    transition: transform 10s ease;
+  }
+  .ss-about-photo-active { transform: scale(1) !important; }
+
+  /* hero bg */
+  .ss-hero-bg {
+    transform: scale(1.06);
+    transition: transform 8s ease;
+  }
+  .ss-hero-bg-active { transform: scale(1) !important; }
+
+  /* Responsive modal sizing before mobile breakpoint */
+  @media (max-width: 1200px) {
+    .ss-work-modal {
+      max-width: 1100px !important;
     }
+  }
+
+  @media (max-width: 1100px) {
+    .ss-work-modal {
+      max-width: 900px !important;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .ss-work-modal {
+      max-width: 700px !important;
+      max-height: 70dvh !important;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .ss-work-modal {
+      width: 95vw !important;
+      max-width: 100% !important;
+      max-height: 65dvh !important;
+    }
+    .ss-modal-grid { 
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 16px;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      padding-right: 16px !important;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .ss-modal-grid > * {
+      flex-shrink: 0;
+      width: 140px;
+      scroll-snap-align: start;
+    }
+  }
+
+  /* media viewer responsive */
+  @media (max-width: 1023px) {
+    .ss-media-viewer {
+      position: relative !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      gap: 20px !important;
+      maxHeight: 95dvh !important;
+      maxWidth: 100vw !important;
+      padding: 20px !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+    .ss-media-viewer > button:first-child {
+      position: static !important;
+      order: -1 !important;
+      margin-bottom: 12px !important;
+      align-self: flex-start !important;
+    }
+    .ss-media-viewer > div:nth-child(2) {
+      order: 2 !important;
+      flex-shrink: 0 !important;
+      width: 100% !important;
+    }
+    .ss-media-viewer > div:nth-child(3) {
+      order: 1 !important;
+      flex-shrink: 0 !important;
+      width: 100% !important;
+      padding-right: 12px !important;
+      padding-top: 20px !important;
+      padding-left: 16px !important;
+    }
+    .ss-media-viewer > div:nth-child(2) > div {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 35dvh !important;
+    }
+    .ss-media-viewer > div:nth-child(2) video,
+    .ss-media-viewer > div:nth-child(2) img {
+      max-height: 35dvh !important;
+      width: auto !important;
+      height: auto !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    html, body { cursor: grab; }
+    #ss-cursor-dot, #ss-cursor-ring { display: none !important; }
+    .ss-hero-bg { object-position: 78% 5% !important; }
+    /* about page font sizing on tablet */
+    .ss-about-page .ss-about-subtitle { font-size: 8px !important; }
+    .ss-about-page h2 { font-size: clamp(56px, 7vw, 120px) !important; }
+    .ss-about-page p { font-size: 15px !important; }
+    /* close button fix on mobile */
+    .ss-media-viewer > button:first-child {
+      position: static !important;
+      top: auto !important;
+      right: auto !important;
+      order: -1 !important;
+      margin-bottom: 12px !important;
+      align-self: flex-start !important;
+      padding: 12px 16px !important;
+      width: fit-content !important;
+      pointer-events: auto !important;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .ss-hero-bg { object-position: 82% 5% !important; }
+  }
+
+  @media (max-width: 640px) {
+    .ss-hero-bg { object-position: 75% 5% !important; }
+    html, body { cursor: grab; }
+    #ss-cursor-dot, #ss-cursor-ring { display: none !important; }
+    /* homepage content positioning on mobile */
+    .ss-home-page > div > div { bottom: 18vh !important; }
+    /* navigation hint on mobile */
+    .ss-nav-hint { right: 150px !important; }
+    .ss-nav-hint svg { width: 11px !important; height: 19px !important; }
+    /* modal close button positioning */
+    .ss-modal-close { top: 20px !important; }
+    /* media viewer close button positioned above title on all devices */
+    .ss-media-viewer-close { top: 100px !important; }
+    /* contact page text sizing on mobile */
+    .ss-contact-subtitle { font-size: 16px !important; }
+    .ss-contact-heading { font-size: clamp(90px,12vw,200px) !important; }
+    .ss-contact-description { font-size: clamp(22px,4vw,36px) !important; }
+    /* about page font sizing on mobile */
+    .ss-about-page .ss-about-subtitle { font-size: 6px !important; }
+    .ss-about-page h2 { font-size: clamp(42px, 5vw, 90px) !important; }
+    .ss-about-page p { 
+      font-size: 13px !important; 
+      line-height: 1.4 !important;
+      margin-top: 8px !important;
+    }
+    .ss-about-text-column { padding-top: 100px !important; }
+    /* reduce about page image cropping on mobile */
+    .ss-about-photo { object-position: center 25% !important; }
+  }
+
+  /* Ensure pages extend behind safe areas on all devices */
+  [key] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+  }
+`;
+
+/* ─────────────────────────────────────────────────────────────
+   CURSOR COMPONENT
+───────────────────────────────────────────────────────────── */
+function Cursor() {
+  const dotRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (dotRef.current) {
+        dotRef.current.style.left = e.clientX + "px";
+        dotRef.current.style.top = e.clientY + "px";
+      }
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
-  // Force html and body to have the correct background color based on page
-  useEffect(() => {
-    const bgColor = currentPage === "work" ? "#0f172a"
-      : currentPage === "home" ? "#0f172a"
-      : "#ffffff";
-    document.documentElement.style.backgroundColor = bgColor;
-    document.body.style.backgroundColor = bgColor;
-  }, [currentPage]);
-
-  const navigateTo = (page: "home" | "work" | "about" | "contact") => {
-    const currentIndex = pageOrder.indexOf(currentPage);
-    const nextIndex = pageOrder.indexOf(page);
-    setDirection(nextIndex > currentIndex ? "forward" : "backward");
-    setCurrentPage(page);
-  };
-
-  const { handleTouchStart, handleTouchEnd } = useSwipeGesture(
-    () => {
-      if (device === "mobile" || device === "tablet") {
-        const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
-        if (currentIndex > 0) {
-          isScrollingRef.current = true;
-          setDirection("backward");
-          setCurrentPage(pageOrder[currentIndex - 1]);
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => { isScrollingRef.current = false; }, 1500);
-        }
-      }
-    },
-    () => {
-      if (device === "mobile" || device === "tablet") {
-        const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
-        if (currentIndex < pageOrder.length - 1) {
-          isScrollingRef.current = true;
-          setDirection("forward");
-          setCurrentPage(pageOrder[currentIndex + 1]);
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => { isScrollingRef.current = false; }, 1500);
-        }
-      }
-    }
-  );
-
-  // ── Per-page particle config ──────────────────────────────────────────────
-  const isHome = currentPage === "home";
-  const isDark = currentPage === "work";
-  const particleColor = isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,1)";
-
-  // Returns true when a particle at (px%, py%) should render for the current page
-  const isParticleVisible = (px: number, py: number): boolean => {
-    if (currentPage === "home") return false;
-    // Work: block top 28% so particles don't float over the title + carousel tab
-    if (currentPage === "work" && py < 28) return false;
-    // About: block right 52% so particles stay off the portrait photo column
-    if (currentPage === "about" && px > 48) return false;
-    return true;
-  };
-
-  const getParticleOpacity = (seedOpacity: number): number => {
-    if (currentPage === "about" || currentPage === "contact") return 0.22;
-    return seedOpacity;
-  };
-
-  return (
-    <motion.div
-      ref={mainDivRef}
-      className="portfolio-root"
-      animate={{
-        backgroundColor:
-          (prevPage === "work" && currentPage === "home") ? "#000000"
-          : currentPage === "home" && prevPage === "home" ? "transparent"
-          : currentPage === "work" ? "#0f172a"
-          : "#ffffff"
-      }}
-      transition={{
-        duration: (prevPage === "work" && currentPage === "home") ? 0.6 : 0.3,
-        ease: "easeInOut"
-      }}
-      onWheel={(e) => {
-        e.preventDefault();
-        if (isScrollingRef.current) return;
-        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-        const currentIndex = pageOrder.findIndex(page => page === currentPageRef.current);
-        if (e.deltaY > 0 && currentIndex < pageOrder.length - 1) {
-          isScrollingRef.current = true;
-          setDirection("forward");
-          setCurrentPage(pageOrder[currentIndex + 1]);
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => { isScrollingRef.current = false; }, 1500);
-        } else if (e.deltaY < 0 && currentIndex > 0) {
-          isScrollingRef.current = true;
-          setDirection("backward");
-          setCurrentPage(pageOrder[currentIndex - 1]);
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => { isScrollingRef.current = false; }, 1500);
-        }
-      }}
-      onTouchStart={(e) => { if (device !== "desktop") handleTouchStart(e.nativeEvent); }}
-      onTouchEnd={(e) => { if (device !== "desktop") handleTouchEnd(e.nativeEvent); }}
-      style={{ color: "inherit" }}
-    >
-      {/* ── Dust Particles ───────────────────────────────────────────────────
-          Hidden on home. Instant opacity on page enter (no delay).
-          Per-page zone exclusions:
-            work    → blocked from top 28% (title + carousel area)
-            about   → blocked from right 52% (portrait photo column)
-            contact → full screen
-      ────────────────────────────────────────────────────────────────────── */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 10 }}>
-        {!isHome && particles?.map((particle) => {
-          if (!isParticleVisible(particle.startX, particle.startY)) return null;
-          const opacity = getParticleOpacity(particle.seedOpacity);
-          return (
-            <motion.div
-              key={`${particle.id}-${currentPage}`}
-              className="absolute rounded-full"
-              style={{
-                width: `${particle.size}px`,
-                height: `${particle.size}px`,
-                background: particleColor,
-                left: `${particle.startX}%`,
-                top: `${particle.startY}%`,
-                filter: "blur(2px)",
-              }}
-              initial={{ opacity: 0, x: particle.seedX, y: particle.seedY, scale: particle.seedScale }}
-              animate={{
-                opacity: opacity,
-                x: [particle.seedX, particle.seedX + particle.driftX1, particle.seedX + particle.driftX2, particle.seedX],
-                y: [particle.seedY, particle.seedY + particle.driftY1, particle.seedY + particle.driftY2, particle.seedY],
-                scale: [particle.seedScale, 1.08, 0.9, particle.seedScale],
-              }}
-              transition={{
-                opacity: { duration: 0.3, ease: "easeIn" },
-                x: { duration: particle.duration, ease: "easeInOut", repeat: Infinity, delay: 0, times: [0, 0.45, 1] },
-                y: { duration: particle.duration, ease: "easeInOut", repeat: Infinity, delay: 0, times: [0, 0.45, 1] },
-                scale: { duration: particle.duration, ease: "easeInOut", repeat: Infinity, delay: 0, times: [0, 0.45, 1] },
-              }}
-            />
-          );
-        })}
-      </div>
-
-      {/* ── Main content — simple opacity fade, no translate ── */}
-      <main className="fixed inset-0 overflow-hidden" style={{ 
-        zIndex: 20, 
-        width: "100%", 
-        height: "100dvh",
-        backgroundColor: currentPage === "home" && prevPage === "home" ? "transparent"
-          : currentPage === "home" ? "#0f172a"
-          : currentPage === "work" ? "#0f172a"
-          : "#ffffff",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        overflow: "hidden",
-      }}>
-        <AnimatePresence mode="wait">
-          {currentPage === "home" && <Hero key="home" setPage={navigateTo} />}
-          {currentPage === "work" && <Work key="work" setPage={navigateTo} />}
-          {currentPage === "about" && <About key="about" setPage={navigateTo} />}
-          {currentPage === "contact" && <Contact key="contact" setPage={navigateTo} />}
-        </AnimatePresence>
-      </main>
-    </motion.div>
-  );
+  return <div id="ss-cursor-dot" ref={dotRef} />;
 }
 
-// --- Sections --------------------------------------------------------------
-
-function Section({ id, children, active = true }: { id: string; children: React.ReactNode; active?: boolean }) {
-  return (
-    <section id={id} className="relative py-24 scroll-mt-32 overflow-hidden">
-      <div className="absolute inset-0 max-w-6xl mx-auto">
-        <motion.div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 blur-3xl"
-          animate={{ opacity: active ? 0.4 : 0.1, scale: active ? 1 : 0.95 }}
-          transition={{ type: "spring", stiffness: 80, damping: 20 }}
-          style={{
-            background:
-              "radial-gradient(400px 300px at 30% 40%, rgba(14,165,233,.15), transparent)," +
-              "radial-gradient(400px 300px at 70% 60%, rgba(34,211,238,.10), transparent)",
-          }}
-        />
-      </div>
-      <div className="relative max-w-6xl mx-auto h-full grid place-items-center px-4">{children}</div>
-    </section>
-  );
+function useCursorHover() {
+  const enter = useCallback(() => document.body.classList.add("ss-hover"), []);
+  const leave = useCallback(() => document.body.classList.remove("ss-hover"), []);
+  return { onMouseEnter: enter, onMouseLeave: leave };
 }
 
-// ─── FADE TRANSITION VARIANTS (no translate — content stays in place) ─────
-const pageFadeVariants = {
+/* ─────────────────────────────────────────────────────────────
+   PAGE TRANSITION VARIANTS
+───────────────────────────────────────────────────────────── */
+const fade = {
   initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit:    { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.6 } },
+  exit:    { opacity: 0, transition: { duration: 0.45 } },
 };
 
-// ─── Hero ─────────────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────
+   ROOT
+───────────────────────────────────────────────────────────── */
+export default function App() {
+  const [page, setPage] = useState<Page>("home");
+  const [modalProject, setModalProject] = useState<Project | null>(null);
+  const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const [hintsVisible, setHintsVisible] = useState(true);
+  const pageIdx = PAGE_ORDER.indexOf(page);
+  const cooldown = useRef(false);
+  const hover = useCursorHover();
+  const hintInteracted = useRef(false);
 
-function Hero({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
-  const [windowWidth, setWindowWidth] = React.useState(() =>
-    typeof window !== "undefined" ? window.innerWidth : 1024
-  );
+  /* inject global styles once */
+  useEffect(() => {
+    if (document.getElementById("ss-global")) return;
+    const s = document.createElement("style");
+    s.id = "ss-global";
+    s.innerHTML = GLOBAL_CSS;
+    document.head.appendChild(s);
+  }, []);
 
-  React.useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
+  /* track device size */
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const getObjectPosition = () => {
-    if (windowWidth >= 1024) return "center 5%";      // desktop: standard crop
-    if (windowWidth >= 640)  return "65% 20%";        // tablet: shift right, crop top
-    return "85% 50%";                                  // mobile: right side zoomed in
-  };
+  /* bg color sync */
+  useEffect(() => {
+    const bg = page === "about" || page === "contact" ? "#ede8e0" : "#060606";
+    document.documentElement.style.backgroundColor = bg;
+    document.body.style.backgroundColor = bg;
+  }, [page]);
 
-  const getTitleLeftPosition = () => {
-    if (windowWidth >= 1024) return "20%";
-    const progress = Math.max(0, (1024 - windowWidth) / (1024 - 320));
-    return `${Math.max(1, 20 - progress * 22)}%`;
-  };
+  const navigate = useCallback((next: Page) => {
+    if (next === page) return;
+    setModalProject(null);
+    setViewerItem(null);
+    setPage(next);
+  }, [page]);
 
-  React.useEffect(() => {
-    const img = new Image();
-    img.src = '/assets/IMG_2282.JPG';
+  /* wheel nav — skip on modals and work page */
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      if (!hintInteracted.current) {
+        hintInteracted.current = true;
+        setHintsVisible(false);
+      }
+      if (cooldown.current) return;
+      // Skip page navigation on work page for mobile/tablet (screen < 1024px)
+      if (page === "work" && window.innerWidth < 1024) return;
+      // Skip if over a scrollable element
+      const target = e.target as HTMLElement;
+      if (target.closest(".ss-modal-grid") || target.closest(".ss-media-viewer")) return;
+      // Only navigate if movement is clearly vertical (horizontal must be < 50% of vertical)
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) * 0.5) return;
+      const dir = e.deltaY > 0 ? 1 : -1;
+      const next = Math.max(0, Math.min(PAGE_ORDER.length - 1, pageIdx + dir));
+      if (next === pageIdx) return;
+      cooldown.current = true;
+      setPage(PAGE_ORDER[next]);
+      setTimeout(() => { cooldown.current = false; }, 900);
+    };
+    window.addEventListener("wheel", onWheel, { passive: true });
+    return () => window.removeEventListener("wheel", onWheel);
+  }, [pageIdx, page]);
+
+  /* touch nav */
+  const touchY = useRef(0);
+  const touchX = useRef(0);
+  useEffect(() => {
+    const start = (e: TouchEvent) => {
+      touchY.current = e.touches[0].clientY;
+      touchX.current = e.touches[0].clientX;
+    };
+    const end = (e: TouchEvent) => {
+      if (!hintInteracted.current) {
+        hintInteracted.current = true;
+        setHintsVisible(false);
+      }
+      // Skip page navigation on work page (use buttons only)
+      if (page === "work") return;
+      const target = e.target as HTMLElement;
+      // Skip if on a scrollable rail or modal grid
+      if (target.closest(".ss-rail") || target.closest(".ss-modal-grid")) return;
+      const dy = touchY.current - e.changedTouches[0].clientY;
+      const dx = touchX.current - e.changedTouches[0].clientX;
+      // Require significant vertical movement (120px) and vertical > horizontal by 3x to prevent accidental triggers
+      if (Math.abs(dy) < 120 || Math.abs(dy) < Math.abs(dx) * 3) return;
+      const dir = dy > 0 ? 1 : -1;
+      const next = Math.max(0, Math.min(PAGE_ORDER.length - 1, pageIdx + dir));
+      if (next !== pageIdx) setPage(PAGE_ORDER[next]);
+    };
+    window.addEventListener("touchstart", start, { passive: true });
+    window.addEventListener("touchend", end, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", start);
+      window.removeEventListener("touchend", end);
+    };
+  }, [page, pageIdx]);
+
+  /* keyboard nav */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // When viewing media, arrow keys navigate carousel
+      if (viewerItem) {
+        if (e.key === "Escape") setViewerItem(null);
+        return;
+      }
+      // When modal is open, close with Escape
+      if (modalProject) {
+        if (e.key === "Escape") setModalProject(null);
+        return;
+      }
+      // Otherwise page navigation
+      if (e.key === "ArrowDown" || e.key === "ArrowRight")
+        setPage(PAGE_ORDER[Math.min(PAGE_ORDER.length - 1, pageIdx + 1)]);
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft")
+        setPage(PAGE_ORDER[Math.max(0, pageIdx - 1)]);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pageIdx, viewerItem, modalProject]);
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0,
+        width: "100%", height: "100dvh",
+        overflow: "hidden",
+        fontFamily: "'Cormorant Garamond', serif",
+        background: "#060606",
+      }}
+    >
+      <Cursor />
+
+      {/* ── NAV ─────────────────────────────────────────────── */}
+      <nav
+        style={{
+          position: "fixed", top: 0, left: 0, right: 0,
+          zIndex: 10000,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          paddingTop: "max(28px, calc(28px + env(safe-area-inset-top)))",
+          paddingBottom: "28px",
+          paddingLeft: "max(48px, calc(48px + env(safe-area-inset-left)))",
+          paddingRight: "max(48px, calc(48px + env(safe-area-inset-right)))",
+          mixBlendMode: page === "about" ? "normal" : "difference",
+        }}
+      >
+        <div style={{ visibility: "hidden" }} />
+        <ul style={{ display: "flex", gap: 40, listStyle: "none" }}>
+          {PAGE_ORDER.map(p => (
+            <li key={p}>
+              <NavLink label={p.charAt(0).toUpperCase() + p.slice(1)} active={page === p} onClick={() => navigate(p)} currentPage={page} />
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* ── PAGE INDICATOR ───────────────────────────────────── */}
+      <div
+        style={{
+          position: "fixed", right: "max(32px, calc(32px + env(safe-area-inset-right)))", top: "50%",
+          transform: "translateY(-50%)",
+          zIndex: 400,
+          display: "flex", flexDirection: "column", gap: 12,
+          mixBlendMode: "difference",
+        }}
+      >
+        {PAGE_ORDER.map((p, i) => (
+          <button
+            key={p}
+            onClick={() => navigate(p)}
+            style={{
+              width: 6, height: 6, borderRadius: "50%",
+              border: "1px solid rgba(245,242,237,0.4)",
+              background: page === p ? "var(--white)" : "transparent",
+              transform: page === p ? "scale(1.5)" : "scale(1)",
+              transition: "all 0.4s ease",
+              cursor: "none",
+            }}
+            {...hover}
+          />
+        ))}
+      </div>
+
+      {/* ── SCROLL HINT ──────────────────────────────────────── */}
+      <div
+        style={{
+          position: "fixed", bottom: "max(32px, calc(32px + env(safe-area-inset-bottom)))", left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 400,
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+          fontFamily: "'Space Mono', monospace",
+          fontSize: 10, letterSpacing: 2, textTransform: "uppercase",
+          color: "var(--mid)",
+          opacity: hintsVisible && ["home", "about", "contact"].includes(page) ? 1 : 0,
+          transition: "opacity 0.5s ease",
+          mixBlendMode: "difference",
+          pointerEvents: "none",
+        }}
+      >
+        {isDesktop ? (
+          <div style={{ width: 22, height: 34, border: "1.5px solid white", borderRadius: 11, position: "relative", transform: page === "contact" ? "rotate(180deg)" : "none" }}>
+            <div className="ss-wheel-dot" style={{ width: 3, height: 6, background: "white", borderRadius: 3, position: "absolute", top: 5, left: "50%", transform: "translateX(-50%)" }} />
+          </div>
+        ) : (
+          <div style={{ transform: page === "contact" ? "rotate(180deg)" : "none" }}>
+            <svg width="14" height="24" viewBox="0 0 14 24" fill="none" style={{ animation: "ss-arrow-bounce 1.8s ease-in-out infinite", display: "block" }}>
+              <path d="M7 2L12 8M7 2L2 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M7 14L12 20M7 14L2 20" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+        <span style={{ color: "white" }}>{isDesktop ? "Scroll" : "Swipe"}</span>
+      </div>
+
+      {/* ── PAGES ────────────────────────────────────────────── */}
+      <AnimatePresence mode="wait">
+        {page === "home" && <HomePage key="home" onNavigate={navigate} />}
+        {page === "work" && <WorkPage key="work" onCardClick={setModalProject} />}
+        {page === "about" && <AboutPage key="about" />}
+        {page === "contact" && <ContactPage key="contact" />}
+      </AnimatePresence>
+
+      {/* ── WORK MODAL ───────────────────────────────────────── */}
+      <AnimatePresence>
+        {modalProject && (
+          <WorkModal
+            project={modalProject}
+            onClose={() => setModalProject(null)}
+            onMediaClick={setViewerItem}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── MEDIA VIEWER ─────────────────────────────────────── */}
+      <AnimatePresence>
+        {viewerItem && (
+          <MediaViewer item={viewerItem} onClose={() => setViewerItem(null)} onItemClick={setViewerItem} />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   NAV LINK
+───────────────────────────────────────────────────────────── */
+function NavLink({ label, active, onClick, currentPage }: { label: string; active: boolean; onClick: () => void; currentPage?: string }) {
+  const hover = useCursorHover();
+  const isAboutPage = currentPage === "about";
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        fontFamily: "'Space Mono', monospace",
+        fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
+        color: isAboutPage ? "#000000" : "var(--white)", background: "none", border: "none",
+        cursor: "none", opacity: isAboutPage ? 1 : (active ? 1 : 0.55),
+        transition: "opacity 0.3s ease, color 0.3s ease",
+        position: "relative",
+      }}
+      {...hover}
+    >
+      {label}
+      <span
+        style={{
+          position: "absolute", bottom: -4, left: 0,
+          height: 1, background: "var(--sky)",
+          width: active ? "100%" : 0,
+          transition: "width 0.4s cubic-bezier(0.16,1,0.3,1)",
+          display: "none",
+        }}
+      />
+    </button>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HOME PAGE
+───────────────────────────────────────────────────────────── */
+function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
+  const [loaded, setLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 640);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
-    <motion.div
-      key="hero"
-      variants={pageFadeVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={{ duration: 0.55 }}
-      style={{
-        position: "absolute",
-        inset: 0,
-        margin: 0,
-        padding: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "#0f172a",
-        overflow: "hidden",
-      }}
+    <motion.div key="home" {...fade}
+      className="ss-home-page"
+      style={{ position: "absolute", inset: 0, background: "#060606", overflow: "hidden" }}
     >
-      {/* Background Image using img element for better control */}
+      {/* BG image */}
       <img
-        src="/assets/IMG_2282.JPG"
-        alt="Hero background"
+        src="/assets/New_Shiri_Site_Pic.jpg"
+        alt=""
+        onLoad={() => setLoaded(true)}
+        className={loaded ? "ss-hero-bg ss-hero-bg-active" : "ss-hero-bg"}
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          objectPosition: getObjectPosition(),
+          position: "absolute", inset: 0,
+          width: "100%", height: "100%",
+          objectFit: "cover", objectPosition: "65% 5%",
+          filter: "brightness(0.62) contrast(1.1)",
           zIndex: 1,
-          display: "block",
         }}
       />
 
-      <div
-        className="absolute z-30 top-1/2 md:top-[47%] -translate-y-1/2 flex flex-col items-start md:items-center justify-center gap-4 sm:gap-6 w-auto"
-        style={{ left: getTitleLeftPosition() }}
-      >
+      {/* Vignette */}
+      <div style={{
+        position: "absolute", inset: 0, zIndex: 2,
+        background: "radial-gradient(ellipse 65% 100% at 72% 50%, transparent 25%, rgba(6,6,6,.65) 70%), linear-gradient(to bottom, rgba(6,6,6,.25) 0%, transparent 30%, transparent 65%, rgba(6,6,6,.85) 100%)",
+      }} />
+
+      {/* Content */}
+      <div style={{ position: "absolute", bottom: isMobile ? "28vh" : "36vh", left: "12vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
         <motion.h1
-          layout
-          className="font-[KiwiSoda] font-normal leading-tight bounce-text text-center"
-          style={{ color: "#1a1a1a" }}
+          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
+          style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: "clamp(72px,10vw,160px)",
+            lineHeight: 0.92, letterSpacing: 4,
+            color: "var(--white)",
+          }}
         >
-          <span className="block text-5xl sm:text-5xl md:text-7xl lg:text-8xl">Shyon Shiri</span>
-          <span className="block mt-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400 bounce-text">
-            Graphic Designer
-          </span>
+          Shyon<br />Shiri
         </motion.h1>
       </div>
     </motion.div>
   );
 }
 
-// ─── AutoAspectTile ────────────────────────────────────────────────────────
-
-function AutoAspectTile({ item, onMediaClick }: { item: MediaItem; onMediaClick?: (item: MediaItem) => void }) {
-  const [ratio, setRatio] = React.useState<number | null>(item.aspectRatio ?? null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-
-  const setSafeRatio = (w: number, h: number) => {
-    if (!w || !h) return;
-    const r = w / h;
-    if (Number.isFinite(r) && r > 0) setRatio(r);
-  };
-
-  const Wrapper = item.link && !onMediaClick ? "a" : "div";
-  const shouldDisableLink = onMediaClick && item.link;
-
-  return (
-    <motion.article
-      ref={containerRef}
-      className={`group relative rounded-3xl overflow-hidden cursor-pointer ${onMediaClick ? "bg-transparent backdrop-filter-none" : ""}`}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      onClick={() => onMediaClick?.(item)}
-      style={onMediaClick ? { background: "transparent", backdropFilter: "none" } : undefined}
-    >
-      <Wrapper
-        {...(!shouldDisableLink && item.link && !onMediaClick ? { href: item.link, target: "_blank", rel: "noopener noreferrer" } : {})}
-        className={`block w-full h-full ${onMediaClick ? "bg-transparent" : ""}`}
-        style={onMediaClick ? { background: "transparent" } : undefined}
-      >
-        <div className="w-full bg-transparent" style={{ aspectRatio: ratio ?? 16 / 9 }}>
-          {item.type === "image" ? (
-            <img
-              src={item.src}
-              alt={item.alt ?? ""}
-              loading="lazy"
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-              style={{ objectPosition: item.objectPosition ?? "center", transform: item.scale ? `scale(${item.scale})` : "scale(1)", transformOrigin: item.objectPosition ?? "center" }}
-              onLoad={(e) => { const img = e.currentTarget; if (!item.aspectRatio) setSafeRatio(img.naturalWidth, img.naturalHeight); }}
-            />
-          ) : (
-            <div className="relative w-full h-full bg-black/40">
-              <img
-                src={item.poster}
-                alt={item.title ?? ""}
-                className="w-full h-full object-cover"
-                style={{ objectPosition: "center" }}
-                onLoad={(e) => { const img = e.currentTarget; setSafeRatio(img.naturalWidth, img.naturalHeight); }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur flex items-center justify-center transition-transform group-hover:scale-110">
-                  <svg className="w-7 h-7 text-white ml-1" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </Wrapper>
-    </motion.article>
-  );
-}
-
-// ─── MediaModal ────────────────────────────────────────────────────────────
-
-function MediaModal({ item, onClose, onNavigate }: { item: MediaItem; onClose: () => void; onNavigate?: (category: string, index: number) => void }) {
-  const device = useDeviceType();
-  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-
-  const allMedia = [
-    { type: item.type, src: item.src, title: item.title ?? "Media" },
-    ...(item.relatedImages?.map((img) => ({ type: "image" as const, src: img.src, title: img.title })) ?? []),
-  ];
-
-  const aspectRatio = item.aspectRatio || 1;
-  let baseWidth = 500;
-  let baseHeight = baseWidth / aspectRatio;
-  if (aspectRatio < 0.8) { baseWidth = 480; baseHeight = baseWidth / aspectRatio; }
-  const maxAvailableWidth = window.innerWidth * 0.55;
-  const maxAvailableHeight = window.innerHeight * 0.65;
-  let finalWidth = baseWidth;
-  let finalHeight = baseHeight;
-  if (baseWidth > maxAvailableWidth) { finalWidth = maxAvailableWidth; finalHeight = finalWidth / aspectRatio; }
-  if (baseHeight > maxAvailableHeight) { finalHeight = maxAvailableHeight; finalWidth = finalHeight * aspectRatio; }
+/* ─────────────────────────────────────────────────────────────
+   WORK PAGE
+───────────────────────────────────────────────────────────── */
+function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
+  const hover = useCursorHover();
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
 
   useEffect(() => {
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-    const handleEscape = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handleEscape);
-    return () => {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-      window.removeEventListener("keydown", handleEscape);
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
     };
-  }, [onClose]);
-
-  const currentMedia = allMedia[currentMediaIndex];
-
-  return (
-    <motion.div
-      className="fixed bg-black/40 backdrop-blur-md pointer-events-auto"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{ position: "fixed", inset: 0, zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", overflow: "auto", width: "100vw", height: "100vh" }}
-    >
-      <motion.div
-        className="relative w-11/12 max-w-6xl flex flex-col lg:flex-row items-center justify-center lg:items-center"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          maxHeight: "calc(100vh - 10rem)",
-          flexDirection: window.innerWidth < 1024 ? "column" : "row",
-          paddingTop: window.innerWidth < 768 ? "6rem" : "4rem",
-          paddingBottom: "4rem",
-          boxSizing: "border-box",
-          background: "transparent",
-        }}
-      >
-        <button onClick={onClose} className="absolute top-12 right-0 z-20 w-10 h-10 rounded-full flex items-center justify-center text-white transition hover:scale-110">
-          <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-        </button>
-
-        <div className="flex flex-col justify-center items-start flex-shrink-0 w-full lg:w-1/3" style={{ paddingLeft: "1rem", paddingRight: "0", maxHeight: "100%", overflow: "hidden" }}>
-          {item.title && (
-            <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2 leading-tight break-words">
-                {item.title === "Product, not Consumer" ? <span className="italic">{item.title}</span> : item.title}
-              </h2>
-              {item.year && <p className="text-sm text-white/60 mb-3">{item.year}</p>}
-            </div>
-          )}
-          {item.description && item.title !== "Clothing Line Mock Up" && (
-            <p className="text-base sm:text-lg text-white/90 leading-relaxed" dangerouslySetInnerHTML={{ __html: item.description }} />
-          )}
-        </div>
-
-        <div className="flex items-center justify-center flex-shrink-0 w-full lg:flex-1" style={{ width: window.innerWidth < 1024 ? "100%" : "auto", height: window.innerWidth < 1024 ? "auto" : finalHeight, minHeight: 0, minWidth: 0, maxWidth: "100%", paddingRight: "1rem" }}>
-          {currentMedia.type === "image" ? (
-            <motion.img key={currentMediaIndex} src={currentMedia.src} alt={currentMedia.title} className="max-w-full max-h-full object-contain rounded-3xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ maxHeight: window.innerWidth < 1024 ? "35vh" : "100%" }} />
-          ) : (
-            <video key={currentMediaIndex} src={currentMedia.src} poster={item.poster} controls className="max-w-full max-h-full object-contain rounded-3xl" autoPlay muted playsInline preload="metadata" style={{ maxHeight: window.innerWidth < 1024 ? "35vh" : "100%" }}>Your browser does not support the video tag.</video>
-          )}
-        </div>
-
-        {item.link && (
-          <div className="relative mt-6 flex justify-center w-full lg:w-auto">
-            <a href={item.link} target="_blank" rel="noopener noreferrer" className="px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition">Visit Website</a>
-          </div>
-        )}
-
-        {item.relatedLinks && item.relatedLinks.length > 0 && (
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col gap-3 items-center" style={{ bottom: item.relatedLinks.length === 1 ? "-3rem" : "-7rem" }}>
-            {item.relatedLinks.map((link, idx) => (
-              <button key={idx} onClick={() => onNavigate?.(link.category, link.index)} className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold rounded-lg transition whitespace-nowrap">→ {link.title}</button>
-            ))}
-          </div>
-        )}
-
-        {allMedia.length > 1 && (
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-4" style={{ bottom: "-0.5rem" }}>
-            <button onClick={() => setCurrentMediaIndex((prev) => (prev - 1 + allMedia.length) % allMedia.length)} className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="15 18 9 12 15 6" /></svg>
-            </button>
-            <span className="text-white/70 text-sm">{currentMediaIndex + 1} / {allMedia.length}</span>
-            <button onClick={() => setCurrentMediaIndex((prev) => (prev + 1) % allMedia.length)} className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="9 18 15 12 9 6" /></svg>
-            </button>
-          </div>
-        )}
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// ─── ProjectModal ──────────────────────────────────────────────────────────
-
-function ProjectModal({ project, projectId, onClose }: { project: any; projectId: string; onClose: () => void }) {
-  const device = useDeviceType();
-  const scaleMap: Record<string, number> = {
-    "3d-modeling": 0.90,
-    "digital-media": 0.88,
-    "camera-work": 0.95,
-    "programming": 0.55,
-    "fabrication": 0.60,
-    "3d-modelling": 0.62,
-  };
-  const scaleValue = scaleMap[projectId] ?? 0.75;
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-    const handleEscape = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handleEscape);
-    return () => {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
-      window.removeEventListener("keydown", handleEscape);
-    };
-  }, [onClose]);
-
-  return (
-    <motion.div
-      className="fixed backdrop-blur-xl pointer-events-auto"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{ position: "fixed", inset: 0, zIndex: 99999, display: "flex", alignItems: "flex-start", justifyContent: "center", overflow: device === "desktop" ? "hidden" : "auto", width: "100vw", height: "100vh", background: "rgba(0, 0, 0, 0.3)" }}
-    >
-      <motion.div
-        className="relative w-11/12 max-w-full flex flex-col items-center p-8"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        onClick={(e) => e.stopPropagation()}
-        style={{ marginTop: projectId === "camera-work" ? "110px" : projectId === "3d-modeling" ? "210px" : "90px", overflow: device === "desktop" ? "hidden" : "visible" }}
-      >
-        <button onClick={onClose} className={`absolute z-50 p-2 hover:bg-white/10 rounded-full transition-colors ${projectId === "digital-media" ? "top-0 right-0" : "top-4 right-4"}`}>
-          <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-        </button>
-        {project.description && <p className="text-sm md:text-base text-white/80 mb-8 text-center max-w-2xl">{project.description}</p>}
-        <div style={{ width: "100%", transform: `scale(${scaleValue})`, transformOrigin: "top" }}>{project.content}</div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// ─── Work ──────────────────────────────────────────────────────────────────
-
-function Work({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
-  const [activeVideo, setActiveVideo] = useState<MediaItem | null>(null);
-  const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null);
-  const device = useDeviceType();
-
-  const allProjectItems = [
-    ...DIGITAL_MEDIA.map((p) => ({
-      id: p.id,
-      title: p.title,
-      description: p.description,
-      img: p.img,
-      objectPosition: p.objectPosition,
-      scale: p.scale,
-      category: "Design Systems & Visuals" as const,
-      content: (
-        <div>
-          {p.id === "3d-modeling" && <ProjectDetailModelingMedia onMediaClick={setActiveVideo} />}
-          {p.id === "digital-media" && <ProjectDetailDigitalMedia onMediaClick={setActiveVideo} />}
-          {p.id === "camera-work" && <ProjectDetailCameraWork onMediaClick={setActiveVideo} />}
-        </div>
-      ),
-    })),
-    ...HANDMADE_WORKS.map((p) => ({
-      id: p.title.toLowerCase().replace(/\s+/g, "-"),
-      title: p.title,
-      description: p.description,
-      img: p.img,
-      objectPosition: p.objectPosition,
-      scale: (p as any).scale,
-      category: "Interactive Media" as const,
-      content: (
-        <div className="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-2">
-          {(FABRICATION_MEDIA[p.title as keyof typeof FABRICATION_MEDIA] || []).map((item, index) => (
-            <div key={item.src ?? index}><AutoAspectTile item={item} onMediaClick={setActiveVideo} /></div>
-          ))}
-        </div>
-      ),
-    })),
-  ];
-
-  return (
-    <motion.div
-      key="work"
-      variants={pageFadeVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={{ duration: 0.55 }}
-      style={{ 
-        position: "absolute",
-        inset: 0,
-        margin: 0,
-        padding: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: '#0f172a',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-    >
-      <h2 className="font-[KiwiSoda] text-5xl font-normal bounce-text pt-28 md:pt-40 px-4 ml-8 md:ml-32" style={{ color: "#ffffff" }}>My Work</h2>
-
-      <div className="mt-16 md:mt-24 px-4">
-        <CubeTab items={allProjectItems} onItemClick={setSelectedProjectIndex} selectedIndex={selectedProjectIndex} />
-      </div>
-
-      <AnimatePresence mode="wait">
-        {selectedProjectIndex !== null && allProjectItems[selectedProjectIndex] && (
-          <ProjectModal project={allProjectItems[selectedProjectIndex]} projectId={allProjectItems[selectedProjectIndex].id} onClose={() => setSelectedProjectIndex(null)} />
-        )}
-      </AnimatePresence>
-
-      <motion.div className="flex items-center justify-center gap-3 mt-12 md:mt-12 mb-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}>
-        <div className="bounce-text" style={{ filter: "drop-shadow(0 0 8px rgba(56, 189, 248, 0.9)) drop-shadow(0 0 16px rgba(56, 189, 248, 0.7))" }}>
-          <ChevronLeft size={32} style={{ color: "#ffffff" }} />
-        </div>
-        <span className="font-[KiwiSoda] bounce-text" style={{ color: "#ffffff", fontSize: "20px", letterSpacing: "0.5px" }}>
-          {device === "desktop" ? "Drag tab to explore" : "Scroll tab to explore"}
-        </span>
-        <div className="bounce-text" style={{ filter: "drop-shadow(0 0 8px rgba(56, 189, 248, 0.9)) drop-shadow(0 0 16px rgba(56, 189, 248, 0.7))" }}>
-          <ChevronRight size={32} style={{ color: "#ffffff" }} />
-        </div>
-      </motion.div>
-
-      <AnimatePresence>
-        {activeVideo && <MediaModal item={activeVideo} onClose={() => setActiveVideo(null)} />}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
-
-// ─── Project Detail Components ─────────────────────────────────────────────
-
-function ProjectDetailModelingMedia({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
-  return (
-    <section className="space-y-6">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 items-end">
-        {MODELING_MEDIA.map((item, index) => (
-          <div key={item.src ?? index} className="w-full"><AutoAspectTile item={item} onMediaClick={onMediaClick} /></div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ProjectDetailDigitalMedia({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
-  return (
-    <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} className="scale-75 origin-top" style={{ marginLeft: '-20px' }}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="flex flex-col gap-5">
-          <AutoAspectTile item={SHIRI_DESIGNS[0]} onMediaClick={onMediaClick} />
-          <AutoAspectTile item={SHIRI_DESIGNS[1]} onMediaClick={onMediaClick} />
-        </div>
-        <div className="flex flex-col gap-5">
-          <AutoAspectTile item={GRAPHIC_MEDIA[0]} onMediaClick={onMediaClick} />
-        </div>
-        <div className="flex flex-col gap-5">
-          <AutoAspectTile item={GRAPHIC_MEDIA[1]} onMediaClick={onMediaClick} />
-          <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
-          <AutoAspectTile item={GRAPHIC_MEDIA[3]} onMediaClick={onMediaClick} />
-        </div>
-        <div className="flex flex-col gap-5">
-          <AutoAspectTile item={SHIRI_DESIGNS[2]} onMediaClick={onMediaClick} />
-          <AutoAspectTile item={SHIRI_DESIGNS[3]} onMediaClick={onMediaClick} />
-        </div>
-      </div>
-    </motion.section>
-  );
-}
-
-function ProjectDetailCameraWork({ onMediaClick }: { onMediaClick: (item: MediaItem) => void }) {
-  // Columns 1–4: single items each, scaled down slightly to match col 5 height
-  const col1 = CAMERA_MEDIA[6]; // Candid Studio Portrait
-  const col2 = CAMERA_MEDIA[0]; // NABU 2026 Teaser
-  const col3 = CAMERA_MEDIA[1]; // NABU 2025 Summer
-  const col4 = CAMERA_MEDIA[2]; // NABU 2023 Spring
-  // Column 5: Culinary → Campaign → Abstract, evenly spaced
-  const col5 = [CAMERA_MEDIA[5], CAMERA_MEDIA[3], CAMERA_MEDIA[4]];
-
-  const singleColStyle: React.CSSProperties = {
-    transform: "scale(0.85)",
-    transformOrigin: "top center",
-  };
-
-  return (
-    <section className="space-y-6">
-      {/* 5-column grid — each column is a flex container so items don't leak rows */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-start">
-
-        {/* Col 1 */}
-        <div style={singleColStyle}>
-          <AutoAspectTile item={col1} onMediaClick={onMediaClick} />
-        </div>
-
-        {/* Col 2 */}
-        <div style={singleColStyle}>
-          <AutoAspectTile item={col2} onMediaClick={onMediaClick} />
-        </div>
-
-        {/* Col 3 */}
-        <div style={singleColStyle}>
-          <AutoAspectTile item={col3} onMediaClick={onMediaClick} />
-        </div>
-
-        {/* Col 4 */}
-        <div style={singleColStyle}>
-          <AutoAspectTile item={col4} onMediaClick={onMediaClick} />
-        </div>
-
-        {/* Col 5 — Culinary / Campaign / Abstract stacked with consistent gap */}
-        <div
-          className="flex flex-col"
-          style={{
-            transform: "scale(0.85)",
-            transformOrigin: "top center",
-            gap: "0.5rem", // ~half inch at 96dpi — adjust to taste
-          }}
-        >
-          {col5.map((item) => (
-            <AutoAspectTile key={item.src} item={item} onMediaClick={onMediaClick} />
-          ))}
-        </div>
-
-      </div>
-    </section>
-  );
-}
-
-// ─── About ─────────────────────────────────────────────────────────────────
-
-function About({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
-  const currentImage = PORTRAIT_IMAGES[0];
-  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
-
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const getScalingValues = () => {
-    if (windowWidth >= 1024) {
-      return { textSize: 16, smallTextSize: 14, photoWidth: 320, photoHeight: 520, photoMargin: 0, photoBorder: 2, padding: 32, gap: 32, headingSize: 48 };
-    } else if (windowWidth <= 320) {
-      return { textSize: 10.5, smallTextSize: 10, photoWidth: 160, photoHeight: 240, photoMargin: 140, photoBorder: 1.5, padding: 12, gap: 16, headingSize: 24 };
-    } else {
-      const progress = (1024 - windowWidth) / (1024 - 320);
-      return {
-        textSize: 16 - (progress * 5.5),
-        smallTextSize: 14 - (progress * 4),
-        photoWidth: 320 - (progress * 160),
-        photoHeight: 520 - (progress * 280),
-        photoMargin: progress * 140,
-        photoBorder: 2 - (progress * 0.5),
-        padding: 32 - (progress * 20),
-        gap: 32 - (progress * 16),
-        headingSize: 48 - (progress * 24),
-      };
-    }
-  };
-
-  const scaling = getScalingValues();
 
   return (
-    <motion.div
-      key="about"
-      variants={pageFadeVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={{ duration: 0.55 }}
-      style={{ 
-        position: "absolute",
-        inset: 0,
-        margin: 0,
-        padding: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: '#ffffff', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center', 
-        overflow: 'hidden'
-      }}
+    <motion.div key="work" {...fade}
+      style={{ position: "absolute", inset: 0, background: "#1a1a1a", overflow: "hidden" }}
     >
+      {/* Header */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0,
+        padding: "88px 8vw 0 5vw",
+        zIndex: 10,
+        display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+      }}>
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1, ease: [0.16,1,0.3,1] }}
+          style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(40px,6vw,120px)", letterSpacing: 4, lineHeight: 1, color: "var(--white)" }}
+        >
+          Work
+        </motion.h2>
+      </div>
+
+      {/* Grid Layout */}
       <div
-        className="grid grid-cols-2 items-start overflow-visible"
-        style={{ gap: `${scaling.gap}px`, width: '100%', boxSizing: 'border-box' }}
+        className="ss-grid"
+        style={{
+          position: "absolute", inset: 0, top: 140,
+          display: "grid",
+          gridTemplateColumns: isDesktop ? "repeat(3, 1fr)" : window.innerWidth <= 640 ? "1fr" : "repeat(2, 1fr)",
+          gap: 20,
+          padding: "0 8vw 72px",
+          overflowY: "auto",
+          overflowX: "hidden",
+          scrollbarWidth: "none",
+        }}
       >
-        <motion.div style={{ marginLeft: windowWidth >= 1024 ? '128px' : `${scaling.padding}px` }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }}>
+        {PROJECTS.map((proj, i) => (
+          <motion.div
+            key={proj.id}
+            className={`ss-card ${proj.id === "3d-rendering" ? "ss-3d-rendering" : ""}`}
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 + i * 0.1, ease: [0.16,1,0.3,1] }}
+            onClick={() => onCardClick(proj)}
+            {...hover}
+            style={{
+              position: "relative",
+              overflow: "hidden",
+              background: "#111",
+              cursor: "none",
+              border: "1px solid transparent",
+              transition: "border-color 0.4s ease",
+              height: "auto",
+            }}
+            whileHover={{ borderColor: "var(--sky)" } as any}
+          >
+            <img
+              className="ss-card-img"
+              src={proj.img}
+              alt={proj.title}
+              loading="lazy"
+              style={{
+                width: "100%", height: "100%",
+                objectFit: "cover",
+                objectPosition: proj.objectPosition || "center",
+                display: "block",
+                ...(proj.id === "3d-rendering" && { transform: "scale(1.22)" }),
+              }}
+            />
+            <div
+              className="ss-card-overlay"
+              style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(to top, rgba(6,6,6,.9) 0%, rgba(6,6,6,.3) 50%, transparent 100%)",
+                display: "flex", flexDirection: "column", justifyContent: "flex-end",
+                padding: "28px 24px",
+              }}
+            >
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 2, color: "var(--white)", lineHeight: 1 }}>
+                  {proj.title}
+                </div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--cream)", opacity: 0.8, marginTop: 4 }}>
+                  {proj.tag}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ABOUT PAGE
+───────────────────────────────────────────────────────────── */
+function AboutPage() {
+  const [photoLoaded, setPhotoLoaded] = useState(false);
+
+  return (
+    <motion.div key="about" {...fade}
+      style={{ position: "absolute", inset: 0, background: "var(--cream)", overflow: "hidden" }}
+      className="ss-about-page"
+    >
+      <div style={{
+        display: "grid", gridTemplateColumns: "1fr 1fr",
+        height: "100%", width: "100%",
+      }}>
+        {/* Text column */}
+        <div className="ss-about-text-column" style={{
+          display: "flex", flexDirection: "column", justifyContent: "center",
+          padding: "80px 60px 80px 8vw",
+          overflow: "hidden",
+        }}>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.16,1,0.3,1] }}
+            className="ss-about-subtitle"
+            style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: 4, textTransform: "uppercase", color: "var(--accent)", marginBottom: 16 }}
+          >
+            Designer &amp; Maker
+          </motion.div>
+
           <motion.h2
-            className="font-[KiwiSoda] font-normal bounce-text mb-8"
-            style={{ color: "#1a1a1a", fontSize: `${scaling.headingSize}px` }}
+            initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16,1,0.3,1] }}
+            style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(96px,12vw,180px)", letterSpacing: 4, lineHeight: 0.92, color: "#060606", marginBottom: 16 }}
           >
             About
           </motion.h2>
 
-          <motion.div exit={{ opacity: 0 }} transition={{ duration: 0.6 }}>
-            <p className="mt-0 text-slate-700" style={{ fontSize: `${scaling.textSize}px`, lineHeight: '1.6' }}>
-              My journey into design started with a LEGO collection and a stop-motion app, turning simple bricks into narratives. That early obsession with building evolved into a career defined by a 'no-limits' approach to creation. Whether I'm coding a UI/UX interface, welding raw steel, or calibrating a 3D print on my Bambu Labs setup, I view every medium as a new language to master.
-            </p>
-            <p className="mt-4 text-slate-700" style={{ fontSize: `${scaling.textSize}px`, lineHeight: '1.6' }}>
-              I'm a perfectionist by nature, a trait that drives me to work rigorously until a project matches the exact vision I've engineered in my head. I thrive on the challenge of learning new tools to solve complex problems. When you work with me, you're getting a designer who is as comfortable with a soldering iron as they are with Adobe Illustrator, and someone who won't stop until the work meets my own high standards for excellence, as well as your own.
+          <motion.div
+            initial={{ width: 0 }} animate={{ width: 80 }}
+            transition={{ duration: 1, delay: 0.5, ease: [0.16,1,0.3,1] }}
+            style={{ height: 1, background: "#060606", margin: "16px 0" }}
+          />
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.55, ease: [0.16,1,0.3,1] }}
+          >
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 300, lineHeight: 1.75, color: "#3a3a3a", maxWidth: 480 }}>
+              I am a graphic designer who specializes in countless mediums ranging through 3D Design, Motion Graphics, UI/UX, Fabrication, Cinematography, Coding, and etc. This variety developed naturally, driven by a lifelong curiosity that started with Lego stop-motion films and never really stopped. What stayed constant through all of it is a perfectionist mindset that I'd describe as both my greatest asset and my most relentless quality. The work isn't done until it's done right, not by anyone else's measure, but by my own.
             </p>
           </motion.div>
-        </motion.div>
+        </div>
 
+        {/* Photo column */}
         <motion.div
-          className="origin-center relative mx-auto"
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.6 }}
-          style={{
-            width: `${scaling.photoWidth}px`,
-            height: `${scaling.photoHeight}px`,
-            border: `${scaling.photoBorder}px solid rgba(255, 255, 255, 0.1)`,
-            borderRadius: currentImage.frame,
-            boxShadow: "0 0 20px rgba(128, 128, 128, 0.6)",
-            overflow: "visible",
-            zIndex: 30,
-          }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ duration: 0.9, delay: 0.1 }}
+          style={{ position: "relative", overflow: "hidden", background: "#1a1a1a" }}
         >
-          <motion.img src={currentImage.src} alt={currentImage.alt} className="w-full h-full object-cover" style={{ borderRadius: currentImage.frame }} />
+          <img
+            src="/assets/Shyon_About.png"
+            alt="Shyon Shiri"
+            onLoad={() => setPhotoLoaded(true)}
+            className={photoLoaded ? "ss-about-photo ss-about-photo-active" : "ss-about-photo"}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 10%", filter: "grayscale(20%) contrast(1.05)" }}
+          />
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(to right, rgba(237,232,224,.2) 0%, transparent 30%), linear-gradient(to bottom, rgba(6,6,6,.35) 0%, transparent 30%, transparent 60%, rgba(6,6,6,.18) 100%)",
+          }} />
         </motion.div>
       </div>
     </motion.div>
   );
 }
 
-// ─── Contact ───────────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────
+   CONTACT PAGE
+───────────────────────────────────────────────────────────── */
+function ContactPage() {
+  const hover = useCursorHover();
 
-function Contact({ setPage }: { setPage: (page: "home" | "work" | "about" | "contact") => void }) {
+  const links = [
+    {
+      href: "mailto:shyon2001@gmail.com", label: "Email Me",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 8l9 6 9-6M3 8v10a1 1 0 001 1h16a1 1 0 001-1V8M3 8a1 1 0 011-1h16a1 1 0 011 1" /></svg>,
+    },
+    {
+      href: "https://www.linkedin.com/in/shyonshiri/", label: "LinkedIn", target: "_blank",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.23 0H1.77C.8 0 0 .77 0 1.72v20.56C0 23.23.8 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.72V1.72C24 .77 23.2 0 22.23 0z" /></svg>,
+    },
+    {
+      href: "/Shyon_Shiri_Resume_v4.pdf", label: "Resume", target: "_blank",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>,
+    },
+  ];
+
+  return (
+    <motion.div key="contact" {...fade}
+      style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #060606 0%, #666666 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", overflow: "hidden" }}
+    >
+      <div style={{ position: "relative", zIndex: 10, textAlign: "center" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2, ease: [0.16,1,0.3,1] }}
+          className="ss-contact-subtitle"
+          style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, letterSpacing: 5, textTransform: "uppercase", color: "var(--sky)", marginBottom: 20 }}
+        >
+          Available for projects
+        </motion.div>
+
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
+          className="ss-contact-heading"
+          style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(64px,9vw,148px)", letterSpacing: 6, lineHeight: 0.92, color: "var(--white)" }}
+        >
+          Let's<br />Work.
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="ss-contact-description"
+          style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: 300, fontSize: "clamp(16px,2vw,24px)", color: "var(--mid)", marginTop: 16 }}
+        >
+          Open to freelance, collaborations &amp; full-time roles
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.65, ease: [0.16,1,0.3,1] }}
+          style={{ display: "flex", gap: 20, justifyContent: "center", marginTop: 52, flexWrap: "wrap" }}
+        >
+          {links.map(l => (
+            <a
+              key={l.label}
+              href={l.href}
+              target={(l as any).target}
+              rel={(l as any).target ? "noopener noreferrer" : undefined}
+              className="ss-contact-btn"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 10,
+                fontFamily: "'Space Mono', monospace", fontSize: 11,
+                letterSpacing: 2, textTransform: "uppercase",
+                textDecoration: "none",
+                padding: "16px 32px",
+                border: "1px solid rgba(245,242,237,.2)",
+                color: "var(--white)",
+                cursor: "none",
+              }}
+              {...hover}
+            >
+              <span>{l.icon}</span>
+              <span>{l.label}</span>
+            </a>
+          ))}
+        </motion.div>
+      </div>
+
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   WORK MODAL
+───────────────────────────────────────────────────────────── */
+function WorkModal({ project, onClose, onMediaClick }: {
+  project: Project;
+  onClose: () => void;
+  onMediaClick: (item: MediaItem) => void;
+}) {
+  const hover = useCursorHover();
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <motion.div
-      key="contact"
-      variants={pageFadeVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={{ duration: 0.55 }}
-      style={{ 
-        position: "absolute",
-        inset: 0,
-        margin: 0,
-        padding: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: '#ffffff', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        overflow: 'hidden'
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 2000,
+        background: "rgba(6,6,6,.93)",
+        backdropFilter: "blur(20px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
       }}
     >
-      <h2 className="font-[KiwiSoda] text-6xl md:text-7xl lg:text-8xl font-normal bounce-text text-center" style={{ color: "#1a1a1a" }}>
-        Let's collaborate
-      </h2>
-      <div className="mt-12 flex gap-4 flex-wrap justify-center">
-        <a href="mailto:shyon2001@gmail.com" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 shadow hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 text-lg">
-          <Mail className="w-6 h-6" /> Email Me
-        </a>
-        <a href="https://www.linkedin.com/in/shyonshiri/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 text-lg">
-          <Linkedin className="w-6 h-6" /> LinkedIn
-        </a>
-        <a href="/assets/My_Resume.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-br from-slate-600/40 via-slate-700/50 to-slate-800/50 border border-slate-500/60 text-white hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 text-lg">
-          <FileText className="w-6 h-6" /> Resume
-        </a>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.4, ease: [0.16,1,0.3,1] }}
+        onClick={e => e.stopPropagation()}
+        className="ss-work-modal"
+        style={{
+          position: "relative",
+          width: "90vw", maxWidth: 1300,
+          maxHeight: "88dvh",
+          display: "flex", flexDirection: "column",
+        }}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="ss-modal-close"
+          style={{
+            position: "absolute", top: 60, right: 20,
+            background: "none", border: "none", cursor: "none",
+            fontFamily: "'Space Mono', monospace", fontSize: 10,
+            letterSpacing: 2, textTransform: "uppercase",
+            color: "var(--mid)",
+            transition: "color 0.3s ease",
+            padding: "4px 8px",
+            zIndex: 2001,
+          }}
+          {...hover}
+        >
+          ✕ Close
+        </button>
+
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+          paddingBottom: 24, borderBottom: "1px solid rgba(245,242,237,.1)",
+          marginBottom: 32,
+        }}>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(48px,6vw,96px)", letterSpacing: 3, lineHeight: 1, color: "var(--white)" }}>
+              {project.title}
+            </div>
+          </div>
+        </div>
+
+        {/* Horizontal Scroll Rail */}
+        <div
+          className="ss-modal-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: project.id === "3d-rendering" ? "repeat(3, 300px)" : project.id === "fabrication" ? "repeat(1, 500px)" : ["3d-modelling", "programming"].includes(project.id) ? "repeat(2, 380px)" : "repeat(4, 280px)",
+            gap: 16,
+            overflowY: "auto",
+            maxHeight: "calc(88dvh - 180px)",
+            paddingRight: 8,
+            justifyContent: "center",
+          }}
+        >
+          {project.media.filter(item => !item.hidden).map((item, i) => (
+            <ModalTile key={i} item={item} onClick={() => onMediaClick(item)} />
+          ))}
+        </div>
+
+        {!isDesktop && (
+          <div style={{
+            marginTop: 24,
+            textAlign: "center",
+            fontFamily: "'Space Mono', monospace",
+            fontSize: 10,
+            letterSpacing: 1,
+            color: "var(--mid)",
+            textTransform: "uppercase",
+          }}>
+            ↻ Swipe to explore
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MODAL TILE
+───────────────────────────────────────────────────────────── */
+function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) {
+  const hover = useCursorHover();
+
+  return (
+    <div
+      className="ss-tile"
+      onClick={onClick}
+      style={{
+        position: "relative", overflow: "hidden",
+        background: "#111",
+        minHeight: item.type === "video" ? "250px" : "auto",
+        cursor: "none",
+        aspectRatio: item.aspectRatio && item.type === "image" ? item.aspectRatio : undefined,
+      }}
+      {...hover}
+    >
+      {item.type === "video" ? (
+        <>
+          <img src={item.poster} alt={item.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <div style={{
+            position: "absolute", inset: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(6,6,6,.3)",
+            transition: "background 0.3s ease",
+          }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: "50%",
+              border: "1.5px solid rgba(245,242,237,.7)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "transform 0.3s ease, border-color 0.3s ease",
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--white)" style={{ marginLeft: 3 }}>
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          </div>
+        </>
+      ) : (
+        <img src={item.src} alt={item.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: item.aspectRatio ? "fill" : "contain" }} />
+      )}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        padding: "20px 16px 14px",
+        background: "linear-gradient(to top, rgba(6,6,6,.85) 0%, transparent 100%)",
+        opacity: 0, transition: "opacity 0.3s ease",
+      }}
+        className="ss-tile-info"
+      >
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: "var(--white)" }}>{item.title}</div>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, color: "var(--sky)", letterSpacing: 1, marginTop: 2 }}>{item.year}</div>
       </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MEDIA VIEWER (fullscreen single item)
+───────────────────────────────────────────────────────────── */
+function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose: () => void; onItemClick?: (item: MediaItem) => void }) {
+  const hover = useCursorHover();
+  
+  // Build carousel: current item + related items in sequence
+  const carouselItems: MediaItem[] = [item];
+  if (item.relatedItems && item.relatedItems.length > 0) {
+    item.relatedItems.forEach(relatedTitle => {
+      const relatedItem = PROJECTS.flatMap(p => p.media).find(m => m.title === relatedTitle);
+      if (relatedItem) carouselItems.push(relatedItem);
+    });
+  }
+  
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const displayedItem = carouselItems[currentIndex];
+
+  const goToNext = () => {
+    setCurrentIndex((currentIndex + 1) % carouselItems.length);
+  };
+
+  const goToPrev = () => {
+    setCurrentIndex((currentIndex - 1 + carouselItems.length) % carouselItems.length);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") goToNext();
+      if (e.key === "ArrowLeft") goToPrev();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentIndex, carouselItems.length]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: 0.35 }}
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 3000,
+        background: "rgba(6,6,6,.97)",
+        backdropFilter: "blur(30px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.35, ease: [0.16,1,0.3,1] }}
+        onClick={e => e.stopPropagation()}
+        className="ss-media-viewer"
+        style={{
+          position: "relative",
+          maxWidth: "92vw", maxHeight: "88dvh",
+          display: "flex", alignItems: "flex-start", gap: 48,
+        }}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="ss-media-viewer-close"
+          style={{
+            position: "absolute", top: 100, right: 20,
+            background: "none", border: "none", cursor: "none",
+            fontFamily: "'Space Mono', monospace", fontSize: 10,
+            letterSpacing: 2, textTransform: "uppercase",
+            color: "var(--mid)", transition: "color 0.3s ease",
+            padding: "4px 8px",
+            zIndex: 3001,
+          }}
+          {...hover}
+        >
+          ✕ Close
+        </button>
+
+        {/* Media & Navigation */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, flexShrink: 0 }}>
+          {/* Media */}
+          <div
+            style={{
+              width: "60vw",
+              height: "80dvh",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              borderRadius: 2,
+              flexShrink: 0,
+              backgroundColor: displayedItem.removeBackground ? "transparent" : "inherit",
+              position: "relative",
+            }}
+          >
+            {displayedItem.type === "video" ? (
+              <video
+                src={displayedItem.src}
+                poster={displayedItem.poster}
+                controls autoPlay muted playsInline
+                key={displayedItem.src}
+                style={{ 
+                  width: "100%", 
+                  height: "100%", 
+                  objectFit: "contain",
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  display: "block",
+                }}
+              />
+            ) : (
+              <img
+                src={displayedItem.src}
+                alt={displayedItem.title}
+                key={displayedItem.src}
+                style={{ 
+                  width: "100%", height: "100%", objectFit: "contain",
+                  transform: displayedItem.scale ? `scale(${displayedItem.scale})` : "scale(1)",
+                }}
+              />
+            )}
+          </div>
+
+          {/* Navigation Button - Only show if there are related items (but not for Airpod/iPhone cases or Apple Accessories) */}
+          {carouselItems.length > 1 && !(item.title === "Custom Airpod Case" || item.title === "Custom Phone Case" || item.title === "Apple Accessory Prototypes") && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 9, color: "var(--mid)", letterSpacing: 1 }}>
+                {currentIndex + 1} / {carouselItems.length}
+              </div>
+              <div style={{ display: "flex", gap: 6, flex: 1 }}>
+                <button
+                  onClick={goToPrev}
+                  style={{
+                    flex: 1,
+                    padding: "8px 12px",
+                    fontFamily: "'Space Mono', monospace", fontSize: 9,
+                    letterSpacing: 1, textTransform: "uppercase",
+                    color: "var(--white)",
+                    border: "1px solid rgba(245,242,237,.3)",
+                    background: "rgba(245,242,237,.05)",
+                    borderRadius: 2,
+                    cursor: "none",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(245,242,237,.6)";
+                    e.currentTarget.style.background = "rgba(245,242,237,.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(245,242,237,.3)";
+                    e.currentTarget.style.background = "rgba(245,242,237,.05)";
+                  }}
+                  {...hover}
+                >
+                  ← Prev
+                </button>
+                <button
+                  onClick={goToNext}
+                  style={{
+                    flex: 1,
+                    padding: "8px 12px",
+                    fontFamily: "'Space Mono', monospace", fontSize: 9,
+                    letterSpacing: 1, textTransform: "uppercase",
+                    color: "var(--white)",
+                    border: "1px solid rgba(245,242,237,.3)",
+                    background: "rgba(245,242,237,.05)",
+                    borderRadius: 2,
+                    cursor: "none",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(245,242,237,.6)";
+                    e.currentTarget.style.background = "rgba(245,242,237,.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(245,242,237,.3)";
+                    e.currentTarget.style.background = "rgba(245,242,237,.05)";
+                  }}
+                  {...hover}
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div style={{ flex: 1, minWidth: 200, maxWidth: 340, paddingTop: 140 }}>
+          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 64, letterSpacing: 2, lineHeight: 1, color: "var(--white)", marginBottom: 24 }}>
+            {item.title}
+          </div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, letterSpacing: 2, color: "var(--sky)", textTransform: "uppercase", marginBottom: 20 }}>
+            {item.year}
+          </div>
+          {item.desc && (
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, lineHeight: 1.7, color: "rgba(245,242,237,.75)", fontWeight: 300, marginBottom: 32 }}>
+              {item.desc}
+            </p>
+          )}
+
+          {item.relatedItems && item.relatedItems.length > 0 && !(item.title === "HMI Sensor System" || item.title === "Custom RGB Controller") ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 48 }}>
+              {item.relatedItems.map((relatedTitle, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    const relatedItem = PROJECTS.flatMap(p => p.media).find(m => m.title === relatedTitle);
+                    if (relatedItem && onItemClick) onItemClick(relatedItem);
+                  }}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 8,
+                    fontFamily: "'Space Mono', monospace", fontSize: 10,
+                    letterSpacing: 2, textTransform: "uppercase",
+                    color: "var(--sky)", background: "none", border: "none",
+                    borderBottom: "1px solid var(--sky)", paddingBottom: 2,
+                    cursor: "none", textDecoration: "none",
+                    textAlign: "left",
+                  }}
+                  {...hover}
+                >
+                  View {relatedTitle} →
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {item.link && (
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                marginTop: 28,
+                fontFamily: "'Space Mono', monospace", fontSize: 10,
+                letterSpacing: 2, textTransform: "uppercase",
+                color: "var(--sky)", textDecoration: "none",
+                borderBottom: "1px solid var(--sky)", paddingBottom: 2,
+                cursor: "none",
+              }}
+              {...hover}
+            >
+              Visit Website →
+            </a>
+          )}
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
