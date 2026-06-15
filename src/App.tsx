@@ -510,6 +510,11 @@ export default function App() {
     document.body.style.backgroundColor = bg;
   }, [page]);
 
+  const pageIdxRef = useRef(pageIdx);
+  useEffect(() => { pageIdxRef.current = pageIdx; }, [pageIdx]);
+  const currentPageRef = useRef(page);
+  useEffect(() => { currentPageRef.current = page; }, [page]);
+
   const navigate = useCallback((next: Page) => {
     if (next === page) return;
     setModalProject(null);
@@ -526,22 +531,22 @@ export default function App() {
       }
       if (cooldown.current) return;
       // Skip page navigation on work page for mobile/tablet (screen < 1024px)
-      if (page === "work" && window.innerWidth < 1024) return;
+      if (currentPageRef.current === "work" && window.innerWidth < 1024) return;
       // Skip if over a scrollable element
       const target = e.target as HTMLElement;
       if (target.closest(".ss-modal-grid") || target.closest(".ss-media-viewer")) return;
       // Only navigate if movement is clearly vertical (horizontal must be < 50% of vertical)
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY) * 0.5) return;
       const dir = e.deltaY > 0 ? 1 : -1;
-      const next = Math.max(0, Math.min(PAGE_ORDER.length - 1, pageIdx + dir));
-      if (next === pageIdx) return;
+      const next = Math.max(0, Math.min(PAGE_ORDER.length - 1, pageIdxRef.current + dir));
+      if (next === pageIdxRef.current) return;
       cooldown.current = true;
       setPage(PAGE_ORDER[next]);
       setTimeout(() => { cooldown.current = false; }, 1100);
     };
     window.addEventListener("wheel", onWheel, { passive: true });
     return () => window.removeEventListener("wheel", onWheel);
-  }, [pageIdx, page]);
+  }, []);
 
   /* touch nav */
   const touchY = useRef(0);
@@ -556,8 +561,9 @@ export default function App() {
         hintInteracted.current = true;
         setHintsVisible(false);
       }
+      if (cooldown.current) return;
       // Skip page navigation on work page (use buttons only)
-      if (page === "work") return;
+      if (currentPageRef.current === "work") return;
       const target = e.target as HTMLElement;
       // Skip if on a scrollable rail or modal grid
       if (target.closest(".ss-rail") || target.closest(".ss-modal-grid")) return;
@@ -566,8 +572,12 @@ export default function App() {
       // Require significant vertical movement (120px) and vertical > horizontal by 3x to prevent accidental triggers
       if (Math.abs(dy) < 120 || Math.abs(dy) < Math.abs(dx) * 3) return;
       const dir = dy > 0 ? 1 : -1;
-      const next = Math.max(0, Math.min(PAGE_ORDER.length - 1, pageIdx + dir));
-      if (next !== pageIdx) setPage(PAGE_ORDER[next]);
+      const next = Math.max(0, Math.min(PAGE_ORDER.length - 1, pageIdxRef.current + dir));
+      if (next !== pageIdxRef.current) {
+        cooldown.current = true;
+        setPage(PAGE_ORDER[next]);
+        setTimeout(() => { cooldown.current = false; }, 1100);
+      }
     };
     window.addEventListener("touchstart", start, { passive: true });
     window.addEventListener("touchend", end, { passive: true });
@@ -575,7 +585,7 @@ export default function App() {
       window.removeEventListener("touchstart", start);
       window.removeEventListener("touchend", end);
     };
-  }, [page, pageIdx]);
+  }, []);
 
   /* keyboard nav */
   useEffect(() => {
