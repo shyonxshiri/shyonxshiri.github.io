@@ -642,7 +642,7 @@ export default function App() {
           transform: "translateY(-50%)",
           zIndex: 400,
           display: "flex", flexDirection: "column", gap: 12,
-          mixBlendMode: "difference",
+          mixBlendMode: page === "about" ? "normal" : "difference",
         }}
       >
         {PAGE_ORDER.map((p, i) => (
