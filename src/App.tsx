@@ -115,8 +115,10 @@ const GLOBAL_CSS = `
     background: var(--black);
     color: var(--white);
     -webkit-font-smoothing: antialiased;
-    cursor: none;
+    cursor: none !important;
   }
+
+  * { cursor: none !important; }
 
   html::-webkit-scrollbar,
   body::-webkit-scrollbar,
