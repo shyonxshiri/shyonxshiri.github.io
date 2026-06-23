@@ -995,7 +995,7 @@ function ContactPage() {
       <div style={{
         position: "absolute", left: "-15vw", bottom: "-25vh",
         width: "min(1100px, 120vw)", height: "min(1100px, 120vw)", borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(56,189,248,.3) 0%, rgba(56,189,248,0) 60%)",
+        background: "radial-gradient(circle, rgba(56,189,248,.15) 0%, rgba(56,189,248,0) 60%)",
         filter: "blur(75px)", zIndex: 1, pointerEvents: "none",
       }} />
 
