@@ -983,12 +983,20 @@ function ContactPage() {
         zIndex: 1, userSelect: "none", pointerEvents: "none",
       }}>CONTACT</div>
 
-      {/* ambient glow (replaces the old flat gray gradient) */}
+      {/* ambient glow top-right */}
       <div style={{
         position: "absolute", right: "-12vw", top: "-22vh",
-        width: "min(620px, 70vw)", height: "min(620px, 70vw)", borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(56,189,248,.4) 0%, rgba(56,189,248,0) 70%)",
-        filter: "blur(50px)", zIndex: 1, pointerEvents: "none",
+        width: "min(900px, 100vw)", height: "min(900px, 100vw)", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(56,189,248,.35) 0%, rgba(56,189,248,0) 65%)",
+        filter: "blur(65px)", zIndex: 1, pointerEvents: "none",
+      }} />
+
+      {/* ambient glow bottom-left */}
+      <div style={{
+        position: "absolute", left: "-15vw", bottom: "-25vh",
+        width: "min(1100px, 120vw)", height: "min(1100px, 120vw)", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(56,189,248,.3) 0%, rgba(56,189,248,0) 60%)",
+        filter: "blur(75px)", zIndex: 1, pointerEvents: "none",
       }} />
 
       {/* content */}
