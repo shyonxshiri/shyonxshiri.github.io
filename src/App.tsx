@@ -985,10 +985,10 @@ function ContactPage() {
 
       {/* ambient glow (replaces the old flat gray gradient) */}
       <div style={{
-        position: "absolute", right: "-12vw", top: "-22vh",
-        width: "min(620px, 70vw)", height: "min(620px, 70vw)", borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(56,189,248,.4) 0%, rgba(56,189,248,0) 70%)",
-        filter: "blur(50px)", zIndex: 1, pointerEvents: "none",
+        position: "absolute", right: "-20vw", top: "-30vh",
+        width: "min(900px, 100vw)", height: "min(900px, 100vw)", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(56,189,248,.35) 0%, rgba(56,189,248,0) 60%)",
+        filter: "blur(80px)", zIndex: 1, pointerEvents: "none",
       }} />
 
       {/* content */}
@@ -1001,7 +1001,7 @@ function ContactPage() {
               className="ss-contact-subtitle"
               style={{ fontFamily: "'Space Mono', monospace", fontSize: 11, letterSpacing: 5, textTransform: "uppercase", color: "var(--sky)", marginBottom: 20 }}
             >
-              ↳ Available for projects
+              Available for projects
             </motion.div>
             <motion.h2
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
@@ -1009,7 +1009,7 @@ function ContactPage() {
               className="ss-contact-heading"
               style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(64px,9vw,128px)", letterSpacing: 5, lineHeight: 0.86, color: "var(--white)" }}
             >
-              Let's Work<span style={{ color: "var(--accent)" }}>.</span>
+              Let's Work<span style={{ color: "var(--white)" }}>.</span>
             </motion.h2>
           </div>
           <motion.p
