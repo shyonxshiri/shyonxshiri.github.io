@@ -38,85 +38,54 @@ type Project = {
 ───────────────────────────────────────────────────────────── */
 const PROJECTS: Project[] = [
   {
-    id: "3d-rendering",
-    title: "3D Rendering",
-    tag: "Design & Printing",
-    img: "/assets/Gemini_Generated_Image_8zizy08zizy08ziz.png",
+    id: "creative-projects",
+    title: "Creative Projects",
+    tag: "Design, 3D & Craft",
+    img: "/assets/3D_Models_Cover_Pic.jpg",
     size: "tall",
-    objectPosition: "75% 50%",
+    objectPosition: "45% 90%",
     media: [
-      { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", wide: true },
-      { type: "video", src: "/assets/Blender_Case_Video.mov", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", wide: true, relatedItems: ["Custom Airpod Case", "Custom Phone Case"] },
-      { type: "image", src: "/assets/Venom.PNG", title: "Rendered 3D Model", year: 2024, desc: "High-quality 3D rendered movie character with detailed modeling and texturing in Blender." },
-    ],
-  },
-  {
-    id: "digital-media",
-    title: "Digital Media",
-    tag: "Graphic Design",
-    img: "/assets/Digital_Media_Cover.jpg",
-    size: "wide",
-    media: [
-      { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Dynamic promotional video for NABU clothing, crafted with professional animation in Adobe After Effects.", wide: true },
-      { type: "video", src: "/assets/Shiri_Video_Game.mov", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", year: 2024, desc: "Animated and assembled collection of images created in Adobe After Effects." },
-      { type: "image", src: "/assets/Mina_Website.png", title: "UI/UX — minasech.net", year: 2025, desc: "Full-stack website design including React frontend and responsive interface.", link: "https://minasech.net", wide: true },
-      { type: "image", src: "/assets/Everly_Cover_Image.png", title: "Everly Care Home", year: 2026, desc: "Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.", link: "https://everlycarehome.com", wide: true },
-    ],
-  },
-  {
-    id: "camera-work",
-    title: "Studio Production",
-    tag: "Video & Photo",
-    img: "/assets/Camera_Work_Cover.JPG",
-    size: "tall",
-    media: [
-      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Professional promotional video for NABU's puffer jacket collection shot with cinematic quality." },
-      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Engaging promotional content showcasing NABU's latest collection." },
-      { type: "image", src: "/assets/Stevie_Pic.JPG", title: "NABU 2023 Spring Collection", year: 2022, desc: "Professional portrait photography showcasing design systems and visual aesthetics." },
-      { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "A vibrant portrait capturing authentic moments with professional lighting.", aspectRatio: "2/3" },
-      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Campaign Project", year: 2024, desc: "Conceptual brand advertisement utilizing environmental storytelling and scenic composition.", aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Photography_Asset.jpg", title: "Abstract Scene", year: 2021, desc: "Experimental scene exploring the interplay of form and shadow.", aspectRatio: "4/3" },
-      { type: "image", src: "/assets/Photography_Asset_2.jpg", title: "Culinary Praise", year: 2021, desc: "Iran's iconic dish presented with thoughtful composition and rich visual detail.", aspectRatio: "4/3" },
-      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", year: 2024, desc: "Professional photography exploring composition and lighting techniques.", aspectRatio: "16/12" },
-    ],
-  },
-  {
-    id: "programming",
-    title: "Programming",
-    tag: "Hardware & HMI",
-    img: "/assets/New_Radar_Sensor_front.jpg",
-    size: "sq",
-    objectPosition: "45% 45%",
-    media: [
-      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", wide: true, relatedItems: ["Radar — Front View", "Radar — Back View"] },
-      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", wide: true, relatedItems: ["RGB Box — Front View", "RGB Box — Back View"] },
+      { type: "video", src: "/assets/Broken_NPC.mp4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
+      { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", aspectRatio: "16/9", relatedItems: ["Custom Airpod Case", "Custom Phone Case"] },
+      { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", year: 2024, desc: "Animated and assembled collection of images created in Adobe After Effects.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Venom.png", title: "Rendered 3D Model", year: 2024, desc: "High-quality 3D rendered movie character with detailed modeling and texturing in Blender.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Prototypes"] },
+      { type: "image", src: "/assets/Airpod_Case.jpg", title: "Custom Airpod Case", year: 2026, desc: "Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Prototypes"] },
       { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar — Front View", year: 2024, hidden: true },
       { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar — Back View", year: 2024, hidden: true },
       { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box — Front View", year: 2024, hidden: true },
       { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box — Back View", year: 2024, hidden: true },
+      { type: "image", src: "/assets/Max_Pic.jpg", title: "Candid Studio Portrait", year: 2024, desc: "A vibrant portrait capturing authentic moments with professional lighting.", aspectRatio: "2/3" },
+      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", year: 2024, desc: "Professional photography exploring composition and lighting techniques.", aspectRatio: "1/1" },
+      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar — Front View", "Radar — Back View"] },
+      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box — Front View", "RGB Box — Back View"] },
+      { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture — welded, ground, sanded and finished.", aspectRatio: "5/4" },
+      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Campaign Project", year: 2024, desc: "Conceptual brand advertisement utilizing environmental storytelling and scenic composition.", aspectRatio: "16/9" },
     ],
   },
   {
-    id: "fabrication",
-    title: "Fabrication",
-    tag: "Sculpture & Craft",
-    img: "/assets/Shyon_Sculpture.jpg",
-    size: "tall",
-    objectPosition: "45% 50%",
-    media: [
-      { type: "image", src: "/assets/Shyon_Sculptuyre.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture — welded, ground, sanded and finished." },
-    ],
-  },
-  {
-    id: "3d-modelling",
-    title: "3D Modelling",
-    tag: "Print & Design",
-    img: "/assets/3D_Models_Cover_Pic.jpg",
+    id: "professional-services",
+    title: "Professional Services",
+    tag: "Web & Design",
+    img: "/assets/Digital_Media_Cover.jpg",
     size: "wide",
-    objectPosition: "45% 90%",
     media: [
-      { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", year: 2026, desc: "Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.", relatedItems: ["Apple Accessory Prototypes"] },
-      { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.", relatedItems: ["Apple Accessory Prototypes"] },
+      { type: "image", src: "/assets/Mina_Website.png", title: "UI/UX — minasech.net", year: 2025, desc: "Full-stack website design including React frontend and responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Everly_Cover_Image.png", title: "Everly Care Home", year: 2026, desc: "Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
+    ],
+  },
+  {
+    id: "nabu",
+    title: "NABU",
+    tag: "Clothing Brand",
+    img: "/assets/6AFD11B6-801A-4367-9DAC-43899A3456E8.jpg",
+    size: "tall",
+    media: [
+      { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Dynamic promotional video for NABU clothing, crafted with professional animation in Adobe After Effects.", wide: true },
+      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Professional promotional video for NABU's puffer jacket collection shot with cinematic quality." },
+      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Engaging promotional content showcasing NABU's latest collection." },
+      { type: "image", src: "/assets/Stevie_Pic.jpg", title: "NABU 2023 Spring Collection", year: 2022, desc: "Professional portrait photography showcasing design systems and visual aesthetics." },
+      { type: "image", src: "/assets/Digital_Media_Cover.jpg", title: "NABU 2024 Rerelease Promotion", year: 2024, desc: "Promotional campaign showcasing the return of our Persian rug pants, reimagined for 2024.", aspectRatio: "3/4" },
     ],
   },
 ];
@@ -127,8 +96,6 @@ const PAGE_ORDER: Page[] = ["home", "work", "about", "contact"];
    GLOBAL STYLES (injected once)
 ───────────────────────────────────────────────────────────── */
 const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap');
-
   :root {
     --black: #060606;
     --white: #f5f2ed;
@@ -164,6 +131,10 @@ const GLOBAL_CSS = `
     opacity: 0.032;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 180px;
+  }
+
+  @media (max-width: 768px) {
+    body::after { display: none; }
   }
 
   /* cursor */
@@ -505,7 +476,7 @@ export default function App() {
 
   /* bg color sync */
   useEffect(() => {
-    const bg = page === "about" || page === "contact" ? "#ede8e0" : "#060606";
+    const bg = page === "about" ? "#ede8e0" : "#060606";
     document.documentElement.style.backgroundColor = bg;
     document.body.style.backgroundColor = bg;
   }, [page]);
@@ -660,7 +631,7 @@ export default function App() {
             key={p}
             onClick={() => navigate(p)}
             style={{
-              width: 6, height: 6, borderRadius: "50%",
+              width: 10, height: 10, borderRadius: "50%",
               border: "1px solid rgba(245,242,237,0.4)",
               background: page === p ? "var(--white)" : "transparent",
               transform: page === p ? "scale(1.5)" : "scale(1)",
@@ -672,38 +643,7 @@ export default function App() {
         ))}
       </div>
 
-      {/* ── SCROLL HINT ──────────────────────────────────────── */}
-      <div
-        style={{
-          position: "fixed", bottom: "max(32px, calc(32px + env(safe-area-inset-bottom)))", left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 400,
-          display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-          fontFamily: "'Space Mono', monospace",
-          fontSize: 10, letterSpacing: 2, textTransform: "uppercase",
-          color: "var(--mid)",
-          opacity: hintsVisible && ["home", "about", "contact"].includes(page) ? 1 : 0,
-          transition: "opacity 0.5s ease",
-          mixBlendMode: "difference",
-          pointerEvents: "none",
-        }}
-      >
-        {isDesktop ? (
-          <div style={{ width: 22, height: 34, border: "1.5px solid white", borderRadius: 11, position: "relative", transform: page === "contact" ? "rotate(180deg)" : "none" }}>
-            <div className="ss-wheel-dot" style={{ width: 3, height: 6, background: "white", borderRadius: 3, position: "absolute", top: 5, left: "50%", transform: "translateX(-50%)" }} />
-          </div>
-        ) : (
-          <div style={{ transform: page === "contact" ? "rotate(180deg)" : "none" }}>
-            <svg width="14" height="24" viewBox="0 0 14 24" fill="none" style={{ animation: "ss-arrow-bounce 1.8s ease-in-out infinite", display: "block" }}>
-              <path d="M7 2L12 8M7 2L2 8" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M7 14L12 20M7 14L2 20" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        )}
-        <span style={{ color: "white" }}>{isDesktop ? "Scroll" : "Swipe"}</span>
-      </div>
-
-      {/* ── PAGES ────────────────────────────────────────────── */}
+{/* ── PAGES ────────────────────────────────────────────── */}
       <AnimatePresence mode="wait">
         {page === "home" && <HomePage key="home" onNavigate={navigate} />}
         {page === "work" && <WorkPage key="work" onCardClick={setModalProject} />}
@@ -848,7 +788,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
       {/* Header */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0,
-        padding: "88px 8vw 0 5vw",
+        padding: "60px 8vw 0 5vw",
         zIndex: 10,
         display: "flex", alignItems: "flex-end", justifyContent: "space-between",
       }}>
@@ -917,13 +857,8 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
                 padding: "28px 24px",
               }}
             >
-              <div>
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 2, color: "var(--white)", lineHeight: 1 }}>
-                  {proj.title}
-                </div>
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 14, color: "var(--cream)", opacity: 0.8, marginTop: 4 }}>
-                  {proj.tag}
-                </div>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 2, color: "var(--white)", lineHeight: 1 }}>
+                {proj.title}
               </div>
             </div>
           </motion.div>
@@ -1020,82 +955,114 @@ function ContactPage() {
 
   const links = [
     {
-      href: "mailto:shyon2001@gmail.com", label: "Email Me",
+      href: "mailto:shyon2001@gmail.com", label: "Email Me", value: "shyon2001@gmail.com",
       icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 8l9 6 9-6M3 8v10a1 1 0 001 1h16a1 1 0 001-1V8M3 8a1 1 0 011-1h16a1 1 0 011 1" /></svg>,
     },
     {
-      href: "https://www.linkedin.com/in/shyonshiri/", label: "LinkedIn", target: "_blank",
+      href: "https://www.linkedin.com/in/shyonshiri/", label: "LinkedIn", value: "in/shyonshiri", target: "_blank",
       icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.23 0H1.77C.8 0 0 .77 0 1.72v20.56C0 23.23.8 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.72V1.72C24 .77 23.2 0 22.23 0z" /></svg>,
     },
     {
-      href: "/Shyon_Shiri_Resume_v4.pdf", label: "Resume", target: "_blank",
+      href: "/Shyon_Shiri_Resume_v4.pdf", label: "Resume", value: "Shyon_Shiri_Resume.pdf", target: "_blank",
       icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>,
     },
   ];
 
   return (
     <motion.div key="contact" {...fade}
-      style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #060606 0%, #666666 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", overflow: "hidden" }}
+      style={{ position: "absolute", inset: 0, background: "#060606", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}
     >
-      <div style={{ position: "relative", zIndex: 10, textAlign: "center" }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: [0.16,1,0.3,1] }}
-          className="ss-contact-subtitle"
-          style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, letterSpacing: 5, textTransform: "uppercase", color: "var(--sky)", marginBottom: 20 }}
-        >
-          Available for projects
-        </motion.div>
+      {/* giant ghost word */}
+      <div style={{
+        position: "absolute", left: -30, bottom: "-12vh",
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: "clamp(220px, 34vw, 460px)", lineHeight: 0.8, letterSpacing: 6,
+        color: "rgba(245,242,237,.035)", whiteSpace: "nowrap",
+        zIndex: 1, userSelect: "none", pointerEvents: "none",
+      }}>CONTACT</div>
 
-        <motion.h2
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
-          className="ss-contact-heading"
-          style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(64px,9vw,148px)", letterSpacing: 6, lineHeight: 0.92, color: "var(--white)" }}
-        >
-          Let's<br />Work.
-        </motion.h2>
+      {/* ambient glow (replaces the old flat gray gradient) */}
+      <div style={{
+        position: "absolute", right: "-12vw", top: "-22vh",
+        width: "min(620px, 70vw)", height: "min(620px, 70vw)", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(56,189,248,.4) 0%, rgba(56,189,248,0) 70%)",
+        filter: "blur(50px)", zIndex: 1, pointerEvents: "none",
+      }} />
 
-        <motion.p
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="ss-contact-description"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: 300, fontSize: "clamp(16px,2vw,24px)", color: "var(--mid)", marginTop: 16 }}
-        >
-          Open to freelance, collaborations &amp; full-time roles
-        </motion.p>
+      {/* content */}
+      <div style={{ position: "relative", zIndex: 10, padding: "0 9vw", width: "100%" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, flexWrap: "wrap", marginBottom: 44 }}>
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2, ease: [0.16,1,0.3,1] }}
+              className="ss-contact-subtitle"
+              style={{ fontFamily: "'Space Mono', monospace", fontSize: 11, letterSpacing: 5, textTransform: "uppercase", color: "var(--sky)", marginBottom: 20 }}
+            >
+              ↳ Available for projects
+            </motion.div>
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
+              className="ss-contact-heading"
+              style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(64px,9vw,128px)", letterSpacing: 5, lineHeight: 0.86, color: "var(--white)" }}
+            >
+              Let's Work<span style={{ color: "var(--accent)" }}>.</span>
+            </motion.h2>
+          </div>
+          <motion.p
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="ss-contact-description"
+            style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: 300, fontSize: "clamp(18px,2vw,22px)", color: "var(--mid)", maxWidth: 280, textAlign: "right", marginBottom: 8 }}
+          >
+            Open to freelance, collaborations &amp; full-time roles.
+          </motion.p>
+        </div>
 
+        {/* indexed contact list */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.65, ease: [0.16,1,0.3,1] }}
-          style={{ display: "flex", gap: 20, justifyContent: "center", marginTop: 52, flexWrap: "wrap" }}
+          style={{ display: "flex", flexDirection: "column", borderTop: "1px solid rgba(245,242,237,.14)" }}
         >
-          {links.map(l => (
+          {links.map((l, i) => (
             <a
               key={l.label}
               href={l.href}
               target={(l as any).target}
               rel={(l as any).target ? "noopener noreferrer" : undefined}
-              className="ss-contact-btn"
               style={{
-                display: "inline-flex", alignItems: "center", gap: 10,
-                fontFamily: "'Space Mono', monospace", fontSize: 11,
-                letterSpacing: 2, textTransform: "uppercase",
-                textDecoration: "none",
-                padding: "16px 32px",
-                border: "1px solid rgba(245,242,237,.2)",
-                color: "var(--white)",
+                display: "flex", alignItems: "center", gap: 28,
+                padding: "26px 8px", textDecoration: "none",
+                borderBottom: "1px solid rgba(245,242,237,.14)",
+                transition: "background 0.3s ease, padding-left 0.3s ease",
                 cursor: "none",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(56,189,248,.07)";
+                e.currentTarget.style.paddingLeft = "24px";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.paddingLeft = "8px";
               }}
               {...hover}
             >
-              <span>{l.icon}</span>
-              <span>{l.label}</span>
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: 2, color: "var(--sky)", width: 34, flexShrink: 0 }}>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(28px,4vw,40px)", letterSpacing: 2, color: "var(--white)", width: 240, flexShrink: 0 }}>
+                {l.label}
+              </span>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "var(--mid)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {(l as any).value}
+              </span>
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 18, color: "var(--sky)", flexShrink: 0 }}>→</span>
             </a>
           ))}
         </motion.div>
       </div>
-
     </motion.div>
   );
 }
@@ -1173,9 +1140,12 @@ function WorkModal({ project, onClose, onMediaClick }: {
           paddingBottom: 24, borderBottom: "1px solid rgba(245,242,237,.1)",
           marginBottom: 32,
         }}>
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(48px,6vw,96px)", letterSpacing: 3, lineHeight: 1, color: "var(--white)" }}>
               {project.title}
+            </div>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "var(--sky)", marginTop: 12 }}>
+              {project.id === "creative-projects" ? "A selection of projects that demonstrate my range across various creative disciplines and mediums." : project.id === "professional-services" ? "Client-focused work including UI/UX, web development, branding and marketing assets." : project.id === "nabu" ? "Design and creative direction for NABU, a streetwear brand that draws from Persian and Assyrian heritage." : "testing"}
             </div>
           </div>
         </div>
@@ -1185,12 +1155,15 @@ function WorkModal({ project, onClose, onMediaClick }: {
           className="ss-modal-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: project.id === "3d-rendering" ? "repeat(3, 300px)" : project.id === "fabrication" ? "repeat(1, 500px)" : ["3d-modelling", "programming"].includes(project.id) ? "repeat(2, 380px)" : "repeat(4, 280px)",
-            gap: 16,
+            gridTemplateColumns: ["creative-projects", "professional-services"].includes(project.id) ? "repeat(auto-fit, minmax(420px, 1fr))" : project.id === "3d-rendering" ? "repeat(3, 300px)" : project.id === "fabrication" ? "repeat(1, 500px)" : ["3d-modelling", "programming"].includes(project.id) ? "repeat(2, 380px)" : "repeat(4, 280px)",
+            gap: 56,
             overflowY: "auto",
+            overflowX: "hidden",
             maxHeight: "calc(88dvh - 180px)",
             paddingRight: 8,
             justifyContent: "center",
+            width: project.id === "creative-projects" ? "100%" : "auto",
+            gridAutoRows: "max-content",
           }}
         >
           {project.media.filter(item => !item.hidden).map((item, i) => (
@@ -1231,7 +1204,8 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
         background: "#111",
         minHeight: item.type === "video" ? "250px" : "auto",
         cursor: "none",
-        aspectRatio: item.aspectRatio && item.type === "image" ? item.aspectRatio : undefined,
+        borderRadius: 12,
+        aspectRatio: item.aspectRatio ? item.aspectRatio : undefined,
       }}
       {...hover}
     >
@@ -1257,7 +1231,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
           </div>
         </>
       ) : (
-        <img src={item.src} alt={item.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: item.aspectRatio ? "fill" : "contain" }} />
+        <img src={item.src} alt={item.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: item.aspectRatio ? "cover" : "contain" }} />
       )}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
@@ -1361,7 +1335,7 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
-              borderRadius: 2,
+              borderRadius: 20,
               flexShrink: 0,
               backgroundColor: displayedItem.removeBackground ? "transparent" : "inherit",
               position: "relative",

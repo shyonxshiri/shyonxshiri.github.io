@@ -25,11 +25,11 @@ interface AutoAspectTileProps {
 
 // Placeholder AutoAspectTile - actual implementation in App.tsx
 const AutoAspectTile: React.FC<AutoAspectTileProps> = ({ item, onMediaClick }) => (
-  <div className="w-full aspect-video bg-gray-800 rounded-lg cursor-pointer" onClick={() => onMediaClick?.(item)}>
+  <div className={`w-full rounded-2xl overflow-hidden cursor-pointer bg-gray-900`} onClick={() => onMediaClick?.(item)}>
     {item.type === "image" ? (
-      <img src={item.src} alt={item.alt ?? item.title} className="w-full h-full object-cover rounded-lg" />
+      <img src={item.src} alt={item.alt ?? item.title} className="w-full h-auto object-cover rounded-2xl" />
     ) : (
-      <video src={item.src} className="w-full h-full object-cover rounded-lg" />
+      <video src={item.src} className="w-full h-auto object-cover rounded-2xl" />
     )}
   </div>
 );
@@ -67,6 +67,8 @@ const CAMERA_MEDIA: MediaItem[] = [
     title: "Campaign Project",
     description: "A conceptual brand advertisement utilizing environmental storytelling and scenic composition to promote a product. Developed to emulate the visual sophistication and marketing strategies employed by well-known brands.",
     year: 2024,
+    scale: 1.15,
+    objectPosition: "center",
   },
   {
     type: "image",
@@ -103,16 +105,16 @@ export default function ProjectDetailCameraWork({ onMediaClick }: ProjectDetailC
       exit={{ opacity: 0, y: 4 }}
       className="space-y-6"
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" style={{ gridAutoRows: '1fr', minHeight: '1200px' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {CAMERA_MEDIA.slice(0, 3).map((item, index) => (
-          <div key={item.src ?? index} className="space-y-2 min-h-[380px]">
+          <div key={item.src ?? index} className="space-y-2">
             <div>
               <h5 className="text-sm font-semibold text-white">{item.title}</h5>
               {item.description && (
                 <p className="text-xs text-white mt-0.5 line-clamp-2">{item.description}</p>
               )}
             </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
+            <div className="rounded-2xl overflow-hidden">
               <AutoAspectTile item={item} onMediaClick={onMediaClick} />
             </div>
           </div>
@@ -120,14 +122,14 @@ export default function ProjectDetailCameraWork({ onMediaClick }: ProjectDetailC
       </div>
 
       {/* Campaign Project - Fixed position */}
-      <div className="space-y-2 min-h-[380px]">
+      <div className="space-y-2">
         <div>
           <h5 className="text-sm font-semibold text-white">{CAMERA_MEDIA[3].title}</h5>
           {CAMERA_MEDIA[3].description && (
             <p className="text-xs text-white mt-0.5 line-clamp-2">{CAMERA_MEDIA[3].description}</p>
           )}
         </div>
-        <div className="rounded-lg overflow-hidden border border-white/10">
+        <div className="rounded-2xl overflow-hidden">
           <AutoAspectTile item={CAMERA_MEDIA[3]} onMediaClick={onMediaClick} />
         </div>
       </div>
@@ -140,22 +142,22 @@ export default function ProjectDetailCameraWork({ onMediaClick }: ProjectDetailC
             <p className="text-xs text-white mt-0.5 line-clamp-2">{CAMERA_MEDIA[4].description}</p>
           )}
         </div>
-        <div className="rounded-lg overflow-hidden border border-white/10">
+        <div className="rounded-2xl overflow-hidden">
           <AutoAspectTile item={CAMERA_MEDIA[4]} onMediaClick={onMediaClick} />
         </div>
       </div>
 
       {/* Remaining items */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" style={{ gridAutoRows: '1fr', minHeight: '600px' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {CAMERA_MEDIA.slice(5).map((item, index) => (
-          <div key={item.src ?? index} className="space-y-2 min-h-[380px]">
+          <div key={item.src ?? index} className="space-y-2">
             <div>
               <h5 className="text-sm font-semibold text-white">{item.title}</h5>
               {item.description && (
                 <p className="text-xs text-white mt-0.5 line-clamp-2">{item.description}</p>
               )}
             </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
+            <div className="rounded-2xl overflow-hidden">
               <AutoAspectTile item={item} onMediaClick={onMediaClick} />
             </div>
           </div>

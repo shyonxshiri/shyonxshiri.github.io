@@ -16,6 +16,7 @@ interface MediaItem {
   alt?: string;
   scale?: number;
   poster?: string;
+  removeBackground?: boolean;
 }
 
 interface AutoAspectTileProps {
@@ -25,11 +26,11 @@ interface AutoAspectTileProps {
 
 // Placeholder AutoAspectTile - actual implementation in App.tsx
 const AutoAspectTile: React.FC<AutoAspectTileProps> = ({ item, onMediaClick }) => (
-  <div className="w-full aspect-video bg-gray-800 rounded-lg cursor-pointer" onClick={() => onMediaClick?.(item)}>
+  <div className={`w-full rounded-2xl overflow-hidden cursor-pointer ${item.removeBackground ? 'bg-transparent' : 'bg-gray-900'}`} onClick={() => onMediaClick?.(item)}>
     {item.type === "image" ? (
-      <img src={item.src} alt={item.alt ?? item.title} className="w-full h-full object-cover rounded-lg" />
+      <img src={item.src} alt={item.alt ?? item.title} className="w-full h-auto object-cover rounded-2xl" />
     ) : (
-      <video src={item.src} className="w-full h-full object-cover rounded-lg" />
+      <video src={item.src} className="w-full h-auto object-cover rounded-2xl" />
     )}
   </div>
 );
@@ -68,24 +69,28 @@ const SHIRI_DESIGNS: MediaItem[] = [
     src: "/assets/Shiri_Design_1.PNG",
     title: "Clothing Line Mock Up",
     year: 2024,
+    removeBackground: true,
   },
   {
     type: "image",
     src: "/assets/Shiri_Design_2.PNG",
     title: "Clothing Line Mock Up",
     year: 2024,
+    removeBackground: true,
   },
   {
     type: "image",
     src: "/assets/Shiri_Design_3.PNG",
     title: "Clothing Line Mock Up",
     year: 2024,
+    removeBackground: true,
   },
   {
     type: "image",
     src: "/assets/Shiri_Design_4.PNG",
     title: "Clothing Line Mock Up",
     year: 2024,
+    removeBackground: true,
   },
 ];
 
@@ -101,16 +106,16 @@ export default function ProjectDetailDigitalMedia({ onMediaClick }: ProjectDetai
       exit={{ opacity: 0, y: 4 }}
       className="space-y-4"
     >
-      <div className="grid lg:grid-cols-2 gap-5">
-        {/* Nabu Banner - Takes 2 rows on desktop */}
-        <div className="space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Nabu Banner - Full width on mobile, 2 cols on desktop */}
+        <div className="lg:col-span-2 space-y-2">
           <div>
             <h5 className="text-sm font-semibold text-white">{GRAPHIC_MEDIA[0].title}</h5>
             {GRAPHIC_MEDIA[0].description && (
               <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[0].description}</p>
             )}
           </div>
-          <div className="rounded-lg overflow-hidden border border-white/10">
+          <div className="rounded-2xl overflow-hidden">
             <AutoAspectTile item={GRAPHIC_MEDIA[0]} onMediaClick={onMediaClick} />
           </div>
         </div>
@@ -125,7 +130,7 @@ export default function ProjectDetailDigitalMedia({ onMediaClick }: ProjectDetai
                 <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[1].description}</p>
               )}
             </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
+            <div className="rounded-2xl overflow-hidden">
               <AutoAspectTile item={GRAPHIC_MEDIA[1]} onMediaClick={onMediaClick} />
             </div>
           </div>
@@ -138,7 +143,7 @@ export default function ProjectDetailDigitalMedia({ onMediaClick }: ProjectDetai
                 <p className="text-xs text-white mt-0.5 line-clamp-2">{GRAPHIC_MEDIA[2].description}</p>
               )}
             </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
+            <div className="rounded-2xl overflow-hidden">
               <AutoAspectTile item={GRAPHIC_MEDIA[2]} onMediaClick={onMediaClick} />
             </div>
           </div>
@@ -151,7 +156,7 @@ export default function ProjectDetailDigitalMedia({ onMediaClick }: ProjectDetai
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
           {SHIRI_DESIGNS.map((item, index) => (
             <div key={item.src ?? index} className="space-y-1">
-              <div className="rounded-lg overflow-hidden border border-white/10">
+              <div className="rounded-2xl overflow-hidden">
                 <AutoAspectTile item={item} onMediaClick={onMediaClick} />
               </div>
               {item.title && (

@@ -3,21 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Shyon Shiri — Portfolio</title>
-    
-    <!-- DNS Preconnect for faster resolution -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    
-    <!-- Critical Asset Preloading -->
-    <link rel="preload" as="image" href="/assets/IMG_2282.JPG" />
-    <link rel="preload" as="image" href="/assets/Shyon_About_Pic.jpg" />
-    
-    <!-- Work Page Category Cards Preload (high priority) -->
-    <link rel="preload" as="image" href="/assets/Camera_Work_Cover.JPG" />
-    <link rel="preload" as="image" href="/assets/Digital_Media_Cover.jpg" />
-    <link rel="preload" as="image" href="/assets/3D_Modeling_Cover.PNG" />
-    
+    <title>Shyon Shiri — Designer &amp; Maker</title>
+
+    <!-- ── SEO / link-preview meta ──────────────────────────── -->
+    <meta name="description" content="Shyon Shiri — graphic designer and maker working across 3D design, motion graphics, UI/UX, fabrication, cinematography and code." />
+    <meta name="author" content="Shyon Shiri" />
+    <meta name="theme-color" content="#060606" />
+
+    <!-- Open Graph (LinkedIn / iMessage / Facebook) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Shyon Shiri — Designer &amp; Maker" />
+    <meta property="og:description" content="Portfolio spanning 3D design, motion graphics, UI/UX, fabrication and more." />
+    <meta property="og:image" content="https://shyonshiri.com/assets/New_Shiri_Site_Pic.jpg" />
+    <meta property="og:url" content="https://shyonshiri.com/" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Shyon Shiri — Designer &amp; Maker" />
+    <meta name="twitter:description" content="Portfolio spanning 3D design, motion graphics, UI/UX, fabrication and more." />
+    <meta name="twitter:image" content="https://shyonshiri.com/assets/New_Shiri_Site_Pic.jpg" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- ── Fonts: preconnect + non-blocking stylesheet ──────────
+         (Replaces the @import buried inside JS-injected CSS so
+          fonts start downloading on first paint, no FOUT shift.) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap"
+    />
+
+    <!-- ── Critical asset preload ──────────────────────────────
+         ONLY the hero the visitor actually sees first. The old
+         preloads pointed at files no longer used (IMG_2282.JPG,
+         Shyon_About_Pic.jpg, Camera_Work_Cover.JPG,
+         3D_Modeling_Cover.PNG) — that wasted bandwidth and did
+         NOT preload the real hero. -->
+    <link rel="preload" as="image" href="/assets/New_Shiri_Site_Pic.jpg" fetchpriority="high" />
+
     <!-- Optimize rendering performance -->
     <style>
       * {
@@ -25,7 +51,7 @@
         padding: 0;
         box-sizing: border-box;
       }
-      
+
       html {
         width: 100%;
         height: 100%;
@@ -41,25 +67,25 @@
 
       #root {
         width: 100vw;
-        height: 100vh;
+        height: 100dvh;
         position: fixed;
         top: 0;
         left: 0;
         overflow: hidden;
       }
-      
+
       /* Enable GPU acceleration for animations */
       .motion-div, [class*="motion"], video {
         will-change: transform;
         transform: translate3d(0, 0, 0);
       }
-      
+
       /* Optimize video playback */
       video {
         backface-visibility: hidden;
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-Cpn8HPK1.js"></script>
+    <script type="module" crossorigin src="/assets/index-B1keRS8F.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-DCHKMGkb.js">
     <link rel="stylesheet" crossorigin href="/assets/index-B_GBbnjx.css">
   </head>
@@ -67,5 +93,3 @@
     <div id="root"></div>
   </body>
 </html>
-
-

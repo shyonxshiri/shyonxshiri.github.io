@@ -1,7 +1,41 @@
 import React from "react";
 import { motion } from "framer-motion";
-import AutoAspectTile from "./AutoAspectTile";
-import { MediaItem } from "./types";
+
+interface MediaItem {
+  type: "image" | "video";
+  src: string;
+  title: string;
+  description?: string;
+  aspectRatio?: number;
+  objectPosition?: string;
+  year?: number;
+  link?: string;
+  relatedImages?: { src: string; title: string }[];
+  relatedLinks?: { category: string; index: number; title: string }[];
+  relatedItems?: string[];
+  id?: string;
+  alt?: string;
+  scale?: number;
+  poster?: string;
+  removeBackground?: boolean;
+  hidden?: boolean;
+}
+
+interface AutoAspectTileProps {
+  item: MediaItem;
+  onMediaClick?: (item: MediaItem) => void;
+}
+
+// Placeholder AutoAspectTile
+const AutoAspectTile: React.FC<AutoAspectTileProps> = ({ item, onMediaClick }) => (
+  <div className={`w-full rounded-2xl overflow-hidden cursor-pointer ${item.removeBackground ? 'bg-transparent' : 'bg-gray-900'}`} onClick={() => onMediaClick?.(item)}>
+    {item.type === "image" ? (
+      <img src={item.src} alt={item.alt ?? item.title} className="w-full h-auto object-cover rounded-2xl" />
+    ) : (
+      <video src={item.src} poster={item.poster} className="w-full h-auto object-cover rounded-2xl" />
+    )}
+  </div>
+);
 
 // 3D Modeling Media Data
 const MODELING_MEDIA: MediaItem[] = [
@@ -22,10 +56,7 @@ const MODELING_MEDIA: MediaItem[] = [
     description: "3D designed Apple product case prototypes, developed using Blender.",
     aspectRatio: 16 / 9,
     year: 2024,
-    relatedLinks: [
-      { category: "MODELS_MEDIA", index: 0, title: "Airpod Case" },
-      { category: "MODELS_MEDIA", index: 1, title: "iPhone Case" }
-    ]
+    relatedItems: ["Custom Airpod Case", "Custom Phone Case"],
   },
   {
     type: "image",
@@ -33,6 +64,20 @@ const MODELING_MEDIA: MediaItem[] = [
     title: "Rendered 3D Model",
     description: "A high-quality 3D rendered movie character model showcasing detailed modeling and texturing techniques made using Blender",
     year: 2024,
+  },
+  {
+    type: "image",
+    src: "/assets/Airpod_Case.JPG",
+    title: "Custom Airpod Case",
+    description: "Finalized Airpod case prototype designed to resemble liquid metal.",
+    year: 2026,
+  },
+  {
+    type: "image",
+    src: "/assets/My_Case.jpg",
+    title: "Custom Phone Case",
+    description: "Finalized iPhone case prototype designed to resemble liquid metal.",
+    year: 2025,
   },
 ];
 
@@ -57,7 +102,7 @@ export default function ProjectDetailModelingMedia({ onMediaClick }: ProjectDeta
                 <p className="text-xs text-white mt-0.5 line-clamp-2">{item.description}</p>
               )}
             </div>
-            <div className="rounded-lg overflow-hidden border border-white/10">
+            <div className="rounded-2xl overflow-hidden">
               <AutoAspectTile item={item} onMediaClick={onMediaClick} />
             </div>
           </div>
