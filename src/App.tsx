@@ -139,6 +139,26 @@ const GLOBAL_CSS = `
     body::after { display: none; }
   }
 
+  /* ─ MOBILE RESPONSIVE (iPhone 17e & similar - max 640px) ─ */
+  @media (max-width: 640px) {
+    /* Navigation */
+    nav ul { gap: 16px !important; }
+    nav { padding-left: max(16px, calc(16px + env(safe-area-inset-left))) !important; padding-right: max(16px, calc(16px + env(safe-area-inset-right))) !important; }
+
+    /* Work Page - Cards */
+    .ss-card { min-height: 420px !important; }
+
+    /* About Page */
+    .ss-about-page h2 { font-size: clamp(48px, 8vw, 96px) !important; }
+    .ss-about-page p { font-size: 16px !important; }
+
+    /* Contact Page */
+    .ss-contact-heading { font-size: clamp(42px, 7vw, 80px) !important; }
+    .ss-contact-subtitle { font-size: 9px !important; }
+    .ss-contact-description { font-size: clamp(14px, 1.8vw, 18px) !important; }
+    .ss-contact-btn { font-size: 10px !important; padding: 12px 20px !important; }
+  }
+
   /* cursor */
   #ss-cursor-dot {
     position: fixed; top: 0; left: 0; z-index: 99999;
@@ -749,13 +769,13 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       }} />
 
       {/* Content */}
-      <div style={{ position: "absolute", bottom: isMobile ? "28vh" : "36vh", left: "12vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
+      <div style={{ position: "absolute", bottom: isMobile ? "18vh" : "36vh", left: "12vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
         <motion.h1
           initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
           style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "clamp(72px,10vw,160px)",
+            fontSize: isMobile ? "clamp(48px,7vw,72px)" : "clamp(72px,10vw,160px)",
             lineHeight: 0.92, letterSpacing: 4,
             color: "var(--white)",
           }}
@@ -807,7 +827,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
       <div
         className="ss-grid"
         style={{
-          position: "absolute", inset: 0, top: 140,
+          position: "absolute", inset: 0, top: window.innerWidth <= 640 ? 100 : 140,
           display: "grid",
           gridTemplateColumns: isDesktop ? "repeat(3, 1fr)" : window.innerWidth <= 640 ? "1fr" : "repeat(2, 1fr)",
           gap: 20,
@@ -877,6 +897,15 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
 ───────────────────────────────────────────────────────────── */
 function AboutPage() {
   const [photoLoaded, setPhotoLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 640);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <motion.div key="about" {...fade}
@@ -884,14 +913,15 @@ function AboutPage() {
       className="ss-about-page"
     >
       <div style={{
-        display: "grid", gridTemplateColumns: "1fr 1fr",
+        display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
         height: "100%", width: "100%",
       }}>
         {/* Text column */}
         <div className="ss-about-text-column" style={{
-          display: "flex", flexDirection: "column", justifyContent: "center",
-          padding: "80px 60px 80px 8vw",
+          display: "flex", flexDirection: "column", justifyContent: isMobile ? "flex-start" : "center",
+          padding: isMobile ? "60px 20px" : "80px 60px 80px 8vw",
           overflow: "hidden",
+          paddingTop: isMobile ? "80px" : "80px",
         }}>
           <motion.div
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
@@ -1000,7 +1030,7 @@ function ContactPage() {
       }} />
 
       {/* content */}
-      <div style={{ position: "relative", zIndex: 10, padding: "0 9vw", width: "100%" }}>
+      <div style={{ position: "relative", zIndex: 10, padding: window.innerWidth <= 640 ? "0 20px" : "0 9vw", width: "100%" }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, flexWrap: "wrap", marginBottom: 44 }}>
           <div>
             <motion.div
