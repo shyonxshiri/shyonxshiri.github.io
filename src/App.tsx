@@ -149,14 +149,14 @@ const GLOBAL_CSS = `
     .ss-card { min-height: 420px !important; }
 
     /* About Page */
-    .ss-about-page h2 { font-size: clamp(48px, 8vw, 96px) !important; }
-    .ss-about-page p { font-size: 16px !important; }
+    .ss-about-subtitle { font-size: 10px !important; }
+    .ss-about-page h2 { font-size: clamp(36px, 6vw, 64px) !important; }
+    .ss-about-page p { font-size: 14px !important; line-height: 1.6 !important; }
 
     /* Contact Page */
-    .ss-contact-heading { font-size: clamp(42px, 7vw, 80px) !important; }
-    .ss-contact-subtitle { font-size: 9px !important; }
-    .ss-contact-description { font-size: clamp(14px, 1.8vw, 18px) !important; }
-    .ss-contact-btn { font-size: 10px !important; padding: 12px 20px !important; }
+    .ss-contact-heading { font-size: clamp(32px, 6vw, 64px) !important; }
+    .ss-contact-subtitle { font-size: 8px !important; letter-spacing: 3px !important; }
+    .ss-contact-description { font-size: clamp(12px, 1.5vw, 14px) !important; }
   }
 
   /* cursor */
@@ -919,9 +919,8 @@ function AboutPage() {
         {/* Text column */}
         <div className="ss-about-text-column" style={{
           display: "flex", flexDirection: "column", justifyContent: isMobile ? "flex-start" : "center",
-          padding: isMobile ? "60px 20px" : "80px 60px 80px 8vw",
+          padding: isMobile ? "80px 28px" : "80px 60px 80px 8vw",
           overflow: "hidden",
-          paddingTop: isMobile ? "80px" : "80px",
         }}>
           <motion.div
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
@@ -1030,8 +1029,8 @@ function ContactPage() {
       }} />
 
       {/* content */}
-      <div style={{ position: "relative", zIndex: 10, padding: window.innerWidth <= 640 ? "0 20px" : "0 9vw", width: "100%" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, flexWrap: "wrap", marginBottom: 44 }}>
+      <div style={{ position: "relative", zIndex: 10, padding: window.innerWidth <= 640 ? "0 18px" : "0 9vw", width: "100%" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: window.innerWidth <= 640 ? 20 : 40, flexWrap: "wrap", marginBottom: window.innerWidth <= 640 ? 24 : 44 }}>
           <div>
             <motion.div
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -1073,8 +1072,8 @@ function ContactPage() {
               target={(l as any).target}
               rel={(l as any).target ? "noopener noreferrer" : undefined}
               style={{
-                display: "flex", alignItems: "center", gap: 28,
-                padding: "26px 8px", textDecoration: "none",
+                display: "flex", alignItems: "center", gap: window.innerWidth <= 640 ? 16 : 28,
+                padding: window.innerWidth <= 640 ? "16px 8px" : "26px 8px", textDecoration: "none",
                 borderBottom: "1px solid rgba(245,242,237,.14)",
                 transition: "background 0.3s ease, padding-left 0.3s ease",
                 cursor: "none",
@@ -1089,13 +1088,13 @@ function ContactPage() {
               }}
               {...hover}
             >
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: 2, color: "var(--sky)", width: 34, flexShrink: 0 }}>
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: window.innerWidth <= 640 ? 10 : 12, letterSpacing: 2, color: "var(--sky)", width: 34, flexShrink: 0 }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(28px,4vw,40px)", letterSpacing: 2, color: "var(--white)", width: 240, flexShrink: 0 }}>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: window.innerWidth <= 640 ? "clamp(18px,3vw,28px)" : "clamp(28px,4vw,40px)", letterSpacing: 2, color: "var(--white)", width: window.innerWidth <= 640 ? "auto" : 240, flexShrink: 0 }}>
                 {l.label}
               </span>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "var(--mid)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: window.innerWidth <= 640 ? 14 : 20, color: "var(--mid)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {(l as any).value}
               </span>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 18, color: "var(--sky)", flexShrink: 0 }}>→</span>
