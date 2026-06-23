@@ -985,10 +985,10 @@ function ContactPage() {
 
       {/* ambient glow (replaces the old flat gray gradient) */}
       <div style={{
-        position: "absolute", right: "-30vw", top: "-40vh",
-        width: "min(1200px, 140vw)", height: "min(1200px, 140vw)", borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(56,189,248,.3) 0%, rgba(56,189,248,0) 50%)",
-        filter: "blur(100px)", zIndex: 1, pointerEvents: "none",
+        position: "absolute", right: "-40vw", top: "-50vh",
+        width: "min(1800px, 200vw)", height: "min(1800px, 200vw)", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(56,189,248,.25) 0%, rgba(56,189,248,0) 45%)",
+        filter: "blur(120px)", zIndex: 1, pointerEvents: "none",
       }} />
 
       {/* content */}
