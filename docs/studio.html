@@ -2283,12 +2283,7 @@
                 bobPhase += speed * dt * 42;
                 const bob = Math.sin(bobPhase) * Math.min(speed / MAX_SPEED, 1) * 0.045;
 
-                // a footfall lands at each vertical extreme of the head-bob
-                // (offset by π/2 so the click hits when the camera dips);
-                // alternate feet so left/right sound slightly different
-                const stepNow = Math.floor((bobPhase + Math.PI / 2) / Math.PI);
-                if (stepNow !== lastStep && speed > 0.04) playStep(stepNow & 1);
-                lastStep = stepNow;
+                // (footstep sound removed — head-bob visual retained)
 
                 updatePushTween(dt);
                 checkZones();
