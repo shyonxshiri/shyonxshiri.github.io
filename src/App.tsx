@@ -149,9 +149,9 @@ const GLOBAL_CSS = `
     .ss-card { min-height: 420px !important; }
 
     /* About Page */
-    .ss-about-subtitle { font-size: 10px !important; }
-    .ss-about-page h2 { font-size: clamp(36px, 6vw, 64px) !important; }
-    .ss-about-page p { font-size: 14px !important; line-height: 1.6 !important; }
+    .ss-about-subtitle { font-size: 9px !important; }
+    .ss-about-page h2 { font-size: 28px !important; }
+    .ss-about-page p { font-size: 12px !important; line-height: 1.8 !important; }
 
     /* Contact Page */
     .ss-contact-heading { font-size: clamp(32px, 6vw, 64px) !important; }
@@ -782,6 +782,26 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         >
           Shyon<br />Shiri
         </motion.h1>
+
+        {!isMobile && (
+          <motion.a
+            href="/studio.html"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.7, ease: [0.16,1,0.3,1] }}
+            className="ss-contact-btn"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 12,
+              marginTop: 32, padding: "16px 34px",
+              border: "1px solid rgba(245,242,237,.35)",
+              color: "var(--white)", textDecoration: "none",
+              fontFamily: "'Space Mono', monospace", fontSize: 12,
+              letterSpacing: 4, textTransform: "uppercase", cursor: "none",
+            }}
+          >
+            <span>Explore the Studio</span>
+            <span>→</span>
+          </motion.a>
+        )}
       </div>
     </motion.div>
   );
@@ -913,13 +933,13 @@ function AboutPage() {
       className="ss-about-page"
     >
       <div style={{
-        display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+        display: "grid", gridTemplateColumns: "1fr 1fr",
         height: "100%", width: "100%",
       }}>
         {/* Text column */}
         <div className="ss-about-text-column" style={{
-          display: "flex", flexDirection: "column", justifyContent: isMobile ? "flex-start" : "center",
-          padding: isMobile ? "80px 28px" : "80px 60px 80px 8vw",
+          display: "flex", flexDirection: "column", justifyContent: "center",
+          padding: window.innerWidth <= 640 ? "60px 3vw 60px 3vw" : "80px 60px 80px 8vw",
           overflow: "hidden",
         }}>
           <motion.div
