@@ -11,50 +11,36 @@ interface PreloadConfig {
 }
 
 // Asset manifest organized by priority and category
+// (only references files that exist and are used by the live site)
 export const ASSET_MANIFEST: PreloadConfig[] = [
-  // === CRITICAL (Hero + About page) ===
-  { type: 'image', src: '/assets/IMG_2282.JPG', priority: 'critical' },
-  { type: 'image', src: '/assets/Shyon_About_Pic.jpg', priority: 'critical' },
-  
+  // === CRITICAL (Hero — the first thing visitors see) ===
+  { type: 'image', src: '/assets/New_Shiri_Site_Pic.jpg', priority: 'critical' },
+
   // === HIGH PRIORITY (Work page category cards - visible on page load) ===
-  { type: 'image', src: '/assets/Camera_Work_Cover.JPG', priority: 'high' },
   { type: 'image', src: '/assets/Digital_Media_Cover.jpg', priority: 'high' },
-  { type: 'image', src: '/assets/3D_Modeling_Cover.PNG', priority: 'high' },
   { type: 'image', src: '/assets/Programming_Cover_Pic.jpg', priority: 'high' },
   { type: 'image', src: '/assets/Shyon_Sculpture.jpg', priority: 'high' },
   { type: 'image', src: '/assets/3D_Models_Cover_Pic.jpg', priority: 'high' },
-  
-  // === MEDIUM PRIORITY (Camera Work modal - frequently accessed) ===
+
+  // === MEDIUM PRIORITY (project modals - frequently accessed) ===
   { type: 'image', src: '/assets/NABU_Puffer_AD.jpg', priority: 'medium', poster: '/assets/NABU_Puffer_AD.jpg' },
   { type: 'video', src: '/assets/NABU_PUFFER_AD.mp4', priority: 'medium', poster: '/assets/NABU_Puffer_AD.jpg' },
   { type: 'image', src: '/assets/NABU_SALE_AD.jpg', priority: 'medium', poster: '/assets/NABU_SALE_AD.jpg' },
   { type: 'video', src: '/assets/NABU_SALE_AD.mp4', priority: 'medium', poster: '/assets/NABU_SALE_AD.jpg' },
   { type: 'image', src: '/assets/Stevie_Pic.JPG', priority: 'medium' },
   { type: 'image', src: '/assets/Adverstisement_Project.jpg', priority: 'medium' },
-  { type: 'image', src: '/assets/Photography_Asset.jpg', priority: 'medium' },
-  { type: 'image', src: '/assets/Photography_Asset_2.jpg', priority: 'medium' },
   { type: 'image', src: '/assets/Max_Pic.JPG', priority: 'medium' },
-  
-  // === MEDIUM PRIORITY (3D Rendering modal) ===
   { type: 'video', src: '/assets/Broken_NPC.MP4', priority: 'medium', poster: '/assets/Broken_NPC.jpg' },
   { type: 'image', src: '/assets/Broken_NPC.jpg', priority: 'medium' },
-  { type: 'video', src: '/assets/Blender_Case_Video.mov', priority: 'medium', poster: '/assets/Blender_Case.jpg' },
   { type: 'image', src: '/assets/Blender_Case.jpg', priority: 'medium' },
   { type: 'image', src: '/assets/Venom.PNG', priority: 'medium' },
-  
-  // === MEDIUM PRIORITY (Digital Media modal) ===
   { type: 'video', src: '/assets/Nabu_Poster_Banner.mp4', priority: 'medium', poster: '/assets/Nabu_Poster_Banner.jpg' },
   { type: 'image', src: '/assets/Nabu_Poster_Banner.jpg', priority: 'medium' },
-  { type: 'video', src: '/assets/Shiri_Video_Game.mov', priority: 'medium', poster: '/assets/Shiri_VIdeo_Game.jpg' },
   { type: 'image', src: '/assets/Shiri_VIdeo_Game.jpg', priority: 'medium' },
   { type: 'image', src: '/assets/Mina_Website.png', priority: 'medium' },
   { type: 'image', src: '/assets/Everly_Cover_Image.png', priority: 'medium' },
-  
+
   // === LOW PRIORITY (Below-fold assets, lazy load on demand) ===
-  { type: 'image', src: '/assets/Shiri_Design_1.PNG', priority: 'low' },
-  { type: 'image', src: '/assets/Shiri_Design_2.PNG', priority: 'low' },
-  { type: 'image', src: '/assets/Shiri_Design_3.PNG', priority: 'low' },
-  { type: 'image', src: '/assets/Shiri_Design_4.PNG', priority: 'low' },
   { type: 'video', src: '/assets/New_Radar_Sensor.mp4', priority: 'low', poster: '/assets/New_Radar_Sensor_front.jpg' },
   { type: 'image', src: '/assets/New_Radar_Sensor_front.jpg', priority: 'low' },
   { type: 'image', src: '/assets/New_Radar_Sensor_Back.jpg', priority: 'low' },
