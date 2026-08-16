@@ -117,6 +117,32 @@
         }
 
         /* ── CONTROLS POPUP (center screen, first entry) ── */
+        /* studio HUD buttons (top-right): controls + exit */
+        #studio-hud-btns {
+            position: fixed;
+            top: 24px; right: 40px;
+            display: flex; gap: 12px;
+            z-index: 300;
+            mix-blend-mode: difference;
+        }
+        #studio-hud-btns button {
+            background: none;
+            border: 1px solid rgba(245,242,237,.28);
+            color: var(--white);
+            font-family: 'Space Mono', monospace;
+            font-size: 10px; letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 9px 15px;
+            display: flex; align-items: center; gap: 8px;
+            transition: border-color 0.3s ease, opacity 0.3s ease;
+            opacity: 0.7;
+        }
+        #studio-hud-btns button:hover { opacity: 1; border-color: var(--sky); }
+        #studio-hud-btns button .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--sky); display: inline-block;
+        }
+
         #controls-popup {
             position: fixed;
             top: 50%;
@@ -592,6 +618,11 @@
 
     <div id="navbar">
         <div class="logo" onclick="location.href='/'">SHYON SHIRI</div>
+    </div>
+
+    <div id="studio-hud-btns">
+        <button onclick="showControls()"><span class="dot"></span>Controls</button>
+        <button onclick="location.href='/'">Exit ✕</button>
     </div>
 
     <div id="hover-label"></div>
@@ -1932,7 +1963,7 @@
 
         document.addEventListener('mousedown', (e) => {
             if (isAnyOverlayOpen() || controlsOpen) return;
-            if (e.target.closest('#navbar') || e.target.closest('#controls-popup')) return;
+            if (e.target.closest('#navbar') || e.target.closest('#controls-popup') || e.target.closest('#studio-hud-btns')) return;
             dragging = true;
             dragMoved = 0;
             lastX = e.clientX;
@@ -2048,13 +2079,18 @@
         let controlsOpen = false;
         const controlsPopup = document.getElementById('controls-popup');
 
-        function maybeShowControls() {
-            if (controlsShown) return;
-            controlsShown = true;
+        // show the controls popup (re-triggerable via the Controls button)
+        function showControls() {
             controlsOpen = true;
             canvas.classList.add('blurred'); // world revealed blurry
             controlsPopup.classList.add('show');
             requestAnimationFrame(() => requestAnimationFrame(() => controlsPopup.classList.add('visible')));
+        }
+
+        function maybeShowControls() {
+            if (controlsShown) return;
+            controlsShown = true;
+            showControls();
         }
 
         function dismissControls() {
