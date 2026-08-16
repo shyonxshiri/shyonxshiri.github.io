@@ -78,7 +78,7 @@ const PROJECTS: Project[] = [
     id: "nabu",
     title: "NABU",
     tag: "Clothing Brand",
-    img: "/assets/6AFD11B6-801A-4367-9DAC-43899A3456E8.jpg",
+    img: "/assets/New_NABU_Site_Cover_Card.jpg",
     size: "tall",
     media: [
       { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Dynamic promotional video for NABU clothing, crafted with professional animation in Adobe After Effects.", wide: true },

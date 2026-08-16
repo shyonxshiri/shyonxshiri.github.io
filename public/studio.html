@@ -779,7 +779,7 @@
                 id: 'nabu',
                 title: 'NABU',
                 tag: 'Clothing Brand',
-                img: './assets/6AFD11B6-801A-4367-9DAC-43899A3456E8.jpg',
+                img: './assets/New_NABU_Cover_Card.png',
                 angle: 180,
                 items: [
                     { type: 'video', src: './assets/Nabu_Poster_Banner.mp4', poster: './assets/Nabu_Poster_Banner.jpg', title: 'NABU Promotional Video', year: 2023, aspect: '16/9', desc: 'Dynamic promotional video for NABU clothing, crafted with professional animation in Adobe After Effects.' },
@@ -1645,6 +1645,40 @@
             const [px, pz] = polar(cat.angle);
             const group = new THREE.Group();
             group.position.set(px, CARD_Y, pz);
+
+            // NABU: floating chrome emblem (transparent PNG) — no liquid
+            // frame, no backing; just the emblem with its title beneath
+            if (cat.id === 'nabu') {
+                const emblemMat = new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide });
+                loadImage(cat.img).then((img) => {
+                    const tex = new THREE.Texture(img);
+                    tex.encoding = THREE.sRGBEncoding;
+                    tex.anisotropy = MAX_ANISO;
+                    tex.needsUpdate = true;
+                    emblemMat.map = tex;
+                    emblemMat.needsUpdate = true;
+                }).catch(() => {});
+                const emblem = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 3.8), emblemMat);
+                emblem.position.set(0, 0.45, 0.1); // nudged up so the title fits below
+                emblem.userData = { categoryId: cat.id };
+                group.add(emblem);
+                cardMeshes.push(emblem);
+
+                // keep the title + tag, matching the other cards' labels
+                fontsReady.then(() => {
+                    const title = makeTextPlane(cat.title, { size: 240, spacing: '10px', color: '#f5f2ed' }, 4.4, 1.1, 0.95);
+                    title.position.set(0, -1.7, 0.1);
+                    group.add(title);
+                    const tag = makeTextPlane(cat.tag.toUpperCase(), { font: '"Space Mono", monospace', size: 72, spacing: '8px', color: '#38bdf8' }, 4.4, 1.1, 0.9);
+                    tag.position.set(0, -2.4, 0.1);
+                    group.add(tag);
+                });
+
+                group.lookAt(0, CARD_Y, 0);
+                scene.add(group);
+                makeGlowPool(px, pz, 3.2, '56,189,248', 0.05); // faint blue pool for the chrome
+                return;
+            }
 
             // rounded room-black backing, matching the photo's rounded
             // corners — nothing square exists anywhere on the card
