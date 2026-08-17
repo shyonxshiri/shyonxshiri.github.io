@@ -734,6 +734,14 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- post-processing addons (bloom) — r128 global builds, load in order -->
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/GammaCorrectionShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
     <script>
         // ═════════════════════════════════════════════════════
         // DATA — the rotunda: doors and cards alternate every 60°
@@ -821,9 +829,26 @@
 
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         renderer.setSize(innerWidth, innerHeight);
-        renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); // sharper (retina)
         renderer.outputEncoding = THREE.sRGBEncoding;
         const MAX_ANISO = renderer.capabilities.getMaxAnisotropy();
+
+        // ── post-processing: subtle bloom so the glowing floor lines,
+        //    aurora, chrome highlights and titles bleed light — a cinematic
+        //    lift. The high threshold keeps the photos/cards untouched.
+        //    Falls back to a plain render if the addons don't load. ──
+        let composer = null;
+        if (THREE.EffectComposer && THREE.UnrealBloomPass && THREE.ShaderPass) {
+            composer = new THREE.EffectComposer(renderer);
+            composer.setPixelRatio(Math.min(devicePixelRatio, 2));
+            composer.setSize(innerWidth, innerHeight);
+            composer.addPass(new THREE.RenderPass(scene, camera));
+            // (resolution, strength, radius, threshold)
+            composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.5, 0.55, 0.82));
+            const gamma = new THREE.ShaderPass(THREE.GammaCorrectionShader);
+            gamma.renderToScreen = true;
+            composer.addPass(gamma);
+        }
 
         // lighting — dim ambient, cards are self-lit
         scene.add(new THREE.AmbientLight(0xffffff, 0.5));
@@ -1344,7 +1369,7 @@
         // metal so it reads as flowing mercury, not static grey.
         // ═════════════════════════════════════════════════════
         const envCanvas = document.createElement('canvas');
-        envCanvas.width = 512; envCanvas.height = 256;
+        envCanvas.width = 1024; envCanvas.height = 512; // crisper chrome reflections
         const envCtx = envCanvas.getContext('2d');
         const envTex = new THREE.CanvasTexture(envCanvas);
         envTex.mapping = THREE.EquirectangularReflectionMapping;
@@ -2371,7 +2396,7 @@
                 updateParticles(dt, elapsed); // vortex spins, stars turn
                 updateFloorLines(elapsed);    // floor lines glow independently
                 updatePortals(dt, elapsed);   // doorway veils shimmer & ripple
-                renderer.render(scene, camera);
+                if (composer) composer.render(); else renderer.render(scene, camera);
             }
         }
         requestAnimationFrame(animate);
@@ -2384,6 +2409,7 @@
             camera.aspect = innerWidth / innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(innerWidth, innerHeight);
+            if (composer) composer.setSize(innerWidth, innerHeight);
         });
     </script>
 </body>
