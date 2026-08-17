@@ -16,8 +16,9 @@ export default defineConfig({
     reportCompressedSize: false,
   },
   server: {
+    // no caching in local dev so the preview always reflects the latest edits
     headers: {
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': 'no-store',
     },
   },
   preview: {

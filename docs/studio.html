@@ -116,6 +116,20 @@
             background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%);
         }
 
+        /* atmospheric veil — a faint screen-blended haze that lifts the
+           blacks a touch and adds soft depth/air (the "fade" that reads as
+           realism). Purely a CSS overlay, so it can't affect the render. */
+        #atmos {
+            position: fixed; inset: 0;
+            pointer-events: none;
+            z-index: 51;
+            mix-blend-mode: screen;
+            background:
+                radial-gradient(ellipse 90% 55% at 50% 46%, rgba(122,152,196,0.075), transparent 72%),
+                radial-gradient(circle at 50% 22%, rgba(150,175,210,0.05), transparent 60%),
+                linear-gradient(rgba(72,92,132,0.024), rgba(72,92,132,0.024));
+        }
+
         /* ── CONTROLS POPUP (center screen, first entry) ── */
         /* studio HUD buttons (top-right): controls + exit */
         #studio-hud-btns {
@@ -613,6 +627,7 @@
 <body>
     <canvas id="canvas"></canvas>
     <div id="vignette"></div>
+    <div id="atmos"></div>
     <div id="grain"></div>
     <div id="cursor-dot"></div>
 
@@ -793,11 +808,15 @@
                 id: 'professional-services',
                 title: 'Professional Services',
                 tag: 'Web & Design',
-                img: './assets/Digital_Media_Cover.jpg',
+                img: './assets/Everly_Cover_Image.png',
                 angle: 300,
                 items: [
                     { type: 'image', src: './assets/Mina_Website.png', title: 'UI/UX — minasech.net', year: 2025, aspect: '16/9', desc: 'Full-stack website design including React frontend and responsive interface.', link: 'https://minasech.net' },
                     { type: 'image', src: './assets/Everly_Cover_Image.png', title: 'Everly Care Home', year: 2026, aspect: '16/9', desc: 'Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.', link: 'https://everlycarehome.com' },
+                    { type: 'image', src: './assets/RealEstate_Luning_Flyer.jpg', title: 'Real Estate Marketing — Luning Dr', year: 2022, aspect: '3/4', desc: 'Property marketing flyer designed for Real Estate Experts — a hero listing photo paired with clean typographic hierarchy, a status badge, and agent branding.' },
+                    { type: 'image', src: './assets/RealEstate_Luning_Alt.jpg', title: 'Luning Dr — Alternate Layout', year: 2022, aspect: '3/4', desc: 'An alternate take on the same listing flyer, reworking the hero crop and information layout to explore a different visual balance.' },
+                    { type: 'image', src: './assets/RealEstate_Colleen_Flyer.jpg', title: 'Real Estate Marketing — Colleen Dr', year: 2022, aspect: '1/1', desc: 'A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.' },
+                    { type: 'image', src: './assets/RealEstate_MorningStar_Flyer.png', title: 'Compass × Real Estate Experts — Morning Star Dr', year: 2022, aspect: '4/5', desc: 'A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.' },
                 ],
             },
         ];
@@ -1042,25 +1061,45 @@
         }
         const glowTex = makeGlowSprite();
 
-        // ── glowing sun low in the back sky + warm directional light that
-        //    rakes across the whole space for real ambient warmth ──
+        // ── glowing sun low in the back sky — a soft radial-gradient orb
+        //    (white-hot core → warm gold corona) with depth, not a flat
+        //    disc, plus warm directional light raking across the space ──
         const sunPos = new THREE.Vector3(-16, 10, -40);
-        const sunCore = new THREE.Mesh(
-            new THREE.SphereGeometry(3.0, 32, 32),
-            new THREE.MeshBasicMaterial({ color: 0xfff1d6, fog: false })
-        );
-        sunCore.position.copy(sunPos);
-        scene.add(sunCore);
-        // layered additive halos fake the atmospheric bloom around the sun
-        [[9, 0.6], [17, 0.34], [30, 0.18], [54, 0.09]].forEach(([size, op]) => {
-            const halo = new THREE.Sprite(new THREE.SpriteMaterial({
-                map: glowTex, color: 0xffe3b0, transparent: true, opacity: op,
+
+        // rich sun texture: white-hot centre fading through gold to nothing
+        const sunCv = document.createElement('canvas'); sunCv.width = sunCv.height = 256;
+        (() => {
+            const c = sunCv.getContext('2d');
+            const g = c.createRadialGradient(128, 128, 0, 128, 128, 128);
+            g.addColorStop(0.00, 'rgba(255,255,255,1)');
+            g.addColorStop(0.16, 'rgba(255,251,240,1)');
+            g.addColorStop(0.30, 'rgba(255,240,206,0.96)');
+            g.addColorStop(0.44, 'rgba(255,214,150,0.55)');
+            g.addColorStop(0.68, 'rgba(255,190,120,0.20)');
+            g.addColorStop(1.00, 'rgba(255,178,100,0)');
+            c.fillStyle = g; c.fillRect(0, 0, 256, 256);
+        })();
+        const sunTex = new THREE.CanvasTexture(sunCv);
+        // the sun sits "infinitely" far in a fixed sky direction and tracks
+        // the camera each frame → no parallax, constant apparent size, so it
+        // reads as a real distant sun instead of a nearby lamp that swings
+        // across the sky and grows/shrinks as you walk
+        const SUN_DIR = sunPos.clone().normalize();
+        const SUN_FAR = 300;
+        const sunGroup = new THREE.Group();
+        const addSunSprite = (size, tex, color, op) => {
+            const s = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: tex, color, transparent: true, opacity: op,
                 blending: THREE.AdditiveBlending, depthWrite: false, fog: false,
             }));
-            halo.position.copy(sunPos);
-            halo.scale.set(size, size, 1);
-            scene.add(halo);
-        });
+            s.scale.set(size, size, 1); sunGroup.add(s); return s;
+        };
+        addSunSprite(410, glowTex, 0xffcf88, 0.10);  // wide atmospheric haze
+        addSunSprite(220, glowTex, 0xffdca0, 0.22);  // outer corona
+        addSunSprite(100, sunTex,  0xffffff, 1.0);   // the sun body + soft edge
+        addSunSprite(42,  glowTex, 0xffffff, 0.9);   // tight white-hot core
+        scene.add(sunGroup);
+
         // warm sunlight across the scene — chrome frames & marble pick it up
         const sunLight = new THREE.DirectionalLight(0xffdca6, 0.85);
         sunLight.position.copy(sunPos);
@@ -2211,7 +2250,7 @@
                     ? `<div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>` : '';
                 cell.innerHTML = `
                     <div class="thumb">
-                        <img src="${thumbSrc}" alt="${item.title}" loading="lazy">
+                        <img src="${thumbSrc}" alt="${item.title}">
                         ${badge}
                     </div>
                     <div class="cell-body">
@@ -2288,7 +2327,7 @@
             const card = document.createElement('div');
             card.className = 'work-card';
             card.innerHTML = `
-                <img src="${cat.img}" alt="${cat.title}" loading="lazy">
+                <img src="${cat.img}" alt="${cat.title}">
                 <div class="card-overlay"><div class="card-title">${cat.title}</div></div>`;
             card.onclick = () => openCategory(cat);
             workGrid.appendChild(card);
@@ -2421,6 +2460,9 @@
             camera.rotation.order = 'YXZ';
             camera.rotation.y = player.rotY;
             camera.rotation.x = player.rotX;
+
+            // sun stays fixed in the sky (far, camera-tracked) — no parallax
+            sunGroup.position.copy(camera.position).addScaledVector(SUN_DIR, SUN_FAR);
 
             const worldHidden = isAnyOverlayOpen() && (now - overlayOpenedAt > 600);
             if (!worldHidden) {
