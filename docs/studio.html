@@ -1042,6 +1042,34 @@
         }
         const glowTex = makeGlowSprite();
 
+        // ── glowing sun low in the back sky + warm directional light that
+        //    rakes across the whole space for real ambient warmth ──
+        const sunPos = new THREE.Vector3(-16, 10, -40);
+        const sunCore = new THREE.Mesh(
+            new THREE.SphereGeometry(3.0, 32, 32),
+            new THREE.MeshBasicMaterial({ color: 0xfff1d6, fog: false })
+        );
+        sunCore.position.copy(sunPos);
+        scene.add(sunCore);
+        // layered additive halos fake the atmospheric bloom around the sun
+        [[9, 0.6], [17, 0.34], [30, 0.18], [54, 0.09]].forEach(([size, op]) => {
+            const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: glowTex, color: 0xffe3b0, transparent: true, opacity: op,
+                blending: THREE.AdditiveBlending, depthWrite: false, fog: false,
+            }));
+            halo.position.copy(sunPos);
+            halo.scale.set(size, size, 1);
+            scene.add(halo);
+        });
+        // warm sunlight across the scene — chrome frames & marble pick it up
+        const sunLight = new THREE.DirectionalLight(0xffdca6, 0.85);
+        sunLight.position.copy(sunPos);
+        sunLight.target.position.set(0, 1, 0);
+        scene.add(sunLight);
+        scene.add(sunLight.target);
+        // warm sky / cool ground bounce for subtle realism
+        scene.add(new THREE.HemisphereLight(0xffe8c8, 0x0a0a12, 0.22));
+
         function starMaterial(size, opacity) {
             return new THREE.PointsMaterial({
                 size,
