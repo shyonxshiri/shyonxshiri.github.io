@@ -122,9 +122,9 @@
 
 ## 7. Known Problems / Unfinished Work
 
-- **`lego.html` is not wired into the site and not committed.** The homepage button opens `studio.html`. When ready, switch the link in `src/App.tsx` (~line 893) from `/studio.html` to `/lego.html` — but confirm with the user first.
-- **Untracked files** (won't deploy until `git add`ed): `public/lego.html`, `public/studio_classic.html`, and many `public/assets/*.glb` (`coffee_shop`, `figure`, `flowers`, `ground_small`, `ground_tile`, `hair`, `lamppost`, `legs`, `modern_house`, `ruins`, `tree`, `character`) plus a couple new images. `public/studio.html` and `src/App.tsx` have **uncommitted modifications**.
-- **Legs swap is unfinished.** Swapping the figure's legs to the "LEGO Bizarro Superboy" pants was attempted and **reverted** (mis-scaled/hidden). `public/assets/legs.glb` is exported but not used. The hair swap (to Bizarro hair) IS done and working.
+- **`lego.html` is now the live My Space** — the homepage button (`src/App.tsx` ~line 893) opens `/lego.html`, and it's committed + deployed. Because it's live *and* still WIP, treat edits here as changes to the public site.
+- **Legs + hair swap are DONE** (Bizarro Superboy hair + denim legs, walk-animated). No longer an issue.
+- **Everything is committed/tracked now** (`lego.html`, the `.glb` assets, `CLAUDE.md`). It was all untracked before commit `696cac4`.
 - **Pending 3D placements (user gave specs):** Porsche 912 on the driveway (facing out); a skull left of the ruins doorway against the wall on a stud; the Tardis stamped into the ruins balcony (where the lower balcony flower is) with the rock crystal on its top stud; remove the two red-topped balcony flowers. Assets confirmed present in the blend: `Porche 912E`, `Lego Tardis Exterior`, `LEGO Rock Crystal`, `LEGO Skull / Head skeleton low poly`, `LEGO Bizarro Superboy`.
 - **Empty/legacy blend objects:** `Lego ninjago - Techno Cole.` is an empty placeholder (no geometry). Roller coaster and a truck crane were deleted from the blend and the blend was saved.
 - **`three.js` is loaded from CDN** (cdnjs r128 + unpkg GLTFLoader/DRACOLoader + gstatic Draco decoder) — an external network dependency for `lego.html`.
@@ -176,11 +176,15 @@
 
 Active work is on **`public/lego.html`** — the LEGO brick-build "My Space." The world currently has: a stud-matched fine 2×2 ground (green grass base + grey sidewalks/pads), a coffee shop (→ Professional Services), a modern house (→ About), a decorative ruins (→ Creative Projects, with a climbable-stairs heightmap), scattered stud-snapped trees (varied) and flowers, three day/night-reactive lampposts by the sidewalks, a random day cycle, a control-panel intro overlay, drag-to-look with camera auto-pull-in, per-geometry collision, and the first-person blurred-interior project-panel portals.
 
-**Most recently:** swapped the player figure's hair to the **Bizarro Superboy** hairpiece (done, resized, looks right). Then attempted to swap the figure's **legs** to the Bizarro pants — that **rig attempt failed and was reverted** (the figure keeps its original working legs for now). `legs.glb` is exported and staged.
+**Just completed + DEPLOYED (commit `696cac4`, pushed to `main`, live):**
+- Player figure finished: **Bizarro Superboy hair + denim legs** swapped in. The legs are bound to the `hipL`/`hipR` hip pivots so the walk animation swings them (verified). `legs.glb` is in use.
+- **Homepage "Enter My Space" now opens `/lego.html`** (switched from `/studio.html`). The new LEGO world is the live My Space.
+- `lego.html`, all `.glb` assets, and this `CLAUDE.md` are now **committed and tracked** (they were untracked before). `docs/` was rebuilt and pushed.
 
-**Immediate next steps (specs already provided by the user):**
-1. Redo the **legs swap** properly (scale to the figure's leg length, seat at hips, bind left/right to the existing `hipL`/`hipR` walk pivots). User offered a reference photo of the exact legs.
-2. Place **Porsche 912** on the driveway (in front of the existing car, facing out / back to garage).
-3. Place the **skull** on the ground to the left of the ruins doorway, against the wall, on a stud.
-4. Place the **Tardis** stamped into the ruins balcony (lower flower spot) with the **rock crystal** on its top stud; **remove the two red-topped balcony flowers.**
-5. Eventually: wire the homepage "Enter My Space" button to `lego.html`, then commit + `git add` the untracked `.glb` assets and deploy.
+**Immediate next steps (specs already provided by the user, NOT yet done):**
+1. Place **Porsche 912** (`Porche 912E`) on the driveway (in front of the existing car, facing out / back to garage).
+2. Place the **skull** (`LEGO Skull / Head skeleton low poly`) on the ground to the left of the ruins doorway, against the wall, on a stud.
+3. Place the **Tardis** (`Lego Tardis Exterior`) stamped into the ruins balcony (lower flower spot) with the **rock crystal** (`LEGO Rock Crystal`) on its top stud; **remove the two red-topped balcony flowers.**
+4. Ongoing polish: real project media/content in the portal panels (currently placeholder), removing any remaining stray non-original figures, and general look tuning.
+
+Note: since `lego.html` is now the public My Space and is still WIP, be mindful that changes here affect the live site — deploy (`npm run deploy` or build+commit+push `docs/`) only when the user asks.
