@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>My Space — Brick Build</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;background:#0a0e17;font-family:'Space Mono',monospace;color:#f2f4f8;}
+  canvas{display:block;position:fixed;inset:0;touch-action:none;}
+  .hud{position:fixed;z-index:20;pointer-events:none;}
+  .tl{top:22px;left:26px;}
+  .tl .t{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;line-height:.9;}
+  .tl .s{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8fb7ff;margin-top:4px;}
+  .hint{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;font-size:10px;letter-spacing:2px;text-transform:uppercase;
+    color:#a9b2c4;background:rgba(10,14,23,.6);border:1px solid rgba(255,255,255,.12);border-radius:980px;padding:9px 18px;backdrop-filter:blur(8px);}
+  .hint b{color:#8fb7ff;}
+  #loader{position:fixed;inset:0;z-index:50;background:#0a0e17;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease;}
+  #loader.hide{opacity:0;pointer-events:none;}
+  #loader .m{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;}
+  #controls{position:fixed;inset:0;z-index:60;background:rgba(8,11,20,.82);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;transition:opacity .5s ease;}
+  #controls.hide{opacity:0;pointer-events:none;}
+  #controls .card{width:min(90vw,400px);padding:32px 38px;background:rgba(18,24,38,.92);border:1px solid rgba(255,255,255,.12);border-radius:18px;text-align:center;}
+  #controls h2{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;line-height:1;}
+  #controls .sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8fb7ff;margin:6px 0 20px;}
+  #controls .row{display:flex;justify-content:space-between;font-size:13px;color:#cdd6e6;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.07);}
+  #controls .row b{color:#fff;}
+  #controls .go{margin-top:24px;padding:12px 36px;background:#2e7dff;color:#fff;border:none;border-radius:980px;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+  #controls .go:hover{background:#4a90ff;}
+  #fade{position:fixed;inset:0;background:#05070d;opacity:0;pointer-events:none;transition:opacity .45s ease;z-index:40;}
+  #fade.on{opacity:1;}
+  #prompt{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:25;font-size:11px;letter-spacing:2px;
+    text-transform:uppercase;color:#fff;background:rgba(10,14,23,.72);border:1px solid rgba(255,255,255,.16);border-radius:980px;
+    padding:10px 20px;backdrop-filter:blur(8px);opacity:0;transition:opacity .18s ease;pointer-events:none;white-space:nowrap;}
+  #prompt.on{opacity:1;}
+  #prompt b{color:#8fb7ff;}
+  #viewer{position:fixed;inset:0;z-index:45;background:rgba(5,7,13,.93);display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;}
+  #viewer.on{display:flex;}
+  #viewer .card{max-width:min(860px,92vw);width:100%;background:#0c1120;border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden;}
+  #viewer .media{width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:60px;letter-spacing:2px;color:#0c1120;}
+  #viewer .cap{padding:16px 20px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#a9b2c4;}
+  #viewer .x{position:fixed;top:22px;right:24px;font-size:12px;letter-spacing:2px;color:#a9b2c4;cursor:pointer;text-transform:uppercase;}
+  #c{z-index:1;}
+  #shopbg{position:fixed;inset:0;z-index:0;background:#0c1120 center/cover no-repeat;filter:blur(20px) brightness(.68) saturate(1.15);opacity:0;transition:opacity .55s ease;pointer-events:none;transform:scale(1.09);}
+  #shopbg.on{opacity:1;}
+</style>
+</head>
+<body>
+  <div id="shopbg"></div>
+  <canvas id="c"></canvas>
+  <div class="hud tl"><div class="t">MY SPACE</div><div class="s">Brick build · preview</div></div>
+  <div class="hint"><b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; drag to look</div>
+  <div id="loader"><div class="m">BUILDING…</div></div>
+  <div id="controls"><div class="card">
+    <h2>MY SPACE</h2><div class="sub">Controls</div>
+    <div class="row"><span>Move</span><b>WASD / Arrows</b></div>
+    <div class="row"><span>Run</span><b>Shift</b></div>
+    <div class="row"><span>Jump</span><b>Space</b></div>
+    <div class="row"><span>Look around</span><b>Drag mouse</b></div>
+    <div class="row"><span>Enter a building</span><b>E</b></div>
+    <button class="go" id="startBtn">Enter</button>
+  </div></div>
+  <div id="fade"></div>
+  <div id="prompt"></div>
+  <div id="viewer"><div class="x">Esc ✕</div><div class="card"><div class="media"></div><div class="cap"></div></div></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+  <script>
+  const canvas = document.getElementById('c');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0c1120);
+  scene.fog = new THREE.Fog(0x0c1120, 18, 46);
+
+  const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 200);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+
+  // lighting — cool sky + a warm key with soft shadows (one shared composition)
+  const hemi=new THREE.HemisphereLight(0x9fc0ff, 0x20304a, 0.7); scene.add(hemi);
+  const amb=new THREE.AmbientLight(0xffffff, 0.2); scene.add(amb);
+  const key = new THREE.DirectionalLight(0xffdf8f, 1.55);   // warm yellow sun
+  key.position.set(7, 13, 6); key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.near = 1; key.shadow.camera.far = 48;
+  key.shadow.camera.left = -12; key.shadow.camera.right = 12; key.shadow.camera.top = 12; key.shadow.camera.bottom = -12;
+  key.shadow.bias = -0.0004; key.shadow.radius = 3;
+  scene.add(key); scene.add(key.target);
+  const rim = new THREE.DirectionalLight(0x5a86ff, 0.5); rim.position.set(-7,6,-6); scene.add(rim);
+
+  // ── day cycle: a random time of day each time the space opens ──
+  const TIMES=[
+    {n:'morning', sky:0xbcd6ea, fog:0xcdd9e6, sun:0xffe6bd, si:1.35, hs:0xcfe0ff, hg:0x54627a, hi:0.72, amb:0.28, exp:1.16, off:[11,7,8],  rim:0x8fb0ff, ri:0.40, lamp:0.15},
+    {n:'midday',  sky:0x9fc4e8, fog:0xbcd0e0, sun:0xfff1cf, si:1.70, hs:0xbfd8ff, hg:0x586274, hi:0.82, amb:0.30, exp:1.15, off:[6,15,6],  rim:0x7aa0ff, ri:0.35, lamp:0.0},
+    {n:'evening', sky:0x452f42, fog:0x6a3c3e, sun:0xff9040, si:1.30, hs:0xffb488, hg:0x33223c, hi:0.45, amb:0.18, exp:1.10, off:[14,4,3],  rim:0xff8a5a, ri:0.40, lamp:0.9},
+    {n:'night',   sky:0x070a14, fog:0x0a0e1c, sun:0x8aa0d0, si:0.42, hs:0x2a3a60, hg:0x0a0e18, hi:0.30, amb:0.11, exp:0.98, off:[9,11,-6], rim:0x4a70c0, ri:0.45, lamp:1.6},
+  ];
+  const TOD=TIMES[Math.floor(Math.random()*TIMES.length)];
+  scene.background.set(TOD.sky); scene.fog.color.set(TOD.fog);
+  key.color.set(TOD.sun); key.intensity=TOD.si;
+  hemi.color.set(TOD.hs); hemi.groundColor.set(TOD.hg); hemi.intensity=TOD.hi;
+  amb.intensity=TOD.amb; renderer.toneMappingExposure=TOD.exp;
+  rim.color.set(TOD.rim); rim.intensity=TOD.ri;
+  const SUN_OFF=TOD.off;   // sun-direction offset the follow-light uses in the loop
+
+  function plastic(color, rough){ return new THREE.MeshStandardMaterial({ color, roughness: rough==null?0.42:rough, metalness:0.0 }); }
+
+  // ── stud grid + collision ──
+  const PITCH=0.36945;                               // LEGO stud pitch — snap ALL placements to it
+  const snap=v=>Math.round(v/PITCH)*PITCH;
+  // Collision is a fine occupancy grid sampled from the ACTUAL geometry at body height —
+  // so only the physical bricks/pole are solid (walk the open patio, right up to the walls).
+  const solidCells=new Set(), shopCells=new Set(), ruinsCells=new Set(), houseCells=new Set(), OCS=0.16, OY_LO=0.30, OY_HI=1.5;
+  const _t1=new THREE.Vector3(),_t2=new THREE.Vector3(),_t3=new THREE.Vector3();
+  function rasterizeSolid(root, extra){
+    root.updateWorldMatrix(true,true);
+    root.traverse(o=>{ if(!o.isMesh||!o.geometry) return; const pos=o.geometry.attributes.position; if(!pos) return;
+      const idx=o.geometry.index, wm=o.matrixWorld, n=idx?idx.count:pos.count;
+      for(let i=0;i<n;i+=3){ const a=idx?idx.getX(i):i, b=idx?idx.getX(i+1):i+1, c=idx?idx.getX(i+2):i+2;
+        _t1.fromBufferAttribute(pos,a).applyMatrix4(wm); _t2.fromBufferAttribute(pos,b).applyMatrix4(wm); _t3.fromBufferAttribute(pos,c).applyMatrix4(wm);
+        if(Math.max(_t1.y,_t2.y,_t3.y)<OY_LO || Math.min(_t1.y,_t2.y,_t3.y)>OY_HI) continue;
+        const x0=Math.floor(Math.min(_t1.x,_t2.x,_t3.x)/OCS), x1=Math.floor(Math.max(_t1.x,_t2.x,_t3.x)/OCS);
+        const z0=Math.floor(Math.min(_t1.z,_t2.z,_t3.z)/OCS), z1=Math.floor(Math.max(_t1.z,_t2.z,_t3.z)/OCS);
+        for(let x=x0;x<=x1;x++) for(let z=z0;z<=z1;z++){ const kk=x*100003+z; solidCells.add(kk); if(extra) extra.add(kk); }
+      }
+    });
+  }
+  const PRAD=0.26;                                   // player half-width
+  function cell(x,z){ return solidCells.has(Math.floor(x/OCS)*100003+Math.floor(z/OCS)); }
+  // camera-collision only cares about the big buildings — small props (trees/flowers) shouldn't pull the camera in
+  function camCell(x,z){ const k=Math.floor(x/OCS)*100003+Math.floor(z/OCS); return shopCells.has(k)||houseCells.has(k)||ruinsCells.has(k); }
+  function blockedAt(x,z){ return cell(x,z)||cell(x+PRAD,z)||cell(x-PRAD,z)||cell(x,z+PRAD)||cell(x,z-PRAD); }
+
+  // ── walkable height map (stairs / upper floors, e.g. the ruins) ──
+  // Each cell stores EVERY up-facing surface level (ground, each stair, the 2nd floor), so a
+  // roof overhead doesn't hide the floor. We then pick the surface reachable from the player.
+  const floorH=new Map(), MAXSTEP=1.55;   // tall enough for the ruins' chunky steps; walls (no reachable top) still block
+  const _e1=new THREE.Vector3(),_e2=new THREE.Vector3(),_nrm=new THREE.Vector3();
+  function floorKey(x,z){ return Math.floor(x/OCS)*100003+Math.floor(z/OCS); }
+  function addSurf(k,y){ let a=floorH.get(k); if(!a){ a=[]; floorH.set(k,a); }
+    for(let i=0;i<a.length;i++) if(Math.abs(a[i]-y)<0.18) return; a.push(y); }
+  function buildHeightmap(root){ root.updateWorldMatrix(true,true);
+    root.traverse(o=>{ if(!o.isMesh||!o.geometry) return; const pos=o.geometry.attributes.position; if(!pos) return;
+      const idx=o.geometry.index, wm=o.matrixWorld, n=idx?idx.count:pos.count;
+      for(let i=0;i<n;i+=3){ const a=idx?idx.getX(i):i, b=idx?idx.getX(i+1):i+1, c=idx?idx.getX(i+2):i+2;
+        _t1.fromBufferAttribute(pos,a).applyMatrix4(wm); _t2.fromBufferAttribute(pos,b).applyMatrix4(wm); _t3.fromBufferAttribute(pos,c).applyMatrix4(wm);
+        _e1.subVectors(_t2,_t1); _e2.subVectors(_t3,_t1); _nrm.crossVectors(_e1,_e2); if(_nrm.y<0) _nrm.multiplyScalar(-1);
+        if(_nrm.y < 0.6*_nrm.length()) continue;                 // only up-facing (walkable) surfaces
+        const y=(_t1.y+_t2.y+_t3.y)/3; if(y>3.6 || y<-0.6) continue;
+        const x0=Math.floor(Math.min(_t1.x,_t2.x,_t3.x)/OCS), x1=Math.floor(Math.max(_t1.x,_t2.x,_t3.x)/OCS);
+        const z0=Math.floor(Math.min(_t1.z,_t2.z,_t3.z)/OCS), z1=Math.floor(Math.max(_t1.z,_t2.z,_t3.z)/OCS);
+        for(let x=x0-1;x<=x1+1;x++) for(let z=z0-1;z<=z1+1;z++) addSurf(x*100003+z, y);   // dilate 1 cell to fill tiny detection gaps
+      } });
+  }
+  // highest walkable surface at (x,z) that is ≤ maxY, scanning the immediate neighbourhood
+  // so a step's top is reachable "over" its riser; null if there is none (→ open air, you fall)
+  function surfaceBelow(x,z,maxY){ const cx=Math.floor(x/OCS), cz=Math.floor(z/OCS); let best=null;
+    for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++){ const a=floorH.get((cx+dx)*100003+(cz+dz)); if(!a) continue;
+      for(let i=0;i<a.length;i++){ const s=a[i]; if(s<=maxY+0.02 && (best===null||s>best)) best=s; } }
+    return best; }
+  function stepOne(px,pz){ if(!cell(px,pz)) return false;                       // no body-height geometry → free
+    return surfaceBelow(px,pz, player.position.y+MAXSTEP)===null; }             // solid with no reachable surface → wall
+  function stepBlocked(x,z){ return stepOne(x,z)||stepOne(x+PRAD,z)||stepOne(x-PRAD,z)||stepOne(x,z+PRAD)||stepOne(x,z-PRAD); }
+  // prompt shows only within ~2 studs of the shop's actual barrier
+  function nearShopBarrier(x,z){ const R=2*PITCH+PRAD;
+    for(let dx=-R;dx<=R+0.001;dx+=OCS) for(let dz=-R;dz<=R+0.001;dz+=OCS){ if(dx*dx+dz*dz>R*R) continue;
+      if(shopCells.has(Math.floor((x+dx)/OCS)*100003+Math.floor((z+dz)/OCS))) return true; } return false; }
+
+  // ── placeholder brick "buildings" (to be replaced with real brick builds) ──
+  const U=0.37, BRICK_H=0.44;
+  const studGeo = new THREE.CylinderGeometry(U*0.3, U*0.3, 0.09, 12);
+  function makeBrick(wS,dS,hB,mat){ const g=new THREE.Group(); const w=wS*U,d=dS*U,h=hB*BRICK_H;
+    const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); b.castShadow=b.receiveShadow=true; b.position.y=h/2; g.add(b);
+    for(let i=0;i<wS;i++)for(let j=0;j<dS;j++){ const s=new THREE.Mesh(studGeo,mat); s.castShadow=s.receiveShadow=true;
+      s.position.set(-w/2+(i+0.5)*U, h+0.02, -d/2+(j+0.5)*U); g.add(s);} return g; }
+  function label(t){ const c=document.createElement('canvas'); c.width=256;c.height=64; const x=c.getContext('2d');
+    x.fillStyle='#0c1120'; x.fillRect(0,0,256,64); x.fillStyle='#ffd23f'; x.font='40px "Bebas Neue",sans-serif';
+    x.textAlign='center'; x.textBaseline='middle'; x.fillText(t.toUpperCase(),128,36); const tx=new THREE.CanvasTexture(c); tx.anisotropy=4; return tx; }
+  function building(x,z,ry,name,cA,cB){ const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=ry;
+    const mA=plastic(cA),mB=plastic(cB),mG=plastic(0x8b8f96);
+    const pL=makeBrick(2,4,5,mA); pL.position.x=-2.4*U; g.add(pL);
+    const pR=makeBrick(2,4,5,mA); pR.position.x= 2.4*U; g.add(pR);
+    const lin=makeBrick(7,4,1,mB); lin.position.y=5*BRICK_H; g.add(lin);
+    const rf1=makeBrick(6,3,1,mG); rf1.position.y=6*BRICK_H; g.add(rf1);
+    const rf2=makeBrick(4,2,1,mB); rf2.position.y=7*BRICK_H; g.add(rf2);
+    const sf=new THREE.Mesh(new THREE.PlaneGeometry(6*U*0.9,1.0*U),new THREE.MeshBasicMaterial({map:label(name),transparent:true}));
+    sf.position.set(0,4.4*BRICK_H,2*U+0.13); g.add(sf); scene.add(g); g.updateWorldMatrix(true,true); rasterizeSolid(g); return g; }
+  // (Work placeholder removed — spawn point is here now)
+
+  // ── player + figure ──
+  const player = new THREE.Group(); scene.add(player);
+  player.position.set(snap(-4.4),0,snap(-3.4));            // spawn where the Work structure used to be
+  const figBody = new THREE.Group(); player.add(figBody);  // waddle applied here
+
+  // limb pivots for the walk cycle — placed at the REAL sockets/hinges so each
+  // limb rotates inside its own hole (top pinned) rather than see-sawing.
+  let hipL=null,hipR=null,shL=null,shR=null;
+  function rigFigure(model){
+    const hub=model.getObjectByName('Node-jesse_dot_io'); if(!hub) return;
+    model.updateWorldMatrix(true,true);
+    // classify + place in the MODEL's own local space so the player's facing rotation
+    // (which may already be spinning by the time async loading finishes) can't corrupt it.
+    const inv=new THREE.Matrix4().copy(model.matrixWorld).invert();
+    const tmp=new THREE.Matrix4(), v=new THREE.Vector3(), off=model.position;
+    function localBox(o){ o.updateWorldMatrix(true,false); tmp.multiplyMatrices(inv,o.matrixWorld);
+      const g=o.geometry; g.computeBoundingBox(); const bb=g.boundingBox; const box=new THREE.Box3();
+      for(const X of[bb.min.x,bb.max.x]) for(const Y of[bb.min.y,bb.max.y]) for(const Z of[bb.min.z,bb.max.z]){ v.set(X,Y,Z).applyMatrix4(tmp); box.expandByPoint(v); }
+      return box; }
+    const info=[];
+    hub.traverse(o=>{ if(o.isMesh){ const b=localBox(o);
+      info.push({o, cx:(b.min.x+b.max.x)/2, cz:(b.min.z+b.max.z)/2, minY:b.min.y, maxY:b.max.y, minZ:b.min.z}); } });
+    const leftLeg  = info.find(m=>m.cx<-0.05 && m.cx>-0.28 && m.minY<0.4);
+    const rightLeg = info.find(m=>m.cx> 0.05 && m.cx< 0.28 && m.minY<0.4);
+    const leftArm  = info.filter(m=>m.cx<=-0.28);
+    const rightArm = info.filter(m=>m.cx>= 0.28);
+    // figBody-local = model-local + model.position (model has scale 1, rotation 0)
+    const pivot=(x,y,z)=>{ const p=new THREE.Group(); p.position.set(x+off.x,y+off.y,z+off.z); figBody.add(p); return p; };
+    if(leftLeg) { hipL=pivot(leftLeg.cx,  leftLeg.maxY-0.04,  leftLeg.cz);  hipL.attach(leftLeg.o); }
+    if(rightLeg){ hipR=pivot(rightLeg.cx, rightLeg.maxY-0.04, rightLeg.cz); hipR.attach(rightLeg.o); }
+    function shoulder(group){ const y=Math.max(...group.map(m=>m.maxY))-0.03;
+      const z=Math.min(...group.map(m=>m.minZ))+0.05; const x=group.reduce((s,m)=>s+m.cx,0)/group.length;
+      const p=pivot(x,y,z); group.forEach(m=>p.attach(m.o)); return p; }
+    if(leftArm.length)  shL=shoulder(leftArm);
+    if(rightArm.length) shR=shoulder(rightArm);
+  }
+
+  const gltf = new THREE.GLTFLoader();
+  const draco = new THREE.DRACOLoader();
+  draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.3/');
+  gltf.setDRACOLoader(draco);
+  let loadedGround=false, loadedFig=false, groundTopY=0;
+  function ready(){ if(loadedGround && loadedFig) setTimeout(()=>document.getElementById('loader').classList.add('hide'), 300); }
+
+  // GROUND — fine 2x2 plates (0.739u). GREEN grass is the base; GREY is used for a 6-stud
+  // sidewalk loop connecting the buildings, and for a foundation pad under each building.
+  gltf.load('./assets/ground_small.glb', (g)=>{
+    g.scene.updateMatrixWorld(true);
+    let tm=null; g.scene.traverse(o=>{ if(o.isMesh && !tm) tm=o; });
+    const geo = tm.geometry.clone(); geo.applyMatrix4(tm.matrixWorld); geo.computeBoundingBox();
+    const bb=geo.boundingBox, sx=bb.max.x-bb.min.x, sz=bb.max.z-bb.min.z;
+    geo.translate(-(bb.min.x+bb.max.x)/2, -bb.max.y, -(bb.min.z+bb.max.z)/2);
+    const matGrey = tm.material; if (matGrey.map) matGrey.map.encoding = THREE.sRGBEncoding;
+    const matGreen = matGrey.clone(); matGreen.color.setRGB(0.0529,0.266,0.0775);   // exact LegoGreen (linear)
+    window.__matGreen = matGreen;                                                    // synced to the mansion's grass on load
+    const X0=-16.25, X1=32.5, Z0=-17.73, Z1=17.73;
+    const NX=Math.round((X1-X0)/sx), NZ=Math.round((Z1-Z0)/sz), OX=(X0+X1)/2;
+    // grey foundation pads under the buildings
+    function onPad(x,z){
+      if(x>-13.5 && x<-6.4 && z>-17.6 && z<-7.4) return true;   // coffee shop
+      if(x>-8.4  && x<6.3  && z>2.7  && z<17.2)   return true;   // ruins (grey under the whole structure)
+      if(x>20    && x<31.3 && z>-7   && z<7.3)     return true;   // mansion foundation (no green seep at the door)
+      return false; }
+    // 6-stud-wide grey sidewalk loop through/near every building
+    const SW=[[-9.975,-6],[-4.4,-3],[0,-3],[4.2,-3],[14,-1],[20,0],[14,5],[0,6],[-9.975,2]];
+    const HALFW=4*PITCH;          // 8-stud-wide sidewalks
+    function seg(px,pz,ax,az,bx,bz){ const dx=bx-ax,dz=bz-az,L2=dx*dx+dz*dz||1;
+      let t=((px-ax)*dx+(pz-az)*dz)/L2; t=t<0?0:t>1?1:t; return Math.hypot(px-ax-t*dx, pz-az-t*dz); }
+    function onWalk(x,z){ for(let i=0;i<SW.length;i++){ const a=SW[i], b=SW[(i+1)%SW.length];
+      if(seg(x,z,a[0],a[1],b[0],b[1])<HALFW) return true; } return false; }
+    const grey=[], green=[];
+    for(let i=0;i<NX;i++)for(let j=0;j<NZ;j++){ const x=(i-(NX-1)/2)*sx+OX, z=(j-(NZ-1)/2)*sz;
+      ((onPad(x,z)||onWalk(x,z))? grey : green).push([x,z]); }
+    function field(list, material){ const im=new THREE.InstancedMesh(geo, material, list.length); im.castShadow=im.receiveShadow=true;
+      const mm=new THREE.Matrix4(); list.forEach((p,k)=>{ mm.setPosition(p[0],0,p[1]); im.setMatrixAt(k,mm); }); im.instanceMatrix.needsUpdate=true; scene.add(im); return im; }
+    field(grey, matGrey); field(green, matGreen);
+    loadedGround=true; ready();
+  }, undefined, e=>{ console.warn('ground load failed', e); loadedGround=true; ready(); });
+
+  // FIGURE — your minifig, scaled to ~5 studs tall, feet on the ground
+  gltf.load('./assets/figure.glb', (g)=>{
+    const model=g.scene;
+    model.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; } });
+    // native LEGO scale (shares blend units with plate + shop), centered, feet on ground
+    let box=new THREE.Box3().setFromObject(model);
+    model.position.x-=(box.min.x+box.max.x)/2; model.position.z-=(box.min.z+box.max.z)/2; model.position.y-=box.min.y;
+    figBody.add(model);
+    window.__fig=model;
+    rigFigure(model);
+    // LEGS SWAP — Bizarro's pants replace Jesse's legs, bound to the hip pivots so the walk still animates
+    gltf.load('./assets/legs.glb', (lg)=>{
+      const legs=lg.scene; legs.traverse(o=>{ if(o.isMesh){ o.castShadow=o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+      [hipL,hipR].forEach(p=>{ if(p) p.traverse(o=>{ if(o.isMesh) o.visible=false; }); });       // hide old legs
+      model.traverse(o=>{ if(o.isMesh && /Base1346/.test(o.name)) o.visible=false; });             // hide old hip block
+      const inv=new THREE.Matrix4().copy(figBody.matrixWorld).invert();
+      figBody.add(legs); legs.updateWorldMatrix(true,true);
+      let lb=new THREE.Box3().setFromObject(legs).applyMatrix4(inv);
+      const FEET=0.31, HIP=0.57, TOP=0.72;                       // figBody-local targets (from the Jesse rig)
+      legs.scale.multiplyScalar((TOP-FEET)/((lb.max.y-lb.min.y)||1));
+      legs.updateWorldMatrix(true,true); lb=new THREE.Box3().setFromObject(legs).applyMatrix4(inv);
+      legs.position.x += -(lb.min.x+lb.max.x)/2;                 // centre on the body
+      legs.position.z += -0.099-(lb.min.z+lb.max.z)/2;          // hip z
+      legs.position.y += FEET-lb.min.y;                          // feet on the ground
+      legs.updateWorldMatrix(true,true);
+      const parts=[]; legs.traverse(o=>{ if(o.isMesh){ const b=new THREE.Box3().setFromObject(o).applyMatrix4(inv); parts.push({o,cx:(b.min.x+b.max.x)/2,cy:(b.min.y+b.max.y)/2}); } });
+      parts.forEach(p=>{ if(p.cy>HIP-0.02) return;               // waist stays with the body
+        if(p.cx<0 && hipL) hipL.attach(p.o); else if(hipR) hipR.attach(p.o); });   // legs swing on the hips
+      window.__legs=legs;
+    }, undefined, e=>{ console.warn('legs load failed', e); });
+    // HAIR — Bizarro's hairpiece, snapped onto the figure's head (moves with the figure)
+    gltf.load('./assets/hair.glb', (hg)=>{
+      const hair=hg.scene;
+      hair.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material){ o.material.metalness=0; o.material.color=new THREE.Color(0x141416); } } });
+      model.updateWorldMatrix(true,true);
+      const inv=new THREE.Matrix4().copy(model.matrixWorld).invert();
+      const headNode=model.getObjectByName('Inner-Node-jesse_dot_io-7');
+      const headBox=new THREE.Box3().setFromObject(headNode||model).applyMatrix4(inv);
+      model.add(hair); hair.updateWorldMatrix(true,true);
+      let hb=new THREE.Box3().setFromObject(hair).applyMatrix4(inv);
+      hair.scale.setScalar(((headBox.max.x-headBox.min.x)*1.18)/(hb.max.x-hb.min.x));   // resized down to fit the head
+      hair.updateWorldMatrix(true,true); hb=new THREE.Box3().setFromObject(hair).applyMatrix4(inv);
+      hair.position.x += (headBox.min.x+headBox.max.x)/2 - (hb.min.x+hb.max.x)/2;
+      hair.position.z += (headBox.min.z+headBox.max.z)/2 - (hb.min.z+hb.max.z)/2;
+      hair.position.y += headBox.max.y - hb.max.y + 0.05;   // top of hair just above the head
+      window.__hair=hair;
+    }, undefined, e=>{ console.warn('hair load failed', e); });
+    loadedFig=true; ready();
+  }, undefined, e=>{ console.warn('figure load failed', e); loadedFig=true; ready(); });
+
+  // COFFEE SHOP — your real brick build (merged + Draco). Scaled so its stud pitch
+  // (0.250) matches the ground plate (0.369): factor 1.4771 → studs register + bigger.
+  const SHOP_SCALE=1.47709;                                 // PITCH/snap are defined globally above
+  const shopHolder=new THREE.Group();
+  shopHolder.position.set(snap(-9.975), -0.12, snap(-12.56)); // stud-snapped back-left corner, stamped in
+  shopHolder.rotation.y=-Math.PI/2;                           // counter/awning/patio face the spawn
+  scene.add(shopHolder);
+  gltf.load('./assets/coffee_shop.glb', (g)=>{
+    const shop=g.scene;
+    shop.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false;
+      if(o.material){ o.material.metalness=0; if(o.material.roughness!=null) o.material.roughness=Math.min(0.6,o.material.roughness||0.5); } } });
+    shop.scale.setScalar(SHOP_SCALE); shop.updateMatrixWorld(true);
+    let box=new THREE.Box3().setFromObject(shop);
+    shop.position.x-=(box.min.x+box.max.x)/2; shop.position.z-=(box.min.z+box.max.z)/2; shop.position.y-=box.min.y;
+    shopHolder.add(shop); rasterizeSolid(shopHolder, shopCells);   // solid = the real walls/counter/pole only
+    window.__shop=shop; window.__shopHolder=shopHolder;
+  }, undefined, e=>{ console.warn('shop load failed', e); });
+
+  // MODERN HOUSE — About + Contact live here. Native scale (already 0.369 pitch),
+  // seated on the extended right side of the platform.
+  const houseHolder=new THREE.Group();
+  houseHolder.position.set(snap(24), -0.15, snap(0));        // full mansion (grey kept) seats onto the green base
+  houseHolder.rotation.y=-Math.PI/2;                         // flipped 180° to face the opposite side
+  scene.add(houseHolder);
+  gltf.load('./assets/modern_house.glb', (g)=>{
+    const house=g.scene;
+    house.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false;
+      if(o.material){ o.material.metalness=0; if(o.material.roughness!=null) o.material.roughness=Math.min(0.6,o.material.roughness||0.5); } } });
+    house.updateMatrixWorld(true);
+    let box=new THREE.Box3().setFromObject(house);
+    house.position.x-=(box.min.x+box.max.x)/2; house.position.z-=(box.min.z+box.max.z)/2; house.position.y-=box.min.y;
+    houseHolder.add(house); rasterizeSolid(houseHolder, houseCells);   // solid = the real walls only; lawn/garden stays walkable
+    // sync the ground grass to the mansion's exact LegoGreen so they match seamlessly
+    let lg=null; house.traverse(o=>{ if(o.isMesh){ (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{ if(m&&/green/i.test(m.name||'')) lg=m; }); } });
+    if(lg && window.__matGreen) window.__matGreen.color.copy(lg.color);
+    window.__house=house; window.__houseHolder=houseHolder;
+  }, undefined, e=>{ console.warn('house load failed', e); });
+
+  // TREES — a few of your tree model, stud-snapped onto the grass, trunks solid
+  gltf.load('./assets/tree.glb', (g)=>{
+    const proto=g.scene;
+    proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+    let pb=new THREE.Box3().setFromObject(proto); const s=5.2/((pb.max.y-pb.min.y)||1);   // ~native, proportionate to buildings
+    const placed=[];
+    function treeOK(x,z){
+      if(x>-14 && x<-6 && z>-18 && z<-7) return false;   // shop
+      if(x>20 && x<32 && z>-8 && z<8)    return false;   // mansion
+      if(x>-8.5 && x<6.4 && z>2.5 && z<17.4) return false;   // ruins
+      if(Math.abs(x)<3 && Math.abs(z)<3) return false;   // keep spawn clear
+      for(let i=0;i<placed.length;i++) if(Math.hypot(x-placed[i][0],z-placed[i][1])<5.5) return false;  // spacing
+      return true; }
+    // irregular scatter on the outer grass (off the central sidewalk loop) with varied spacing
+    const cand=[[-15.3,-12.5],[-15.6,-5],[-13.8,3.5],[-15,11.5],[-8.5,15],[-2,-15.2],[6.5,-14.5],[13.5,-14.8],
+                [21,-13.5],[28.5,-14],[31,-3.5],[30.5,6.5],[31.2,13],[10.5,13.5],[16.5,12]];
+    cand.forEach(([px,pz])=>{ if(!treeOK(px,pz)) return; placed.push([px,pz]);
+      const sc=s*(0.82+Math.random()*0.4);                          // scale variation
+      const t=proto.clone(true); t.scale.setScalar(sc); t.updateMatrixWorld(true);
+      const b=new THREE.Box3().setFromObject(t);
+      t.position.x-=(b.min.x+b.max.x)/2; t.position.z-=(b.min.z+b.max.z)/2; t.position.y-=b.min.y;
+      const grp=new THREE.Group(); grp.position.set(snap(px),0,snap(pz)); grp.rotation.y=Math.random()*Math.PI*2;  // random facing
+      grp.add(t); scene.add(grp);
+      grp.updateWorldMatrix(true,true); rasterizeSolid(grp); });
+  }, undefined, e=>{ console.warn('tree load failed', e); });
+
+  // RUINS — decorative structure, stud-snapped, on a grey pad. Entry NOT constrained yet (no collision).
+  const ruinsHolder=new THREE.Group();
+  ruinsHolder.position.set(snap(-1), -0.5, snap(10));   // stamped into the ground
+  ruinsHolder.rotation.y=Math.PI;                        // 180° — entrance now faces the front
+  scene.add(ruinsHolder);
+  gltf.load('./assets/ruins.glb', (g)=>{
+    const ru=g.scene;
+    ru.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+    ru.scale.setScalar(1.3); ru.updateMatrixWorld(true);   // bigger overall
+    let box=new THREE.Box3().setFromObject(ru);
+    ru.position.x-=(box.min.x+box.max.x)/2; ru.position.z-=(box.min.z+box.max.z)/2; ru.position.y-=box.min.y;
+    ruinsHolder.add(ru); rasterizeSolid(ruinsHolder, ruinsCells); buildHeightmap(ruinsHolder);   // solid walls + climbable stairs/floors
+    window.__ruins=ru; window.__ruinsHolder=ruinsHolder;
+  }, undefined, e=>{ console.warn('ruins load failed', e); });
+
+  // FLOWERS — clusters copied from the mansion/ruins gardens, stud-snapped across the grass
+  gltf.load('./assets/flowers.glb', (g)=>{
+    const proto=g.scene;
+    proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+    const pairs=[[-14,-6],[13,-13],[-13,12],[30,11],[8,3]];   // ≤5 pairs, scattered with variation
+    pairs.forEach(([px,pz],i)=>{ for(let j=0;j<2;j++){ const f=proto.clone(true);
+      const b=new THREE.Box3().setFromObject(f);
+      f.position.x-=(b.min.x+b.max.x)/2; f.position.z-=(b.min.z+b.max.z)/2; f.position.y-=b.min.y;
+      const grp=new THREE.Group(); grp.position.set(snap(px+j*0.74),0,snap(pz+(j?0.74:0))); grp.rotation.y=((i*2+j)%4)*Math.PI/2; grp.add(f); scene.add(grp); } });
+  }, undefined, e=>{ console.warn('flowers load failed', e); });
+
+  // STREET LIGHTS — 6 lampposts in pairs, each with a warm-yellow glow (not too strong)
+  gltf.load('./assets/lamppost.glb', (g)=>{
+    const proto=g.scene; proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; } });
+    const L=1.086;   // base footprint = exactly 2x2 studs (0.739u), fully covering the tile
+    const lampI=TOD.lamp, lit=lampI>0.08;                       // off in daylight, stronger as day recedes
+    const bulbCol=lit ? (lampI>0.5?0xffe6a0:0xd8b45a) : 0x4a3d1e;
+    const spots=[[-12.5,-5.5],[9,-4.8],[19.5,-2.5]];            // shop (umbrella/flower side) · mid-path · mansion — all beside the sidewalk, not on it
+    spots.forEach(([px,pz])=>{ const lp=proto.clone(true); lp.scale.setScalar(L);
+      const b=new THREE.Box3().setFromObject(lp);
+      lp.position.x-=(b.min.x+b.max.x)/2; lp.position.z-=(b.min.z+b.max.z)/2; lp.position.y-=b.min.y;
+      const topY=(b.max.y-b.min.y)*0.9;
+      const grp=new THREE.Group(); grp.position.set(snap(px),-0.18,snap(pz)); grp.add(lp);   // stamped into the ground
+      const pl=new THREE.PointLight(0xffca5e, lampI*1.4, 14, 2); pl.position.set(0,topY,0); grp.add(pl);
+      const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.1,10,8), new THREE.MeshBasicMaterial({color:bulbCol}));
+      bulb.position.set(0,topY,0); grp.add(bulb);
+      scene.add(grp); grp.updateWorldMatrix(true,true); rasterizeSolid(grp); });
+  }, undefined, e=>{ console.warn('lamppost load failed', e); });
+
+  // ══════════ PORTALS — first-person showcase (blurred interior + LEGO-framed panels) ══════════
+  // Each structure is a portal: walk up, press E → camera glides 3rd→1st person inside, the real
+  // interior is snapshotted + blurred as the backdrop, projects float in front as framed panels.
+  const CREATIVE=[
+    {t:'Render Study', c:'#2ee078'}, {t:'Motion Piece', c:'#38bdf8'}, {t:'Concept Art', c:'#f4c430'},
+    {t:'Short Film', c:'#ff7ac2'}, {t:'3D Build', c:'#8b5cf6'}, {t:'Poster Set', c:'#f97316'} ];
+  const PROFESSIONAL=[
+    {t:'Web Design', c:'#38bdf8'}, {t:'Branding', c:'#f4c430'}, {t:'Consulting', c:'#2ee078'},
+    {t:'Development', c:'#8b5cf6'}, {t:'Strategy', c:'#ff7ac2'} ];
+  const ABOUT=[
+    {t:'Who I Am', c:'#38bdf8'}, {t:'Experience', c:'#f4c430'}, {t:'Skills', c:'#2ee078'} ];
+  let mode='hub', fading=false, viewerOpen=false, nearPortal=null, activePortal=null, camAnim=null;
+  const camLook=new THREE.Vector3(0,0.95,0);
+
+  function labelTex(text, bg, fg, wide){ const W=wide?900:512, H=wide?170:340; const c=document.createElement('canvas'); c.width=W; c.height=H;
+    const x=c.getContext('2d'); if(bg){ x.fillStyle=bg; x.fillRect(0,0,W,H); }
+    x.fillStyle=fg; x.textAlign='center'; x.textBaseline='middle';
+    let fs=wide?120:210; x.font='800 '+fs+'px "Bebas Neue",sans-serif';
+    while(x.measureText(text).width>W-60 && fs>22){ fs-=6; x.font='800 '+fs+'px "Bebas Neue",sans-serif'; }
+    x.fillText(text,W/2,H/2+2); const tx=new THREE.CanvasTexture(c); tx.anisotropy=4; return tx; }
+
+  // Separate scene: LEGO-framed project panels per portal, drawn sharp over the blurred interior snapshot.
+  const menuScene=new THREE.Scene();
+  const menuCam=new THREE.PerspectiveCamera(46, innerWidth/innerHeight, 0.1, 100); menuCam.position.set(0,0,7.4);
+  menuScene.add(new THREE.HemisphereLight(0xffffff,0x3a4658,1.05));
+  const mdir=new THREE.DirectionalLight(0xffffff,0.75); mdir.position.set(3,5,7); menuScene.add(mdir);
+  const studGeoP=new THREE.CylinderGeometry(0.062,0.062,0.055,12);
+  function buildPanels(projects){ const group=new THREE.Group(); const panels=[];
+    projects.forEach((p,i)=>{ const n=projects.length, W=2.15,Hh=2.7,fr=0.26, mat=plastic(p.c,0.4), back=plastic(0x0c1120,0.6);
+      const g=new THREE.Group();
+      g.add(new THREE.Mesh(new THREE.BoxGeometry(W,Hh,0.18),back));
+      const barH=new THREE.BoxGeometry(W+fr*2,fr,0.34), barV=new THREE.BoxGeometry(fr,Hh,0.34);
+      [[0,Hh/2+fr/2],[0,-Hh/2-fr/2]].forEach(q=>{ const m=new THREE.Mesh(barH,mat); m.position.set(q[0],q[1],0.03); g.add(m); });
+      [[-W/2-fr/2,0],[W/2+fr/2,0]].forEach(q=>{ const m=new THREE.Mesh(barV,mat); m.position.set(q[0],q[1],0.03); g.add(m); });
+      const nc=Math.max(3,Math.round((W+fr*2)/0.3));
+      for(let s=0;s<nc;s++){ const sx=-(W+fr*2)/2+(s+0.5)*((W+fr*2)/nc);
+        [Hh/2+fr/2,-Hh/2-fr/2].forEach(sy=>{ const st=new THREE.Mesh(studGeoP,mat); st.rotation.x=Math.PI/2; st.position.set(sx,sy,0.22); g.add(st); }); }
+      const media=new THREE.Mesh(new THREE.PlaneGeometry(W-0.14,Hh-0.14), new THREE.MeshBasicMaterial({map:labelTex(String(i+1),p.c,'#0c1120')})); media.position.z=0.1; g.add(media);
+      const cap=new THREE.Mesh(new THREE.PlaneGeometry(W+fr,0.5), new THREE.MeshBasicMaterial({map:labelTex(p.t,'#0c1120','#ffffff',true),transparent:true})); cap.position.set(0,-Hh/2-fr-0.44,0.1); g.add(cap);
+      const off=i-(n-1)/2; g.position.set(off*2.75,0,-Math.abs(off)*0.55); g.rotation.y=-off*0.13; g.userData={i}; group.add(g); panels.push(g); });
+    group.visible=false; menuScene.add(group); return {group, panels}; }
+  const PORTALS={
+    professional:{ label:'Professional Services', projects:PROFESSIONAL, cells:shopCells,
+      door:new THREE.Vector3(-9.975,0,-9.5), eye:new THREE.Vector3(-9.975,1.75,-9.3), look:new THREE.Vector3(-9.975,1.5,-14.0),
+      exit:new THREE.Vector3(-9.975,0,-6), yaw:0 },              // step back out facing the world (+z)
+    creative:{ label:'Creative Projects', projects:CREATIVE, cells:ruinsCells,
+      door:new THREE.Vector3(-1,0,3), eye:new THREE.Vector3(-1,1.8,7.5), look:new THREE.Vector3(-1,1.4,13),
+      exit:new THREE.Vector3(-1,0,0.5), yaw:Math.PI },           // facing -z toward spawn
+    about:{ label:'About', projects:ABOUT, cells:houseCells,
+      door:new THREE.Vector3(19.5,0,0), eye:new THREE.Vector3(23,1.8,0), look:new THREE.Vector3(29,1.4,0),
+      exit:new THREE.Vector3(15,0,0), yaw:-Math.PI/2 } };        // facing -x toward spawn/world
+  Object.keys(PORTALS).forEach(k=>{ const mp=buildPanels(PORTALS[k].projects); PORTALS[k].group=mp.group; PORTALS[k].panels=mp.panels; });
+
+  const fadeEl=document.getElementById('fade'), promptEl=document.getElementById('prompt'),
+        viewerEl=document.getElementById('viewer'), shopbgEl=document.getElementById('shopbg');
+  function tweenCam(p1,l1,dur,after){ camAnim={p0:camera.position.clone(), l0:camLook.clone(), p1:p1.clone(), l1:l1.clone(), t:0, dur, after}; }
+  function cellsNear(set,x,z,R){ if(!set||!set.size) return false;
+    for(let dx=-R;dx<=R+0.001;dx+=OCS) for(let dz=-R;dz<=R+0.001;dz+=OCS){ if(dx*dx+dz*dz>R*R) continue;
+      if(set.has(Math.floor((x+dx)/OCS)*100003+Math.floor((z+dz)/OCS))) return true; } return false; }
+  function portalAt(px,pz){ for(const k in PORTALS){ const P=PORTALS[k];
+    if(cellsNear(P.cells,px,pz,2*PITCH+PRAD) || Math.hypot(px-P.door.x,pz-P.door.z)<2.0) return k; } return null; }
+  function enterPortal(k){ if(fading||mode!=='hub') return; if(document.exitPointerLock) document.exitPointerLock();
+    const P=PORTALS[k]; activePortal=k; fading=true; figBody.visible=false;
+    tweenCam(P.eye, P.look, 1.15, ()=>{ renderer.render(scene,camera);
+      try{ shopbgEl.style.backgroundImage='url('+renderer.domElement.toDataURL('image/jpeg',0.9)+')'; }catch(e){}
+      shopbgEl.classList.add('on'); for(const kk in PORTALS) PORTALS[kk].group.visible=(kk===k); mode='menu'; fading=false; }); }
+  function exitPortal(){ if(fading||mode!=='menu') return; const P=PORTALS[activePortal]; mode='hub'; shopbgEl.classList.remove('on');
+    figBody.visible=true; player.position.set(P.exit.x,0,P.exit.z); player.rotation.y=P.yaw; curYaw=P.yaw; velX=velZ=0;
+    camYaw=P.yaw+Math.PI; camAnim=null; }   // land in a clear spot, facing the world (camera behind)
+  function openViewer(i){ const P=PORTALS[activePortal]; const p=P.projects[i]; viewerOpen=true; const m=viewerEl.querySelector('.media');
+    m.style.background=p.c; m.textContent=p.t; viewerEl.querySelector('.cap').textContent=P.label+' · '+p.t; viewerEl.classList.add('on'); }
+  function closeViewer(){ viewerOpen=false; viewerEl.classList.remove('on'); }
+  viewerEl.querySelector('.x').addEventListener('click', closeViewer);
+  const _ray=new THREE.Raycaster(), _ndc=new THREE.Vector2();
+  canvas.addEventListener('click', e=>{ if(mode!=='menu'||viewerOpen||fading||!activePortal) return;
+    _ndc.set((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1); _ray.setFromCamera(_ndc, menuCam);
+    const hits=_ray.intersectObjects(PORTALS[activePortal].panels,true); if(hits.length){ let g=hits[0].object; while(g && (!g.userData||g.userData.i===undefined)) g=g.parent; if(g) openViewer(g.userData.i); } });
+
+  // ── audio: plastic tick footsteps + soft toy pad ──
+  let actx=null, master=null;
+  function initAudio(){ if(actx) return; try{ const AC=window.AudioContext||window.webkitAudioContext; actx=new AC();
+    master=actx.createGain(); master.gain.value=0.65; master.connect(actx.destination); }catch(e){} }
+  // plastic footstep: a hollow ABS "tock" + a short click — like a minifig foot on a brick
+  let noiseBuf=null;
+  function makeNoise(){ const n=Math.floor(actx.sampleRate*0.12); const b=actx.createBuffer(1,n,actx.sampleRate);
+    const d=b.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1; return b; }
+  function tick(v){ if(!actx) return; const t=actx.currentTime; const vol=0.15+Math.min(0.1,(v||0)*0.015);
+    if(!noiseBuf) noiseBuf=makeNoise();
+    // click: brief band-passed noise (plastic-on-plastic tap)
+    const src=actx.createBufferSource(); src.buffer=noiseBuf;
+    const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1900+Math.random()*500; bp.Q.value=1.1;
+    const gc=actx.createGain(); gc.gain.setValueAtTime(vol*0.95,t); gc.gain.exponentialRampToValueAtTime(0.0005,t+0.04);
+    src.connect(bp).connect(gc).connect(master); src.start(t); src.stop(t+0.05);
+    // body: low hollow knock
+    const o=actx.createOscillator(); o.type='triangle';
+    o.frequency.setValueAtTime(235+Math.random()*35,t); o.frequency.exponentialRampToValueAtTime(150,t+0.05);
+    const gb=actx.createGain(); gb.gain.setValueAtTime(vol*0.9,t); gb.gain.exponentialRampToValueAtTime(0.0005,t+0.075);
+    o.connect(gb).connect(master); o.start(t); o.stop(t+0.09); }
+
+  // ── controls ──
+  const keys={}; let camYaw=0.62, camPitch=0.2, camDist=5.0;   // closer, lower third-person orbit
+  addEventListener('keydown', e=>{ const k=e.key.toLowerCase();
+    if(k==='escape'){ if(viewerOpen) closeViewer(); else if(mode==='menu') exitPortal(); return; }
+    if(k==='e'){ if(mode==='hub' && nearPortal && !fading) enterPortal(nearPortal); return; }
+    keys[k]=true; if(e.key===' '){ e.preventDefault(); jumpQ=true; } initAudio(); });
+  addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
+  // drag to look (higher sensitivity)
+  const SENS=0.0065;
+  let drag=false,lx=0,ly=0; const pt=e=>{const t=(e.touches&&e.touches[0])||e;return{x:t.clientX,y:t.clientY};};
+  canvas.addEventListener('mousedown',e=>{ initAudio(); if(mode==='hub'){ drag=true; const p=pt(e); lx=p.x; ly=p.y; } });
+  addEventListener('mousemove',e=>{ if(!drag||mode!=='hub'||fading||camAnim) return; const p=pt(e);
+    camYaw-=(p.x-lx)*SENS; camPitch=Math.max(0.06,Math.min(1.2,camPitch+(p.y-ly)*SENS)); lx=p.x; ly=p.y; });
+  addEventListener('mouseup',()=>drag=false);
+  canvas.addEventListener('touchstart',e=>{ initAudio(); if(mode==='hub'){ drag=true; const p=pt(e); lx=p.x; ly=p.y; } },{passive:true});
+  canvas.addEventListener('touchmove',e=>{ if(!drag)return; const p=pt(e); camYaw-=(p.x-lx)*SENS; camPitch=Math.max(0.06,Math.min(1.2,camPitch+(p.y-ly)*SENS)); lx=p.x; ly=p.y; },{passive:true});
+  canvas.addEventListener('touchend',()=>drag=false);
+  canvas.addEventListener('wheel',e=>{ camDist=Math.max(3,Math.min(16,camDist+e.deltaY*0.01)); },{passive:true});
+  // control panel shows first; Enter dismisses it
+  const startBtn=document.getElementById('startBtn');
+  if(startBtn) startBtn.addEventListener('click',()=>{ document.getElementById('controls').classList.add('hide'); initAudio(); });
+
+  // ── loop: LEGO waddle (fused-leg minifig) + hop ──
+  const clock=new THREE.Clock();
+  let velX=0,velZ=0,curYaw=Math.PI,phase=0,prevSin=0,velY=0,grounded=true,jumpQ=false,swingAmt=0,jumpPose=0;
+  const fV=new THREE.Vector3(),rV=new THREE.Vector3(),mV=new THREE.Vector3(),_v=new THREE.Vector3();
+  const BX0=-15.5, BX1=31.5, BZ=16.8, WALK=2.7, RUN=5.0;
+  function frame(dt){
+    let ix=0,iz=0;
+    if(keys['w']||keys['arrowup'])iz+=1; if(keys['s']||keys['arrowdown'])iz-=1;
+    if(keys['d']||keys['arrowright'])ix+=1; if(keys['a']||keys['arrowleft'])ix-=1;
+    if(viewerOpen||fading||mode!=='hub'||camAnim){ ix=0; iz=0; }   // freeze the walk unless roaming the hub
+    fV.set(-Math.sin(camYaw),0,-Math.cos(camYaw)); rV.set(-fV.z,0,fV.x);
+    mV.set(0,0,0).addScaledVector(fV,iz).addScaledVector(rV,ix);
+    const mag=Math.min(1,mV.length()), running=!!keys['shift'];
+    let dX=0,dZ=0; if(mag>0.02){ mV.normalize(); const s=(running?RUN:WALK)*mag; dX=mV.x*s; dZ=mV.z*s; }
+    const kf=1-Math.exp(-12*dt); velX+=(dX-velX)*kf; velZ+=(dZ-velZ)*kf;
+    // axis-separated move so you slide along walls and can hug them (0 gap); only real geometry blocks
+    const nx=player.position.x+velX*dt, nz=player.position.z+velZ*dt;
+    if(mode!=='hub' || !stepBlocked(nx, player.position.z)) player.position.x=nx; else velX*=0.2;
+    if(mode!=='hub' || !stepBlocked(player.position.x, nz)) player.position.z=nz; else velZ*=0.2;
+    player.position.x=Math.max(BX0,Math.min(BX1,player.position.x));
+    player.position.z=Math.max(-BZ,Math.min(BZ,player.position.z));
+    const speed=Math.hypot(velX,velZ), moving=speed>0.15;
+    if(speed>0.3) curYaw=Math.atan2(velX,velZ);
+    let dy=curYaw-player.rotation.y; dy=Math.atan2(Math.sin(dy),Math.cos(dy)); player.rotation.y+=dy*Math.min(1,dt*16);
+    // hop + stair/floor following: step UP onto ledges only while grounded; otherwise land on the surface below (else fall)
+    let gy=surfaceBelow(player.position.x, player.position.z, player.position.y+(grounded?MAXSTEP:0.12)); if(gy===null) gy=0;
+    if(jumpQ&&grounded){ velY=4.4; grounded=false; } jumpQ=false;
+    velY-=16*dt; player.position.y+=velY*dt;
+    if(player.position.y<=gy){ player.position.y=gy; velY=0; grounded=true; } else grounded=false;
+    // walk cycle: alternating legs + counter-swinging arms, with a light stiff waddle
+    phase += moving ? dt*(speed*1.9+3) : dt*2;
+    const wob = moving?1:0.15;
+    figBody.rotation.z = Math.sin(phase)*0.045*wob;
+    figBody.rotation.x = moving ? 0.05*Math.min(1,speed/RUN) : 0;
+    figBody.position.y = moving ? Math.abs(Math.sin(phase))*0.05 : Math.sin(phase*0.5)*0.008;
+    if(!grounded) figBody.rotation.z*=0.3;
+    const si=Math.sin(phase);
+    // limb swing eases in/out with movement; scales with speed
+    const tgt = (moving && grounded) ? (0.18+0.34*Math.min(1,speed/RUN)) : 0;
+    swingAmt += (tgt-swingAmt)*Math.min(1,dt*9);
+    const sw = si*swingAmt;
+    jumpPose += ((grounded?0:1)-jumpPose)*Math.min(1,dt*14);   // ease into a split leap pose while airborne
+    if(hipL&&hipR&&shL&&shR){ const jp=jumpPose;
+      hipL.rotation.x = sw*(1-jp) + 0.75*jp;      // left leg kicks up/forward
+      hipR.rotation.x = -sw*(1-jp) - 0.75*jp;     // right leg kicks back
+      shL.rotation.x  = -sw*0.85*(1-jp) - 0.6*jp; // left arm back
+      shR.rotation.x  =  sw*0.85*(1-jp) + 0.6*jp; // right arm up/forward
+    }
+    if(grounded&&moving&&((prevSin<0&&si>=0)||(prevSin>0&&si<=0))) tick(speed);
+    prevSin=si;
+    // ── portal proximity + contextual prompt ──
+    if(!fading){
+      nearPortal = (mode==='hub') ? portalAt(player.position.x, player.position.z) : null;
+      let msg='';
+      if(viewerOpen) msg='';
+      else if(mode==='menu') msg='Click a project &nbsp;·&nbsp; <b>Esc</b> to leave';
+      else if(nearPortal) msg='Press <b>E</b> &nbsp;·&nbsp; Enter '+PORTALS[nearPortal].label;
+      if(msg){ promptEl.innerHTML=msg; promptEl.classList.add('on'); } else promptEl.classList.remove('on');
+    }
+    // ── camera + render ──
+    if(mode==='menu'){
+      const tt=performance.now()*0.001;
+      for(let i=0;i<panels.length;i++){ panels[i].position.y=Math.sin(tt*1.1+i*0.7)*0.05; }
+      renderer.setClearColor(0x000000,0); renderer.render(menuScene, menuCam);
+    } else {
+      key.position.set(player.position.x+SUN_OFF[0],SUN_OFF[1],player.position.z+SUN_OFF[2]); key.target.position.copy(player.position); key.target.updateMatrixWorld();
+      if(camAnim){ camAnim.t=Math.min(1,camAnim.t+dt/camAnim.dur);
+        const e=camAnim.t<0.5?2*camAnim.t*camAnim.t:1-Math.pow(-2*camAnim.t+2,2)/2;
+        camera.position.lerpVectors(camAnim.p0,camAnim.p1,e); camLook.lerpVectors(camAnim.l0,camAnim.l1,e); camera.lookAt(camLook);
+        if(camAnim.t>=1){ const cb=camAnim.after; camAnim=null; if(cb) cb(); }
+      } else {
+        let hd=camDist*Math.cos(camPitch);
+        const dxc=Math.sin(camYaw), dzc=Math.cos(camYaw);   // camera-collision: pull in when a wall sits between player and camera
+        for(let d=0.6; d<hd; d+=OCS){ if(camCell(player.position.x+dxc*d, player.position.z+dzc*d)){ hd=Math.max(1.0, d-0.4); break; } }
+        const vd=hd*Math.tan(camPitch);
+        const cx=player.position.x+dxc*hd, cz=player.position.z+dzc*hd;
+        camera.position.lerp(_v.set(cx, player.position.y+0.6+vd, cz), 0.2);
+        camLook.set(player.position.x, player.position.y+0.95, player.position.z); camera.lookAt(camLook);
+      }
+      renderer.setClearColor(0x0c1120,1); renderer.render(scene, camera);
+    }
+  }
+  function loop(){ requestAnimationFrame(loop); frame(Math.min(clock.getDelta(),0.05)); }
+  loop();
+  addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+  </script>
+</body>
+</html>

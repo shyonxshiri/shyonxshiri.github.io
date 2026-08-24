@@ -59,7 +59,7 @@ const PROJECTS: Project[] = [
       { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", year: 2024, desc: "Professional photography exploring composition and lighting techniques.", aspectRatio: "1/1" },
       { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar — Front View", "Radar — Back View"] },
       { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box — Front View", "RGB Box — Back View"] },
-      { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture — welded, ground, sanded and finished.", aspectRatio: "5/4" },
+      { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
       { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Campaign Project", year: 2024, desc: "Conceptual brand advertisement utilizing environmental storytelling and scenic composition.", aspectRatio: "16/9" },
     ],
   },
@@ -67,21 +67,23 @@ const PROJECTS: Project[] = [
     id: "professional-services",
     title: "Professional Services",
     tag: "Web & Design",
-    img: "/assets/Digital_Media_Cover.jpg",
+    img: "/assets/Everly_Cover_Image.png",
     size: "wide",
     media: [
       { type: "image", src: "/assets/Mina_Website.png", title: "UI/UX — minasech.net", year: 2025, desc: "Full-stack website design including React frontend and responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
       { type: "image", src: "/assets/Everly_Cover_Image.png", title: "Everly Care Home", year: 2026, desc: "Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
-      { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Real Estate Marketing — Luning Dr", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts — a hero listing photo paired with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
+      { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Real Estate Marketing — Luning Dr", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
       { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Real Estate Marketing — Colleen Dr", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
       { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.png", title: "Compass × Real Estate Experts — Morning Star Dr", year: 2022, desc: "A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.", aspectRatio: "4/5" },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner — Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It reimagines a closed gas station lot as a renewed fuel and retail destination. Built from aerial references, the photorealistic 'after' helps a developer picture the property's potential.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner — Existing Site"] },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.png", title: "Moskowite Corner — Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true },
     ],
   },
   {
     id: "nabu",
     title: "NABU",
     tag: "Clothing Brand",
-    img: "/assets/New_NABU_Site_Cover_Card.jpg",
+    img: "/assets/New_NABU_Cover_Card.png",
     size: "tall",
     media: [
       { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Dynamic promotional video for NABU clothing, crafted with professional animation in Adobe After Effects.", wide: true },
@@ -165,12 +167,13 @@ const GLOBAL_CSS = `
   /* cursor */
   #ss-cursor-dot {
     position: fixed; top: 0; left: 0; z-index: 99999;
-    width: 8px; height: 8px;
-    background: var(--white);
+    width: 9px; height: 9px;
+    background: #ffffff;
     border-radius: 50%;
     pointer-events: none;
     transform: translate(-50%,-50%);
-    opacity: 0.8;
+    opacity: 1;
+    mix-blend-mode: difference; /* always contrasts — visible on white or dark */
   }
 
   /* work rail drag cursor */
@@ -430,6 +433,73 @@ const GLOBAL_CSS = `
     width: 100vw !important;
     height: 100dvh !important;
   }
+
+  /* ═══════════════════════════════════════════════════════════
+     APPLE-STYLE PASS — fonts + rounded corners only.
+     Layout, spacing and structure are untouched. Remove this
+     block to revert entirely.
+  ═══════════════════════════════════════════════════════════ */
+  /* Apple's system font (SF Pro on Mac) everywhere */
+  * {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+      "SF Pro Text", "Inter", system-ui, sans-serif !important;
+  }
+  /* big display headings read best with Apple's tight tracking */
+  .ss-contact-heading,
+  .ss-about-page h2 {
+    letter-spacing: -0.02em !important;
+    font-weight: 700 !important;
+  }
+  /* smooth, rounded surfaces instead of sharp corners */
+  .ss-card {
+    border-radius: 22px !important;
+    overflow: hidden !important;
+  }
+  .ss-tile { border-radius: 18px !important; }
+  .ss-work-modal { border-radius: 26px !important; overflow: hidden !important; }
+  /* masonry gallery (Work modal: creative + professional) — packs mixed
+     aspect ratios tightly with no ragged gaps, shows every image uncropped */
+  .ss-masonry { column-width: 206px; column-gap: 14px; }
+  @media (max-width: 900px){ .ss-masonry { column-width: 172px; column-gap: 12px; } }
+  @media (max-width: 640px){ .ss-masonry { column-width: 144px; column-gap: 10px; } }
+  .ss-scell { position: relative; border-radius: 14px; overflow: hidden; background: #111214; border: 1px solid rgba(245,242,237,.1); cursor: none; transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .4s cubic-bezier(.16,1,.3,1), box-shadow .5s cubic-bezier(.16,1,.3,1); }
+  .ss-scell:hover { transform: translateY(-4px); border-color: var(--sky); box-shadow: 0 18px 44px rgba(0,0,0,.5); }
+  .ss-scell .ss-sthumb { position: relative; width: 100%; background: #0a0a0c; overflow: hidden; }
+  .ss-scell .ss-sthumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s cubic-bezier(.16,1,.3,1); }
+  .ss-scell:hover .ss-sthumb img { transform: scale(1.05); }
+  .ss-scell .ss-sbody { padding: 10px 12px 12px; }
+  /* scroll affordances: a visible slim scrollbar + a bottom fade */
+  .ss-scroll { scrollbar-width: thin; scrollbar-color: rgba(245,242,237,.28) transparent; }
+  .ss-scroll::-webkit-scrollbar { width: 8px; }
+  .ss-scroll::-webkit-scrollbar-track { background: transparent; }
+  .ss-scroll::-webkit-scrollbar-thumb { background: rgba(245,242,237,.22); border-radius: 8px; }
+  .ss-scroll::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,.55); }
+  .ss-scroll-fade { position: absolute; left: 0; right: 8px; bottom: 0; height: 54px; background: linear-gradient(to top, rgba(6,6,6,.92), transparent); pointer-events: none; }
+  /* Work page background: ONE continuous drift; only the colours change per slide
+     (registered custom props so the colours interpolate; motion never resets) */
+  @property --wbc1 { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0); }
+  @property --wbc2 { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0); }
+  @property --wbc3 { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0); }
+  .ss-workbg { transition: background-color .9s ease, --wbc1 .9s ease, --wbc2 .9s ease, --wbc3 .9s ease; }
+  .ss-blob { position: absolute; border-radius: 50%; filter: blur(42px); will-change: transform; pointer-events: none; }
+  @keyframes ssFloatA { 0%,100% { transform: translate(-10%,-6%) scale(1); } 33% { transform: translate(9%,11%) scale(1.16); } 66% { transform: translate(15%,-8%) scale(1.08); } }
+  @keyframes ssFloatB { 0%,100% { transform: translate(12%,9%) scale(1.1); } 33% { transform: translate(-10%,-7%) scale(1); } 66% { transform: translate(-15%,11%) scale(1.15); } }
+  @keyframes ssFloatC { 0%,100% { transform: translate(3%,-12%) scale(1.05); } 33% { transform: translate(-12%,7%) scale(1.17); } 66% { transform: translate(11%,13%) scale(1); } }
+  .ss-media-viewer img,
+  .ss-media-viewer video { border-radius: 22px !important; }
+  .ss-contact-btn { border-radius: 980px !important; }
+  .ss-about-photo { border-radius: 20px !important; }
+
+  /* Work page: hover "View" cue on cards + CTA link */
+  .ss-view-cue { opacity: 0; transform: translateX(-6px); transition: opacity .35s var(--ease-out), transform .35s var(--ease-out); }
+  .ss-card:hover .ss-view-cue { opacity: 1; transform: translateX(0); }
+  .ss-work-cta { transition: color .3s ease; }
+  .ss-work-cta:hover { color: var(--sky) !important; }
+
+  /* asset titles: rounded "iPhone bubble" font (SF Pro Rounded) */
+  .ss-asset-title {
+    font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", -apple-system, system-ui, sans-serif !important;
+  }
 `;
 
 /* ─────────────────────────────────────────────────────────────
@@ -510,6 +580,10 @@ export default function App() {
   useEffect(() => { pageIdxRef.current = pageIdx; }, [pageIdx]);
   const currentPageRef = useRef(page);
   useEffect(() => { currentPageRef.current = page; }, [page]);
+  // track whether a project modal or media viewer is open, so page navigation
+  // (wheel/touch) is fully disabled while one is — the modal scrolls instead
+  const modalOpenRef = useRef(false);
+  useEffect(() => { modalOpenRef.current = !!modalProject || !!viewerItem; }, [modalProject, viewerItem]);
 
   const navigate = useCallback((next: Page) => {
     if (next === page) return;
@@ -525,12 +599,14 @@ export default function App() {
         hintInteracted.current = true;
         setHintsVisible(false);
       }
+      // No page navigation while a project modal / media viewer is open
+      if (modalOpenRef.current) return;
       if (cooldown.current) return;
       // Skip page navigation on work page for mobile/tablet (screen < 1024px)
       if (currentPageRef.current === "work" && window.innerWidth < 1024) return;
       // Skip if over a scrollable element
       const target = e.target as HTMLElement;
-      if (target.closest(".ss-modal-grid") || target.closest(".ss-media-viewer")) return;
+      if (target.closest(".ss-modal-grid") || target.closest(".ss-masonry") || target.closest(".ss-media-viewer")) return;
       // Only navigate if movement is clearly vertical (horizontal must be < 50% of vertical)
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY) * 0.5) return;
       const dir = e.deltaY > 0 ? 1 : -1;
@@ -557,12 +633,14 @@ export default function App() {
         hintInteracted.current = true;
         setHintsVisible(false);
       }
+      // No page navigation while a project modal / media viewer is open
+      if (modalOpenRef.current) return;
       if (cooldown.current) return;
       // Skip page navigation on work page (use buttons only)
       if (currentPageRef.current === "work") return;
       const target = e.target as HTMLElement;
       // Skip if on a scrollable rail or modal grid
-      if (target.closest(".ss-rail") || target.closest(".ss-modal-grid")) return;
+      if (target.closest(".ss-rail") || target.closest(".ss-modal-grid") || target.closest(".ss-masonry")) return;
       const dy = touchY.current - e.changedTouches[0].clientY;
       const dx = touchX.current - e.changedTouches[0].clientX;
       // Require significant vertical movement (120px) and vertical > horizontal by 3x to prevent accidental triggers
@@ -671,7 +749,7 @@ export default function App() {
 {/* ── PAGES ────────────────────────────────────────────── */}
       <AnimatePresence mode="wait">
         {page === "home" && <HomePage key="home" onNavigate={navigate} />}
-        {page === "work" && <WorkPage key="work" onCardClick={setModalProject} />}
+        {page === "work" && <WorkPage key="work" onCardClick={setModalProject} onNavigate={setPage} />}
         {page === "about" && <AboutPage key="about" />}
         {page === "contact" && <ContactPage key="contact" />}
       </AnimatePresence>
@@ -736,6 +814,7 @@ function NavLink({ label, active, onClick, currentPage }: { label: string; activ
 function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [loaded, setLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
+  const hover = useCursorHover();
 
   useEffect(() => {
     const handleResize = () => {
@@ -772,48 +851,120 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       }} />
 
       {/* Content */}
-      <div style={{ position: "absolute", bottom: isMobile ? "18vh" : "36vh", left: "12vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
+      <div style={{ position: "absolute", bottom: isMobile ? "14vh" : "24vh", left: "8vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
         <motion.h1
           initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
           style={{
-            fontFamily: "'Bebas Neue', sans-serif",
             fontSize: isMobile ? "clamp(48px,7vw,72px)" : "clamp(72px,10vw,160px)",
-            lineHeight: 0.92, letterSpacing: 4,
+            lineHeight: 0.99, letterSpacing: "-0.02em", fontWeight: 700,
             color: "var(--white)",
           }}
         >
           Shyon<br />Shiri
         </motion.h1>
 
-        {!isMobile && (
-          <motion.a
-            href="/studio.html"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7, ease: [0.16,1,0.3,1] }}
-            className="ss-contact-btn"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 12,
-              marginTop: 32, padding: "16px 34px",
-              border: "1px solid rgba(245,242,237,.35)",
-              color: "var(--white)", textDecoration: "none",
-              fontFamily: "'Space Mono', monospace", fontSize: 12,
-              letterSpacing: 4, textTransform: "uppercase", cursor: "none",
-            }}
+        <motion.p
+          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.58, ease: [0.16,1,0.3,1] }}
+          style={{ marginTop: 16, maxWidth: 460, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}
+        >
+          Click{" "}
+          <span
+            role="button" tabIndex={0}
+            onClick={() => onNavigate("work")}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
+            {...hover}
+            style={{ color: "#38bdf8", textDecoration: "underline", textUnderlineOffset: "3px", textDecorationThickness: "1.5px", fontWeight: 600, cursor: "none" }}
           >
-            <span>Explore the Studio</span>
-            <span>→</span>
-          </motion.a>
+            here
+          </span>{" "}
+          to browse my site{!isMobile ? ", or the button below to step into My Space." : "."}
+        </motion.p>
+
+        {/* Ghost: enter the 3D studio (desktop only) */}
+        {!isMobile && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.72, ease: [0.16,1,0.3,1] }}
+            style={{ marginTop: 24 }}
+          >
+            <a
+              href="/lego.html"
+              {...hover}
+              className="ss-contact-btn"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 10,
+                padding: "15px 28px", borderRadius: 980,
+                border: "1px solid rgba(245,242,237,.4)",
+                color: "var(--white)", textDecoration: "none",
+                fontSize: 13, fontWeight: 600, cursor: "none",
+              }}
+            >
+              <span>Enter My Space</span><span>→</span>
+            </a>
+          </motion.div>
         )}
       </div>
     </motion.div>
   );
 }
 
+/* Work page background: slow, clean particle flow. Particles emit the active
+   project's colour; a single canvas runs continuously (motion never resets),
+   and the base + emit colours lerp when the slide changes. */
+function WorkParticles({ base, emit }: { base: string; emit: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const target = useRef({ base, emit });
+  useEffect(() => { target.current = { base, emit }; }, [base, emit]);
+  useEffect(() => {
+    const canvas = ref.current; if (!canvas) return;
+    const ctx = canvas.getContext("2d"); if (!ctx) return;
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0, h = 0, raf = 0, last = performance.now();
+    const resize = () => {
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = Math.max(1, Math.floor(w * DPR)); canvas.height = Math.max(1, Math.floor(h * DPR));
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    };
+    resize(); window.addEventListener("resize", resize);
+    const P = Array.from({ length: 12 }, () => ({
+      x: Math.random(), y: Math.random(), r: 110 + Math.random() * 280,      // fewer, bigger, varied sizes
+      vx: (Math.random() - 0.5) * 0.024, vy: (Math.random() - 0.5) * 0.024,  // slow but visible drift
+      ph: Math.random() * Math.PI * 2, sp: 0.07 + Math.random() * 0.12,
+      a: 0.14 + Math.random() * 0.12,
+    }));
+    const hexToRgb = (hx: string) => { const s = hx.replace("#", ""); const n = parseInt(s.length === 3 ? s.split("").map(c => c + c).join("") : s, 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }; };
+    const emitRgb = (e: string) => { const m = e.split(",").map(Number); return { r: m[0], g: m[1], b: m[2] }; };
+    const cur = hexToRgb(base); const curE = emitRgb(emit);
+    const draw = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      const tb = hexToRgb(target.current.base); const te = emitRgb(target.current.emit); const k = Math.min(1, dt * 1.3);
+      cur.r += (tb.r - cur.r) * k; cur.g += (tb.g - cur.g) * k; cur.b += (tb.b - cur.b) * k;
+      curE.r += (te.r - curE.r) * k; curE.g += (te.g - curE.g) * k; curE.b += (te.b - curE.b) * k;
+      ctx.fillStyle = `rgb(${cur.r | 0},${cur.g | 0},${cur.b | 0})`; ctx.fillRect(0, 0, w, h);
+      const er = curE.r | 0, eg = curE.g | 0, eb = curE.b | 0;
+      for (const p of P) {
+        p.x += p.vx * dt; p.y += p.vy * dt; p.ph += p.sp * dt;
+        if (p.x < -0.2) p.x = 1.2; if (p.x > 1.2) p.x = -0.2;
+        if (p.y < -0.2) p.y = 1.2; if (p.y > 1.2) p.y = -0.2;
+        const px = (p.x + Math.sin(p.ph) * 0.02) * w, py = (p.y + Math.cos(p.ph * 0.8) * 0.02) * h;
+        const g = ctx.createRadialGradient(px, py, 0, px, py, p.r);
+        g.addColorStop(0, `rgba(${er},${eg},${eb},${p.a})`); g.addColorStop(1, `rgba(${er},${eg},${eb},0)`);
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, p.r, 0, Math.PI * 2); ctx.fill();
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    raf = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={ref} aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", zIndex: 0 }} />;
+}
+
 /* ─────────────────────────────────────────────────────────────
    WORK PAGE
 ───────────────────────────────────────────────────────────── */
-function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
+function WorkPage({ onCardClick, onNavigate }: { onCardClick: (p: Project) => void; onNavigate: (p: Page) => void }) {
   const hover = useCursorHover();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
 
@@ -825,88 +976,205 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // ── coverflow carousel: one focused card, two visible on the sides ──
+  const [active, setActive] = useState(0);
+  const n = PROJECTS.length;
+  const startX = useRef(0);
+  const moved = useRef(false);
+  useEffect(() => {
+    const t = setTimeout(() => setActive((a) => (a + 1) % n), 30000); // auto-advance, resets on any change
+    return () => clearTimeout(t);
+  }, [active, n]);
+  const go = (dir: number) => setActive((a) => (a + dir + n) % n);
+  const isMob = window.innerWidth <= 640;
+  const cardW = isDesktop ? 420 : Math.min(window.innerWidth * 0.74, 360);
+  const cardH = Math.min(cardW * 1.32, window.innerHeight * 0.6);
+  const sideX = cardW * (isDesktop ? 0.98 : 0.62);
+
+  // per-slide identity: base colour + the colour the particles emit
+  const WORK_BG_THEME: Record<string, { base: string; emit: string }> = {
+    "creative-projects":     { base: "#030b05", emit: "46,224,120" },   // neon green
+    "professional-services": { base: "#ffffff", emit: "150,152,158" },  // grey on white
+    "nabu":                  { base: "#0d1015", emit: "84,168,255" },   // electric blue
+  };
+  const activeId = PROJECTS[active]?.id;
+  const light = activeId === "professional-services";  // white slide → black UI text
+  const titleColor = light ? "#14110b" : "var(--white)";
+  const midColor = titleColor;  // whole header block: white on the dark slides, black on the white slide
+  const textShadow = light ? "0 1px 12px rgba(255,255,255,.6)" : "0 1px 14px rgba(0,0,0,.6)"; // stays legible over the moving particles
+  const bgt = WORK_BG_THEME[activeId] || WORK_BG_THEME["creative-projects"];
 
   return (
     <motion.div key="work" {...fade}
-      style={{ position: "absolute", inset: 0, background: "#1a1a1a", overflow: "hidden" }}
+      style={{
+        position: "absolute", inset: 0, overflow: "hidden",
+        background: "#0c0d0f",
+      }}
     >
-      {/* Header */}
+      {/* slow, continuous particle flow; particles emit the active project's colour */}
+      <WorkParticles base={bgt.base} emit={bgt.emit} />
+
+      {/* faint grain for atmosphere — sits behind the grid */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0, pointerEvents: "none",
+        opacity: 0.03,
+        backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='wn'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23wn)'/%3E%3C/svg%3E\")",
+        backgroundSize: "180px",
+      }} />
+
+      {/* Header (left-aligned, clear of the top-right nav) */}
       <div style={{
-        position: "absolute", top: 0, left: 0, right: 0,
-        padding: "60px 8vw 0 5vw",
-        zIndex: 10,
-        display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+        position: "absolute", top: 0, left: 0,
+        padding: "44px 5vw 0",
+        zIndex: 10, maxWidth: 780,
       }}>
         <motion.h2
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.16,1,0.3,1] }}
-          style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(40px,6vw,120px)", letterSpacing: 4, lineHeight: 1, color: "var(--white)" }}
+          style={{ fontSize: "clamp(38px,5vw,84px)", letterSpacing: "-0.02em", fontWeight: 700, lineHeight: 1, color: titleColor, textShadow, transition: "color 0.7s ease" }}
         >
           Work
         </motion.h2>
+
+        {isDesktop && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.35, ease: [0.16,1,0.3,1] }}
+            style={{ marginTop: 10, maxWidth: 640 }}
+          >
+            <p style={{ fontSize: 15, lineHeight: 1.45, color: midColor, textShadow, transition: "color 0.7s ease" }}>
+              Commissioned client work, plus personal and academic projects across every medium.
+            </p>
+            <a
+              onClick={() => onNavigate("contact")}
+              {...hover}
+              className="ss-work-cta"
+              style={{ display: "inline-block", marginTop: 8, fontSize: 14, fontWeight: 600, color: titleColor, textShadow, cursor: "none", transition: "color 0.7s ease" }}
+            >
+              Available for work. Let's talk →
+            </a>
+          </motion.div>
+        )}
       </div>
 
-      {/* Grid Layout */}
+      {/* Coverflow carousel: one focused card, two visible on the sides */}
       <div
-        className="ss-grid"
         style={{
-          position: "absolute", inset: 0, top: window.innerWidth <= 640 ? 100 : 140,
-          display: "grid",
-          gridTemplateColumns: isDesktop ? "repeat(3, 1fr)" : window.innerWidth <= 640 ? "1fr" : "repeat(2, 1fr)",
-          gap: 20,
-          padding: "0 8vw 72px",
-          overflowY: "auto",
-          overflowX: "hidden",
-          scrollbarWidth: "none",
+          position: "absolute", left: 0, right: 0,
+          top: 0, bottom: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          perspective: 1800, touchAction: "pan-y",
+        }}
+        onPointerDown={(e) => { startX.current = e.clientX; moved.current = false; }}
+        onPointerMove={(e) => { if (Math.abs(e.clientX - startX.current) > 8) moved.current = true; }}
+        onPointerUp={(e) => {
+          const dx = e.clientX - startX.current;
+          if (dx < -48) go(1); else if (dx > 48) go(-1);
         }}
       >
-        {PROJECTS.map((proj, i) => (
-          <motion.div
-            key={proj.id}
-            className={`ss-card ${proj.id === "3d-rendering" ? "ss-3d-rendering" : ""}`}
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 + i * 0.1, ease: [0.16,1,0.3,1] }}
-            onClick={() => onCardClick(proj)}
-            {...hover}
-            style={{
-              position: "relative",
-              overflow: "hidden",
-              background: "#111",
-              cursor: "none",
-              border: "1px solid transparent",
-              transition: "border-color 0.4s ease",
-              height: "auto",
-            }}
-            whileHover={{ borderColor: "var(--sky)" } as any}
-          >
-            <img
-              className="ss-card-img"
-              src={proj.img}
-              alt={proj.title}
-              loading="lazy"
+        {PROJECTS.map((proj, i) => {
+          const rel = (i - active + n) % n; // 0 = center, 1 = right, 2 = left
+          const target =
+            rel === 0 ? { x: 0, scale: 1, rotateY: 0, opacity: 1, z: 3 }
+            : rel === 1 ? { x: sideX, scale: 0.82, rotateY: -14, opacity: 1, z: 2 }
+            : { x: -sideX, scale: 0.82, rotateY: 14, opacity: 1, z: 2 };
+
+          // NABU: bare PNG (transparent, no card box/outline), name + tag below it
+          if (proj.id === "nabu") {
+            return (
+              <motion.div
+                key={proj.id}
+                animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
+                {...hover}
+                style={{
+                  position: "absolute", width: cardW, height: cardH, zIndex: target.z,
+                  cursor: "none", transformStyle: "preserve-3d",
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                }}
+              >
+                <img
+                  src={proj.img} alt={proj.title}
+                  style={{
+                    width: "100%", height: "78%", objectFit: "contain", objectPosition: "center",
+                    display: "block", pointerEvents: "none",
+                    filter: rel === 0 ? "drop-shadow(0 26px 55px rgba(0,0,0,.55))" : "none",
+                    transition: "filter .5s ease",
+                  }}
+                />
+                <div style={{ textAlign: "center", marginTop: 14, pointerEvents: "none" }}>
+                  <div style={{ fontSize: 24, letterSpacing: -0.3, color: titleColor, lineHeight: 1.05, fontWeight: 600, transition: "color 0.7s ease" }}>
+                    {proj.title}
+                  </div>
+                  <div style={{ fontSize: 12, letterSpacing: 1.5, color: "var(--sky)", textTransform: "uppercase", fontWeight: 500, marginTop: 7 }}>
+                    {proj.tag}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          }
+
+          return (
+            <motion.div
+              key={proj.id}
+              className="ss-card"
+              animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
+              {...hover}
               style={{
-                width: "100%", height: "100%",
-                objectFit: "cover",
-                objectPosition: proj.objectPosition || "center",
-                display: "block",
-                ...(proj.id === "3d-rendering" && { transform: "scale(1.22)" }),
-              }}
-            />
-            <div
-              className="ss-card-overlay"
-              style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(to top, rgba(6,6,6,.9) 0%, rgba(6,6,6,.3) 50%, transparent 100%)",
-                display: "flex", flexDirection: "column", justifyContent: "flex-end",
-                padding: "28px 24px",
+                position: "absolute",
+                width: cardW, height: cardH,
+                zIndex: target.z,
+                borderRadius: 22, overflow: "hidden",
+                background: "#111", cursor: "none",
+                boxShadow: rel === 0 ? "0 40px 90px rgba(0,0,0,.6)" : "0 20px 50px rgba(0,0,0,.5)",
+                transformStyle: "preserve-3d",
               }}
             >
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 2, color: "var(--white)", lineHeight: 1 }}>
-                {proj.title}
+              <img
+                src={proj.img} alt={proj.title}
+                style={{
+                  width: "100%", height: "100%", objectFit: "cover",
+                  objectPosition: proj.objectPosition || "center", display: "block", pointerEvents: "none",
+                  filter: "brightness(0.95)", transition: "filter .5s ease",
+                }}
+              />
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(to top, rgba(6,6,6,.92) 0%, rgba(6,6,6,.4) 42%, rgba(6,6,6,0) 78%)",
+                display: "flex", flexDirection: "column", justifyContent: "flex-end",
+                padding: "24px 22px", pointerEvents: "none",
+              }}>
+                <div style={{ fontSize: 12, letterSpacing: 1.5, color: "var(--sky)", textTransform: "uppercase", fontWeight: 500, marginBottom: 6 }}>
+                  {proj.tag}
+                </div>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+                  <div style={{ fontSize: 24, letterSpacing: -0.3, color: "var(--white)", lineHeight: 1.05, fontWeight: 600 }}>
+                    {proj.title}
+                  </div>
+                  {rel === 0 && <span style={{ fontSize: 13, color: "var(--white)", whiteSpace: "nowrap", fontWeight: 500 }}>View →</span>}
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Carousel indicators */}
+      <div style={{ position: "absolute", bottom: isMob ? 22 : 30, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 9, zIndex: 20 }}>
+        {PROJECTS.map((_, i) => (
+          <div
+            key={i}
+            onClick={() => setActive(i)}
+            {...hover}
+            style={{
+              width: i === active ? 26 : 8, height: 8, borderRadius: 980,
+              background: i === active ? "#38bdf8" : (light ? "rgba(20,17,11,.3)" : "rgba(245,242,237,.28)"),
+              cursor: "none", transition: "all .45s cubic-bezier(.16,1,.3,1)",
+            }}
+          />
         ))}
       </div>
 
@@ -973,7 +1241,10 @@ function AboutPage() {
             transition={{ duration: 0.8, delay: 0.55, ease: [0.16,1,0.3,1] }}
           >
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 300, lineHeight: 1.75, color: "#3a3a3a", maxWidth: 480 }}>
-              I am a graphic designer who specializes in countless mediums ranging through 3D Design, Motion Graphics, UI/UX, Fabrication, Cinematography, Coding, and etc. This variety developed naturally, driven by a lifelong curiosity that started with Lego stop-motion films and never really stopped. What stayed constant through all of it is a perfectionist mindset that I'd describe as both my greatest asset and my most relentless quality. The work isn't done until it's done right, not by anyone else's measure, but by my own.
+              I'm a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. I move between mediums because I've never been interested in doing just one thing.
+            </p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 300, lineHeight: 1.75, color: "#3a3a3a", maxWidth: 480, marginTop: 20 }}>
+              That range started early, with Lego stop-motion films, and turned into a habit of learning whatever a project needs. What stays constant is how I finish: the work isn't done until it's done right, by my own standard rather than anyone else's.
             </p>
           </motion.div>
         </div>
@@ -1031,7 +1302,8 @@ function ContactPage() {
         position: "absolute", left: -30, bottom: "-12vh",
         fontFamily: "'Bebas Neue', sans-serif",
         fontSize: "clamp(220px, 34vw, 460px)", lineHeight: 0.8, letterSpacing: 6,
-        color: "rgba(245,242,237,.035)", whiteSpace: "nowrap",
+        color: "rgba(245,242,237,.05)", whiteSpace: "nowrap",
+        filter: "blur(9px)",
         zIndex: 1, userSelect: "none", pointerEvents: "none",
       }}>CONTACT</div>
 
@@ -1172,8 +1444,8 @@ function WorkModal({ project, onClose, onMediaClick }: {
         className="ss-work-modal"
         style={{
           position: "relative",
-          width: "90vw", maxWidth: 1300,
-          maxHeight: "88dvh",
+          width: "76vw", maxWidth: 1080,
+          maxHeight: "80dvh",
           display: "flex", flexDirection: "column",
         }}
       >
@@ -1199,39 +1471,59 @@ function WorkModal({ project, onClose, onMediaClick }: {
         {/* Header */}
         <div style={{
           display: "flex", alignItems: "flex-end", justifyContent: "space-between",
-          paddingBottom: 24, borderBottom: "1px solid rgba(245,242,237,.1)",
-          marginBottom: 32,
+          paddingBottom: 18, borderBottom: "1px solid rgba(245,242,237,.1)",
+          marginBottom: 22,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(48px,6vw,96px)", letterSpacing: 3, lineHeight: 1, color: "var(--white)" }}>
+            <div style={{ fontSize: "clamp(36px,4.4vw,64px)", letterSpacing: "-0.02em", fontWeight: 700, lineHeight: 1, color: "var(--white)" }}>
               {project.title}
             </div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: "var(--sky)", marginTop: 12 }}>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, color: "var(--sky)", marginTop: 8 }}>
               {project.id === "creative-projects" ? "A selection of projects that demonstrate my range across various creative disciplines and mediums." : project.id === "professional-services" ? "Client-focused work including UI/UX, web development, branding and marketing assets." : project.id === "nabu" ? "Design and creative direction for NABU, a streetwear brand that draws from Persian and Assyrian heritage." : "testing"}
             </div>
           </div>
         </div>
 
-        {/* Horizontal Scroll Rail */}
-        <div
-          className="ss-modal-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: ["creative-projects", "professional-services"].includes(project.id) ? "repeat(auto-fit, minmax(420px, 1fr))" : project.id === "3d-rendering" ? "repeat(3, 300px)" : project.id === "fabrication" ? "repeat(1, 500px)" : ["3d-modelling", "programming"].includes(project.id) ? "repeat(2, 380px)" : "repeat(4, 280px)",
-            gap: 56,
-            overflowY: "auto",
-            overflowX: "hidden",
-            maxHeight: "calc(88dvh - 180px)",
-            paddingRight: 8,
-            justifyContent: "center",
-            width: project.id === "creative-projects" ? "100%" : "auto",
-            gridAutoRows: "max-content",
-          }}
-        >
-          {project.media.filter(item => !item.hidden).map((item, i) => (
-            <ModalTile key={i} item={item} onClick={() => onMediaClick(item)} />
-          ))}
-        </div>
+        {/* Asset grid — masonry for creative + professional; existing grid for others */}
+        {["creative-projects", "professional-services"].includes(project.id) ? (
+          <div style={{ position: "relative", flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+            <div className="ss-scroll" style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingRight: 8, display: "flex", gap: 14, alignItems: "flex-start" }}>
+              {(() => {
+                const items = project.media.filter(item => !item.hidden);
+                const colCount = window.innerWidth <= 640 ? 2 : window.innerWidth <= 1023 ? 3 : 4;
+                const cols: MediaItem[][] = Array.from({ length: colCount }, () => []);
+                items.forEach((item, i) => cols[i % colCount].push(item));
+                return cols.map((col, ci) => (
+                  <div key={ci} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 14 }}>
+                    {col.map((item, k) => (
+                      <StudioAssetCard key={k} item={item} onClick={() => onMediaClick(item)} />
+                    ))}
+                  </div>
+                ));
+              })()}
+            </div>
+            <div className="ss-scroll-fade" />
+          </div>
+        ) : (
+          <div
+            className="ss-modal-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: project.id === "3d-rendering" ? "repeat(3, 240px)" : project.id === "fabrication" ? "repeat(1, 420px)" : ["3d-modelling", "programming"].includes(project.id) ? "repeat(2, 300px)" : "repeat(4, 220px)",
+              gap: 38,
+              overflowY: "auto",
+              overflowX: "hidden",
+              maxHeight: "calc(80dvh - 150px)",
+              paddingRight: 8,
+              justifyContent: "center",
+              gridAutoRows: "max-content",
+            }}
+          >
+            {project.media.filter(item => !item.hidden).map((item, i) => (
+              <ModalTile key={i} item={item} onClick={() => onMediaClick(item)} />
+            ))}
+          </div>
+        )}
 
         {!isDesktop && (
           <div style={{
@@ -1254,6 +1546,33 @@ function WorkModal({ project, onClose, onMediaClick }: {
 /* ─────────────────────────────────────────────────────────────
    MODAL TILE
 ───────────────────────────────────────────────────────────── */
+/* Studio-style asset card (uniform grid cell + caption) — used for
+   creative-projects and professional-services for site/studio consistency */
+function StudioAssetCard({ item, onClick }: { item: MediaItem; onClick: () => void }) {
+  const hover = useCursorHover();
+  const ar = item.aspectRatio || "4/3";
+  return (
+    <div className="ss-scell" onClick={onClick} {...hover}>
+      <div className="ss-sthumb" style={{ aspectRatio: ar }}>
+        <img src={item.type === "video" ? item.poster : item.src} alt={item.title} loading="lazy" />
+        {item.type === "video" && (
+          <div style={{
+            position: "absolute", top: 12, right: 12, width: 34, height: 34, borderRadius: "50%",
+            background: "rgba(6,6,6,.5)", border: "1px solid rgba(245,242,237,.35)",
+            display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)",
+          }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--white)" style={{ marginLeft: 2 }}><path d="M8 5v14l11-7z" /></svg>
+          </div>
+        )}
+      </div>
+      <div className="ss-sbody">
+        <div className="ss-asset-title" style={{ fontSize: 13, fontWeight: 600, color: "var(--white)", lineHeight: 1.25 }}>{item.title}</div>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, color: "var(--mid)", marginTop: 4 }}>{item.year}</div>
+      </div>
+    </div>
+  );
+}
+
 function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) {
   const hover = useCursorHover();
 
@@ -1303,7 +1622,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
       }}
         className="ss-tile-info"
       >
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: "var(--white)" }}>{item.title}</div>
+        <div className="ss-asset-title" style={{ fontSize: 14, color: "var(--white)", fontWeight: 600 }}>{item.title}</div>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, color: "var(--sky)", letterSpacing: 1, marginTop: 2 }}>{item.year}</div>
       </div>
     </div>
@@ -1316,34 +1635,9 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
 function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose: () => void; onItemClick?: (item: MediaItem) => void }) {
   const hover = useCursorHover();
   
-  // Build carousel: current item + related items in sequence
-  const carouselItems: MediaItem[] = [item];
-  if (item.relatedItems && item.relatedItems.length > 0) {
-    item.relatedItems.forEach(relatedTitle => {
-      const relatedItem = PROJECTS.flatMap(p => p.media).find(m => m.title === relatedTitle);
-      if (relatedItem) carouselItems.push(relatedItem);
-    });
-  }
-  
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const displayedItem = carouselItems[currentIndex];
-
-  const goToNext = () => {
-    setCurrentIndex((currentIndex + 1) % carouselItems.length);
-  };
-
-  const goToPrev = () => {
-    setCurrentIndex((currentIndex - 1 + carouselItems.length) % carouselItems.length);
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") goToNext();
-      if (e.key === "ArrowLeft") goToPrev();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex, carouselItems.length]);
+  // Single-asset view. No prev/next arrows (they interrupted assets that have
+  // their own arrow/button controls). Related items open via the named links.
+  const displayedItem = item;
 
   return (
     <motion.div
@@ -1431,73 +1725,11 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
             )}
           </div>
 
-          {/* Navigation Button - Only show if there are related items (but not for Airpod/iPhone cases or Apple Accessories) */}
-          {carouselItems.length > 1 && !(item.title === "Custom Airpod Case" || item.title === "Custom Phone Case" || item.title === "Apple Accessory Prototypes") && (
-            <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 9, color: "var(--mid)", letterSpacing: 1 }}>
-                {currentIndex + 1} / {carouselItems.length}
-              </div>
-              <div style={{ display: "flex", gap: 6, flex: 1 }}>
-                <button
-                  onClick={goToPrev}
-                  style={{
-                    flex: 1,
-                    padding: "8px 12px",
-                    fontFamily: "'Space Mono', monospace", fontSize: 9,
-                    letterSpacing: 1, textTransform: "uppercase",
-                    color: "var(--white)",
-                    border: "1px solid rgba(245,242,237,.3)",
-                    background: "rgba(245,242,237,.05)",
-                    borderRadius: 2,
-                    cursor: "none",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(245,242,237,.6)";
-                    e.currentTarget.style.background = "rgba(245,242,237,.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(245,242,237,.3)";
-                    e.currentTarget.style.background = "rgba(245,242,237,.05)";
-                  }}
-                  {...hover}
-                >
-                  ← Prev
-                </button>
-                <button
-                  onClick={goToNext}
-                  style={{
-                    flex: 1,
-                    padding: "8px 12px",
-                    fontFamily: "'Space Mono', monospace", fontSize: 9,
-                    letterSpacing: 1, textTransform: "uppercase",
-                    color: "var(--white)",
-                    border: "1px solid rgba(245,242,237,.3)",
-                    background: "rgba(245,242,237,.05)",
-                    borderRadius: 2,
-                    cursor: "none",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(245,242,237,.6)";
-                    e.currentTarget.style.background = "rgba(245,242,237,.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(245,242,237,.3)";
-                    e.currentTarget.style.background = "rgba(245,242,237,.05)";
-                  }}
-                  {...hover}
-                >
-                  Next →
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Info */}
         <div style={{ flex: 1, minWidth: 200, maxWidth: 340, paddingTop: 140 }}>
-          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 64, letterSpacing: 2, lineHeight: 1, color: "var(--white)", marginBottom: 24 }}>
+          <div className="ss-asset-title" style={{ fontSize: 64, letterSpacing: 0.5, lineHeight: 1.02, color: "var(--white)", marginBottom: 24, fontWeight: 600 }}>
             {item.title}
           </div>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, letterSpacing: 2, color: "var(--sky)", textTransform: "uppercase", marginBottom: 20 }}>
