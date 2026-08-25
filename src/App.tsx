@@ -278,6 +278,67 @@ const GLOBAL_CSS = `
   }
   .ss-hero-bg-active { transform: scale(1) !important; }
 
+  /* ── Lego Realm storyboard (home page scroll) ── */
+  .ss-home-scroll {
+    overflow-y: auto; overflow-x: hidden;
+    scrollbar-width: none; -ms-overflow-style: none;
+    overscroll-behavior: contain;
+  }
+  .ss-home-scroll::-webkit-scrollbar { display: none; }
+  .ss-story-cue {
+    position: absolute; left: 50%; bottom: max(22px, calc(22px + env(safe-area-inset-bottom)));
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    background: none; border: none; color: var(--white);
+    opacity: .78; transition: opacity .3s ease;
+    z-index: 12;
+  }
+  .ss-story-cue:hover { opacity: 1; }
+  .ss-story-cue .ss-cue-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  }
+  .ss-story-cue .ss-cue-arrow {
+    font-size: 15px; line-height: 1;
+    animation: ss-cue-drop 1.9s ease-in-out infinite;
+  }
+  @keyframes ss-cue-drop {
+    0%, 100% { transform: translateY(0); opacity: .9; }
+    55% { transform: translateY(7px); opacity: .45; }
+  }
+  .ss-story-kicker {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--sky);
+  }
+  .ss-frame {
+    border: 1px solid rgba(245,242,237,.16);
+    background: #0a0a0c;
+  }
+  .ss-frame .ss-frame-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(245,242,237,.14);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: rgba(245,242,237,.6);
+  }
+  .ss-frame .ss-frame-img { display: block; width: 100%; height: auto; }
+  .ss-frame figcaption {
+    padding: 12px 14px 14px;
+    border-top: 1px solid rgba(245,242,237,.14);
+    font-size: 16px; line-height: 1.45;
+    color: rgba(245,242,237,.7);
+  }
+  .ss-frame-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 26px;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .ss-frame-grid { grid-template-columns: 1fr; }
+    .ss-frame figcaption { font-size: 15px; }
+  }
+
   /* Responsive modal sizing before mobile breakpoint */
   @media (max-width: 1200px) {
     .ss-work-modal {
@@ -602,6 +663,8 @@ export default function App() {
       // No page navigation while a project modal / media viewer is open
       if (modalOpenRef.current) return;
       if (cooldown.current) return;
+      // Home scrolls natively into the Lego Realm storyboard, so the wheel never flips pages there
+      if (currentPageRef.current === "home") return;
       // Skip page navigation on work page for mobile/tablet (screen < 1024px)
       if (currentPageRef.current === "work" && window.innerWidth < 1024) return;
       // Skip if over a scrollable element
@@ -636,6 +699,8 @@ export default function App() {
       // No page navigation while a project modal / media viewer is open
       if (modalOpenRef.current) return;
       if (cooldown.current) return;
+      // Home scrolls natively into the Lego Realm storyboard
+      if (currentPageRef.current === "home") return;
       // Skip page navigation on work page (use buttons only)
       if (currentPageRef.current === "work") return;
       const target = e.target as HTMLElement;
@@ -674,6 +739,8 @@ export default function App() {
         if (e.key === "Escape") setModalProject(null);
         return;
       }
+      // On home the arrows scroll the storyboard natively instead of flipping pages
+      if (page === "home") return;
       // Otherwise page navigation
       if (e.key === "ArrowDown" || e.key === "ArrowRight")
         setPage(PAGE_ORDER[Math.min(PAGE_ORDER.length - 1, pageIdx + 1)]);
@@ -815,6 +882,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [loaded, setLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
   const hover = useCursorHover();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -824,88 +892,271 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const scrollToStory = () => {
+    const el = scrollRef.current;
+    if (el) el.scrollTo({ top: el.clientHeight, behavior: "smooth" });
+  };
+
   return (
     <motion.div key="home" {...fade}
-      className="ss-home-page"
-      style={{ position: "absolute", inset: 0, background: "#060606", overflow: "hidden" }}
+      ref={scrollRef}
+      className="ss-home-page ss-home-scroll"
+      style={{ position: "absolute", inset: 0, background: "#060606" }}
     >
-      {/* BG image */}
-      <img
-        src="/assets/New_Shiri_Site_Pic.jpg"
-        alt=""
-        onLoad={() => setLoaded(true)}
-        className={loaded ? "ss-hero-bg ss-hero-bg-active" : "ss-hero-bg"}
-        style={{
-          position: "absolute", inset: 0,
-          width: "100%", height: "100%",
-          objectFit: "cover", objectPosition: "65% 5%",
-          filter: "brightness(0.62) contrast(1.1)",
-          zIndex: 1,
-        }}
-      />
-
-      {/* Vignette */}
-      <div style={{
-        position: "absolute", inset: 0, zIndex: 2,
-        background: "radial-gradient(ellipse 65% 100% at 72% 50%, transparent 25%, rgba(6,6,6,.65) 70%), linear-gradient(to bottom, rgba(6,6,6,.25) 0%, transparent 30%, transparent 65%, rgba(6,6,6,.85) 100%)",
-      }} />
-
-      {/* Content */}
-      <div style={{ position: "absolute", bottom: isMobile ? "14vh" : "24vh", left: "8vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
-        <motion.h1
-          initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
+      {/* ── HERO (first viewport) ── */}
+      <div style={{ position: "relative", height: "100dvh", overflow: "hidden" }}>
+        {/* BG image */}
+        <img
+          src="/assets/New_Shiri_Site_Pic.jpg"
+          alt=""
+          onLoad={() => setLoaded(true)}
+          className={loaded ? "ss-hero-bg ss-hero-bg-active" : "ss-hero-bg"}
           style={{
-            fontSize: isMobile ? "clamp(48px,7vw,72px)" : "clamp(72px,10vw,160px)",
-            lineHeight: 0.99, letterSpacing: "-0.02em", fontWeight: 700,
-            color: "var(--white)",
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover", objectPosition: "65% 5%",
+            filter: "brightness(0.62) contrast(1.1)",
+            zIndex: 1,
           }}
-        >
-          Shyon<br />Shiri
-        </motion.h1>
+        />
 
-        <motion.p
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.58, ease: [0.16,1,0.3,1] }}
-          style={{ marginTop: 16, maxWidth: 460, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}
-        >
-          Click{" "}
-          <span
-            role="button" tabIndex={0}
-            onClick={() => onNavigate("work")}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
-            {...hover}
-            style={{ color: "#38bdf8", textDecoration: "underline", textUnderlineOffset: "3px", textDecorationThickness: "1.5px", fontWeight: 600, cursor: "none" }}
-          >
-            here
-          </span>{" "}
-          to browse my site{!isMobile ? ", or the button below to step into My Lego Realm." : "."}
-        </motion.p>
+        {/* Vignette */}
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 2,
+          background: "radial-gradient(ellipse 65% 100% at 72% 50%, transparent 25%, rgba(6,6,6,.65) 70%), linear-gradient(to bottom, rgba(6,6,6,.25) 0%, transparent 30%, transparent 65%, rgba(6,6,6,.85) 100%)",
+        }} />
 
-        {/* Ghost: enter the 3D studio (desktop only) */}
-        {!isMobile && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.72, ease: [0.16,1,0.3,1] }}
-            style={{ marginTop: 24 }}
+        {/* Content */}
+        <div style={{ position: "absolute", bottom: isMobile ? "14vh" : "24vh", left: "8vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
+          <motion.h1
+            initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
+            style={{
+              fontSize: isMobile ? "clamp(48px,7vw,72px)" : "clamp(72px,10vw,160px)",
+              lineHeight: 0.99, letterSpacing: "-0.02em", fontWeight: 700,
+              color: "var(--white)",
+            }}
           >
-            <a
-              href="/lego.html"
+            Shyon<br />Shiri
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.58, ease: [0.16,1,0.3,1] }}
+            style={{ marginTop: 16, maxWidth: 460, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}
+          >
+            Click{" "}
+            <span
+              role="button" tabIndex={0}
+              onClick={() => onNavigate("work")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
               {...hover}
-              className="ss-contact-btn"
+              style={{ color: "#38bdf8", textDecoration: "underline", textUnderlineOffset: "3px", textDecorationThickness: "1.5px", fontWeight: 600, cursor: "none" }}
+            >
+              here
+            </span>{" "}
+            to browse my site{!isMobile ? ", or the button below to step into My Lego Realm." : "."}
+          </motion.p>
+
+          {/* Ghost: enter the 3D realm (desktop only) */}
+          {!isMobile && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.72, ease: [0.16,1,0.3,1] }}
+              style={{ marginTop: 24 }}
+            >
+              <a
+                href="/lego.html"
+                {...hover}
+                className="ss-contact-btn"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 10,
+                  padding: "15px 28px", borderRadius: 980,
+                  border: "1px solid rgba(245,242,237,.4)",
+                  color: "var(--white)", textDecoration: "none",
+                  fontSize: 13, fontWeight: 600, cursor: "none",
+                }}
+              >
+                <span>Enter My Lego Realm</span><span>→</span>
+              </a>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Scroll cue into the storyboard */}
+        <motion.button
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1.15 }}
+          className="ss-story-cue"
+          onClick={scrollToStory}
+          {...hover}
+          style={{ cursor: "none" }}
+        >
+          <span className="ss-cue-label">The making of the realm</span>
+          <span className="ss-cue-arrow">▼</span>
+        </motion.button>
+      </div>
+
+      {/* ── STORYBOARD ── */}
+      <div style={{ position: "relative", background: "#060606", padding: "0 8vw" }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto" }}>
+
+          {/* Intro */}
+          <StoryChapter
+            kicker="The Lego Realm · A storyboard"
+            title="One small world, told frame by frame."
+            body="This site hides a second one. Below is the story of the Lego Realm: what it is, why it exists, and how it was put together, one brick at a time."
+            first
+          />
+
+          {/* Chapter 01 · WHAT */}
+          <StoryChapter
+            kicker="01 · What it is"
+            title="A portfolio you can walk through."
+            body="The Lego Realm is a hand built LEGO world living inside this site. It is a small town on a single baseplate: a coffee shop, a modern house, ancient ruins, a run down cottage, and a minifig version of me to walk around as. Every building is a doorway. Step inside one and the realm opens a wing of my work."
+          />
+          <StoryFrame num="FR 01" scene="The realm" src="/assets/story/story_world_midday.jpg"
+            caption="The whole realm on one baseplate, seen at midday. Four buildings, a street of studs, and a seven minute sun." />
+          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
+            <StoryFrame num="FR 02" scene="The minifig" src="/assets/story/story_figure_front.jpg"
+              caption="The minifig is me. Denim legs, grey jacket, and the actual haircut, swapped in brick by brick." />
+            <StoryFrame num="FR 03" scene="Nightfall" src="/assets/story/story_lamp_night.jpg"
+              caption="When the sun goes down the lampposts wake up. The world is lit by its own day cycle, nothing is faked." />
+          </div>
+          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
+            <StoryFrame num="FR 04" scene="The coffee shop" src="/assets/story/story_shop_evening.jpg"
+              caption="The coffee shop at dusk. Walk through its door and it opens my professional work." />
+            <StoryFrame num="FR 05" scene="The NABU crystal" src="/assets/story/story_crystal_night.jpg"
+              caption="A blue crystal glowing in the ruins guards the fourth portal, NABU." />
+          </div>
+
+          {/* Chapter 02 · WHY */}
+          <StoryChapter
+            kicker="02 · Why I made it"
+            title="Because scrolling is not walking."
+            body="Most portfolios are lists. I wanted mine to be a place. I grew up building LEGO, and a brick world is the most honest picture of how I work: one piece at a time, everything snapped to a grid, nothing hidden behind the walls. So instead of telling you what I make, I built somewhere you can go and see it standing."
+          />
+          <StoryFrame num="FR 06" scene="Dusk on the plate" src="/assets/story/story_sunset.jpg"
+            caption="Dusk on the plate. Every hour of the day has its own light, and the loop never stops." />
+
+          {/* Chapter 03 · HOW */}
+          <StoryChapter
+            kicker="03 · How it was made"
+            title="Built brick by brick, then shipped to the browser."
+            body="Every structure began as real bricks in Blender, assembled stud by stud from my own builds. Each model is exported, compressed, and loaded by a custom Three.js engine that runs the realm right here in the browser. The whole world snaps to a true LEGO stud grid, collision is measured per brick, stairs carry you and walls stop you, and the sun completes a full day every seven minutes."
+          />
+          <StoryFrame num="FR 07" scene="The prop bench" src="/assets/story/story_blender_props.jpg"
+            caption="The prop bench in Blender. The Porsche, the treasure chest, the lamppost and the money bricks, staged before export." />
+          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
+            <StoryFrame num="FR 08" scene="Under the hood" src="/assets/story/story_blender_shop_wire.jpg"
+              caption="The coffee shop with its wireframe on. Every brick in the realm is a real modelled piece." />
+            <StoryFrame num="FR 09" scene="Edit mode" src="/assets/story/story_blender_hair.jpg"
+              caption="Shaping the hair in edit mode, vertex by vertex." />
+          </div>
+          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
+            <StoryFrame num="FR 10" scene="Mid assembly" src="/assets/story/story_blender_figure.jpg"
+              caption="The minifig mid assembly. The legs are missing because they were already out in the engine, learning to walk." />
+            <StoryFrame num="FR 11" scene="The ruins" src="/assets/story/story_blender_ruins.jpg"
+              caption="The ruins in Blender. The vines stayed, the flowers were stripped for the final build." />
+          </div>
+          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
+            <StoryFrame num="FR 12" scene="The modern house" src="/assets/story/story_blender_house.jpg"
+              caption="The modern house, garden and garage included. In the realm, its door leads to my About page." />
+            <StoryFrame num="FR 13" scene="The cottage" src="/assets/story/story_blender_rundown.jpg"
+              caption="The run down cottage and its vine, the newest corner of the realm." />
+          </div>
+
+          {/* Closing CTA */}
+          <StoryChapter
+            kicker="The end, almost"
+            title="Now walk it yourself."
+            body="Frames only get you so far. The realm is live on this site, day cycle running, doors unlocked."
+          />
+          <StoryFrame num="FR 14" scene="Keep walking" src="/assets/story/story_figure_back.jpg"
+            caption="Enough reading. The realm is open." />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.7, ease: [0.16,1,0.3,1] }}
+            style={{ display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap", margin: "44px 0 14vh" }}
+          >
+            {!isMobile && (
+              <a
+                href="/lego.html"
+                {...hover}
+                className="ss-contact-btn"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 10,
+                  padding: "16px 30px", borderRadius: 980,
+                  border: "1px solid rgba(245,242,237,.4)",
+                  color: "var(--white)", textDecoration: "none",
+                  fontSize: 13, fontWeight: 600, cursor: "none",
+                }}
+              >
+                <span>Enter My Lego Realm</span><span>→</span>
+              </a>
+            )}
+            <span
+              role="button" tabIndex={0}
+              onClick={() => onNavigate("work")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
+              {...hover}
               style={{
-                display: "inline-flex", alignItems: "center", gap: 10,
-                padding: "15px 28px", borderRadius: 980,
-                border: "1px solid rgba(245,242,237,.4)",
-                color: "var(--white)", textDecoration: "none",
-                fontSize: 13, fontWeight: 600, cursor: "none",
+                fontFamily: "'Space Mono', monospace",
+                fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
+                color: "rgba(245,242,237,.72)", textDecoration: "underline",
+                textUnderlineOffset: "4px", cursor: "none",
               }}
             >
-              <span>Enter My Lego Realm</span><span>→</span>
-            </a>
+              {isMobile ? "Browse the work" : "or browse the work"}
+            </span>
           </motion.div>
-        )}
+
+        </div>
       </div>
+    </motion.div>
+  );
+}
+
+/* One storyboard cell: numbered head strip, still, caption */
+function StoryFrame({ num, scene, src, caption }: { num: string; scene: string; src: string; caption: string }) {
+  return (
+    <motion.figure
+      className="ss-frame"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: 0.8, ease: [0.16,1,0.3,1] }}
+    >
+      <div className="ss-frame-head"><span>{num}</span><span>{scene}</span></div>
+      <img className="ss-frame-img" src={src} alt={scene} loading="lazy" decoding="async" />
+      <figcaption>{caption}</figcaption>
+    </motion.figure>
+  );
+}
+
+/* Storyboard chapter header: mono kicker, display title, serif body */
+function StoryChapter({ kicker, title, body, first }: { kicker: string; title: string; body: string; first?: boolean }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 26 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{ duration: 0.8, ease: [0.16,1,0.3,1] }}
+      style={{ padding: first ? "13vh 0 46px" : "15vh 0 46px" }}
+    >
+      <div className="ss-story-kicker">{kicker}</div>
+      <h2 style={{
+        marginTop: 14,
+        fontSize: "clamp(34px, 4.6vw, 62px)",
+        lineHeight: 1.04, letterSpacing: "-0.015em", fontWeight: 700,
+        color: "var(--white)", maxWidth: 820,
+      }}>
+        {title}
+      </h2>
+      <p style={{ marginTop: 20, maxWidth: 660, fontSize: 18, lineHeight: 1.65, color: "rgba(245,242,237,.78)" }}>
+        {body}
+      </p>
     </motion.div>
   );
 }

@@ -65,7 +65,6 @@
 <body>
   <div id="shopbg"></div>
   <canvas id="c"></canvas>
-  <div class="hud tl"><div class="t">LEGO REALM</div><div class="s">Brick build · preview</div></div>
   <a id="leave" href="/">Leave the Realm</a>
   <div class="hint"><b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; drag to look</div>
   <div id="loader"><div class="m">BUILDING…</div></div>
@@ -584,6 +583,8 @@
   loadProp('./assets/porsche.glb', {name:'porsche', pos:[20.6,4.4], y:0, rotY:-0.015, targetLen:5.6, solid:true});
   // Skull on the ground left of the ruins doorway, against the wall, face out. Same size as the figure's head, stamped in.
   loadProp('./assets/skull.glb',   {name:'skull',   pos:[-2.7,5.1], y:-0.03, rotY:Math.PI, targetH:0.46});
+  // LEGO rat on the ground right of the same doorway (mirror of the skull's spot), scurrying along the wall. Native blend size, stamped in.
+  loadProp('./assets/rat.glb',     {name:'rat',     pos:[0.95,5.1], y:-0.03, rotY:Math.PI/2});
   // Tardis stamped into the ruins balcony (the old lower-flower spot) + the NABU crystal on its top
   loadProp('./assets/tardis.glb',  {name:'tardis',  pos:[2.0,5.55], y:2.97, rotY:0, targetH:1.9,   // balcony floor 3.0 (re-measured), stamped 0.03 in, clear of both railings
     onload:(holder,m)=>{ // crystal sits on the Tardis top; deep LEGO blue with a soft inner glow (it is the NABU portal)

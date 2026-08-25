@@ -18,6 +18,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "--port", "5209", "--strictPort"],
       "port": 5209
+    },
+    {
+      "name": "dev-story",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5223", "--strictPort"],
+      "port": 5223
     }
   ]
 }
