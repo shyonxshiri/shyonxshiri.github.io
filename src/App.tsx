@@ -879,7 +879,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           >
             here
           </span>{" "}
-          to browse my site{!isMobile ? ", or the button below to step into My Space." : "."}
+          to browse my site{!isMobile ? ", or the button below to step into My Lego Realm." : "."}
         </motion.p>
 
         {/* Ghost: enter the 3D studio (desktop only) */}
@@ -901,7 +901,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 fontSize: 13, fontWeight: 600, cursor: "none",
               }}
             >
-              <span>Enter My Space</span><span>→</span>
+              <span>Enter My Lego Realm</span><span>→</span>
             </a>
           </motion.div>
         )}

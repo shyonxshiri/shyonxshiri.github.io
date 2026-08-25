@@ -3,45 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>My Space — Brick Build</title>
+<title>My Lego Realm</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{height:100%;overflow:hidden;background:#0a0e17;font-family:'Space Mono',monospace;color:#f2f4f8;}
+  html,body{height:100%;overflow:hidden;background:#12151c;font-family:'Nunito',sans-serif;color:#f6f4ef;}
   canvas{display:block;position:fixed;inset:0;touch-action:none;}
   .hud{position:fixed;z-index:20;pointer-events:none;}
-  .tl{top:22px;left:26px;}
-  .tl .t{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;line-height:.9;}
-  .tl .s{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8fb7ff;margin-top:4px;}
-  .hint{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;font-size:10px;letter-spacing:2px;text-transform:uppercase;
-    color:#a9b2c4;background:rgba(10,14,23,.6);border:1px solid rgba(255,255,255,.12);border-radius:980px;padding:9px 18px;backdrop-filter:blur(8px);}
-  .hint b{color:#8fb7ff;}
-  #loader{position:fixed;inset:0;z-index:50;background:#0a0e17;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease;}
+  .tl{top:20px;left:24px;}
+  .tl .t{font-family:'Fredoka',sans-serif;font-weight:700;font-size:27px;letter-spacing:.5px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.35);}
+  .tl .s{font-weight:800;font-size:11px;letter-spacing:1px;color:#ffd23f;margin-top:3px;}
+  kbd,.key{display:inline-block;font-family:'Nunito',sans-serif;font-weight:800;font-style:normal;color:#ffd23f;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:7px;padding:0 7px;line-height:1.7;}
+  .hint{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:20;font-weight:700;font-size:12.5px;white-space:nowrap;
+    color:#d9dce2;background:rgba(18,21,28,.68);border:1px solid rgba(255,255,255,.14);border-radius:980px;padding:9px 20px;backdrop-filter:blur(8px);}
+  .hint b{font-family:'Nunito',sans-serif;font-weight:800;color:#ffd23f;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:7px;padding:0 7px;}
+  #loader{position:fixed;inset:0;z-index:50;background:#12151c;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease;}
   #loader.hide{opacity:0;pointer-events:none;}
-  #loader .m{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;}
-  #controls{position:fixed;inset:0;z-index:60;background:rgba(8,11,20,.82);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;transition:opacity .5s ease;}
+  #loader .m{font-family:'Fredoka',sans-serif;font-weight:600;font-size:46px;}
+  #controls{position:fixed;inset:0;z-index:60;background:rgba(12,14,20,.82);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;transition:opacity .5s ease;}
   #controls.hide{opacity:0;pointer-events:none;}
-  #controls .card{width:min(90vw,400px);padding:32px 38px;background:rgba(18,24,38,.92);border:1px solid rgba(255,255,255,.12);border-radius:18px;text-align:center;}
-  #controls h2{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;line-height:1;}
-  #controls .sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8fb7ff;margin:6px 0 20px;}
-  #controls .row{display:flex;justify-content:space-between;font-size:13px;color:#cdd6e6;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.07);}
-  #controls .row b{color:#fff;}
-  #controls .go{margin-top:24px;padding:12px 36px;background:#2e7dff;color:#fff;border:none;border-radius:980px;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
-  #controls .go:hover{background:#4a90ff;}
+  #controls .card{width:min(90vw,410px);padding:32px 38px 30px;background:rgba(26,29,38,.95);border:1px solid rgba(255,255,255,.12);border-radius:24px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45);}
+  #controls h2{font-family:'Fredoka',sans-serif;font-weight:700;font-size:34px;letter-spacing:.5px;line-height:1;}
+  #controls .sub{font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffd23f;margin:7px 0 20px;}
+  #controls .row{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13.5px;color:#cfd3da;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.07);}
+  #controls .row b{font-family:'Nunito',sans-serif;font-weight:800;color:#ffd23f;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:7px;padding:1px 8px;}
+  #controls .go{margin-top:26px;padding:12px 44px;background:#ffcf00;color:#20222a;border:none;border-radius:14px;
+    font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px;letter-spacing:.5px;cursor:pointer;
+    box-shadow:0 4px 0 #c79e00, 0 8px 18px rgba(0,0,0,.35);transition:transform .08s ease, box-shadow .08s ease, background .15s ease;}
+  #controls .go:hover{background:#ffda33;}
+  #controls .go:active{transform:translateY(3px);box-shadow:0 1px 0 #c79e00, 0 4px 10px rgba(0,0,0,.3);}
+  #leave{position:fixed;top:20px;right:24px;z-index:30;font-family:'Nunito',sans-serif;font-weight:800;font-size:12.5px;
+    color:#f6f4ef;text-decoration:none;background:rgba(18,21,28,.68);border:1px solid rgba(255,255,255,.16);border-bottom-width:2px;
+    border-radius:980px;padding:8px 18px;backdrop-filter:blur(8px);transition:background .15s ease, color .15s ease;}
+  #leave:hover{background:rgba(255,207,0,.92);color:#20222a;border-color:rgba(255,207,0,.9);}
   #fade{position:fixed;inset:0;background:#05070d;opacity:0;pointer-events:none;transition:opacity .45s ease;z-index:40;}
   #fade.on{opacity:1;}
-  #prompt{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:25;font-size:11px;letter-spacing:2px;
-    text-transform:uppercase;color:#fff;background:rgba(10,14,23,.72);border:1px solid rgba(255,255,255,.16);border-radius:980px;
-    padding:10px 20px;backdrop-filter:blur(8px);opacity:0;transition:opacity .18s ease;pointer-events:none;white-space:nowrap;}
+  #prompt{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:25;font-weight:700;font-size:13px;
+    color:#fff;background:rgba(18,21,28,.74);border:1px solid rgba(255,255,255,.16);border-radius:980px;
+    padding:10px 22px;backdrop-filter:blur(8px);opacity:0;transition:opacity .18s ease;pointer-events:none;white-space:nowrap;}
   #prompt.on{opacity:1;}
-  #prompt b{color:#8fb7ff;}
-  #viewer{position:fixed;inset:0;z-index:45;background:rgba(5,7,13,.93);display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;}
+  #prompt b{font-family:'Nunito',sans-serif;font-weight:800;color:#ffd23f;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:7px;padding:0 7px;}
+  #viewer{position:fixed;inset:0;z-index:45;background:rgba(7,9,14,.93);display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;}
   #viewer.on{display:flex;}
-  #viewer .card{max-width:min(860px,92vw);width:100%;background:#0c1120;border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden;}
-  #viewer .media{width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:60px;letter-spacing:2px;color:#0c1120;}
-  #viewer .cap{padding:16px 20px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#a9b2c4;}
-  #viewer .x{position:fixed;top:22px;right:24px;font-size:12px;letter-spacing:2px;color:#a9b2c4;cursor:pointer;text-transform:uppercase;}
+  #viewer .card{max-width:min(860px,92vw);width:100%;background:#141720;border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden;}
+  #viewer .media{width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:56px;color:#141720;}
+  #viewer .cap{padding:16px 20px;font-weight:800;font-size:12.5px;letter-spacing:1px;color:#b9bdc6;}
+  #viewer .cap .d{margin-top:7px;font-weight:500;font-size:12px;letter-spacing:.3px;line-height:1.55;color:#8f95a3;}
+  #viewer .cap a{display:inline-block;margin:10px 16px 0 0;color:#38bdf8;font-size:12px;letter-spacing:1px;
+    text-decoration:none;border-bottom:1px solid rgba(56,189,248,.45);}
+  #viewer .x{position:fixed;top:22px;right:24px;font-weight:800;font-size:13px;color:#b9bdc6;cursor:pointer;}
   #c{z-index:1;}
   #shopbg{position:fixed;inset:0;z-index:0;background:#0c1120 center/cover no-repeat;filter:blur(20px) brightness(.68) saturate(1.15);opacity:0;transition:opacity .55s ease;pointer-events:none;transform:scale(1.09);}
   #shopbg.on{opacity:1;}
@@ -50,11 +65,12 @@
 <body>
   <div id="shopbg"></div>
   <canvas id="c"></canvas>
-  <div class="hud tl"><div class="t">MY SPACE</div><div class="s">Brick build · preview</div></div>
+  <div class="hud tl"><div class="t">LEGO REALM</div><div class="s">Brick build · preview</div></div>
+  <a id="leave" href="/">Leave the Realm</a>
   <div class="hint"><b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; drag to look</div>
   <div id="loader"><div class="m">BUILDING…</div></div>
   <div id="controls"><div class="card">
-    <h2>MY SPACE</h2><div class="sub">Controls</div>
+    <h2>LEGO REALM</h2><div class="sub">Controls</div>
     <div class="row"><span>Move</span><b>WASD / Arrows</b></div>
     <div class="row"><span>Run</span><b>Shift</b></div>
     <div class="row"><span>Jump</span><b>Space</b></div>
@@ -70,10 +86,24 @@
   <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
   <script>
+  // kick the display fonts loading immediately so canvas-drawn labels (signs, panels) use them
+  if(document.fonts){ document.fonts.load('600 40px "Fredoka"'); document.fonts.load('800 14px "Nunito"'); }
   const canvas = document.getElementById('c');
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0c1120);
-  scene.fog = new THREE.Fog(0x0c1120, 18, 46);
+  scene.fog = new THREE.Fog(0x0c1120, 21, 42);   // clear across the main space; the fade only starts behind the structures
+  // SKY DOME: linear fog only tints geometry, so without this the sky stays a flat clear color and
+  // the "fog" reads as a ground gradient with a hard horizon line. The dome paints the fog color at
+  // the horizon and blends it up into the sky color, so the fog visibly reaches into the sky.
+  const skyDome=new THREE.Mesh(
+    new THREE.SphereGeometry(150, 24, 16),
+    new THREE.ShaderMaterial({ side:THREE.BackSide, depthWrite:false, fog:false,
+      uniforms:{ topColor:{value:new THREE.Color(0x9fc4e8)}, bottomColor:{value:new THREE.Color(0xbcd0e0)},
+                 offset:{value:6.0}, exponent:{value:0.55} },
+      vertexShader:'varying vec3 vWorldPosition; void main(){ vec4 wp=modelMatrix*vec4(position,1.0); vWorldPosition=wp.xyz; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+      fragmentShader:'uniform vec3 topColor; uniform vec3 bottomColor; uniform float offset; uniform float exponent; varying vec3 vWorldPosition;\n'+
+        'void main(){ float h=normalize(vWorldPosition+vec3(0.0,offset,0.0)).y; gl_FragColor=vec4(mix(bottomColor,topColor,max(pow(max(h,0.0),exponent),0.0)),1.0); }' }));
+  scene.add(skyDome);
 
   const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 200);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
@@ -97,20 +127,41 @@
   scene.add(key); scene.add(key.target);
   const rim = new THREE.DirectionalLight(0x5a86ff, 0.5); rim.position.set(-7,6,-6); scene.add(rim);
 
-  // ── day cycle: a random time of day each time the space opens ──
+  // ── day cycle: rotates continuously on a 7 minute loop (morning→midday→evening→night→morning) ──
+  // At full night the sun is OFF (si 0) and the rim is soft, so no stray glint/reflection pools on
+  // the ground; every value below is smoothly interpolated between neighbors, so lights fade in/out
+  // slowly as the cycle turns instead of snapping.
   const TIMES=[
     {n:'morning', sky:0xbcd6ea, fog:0xcdd9e6, sun:0xffe6bd, si:1.35, hs:0xcfe0ff, hg:0x54627a, hi:0.72, amb:0.28, exp:1.16, off:[11,7,8],  rim:0x8fb0ff, ri:0.40, lamp:0.15},
     {n:'midday',  sky:0x9fc4e8, fog:0xbcd0e0, sun:0xfff1cf, si:1.70, hs:0xbfd8ff, hg:0x586274, hi:0.82, amb:0.30, exp:1.15, off:[6,15,6],  rim:0x7aa0ff, ri:0.35, lamp:0.0},
     {n:'evening', sky:0x452f42, fog:0x6a3c3e, sun:0xff9040, si:1.30, hs:0xffb488, hg:0x33223c, hi:0.45, amb:0.18, exp:1.10, off:[14,4,3],  rim:0xff8a5a, ri:0.40, lamp:0.9},
-    {n:'night',   sky:0x070a14, fog:0x0a0e1c, sun:0x8aa0d0, si:0.42, hs:0x2a3a60, hg:0x0a0e18, hi:0.30, amb:0.11, exp:0.98, off:[9,11,-6], rim:0x4a70c0, ri:0.45, lamp:1.6},
+    {n:'night',   sky:0x070a14, fog:0x0a0e1c, sun:0x8aa0d0, si:0.0,  hs:0x2a3a60, hg:0x0a0e18, hi:0.30, amb:0.11, exp:0.98, off:[9,11,-6], rim:0x4a70c0, ri:0.10, lamp:1.6},
   ];
-  const TOD=TIMES[Math.floor(Math.random()*TIMES.length)];
-  scene.background.set(TOD.sky); scene.fog.color.set(TOD.fog);
-  key.color.set(TOD.sun); key.intensity=TOD.si;
-  hemi.color.set(TOD.hs); hemi.groundColor.set(TOD.hg); hemi.intensity=TOD.hi;
-  amb.intensity=TOD.amb; renderer.toneMappingExposure=TOD.exp;
-  rim.color.set(TOD.rim); rim.intensity=TOD.ri;
-  const SUN_OFF=TOD.off;   // sun-direction offset the follow-light uses in the loop
+  const CYCLE_SECS=420;                          // full day→night→day loop = 7 minutes
+  let dayT=Math.random();                        // random time of day on load, then it rotates
+  const SUN_OFF=[0,0,0];                         // sun-direction offset the follow-light uses in the loop
+  const lampNodes=[];                            // {pl,bulb} per lamppost, updated live by the cycle
+  const _tc1=new THREE.Color(), _tc2=new THREE.Color();
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  function applyTOD(){
+    const p=dayT*TIMES.length, i=Math.floor(p)%TIMES.length, j=(i+1)%TIMES.length;
+    const f=p-Math.floor(p), t=f*f*(3-2*f);      // smoothstep: linger near each keyframe, ease between
+    const A=TIMES[i], B=TIMES[j];
+    scene.background.copy(_tc1.set(A.sky).lerp(_tc2.set(B.sky),t));
+    scene.fog.color.copy(_tc1.set(A.fog).lerp(_tc2.set(B.fog),t));
+    key.color.copy(_tc1.set(A.sun).lerp(_tc2.set(B.sun),t)); key.intensity=lerp(A.si,B.si,t);
+    hemi.color.copy(_tc1.set(A.hs).lerp(_tc2.set(B.hs),t));
+    hemi.groundColor.copy(_tc1.set(A.hg).lerp(_tc2.set(B.hg),t)); hemi.intensity=lerp(A.hi,B.hi,t);
+    amb.intensity=lerp(A.amb,B.amb,t); renderer.toneMappingExposure=lerp(A.exp,B.exp,t);
+    rim.color.copy(_tc1.set(A.rim).lerp(_tc2.set(B.rim),t)); rim.intensity=lerp(A.ri,B.ri,t);
+    skyDome.material.uniforms.topColor.value.copy(scene.background);      // sky above
+    skyDome.material.uniforms.bottomColor.value.copy(scene.fog.color);    // fog at the horizon, blending upward
+    for(let k=0;k<3;k++) SUN_OFF[k]=lerp(A.off[k],B.off[k],t);
+    const li=lerp(A.lamp,B.lamp,t), lit=li>0.08;
+    for(const L of lampNodes){ L.pl.intensity=li*1.4; L.bulb.material.color.set(lit?(li>0.5?0xffe6a0:0xd8b45a):0x4a3d1e); }
+    return li;
+  }
+  applyTOD();
 
   function plastic(color, rough){ return new THREE.MeshStandardMaterial({ color, roughness: rough==null?0.42:rough, metalness:0.0 }); }
 
@@ -119,7 +170,7 @@
   const snap=v=>Math.round(v/PITCH)*PITCH;
   // Collision is a fine occupancy grid sampled from the ACTUAL geometry at body height —
   // so only the physical bricks/pole are solid (walk the open patio, right up to the walls).
-  const solidCells=new Set(), shopCells=new Set(), ruinsCells=new Set(), houseCells=new Set(), OCS=0.16, OY_LO=0.30, OY_HI=1.5;
+  const solidCells=new Set(), shopCells=new Set(), ruinsCells=new Set(), houseCells=new Set(), rdhCells=new Set(), OCS=0.16, OY_LO=0.30, OY_HI=1.5;
   const _t1=new THREE.Vector3(),_t2=new THREE.Vector3(),_t3=new THREE.Vector3();
   function rasterizeSolid(root, extra){
     root.updateWorldMatrix(true,true);
@@ -137,13 +188,22 @@
   const PRAD=0.26;                                   // player half-width
   function cell(x,z){ return solidCells.has(Math.floor(x/OCS)*100003+Math.floor(z/OCS)); }
   // camera-collision only cares about the big buildings — small props (trees/flowers) shouldn't pull the camera in
-  function camCell(x,z){ const k=Math.floor(x/OCS)*100003+Math.floor(z/OCS); return shopCells.has(k)||houseCells.has(k)||ruinsCells.has(k); }
+  function camCell(x,z){ const k=Math.floor(x/OCS)*100003+Math.floor(z/OCS); return shopCells.has(k)||houseCells.has(k)||ruinsCells.has(k)||rdhCells.has(k); }
   function blockedAt(x,z){ return cell(x,z)||cell(x+PRAD,z)||cell(x-PRAD,z)||cell(x,z+PRAD)||cell(x,z-PRAD); }
+  // tiny solid disc for small props (flowers): footprint-proportionate collision that
+  // blocks the player but is NOT in the building cell sets, so the camera ignores it
+  function solidifyDisc(x,z,r){ const x0=Math.floor((x-r)/OCS), x1=Math.floor((x+r)/OCS), z0=Math.floor((z-r)/OCS), z1=Math.floor((z+r)/OCS);
+    for(let cx=x0;cx<=x1;cx++) for(let cz=z0;cz<=z1;cz++){ const wx=(cx+0.5)*OCS, wz=(cz+0.5)*OCS;
+      if((wx-x)*(wx-x)+(wz-z)*(wz-z)<=r*r) solidCells.add(cx*100003+cz); } }
 
   // ── walkable height map (stairs / upper floors, e.g. the ruins) ──
   // Each cell stores EVERY up-facing surface level (ground, each stair, the 2nd floor), so a
   // roof overhead doesn't hide the floor. We then pick the surface reachable from the player.
-  const floorH=new Map(), MAXSTEP=1.55;   // tall enough for the ruins' chunky steps; walls (no reachable top) still block
+  const floorH=new Map(), MAXSTEP=1.55, LOWSTEP=0.35;   // MAXSTEP only on the real staircases; LOWSTEP is under one brick (0.44) so walls/rubble can't be walked up
+  // the ruins' actual staircases [x0,x1,z0,z1]: ground -> balcony (winding, mid-courtyard) and balcony -> top (back wall)
+  const STAIR_ZONES=[[-2.0,0.6,9.2,12.9],[-2.6,1.6,13.7,15.8]];
+  function inStair(x,z){ for(let i=0;i<STAIR_ZONES.length;i++){ const s=STAIR_ZONES[i];
+    if(x>=s[0]&&x<=s[1]&&z>=s[2]&&z<=s[3]) return true; } return false; }
   const _e1=new THREE.Vector3(),_e2=new THREE.Vector3(),_nrm=new THREE.Vector3();
   function floorKey(x,z){ return Math.floor(x/OCS)*100003+Math.floor(z/OCS); }
   function addSurf(k,y){ let a=floorH.get(k); if(!a){ a=[]; floorH.set(k,a); }
@@ -168,7 +228,7 @@
       for(let i=0;i<a.length;i++){ const s=a[i]; if(s<=maxY+0.02 && (best===null||s>best)) best=s; } }
     return best; }
   function stepOne(px,pz){ if(!cell(px,pz)) return false;                       // no body-height geometry → free
-    return surfaceBelow(px,pz, player.position.y+MAXSTEP)===null; }             // solid with no reachable surface → wall
+    return surfaceBelow(px,pz, player.position.y+(inStair(px,pz)?MAXSTEP:LOWSTEP))===null; }  // solid with no reachable surface → wall
   function stepBlocked(x,z){ return stepOne(x,z)||stepOne(x+PRAD,z)||stepOne(x-PRAD,z)||stepOne(x,z+PRAD)||stepOne(x,z-PRAD); }
   // prompt shows only within ~2 studs of the shop's actual barrier
   function nearShopBarrier(x,z){ const R=2*PITCH+PRAD;
@@ -183,7 +243,7 @@
     for(let i=0;i<wS;i++)for(let j=0;j<dS;j++){ const s=new THREE.Mesh(studGeo,mat); s.castShadow=s.receiveShadow=true;
       s.position.set(-w/2+(i+0.5)*U, h+0.02, -d/2+(j+0.5)*U); g.add(s);} return g; }
   function label(t){ const c=document.createElement('canvas'); c.width=256;c.height=64; const x=c.getContext('2d');
-    x.fillStyle='#0c1120'; x.fillRect(0,0,256,64); x.fillStyle='#ffd23f'; x.font='40px "Bebas Neue",sans-serif';
+    x.fillStyle='#0c1120'; x.fillRect(0,0,256,64); x.fillStyle='#ffd23f'; x.font='600 36px "Fredoka",sans-serif';
     x.textAlign='center'; x.textBaseline='middle'; x.fillText(t.toUpperCase(),128,36); const tx=new THREE.CanvasTexture(c); tx.anisotropy=4; return tx; }
   function building(x,z,ry,name,cA,cB){ const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=ry;
     const mA=plastic(cA),mB=plastic(cB),mG=plastic(0x8b8f96);
@@ -257,7 +317,9 @@
     function onPad(x,z){
       if(x>-13.5 && x<-6.4 && z>-17.6 && z<-7.4) return true;   // coffee shop
       if(x>-8.4  && x<6.3  && z>2.7  && z<17.2)   return true;   // ruins (grey under the whole structure)
-      if(x>20    && x<31.3 && z>-7   && z<7.3)     return true;   // mansion foundation (no green seep at the door)
+      if(x>21.7  && x<31.0 && z>-7   && z<6.95)    return true;   // mansion + garage floor, tucked fully UNDER the walls (no one-stud grey sliver peeking out)
+      // (the old driveway lane x 16.5..21.7 is gone: the Porsche parks on the grass beside the garage)
+      if(x>9.2   && x<11.5  && z>=-8.6 && z<-2.4)  return true;   // 6-stud path from the walk to the run-down house's door (no pad, house sits on the grass)
       return false; }
     // 6-stud-wide grey sidewalk loop through/near every building
     const SW=[[-9.975,-6],[-4.4,-3],[0,-3],[4.2,-3],[14,-1],[20,0],[14,5],[0,6],[-9.975,2]];
@@ -267,11 +329,23 @@
     function onWalk(x,z){ for(let i=0;i<SW.length;i++){ const a=SW[i], b=SW[(i+1)%SW.length];
       if(seg(x,z,a[0],a[1],b[0],b[1])<HALFW) return true; } return false; }
     const grey=[], green=[];
-    for(let i=0;i<NX;i++)for(let j=0;j<NZ;j++){ const x=(i-(NX-1)/2)*sx+OX, z=(j-(NZ-1)/2)*sz;
+    // APRON: extra rings of green tiles past the old rim, so the land continues under the fog
+    // instead of cutting off at a plate edge with a drop to nothing (player bounds unchanged)
+    const APRON=8;   // shorter border trim: enough land past the rim to reach the closer fog, no more
+    for(let i=-APRON;i<NX+APRON;i++)for(let j=-APRON;j<NZ+APRON;j++){ const x=(i-(NX-1)/2)*sx+OX, z=(j-(NZ-1)/2)*sz;
       ((onPad(x,z)||onWalk(x,z))? grey : green).push([x,z]); }
     function field(list, material){ const im=new THREE.InstancedMesh(geo, material, list.length); im.castShadow=im.receiveShadow=true;
       const mm=new THREE.Matrix4(); list.forEach((p,k)=>{ mm.setPosition(p[0],0,p[1]); im.setMatrixAt(k,mm); }); im.instanceMatrix.needsUpdate=true; scene.add(im); return im; }
     field(grey, matGrey); field(green, matGreen);
+    // FAR LAND: a huge matching-green sheet just under the tiles, reaching well past the fog's
+    // full-opacity distance from anywhere on the map, so the horizon is always solid ground
+    // fading into fog and never reveals an edge or the void below
+    const farMat=new THREE.MeshStandardMaterial({ roughness:1, metalness:0 });
+    farMat.color=matGreen.color;                      // share the Color instance so the mansion grass sync recolors both
+    const farLand=new THREE.Mesh(new THREE.PlaneGeometry(360,360), farMat);
+    // sits fully BELOW the tiles (their tops are at y 0, bodies hang below): putting it inside the
+    // tile bodies flattens the whole ground to a sheet with stud tips poking through
+    farLand.rotation.x=-Math.PI/2; farLand.position.set(OX,-(bb.max.y-bb.min.y)-0.01,0); farLand.receiveShadow=true; scene.add(farLand);
     loadedGround=true; ready();
   }, undefined, e=>{ console.warn('ground load failed', e); loadedGround=true; ready(); });
 
@@ -288,27 +362,32 @@
     // LEGS SWAP — Bizarro's pants replace Jesse's legs, bound to the hip pivots so the walk still animates
     gltf.load('./assets/legs.glb', (lg)=>{
       const legs=lg.scene; legs.traverse(o=>{ if(o.isMesh){ o.castShadow=o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+      const inv=new THREE.Matrix4().copy(figBody.matrixWorld).invert();
+      // measure the OLD pants (legs + hip block) BEFORE hiding them: the denim takes exactly their place,
+      // same size and seat, only the look changes
+      const oldB=new THREE.Box3(), tB=new THREE.Box3();
+      [hipL,hipR].forEach(p=>{ if(p) p.traverse(o=>{ if(o.isMesh){ tB.setFromObject(o).applyMatrix4(inv); oldB.union(tB); } }); });
+      model.traverse(o=>{ if(o.isMesh && /Base1346/.test(o.name)){ tB.setFromObject(o).applyMatrix4(inv); oldB.union(tB); } });
       [hipL,hipR].forEach(p=>{ if(p) p.traverse(o=>{ if(o.isMesh) o.visible=false; }); });       // hide old legs
       model.traverse(o=>{ if(o.isMesh && /Base1346/.test(o.name)) o.visible=false; });             // hide old hip block
-      const inv=new THREE.Matrix4().copy(figBody.matrixWorld).invert();
       figBody.add(legs); legs.updateWorldMatrix(true,true);
       let lb=new THREE.Box3().setFromObject(legs).applyMatrix4(inv);
-      const FEET=0.31, HIP=0.57, TOP=0.72;                       // figBody-local targets (from the Jesse rig)
-      legs.scale.multiplyScalar((TOP-FEET)/((lb.max.y-lb.min.y)||1));
+      legs.scale.multiplyScalar((oldB.max.y-oldB.min.y)/((lb.max.y-lb.min.y)||1));   // same height as the old pants
       legs.updateWorldMatrix(true,true); lb=new THREE.Box3().setFromObject(legs).applyMatrix4(inv);
-      legs.position.x += -(lb.min.x+lb.max.x)/2;                 // centre on the body
-      legs.position.z += -0.099-(lb.min.z+lb.max.z)/2;          // hip z
-      legs.position.y += FEET-lb.min.y;                          // feet on the ground
+      legs.position.x += (oldB.min.x+oldB.max.x)/2-(lb.min.x+lb.max.x)/2;            // same centre as the old pants
+      legs.position.z += (oldB.min.z+oldB.max.z)/2-(lb.min.z+lb.max.z)/2;
+      legs.position.y += oldB.min.y-lb.min.y;                                        // feet exactly where the old feet were
       legs.updateWorldMatrix(true,true);
       const parts=[]; legs.traverse(o=>{ if(o.isMesh){ const b=new THREE.Box3().setFromObject(o).applyMatrix4(inv); parts.push({o,cx:(b.min.x+b.max.x)/2,cy:(b.min.y+b.max.y)/2}); } });
-      parts.forEach(p=>{ if(p.cy>HIP-0.02) return;               // waist stays with the body
+      const WAIST_CUT=oldB.min.y+0.66*(oldB.max.y-oldB.min.y);   // upper third (waist band) stays with the body
+      parts.forEach(p=>{ if(p.cy>WAIST_CUT) return;              // waist stays with the body
         if(p.cx<0 && hipL) hipL.attach(p.o); else if(hipR) hipR.attach(p.o); });   // legs swing on the hips
       window.__legs=legs;
     }, undefined, e=>{ console.warn('legs load failed', e); });
     // HAIR — Bizarro's hairpiece, snapped onto the figure's head (moves with the figure)
     gltf.load('./assets/hair.glb', (hg)=>{
       const hair=hg.scene;
-      hair.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material){ o.material.metalness=0; o.material.color=new THREE.Color(0x141416); } } });
+      hair.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });   // dark brown + smooth shading baked into hair.glb
       model.updateWorldMatrix(true,true);
       const inv=new THREE.Matrix4().copy(model.matrixWorld).invert();
       const headNode=model.getObjectByName('Inner-Node-jesse_dot_io-7');
@@ -373,12 +452,14 @@
       if(x>-14 && x<-6 && z>-18 && z<-7) return false;   // shop
       if(x>20 && x<32 && z>-8 && z<8)    return false;   // mansion
       if(x>-8.5 && x<6.4 && z>2.5 && z<17.4) return false;   // ruins
+      if(x>4.5 && x<16 && z>-18 && z<-7.5)  return false;   // run-down house
       if(Math.abs(x)<3 && Math.abs(z)<3) return false;   // keep spawn clear
       for(let i=0;i<placed.length;i++) if(Math.hypot(x-placed[i][0],z-placed[i][1])<5.5) return false;  // spacing
       return true; }
     // irregular scatter on the outer grass (off the central sidewalk loop) with varied spacing
-    const cand=[[-15.3,-12.5],[-15.6,-5],[-13.8,3.5],[-15,11.5],[-8.5,15],[-2,-15.2],[6.5,-14.5],[13.5,-14.8],
-                [21,-13.5],[28.5,-14],[31,-3.5],[30.5,6.5],[31.2,13],[10.5,13.5],[16.5,12]];
+    const cand=[[-15.3,-12.5],[-15.6,-5],[-13.8,3.5],[-15,11.5],[-8.5,15],[-2,-15.2],
+                [21,-13.5],[28.5,-14],[31,-3.5],[30.5,6.5],[31.2,13],[10.5,13.5],[16.5,12],
+                [24.3,15.3],[2.6,-11.5],[15.6,-5.4]];   // fill-ins: SE corner grass, south-central grass, pocket between the walk and the run-down house lawn
     cand.forEach(([px,pz])=>{ if(!treeOK(px,pz)) return; placed.push([px,pz]);
       const sc=s*(0.82+Math.random()*0.4);                          // scale variation
       const t=proto.clone(true); t.scale.setScalar(sc); t.updateMatrixWorld(true);
@@ -404,24 +485,62 @@
     window.__ruins=ru; window.__ruinsHolder=ruinsHolder;
   }, undefined, e=>{ console.warn('ruins load failed', e); });
 
-  // FLOWERS — clusters copied from the mansion/ruins gardens, stud-snapped across the grass
+  // RUN-DOWN HOUSE, an old brick house on the north grass. Native 0.369 stud pitch,
+  // stamped onto its grey pad, with a 6-stud grey path connecting it to the walk.
+  const rdhHolder=new THREE.Group();
+  rdhHolder.position.set(snap(10.3), -0.15, snap(-12.93)); // centered on the path, pushed to the plate rim (back face -17.39, rim -17.73, nothing hangs off)
+  rdhHolder.rotation.y=-Math.PI/2;                           // front door + porch face the walk
+  scene.add(rdhHolder);
+  gltf.load('./assets/rundown_house.glb', (g)=>{
+    const h=g.scene;
+    h.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false;
+      if(o.material){ o.material.metalness=0; if(o.material.roughness!=null) o.material.roughness=Math.min(0.6,o.material.roughness||0.5);
+        // the run-down house alone sits deep in the fog: its own fog ramp starts much closer,
+        // so it reads faded/haunted while the rest of the space stays clear
+        o.material.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace(
+          'smoothstep( fogNear, fogFar, fogDepth )',
+          'smoothstep( fogNear*0.2, fogFar*0.45, fogDepth )'); };
+        o.material.needsUpdate=true; } } });
+    h.updateMatrixWorld(true);
+    let box=new THREE.Box3().setFromObject(h);
+    h.position.x-=(box.min.x+box.max.x)/2; h.position.z-=(box.min.z+box.max.z)/2; h.position.y-=box.min.y;
+    rdhHolder.add(h); rasterizeSolid(rdhHolder, rdhCells);   // solid walls only, walk right up to them
+    window.__rdh=h; window.__rdhHolder=rdhHolder;
+  }, undefined, e=>{ console.warn('run-down house load failed', e); });
+
+  // FLOWERS — clusters copied from the mansion/ruins gardens, stud-snapped across the grass.
+  // Every planted cluster gets a small solid disc proportionate to its own footprint
+  // (blocks the player, ignored by the camera). All spots sit on open grass, clear of
+  // the grey sidewalks/pads and well away from the buildings.
   gltf.load('./assets/flowers.glb', (g)=>{
     const proto=g.scene;
     proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
-    const pairs=[[-14,-6],[13,-13],[-13,12],[30,11],[8,3]];   // ≤5 pairs, scattered with variation
-    pairs.forEach(([px,pz],i)=>{ for(let j=0;j<2;j++){ const f=proto.clone(true);
+    function plant(px,pz,rot,sc){ const f=proto.clone(true); f.scale.setScalar(sc); f.updateMatrixWorld(true);
       const b=new THREE.Box3().setFromObject(f);
       f.position.x-=(b.min.x+b.max.x)/2; f.position.z-=(b.min.z+b.max.z)/2; f.position.y-=b.min.y;
-      const grp=new THREE.Group(); grp.position.set(snap(px+j*0.74),0,snap(pz+(j?0.74:0))); grp.rotation.y=((i*2+j)%4)*Math.PI/2; grp.add(f); scene.add(grp); } });
+      const grp=new THREE.Group(); grp.position.set(snap(px),0,snap(pz)); grp.rotation.y=rot; grp.add(f); scene.add(grp);
+      const half=Math.min(b.max.x-b.min.x, b.max.z-b.min.z)/2;                       // footprint-proportionate
+      solidifyDisc(grp.position.x, grp.position.z, Math.min(0.45, Math.max(0.18, 0.6*half))); }
+    const pairs=[[-14,-6],[-13,12],[30,11],[8.2,1.8]];   // the ruins-side pair pushed back off the sidewalk edge, fully on the grass ([13,-13] made way for the run-down house)
+    pairs.forEach(([px,pz],i)=>{ for(let j=0;j<2;j++) plant(px+j*0.74, pz+(j?0.74:0), ((i*2+j)%4)*Math.PI/2, 1); });
+    // extra scattered clusters with count, facing and size variation
+    const extra=[[2,-6.5,2,0.9],[12.4,2.0,3,1.0],[-12,6.2,2,1.1],[20.3,10.2,3,0.85],[25.8,-9.8,2,1.05],
+      // a flower row greeting the ruins entrance (on the grass just south of its pad, clear of the door approach)
+      [-6.2,2.0,2,1.0],[-4.0,1.7,3,0.9],[1.9,1.8,3,1.0],[4.6,2.1,2,0.95],
+      // and more colour scattered across the whole map
+      [-15.5,-2.2,2,1.0],[-7.2,-15.6,2,0.9],[3.2,-16.2,2,1.0],[16.2,8.6,3,0.9],[19.2,9.6,2,1.0],
+      [30.8,-11.2,2,0.95],[-15.2,15.4,2,1.05],[7.2,16.2,2,0.9],[23.2,13.2,2,1.0]];   // [x, z, count, base scale]
+    extra.forEach(([px,pz,n,s],i)=>{ for(let j=0;j<n;j++){ const a=i*2.4+j*2.1;
+      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, s*(0.85+0.15*((i+j*3)%3))); } });
   }, undefined, e=>{ console.warn('flowers load failed', e); });
 
   // STREET LIGHTS — 6 lampposts in pairs, each with a warm-yellow glow (not too strong)
   gltf.load('./assets/lamppost.glb', (g)=>{
     const proto=g.scene; proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; } });
     const L=1.086;   // base footprint = exactly 2x2 studs (0.739u), fully covering the tile
-    const lampI=TOD.lamp, lit=lampI>0.08;                       // off in daylight, stronger as day recedes
+    const lampI=applyTOD(), lit=lampI>0.08;                     // off in daylight, stronger as day recedes; cycle re-drives them live
     const bulbCol=lit ? (lampI>0.5?0xffe6a0:0xd8b45a) : 0x4a3d1e;
-    const spots=[[-12.5,-5.5],[9,-4.8],[19.5,-2.5]];            // shop (umbrella/flower side) · mid-path · mansion — all beside the sidewalk, not on it
+    const spots=[[-12.5,-5.5],[18.1,-2.5]];                     // shop (umbrella/flower side) · mansion (4 studs back from the house); the mid-path one by the run-down house was removed
     spots.forEach(([px,pz])=>{ const lp=proto.clone(true); lp.scale.setScalar(L);
       const b=new THREE.Box3().setFromObject(lp);
       lp.position.x-=(b.min.x+b.max.x)/2; lp.position.z-=(b.min.z+b.max.z)/2; lp.position.y-=b.min.y;
@@ -430,28 +549,115 @@
       const pl=new THREE.PointLight(0xffca5e, lampI*1.4, 14, 2); pl.position.set(0,topY,0); grp.add(pl);
       const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.1,10,8), new THREE.MeshBasicMaterial({color:bulbCol}));
       bulb.position.set(0,topY,0); grp.add(bulb);
+      lampNodes.push({pl,bulb});
       scene.add(grp); grp.updateWorldMatrix(true,true); rasterizeSolid(grp); });
   }, undefined, e=>{ console.warn('lamppost load failed', e); });
+
+  // ── PROPS: Porsche (driveway), skull (by ruins door), Tardis + crystal (ruins balcony) ──
+  // Each loads into a stud-snapped holder, recentered on X/Z with feet on the ground, then scaled
+  // to a target world size. Holders are exposed on window.__props for live tuning during placement.
+  window.__props={};
+  function loadProp(url, cfg){
+    const holder=new THREE.Group();
+    holder.position.set(snap(cfg.pos[0]), cfg.y||0, snap(cfg.pos[1]));
+    holder.rotation.y=cfg.rotY||0;
+    scene.add(holder); window.__props[cfg.name]=holder; holder.userData.cfg=cfg;
+    gltf.load(url,(g)=>{ const m=g.scene;
+      m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+      m.updateMatrixWorld(true);
+      let box=new THREE.Box3().setFromObject(m);
+      m.position.x-=(box.min.x+box.max.x)/2; m.position.z-=(box.min.z+box.max.z)/2; m.position.y-=box.min.y;
+      holder.add(m); m.updateMatrixWorld(true); box=new THREE.Box3().setFromObject(m);
+      let s=1;
+      if(cfg.targetH) s=cfg.targetH/((box.max.y-box.min.y)||1);
+      else if(cfg.targetLen) s=cfg.targetLen/(Math.max(box.max.x-box.min.x, box.max.z-box.min.z)||1);
+      holder.scale.setScalar(s);
+      holder.userData.model=m; window.__props[cfg.name].userData.model=m;
+      if(cfg.solid){ holder.updateWorldMatrix(true,true); rasterizeSolid(holder); }
+      if(cfg.onload) cfg.onload(holder,m);
+    }, undefined, e=>console.warn(url+' load failed', e));
+    return holder;
+  }
+  // Porsche 912 on the mansion driveway, in front of the existing car, nose pointing out (-x).
+  // Sized to the orange garage car's measured footprint (~2.2 wide, nose at x 25.75): same width class.
+  // rotY 0.085 counters a slight baked-in tilt in the export so it parks straight on the stud rows.
+  loadProp('./assets/porsche.glb', {name:'porsche', pos:[20.6,4.4], y:0, rotY:-0.015, targetLen:5.6, solid:true});
+  // Skull on the ground left of the ruins doorway, against the wall, face out. Same size as the figure's head, stamped in.
+  loadProp('./assets/skull.glb',   {name:'skull',   pos:[-2.7,5.1], y:-0.03, rotY:Math.PI, targetH:0.46});
+  // Tardis stamped into the ruins balcony (the old lower-flower spot) + the NABU crystal on its top
+  loadProp('./assets/tardis.glb',  {name:'tardis',  pos:[2.0,5.55], y:2.97, rotY:0, targetH:1.9,   // balcony floor 3.0 (re-measured), stamped 0.03 in, clear of both railings
+    onload:(holder,m)=>{ // crystal sits on the Tardis top; deep LEGO blue with a soft inner glow (it is the NABU portal)
+      holder.updateWorldMatrix(true,true);
+      const cbox=new THREE.Box3().setFromObject(holder); const topY=cbox.max.y; // world Y of tardis top
+      loadProp('./assets/crystal.glb', {name:'crystal', pos:[holder.position.x, holder.position.z], y:topY, rotY:0, targetH:0.5,
+        onload:(ch,cm)=>{ cm.traverse(o=>{ if(o.isMesh&&o.material){ o.material=o.material.clone();
+          o.material.color.set(0x1d4ed8); o.material.emissive=new THREE.Color(0x1e50ff); o.material.emissiveIntensity=1.1;
+          o.material.roughness=0.25; if(o.material.map) o.material.map=null; } });
+          const cpl=new THREE.PointLight(0x3b82f6, 2.2, 8, 2);   // electric blue radiance onto the Tardis top + balcony
+          cpl.position.set(0, 0.25/(ch.scale.x||1), 0);          // mid-crystal in world units (holder is scaled)
+          ch.add(cpl); }}); }});
+  // PIRATE CHEST tucked behind the run-down house, hinge side against the back wall, lid open,
+  // stamped into the grass. Native blend scale (about 4.5 studs wide next to the minifig).
+  loadProp('./assets/pirate_chest.glb', {name:'chest', pos:[9.6,-15.03], y:-0.03, rotY:Math.PI,
+    onload:(holder,m)=>{
+      // two money bricks lie tumbled on the treasure inside. Kept at their native blend size and
+      // deliberately NOT flat or stud-snapped: they rest on each other like two slabs settled in a box.
+      gltf.load('./assets/money_brick.glb',(mg)=>{
+        const proto=mg.scene;
+        proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+        const bx=new THREE.Box3().setFromObject(proto);
+        proto.position.sub(bx.getCenter(new THREE.Vector3()));   // pivot through the slab's own center
+        const a=new THREE.Group(); a.add(proto);
+        const b=a.clone(true);
+        a.position.set(0.16,0.38,0.02);  a.rotation.set(0.22,0.5,0.10);    // lower slab, settled into the coins
+        b.position.set(-0.12,0.47,-0.05); b.rotation.set(-0.18,-0.85,-0.28); // upper slab lying across it
+        holder.add(a,b); window.__money=[a,b];
+      }, undefined, e=>console.warn('money brick load failed', e));
+    }});
 
   // ══════════ PORTALS — first-person showcase (blurred interior + LEGO-framed panels) ══════════
   // Each structure is a portal: walk up, press E → camera glides 3rd→1st person inside, the real
   // interior is snapshotted + blurred as the backdrop, projects float in front as framed panels.
+  // Real site projects (mirrors PROJECTS in src/App.tsx). Panels show the cover/poster image,
+  // clicking one opens the real image or video in the viewer with title, year, description, links.
   const CREATIVE=[
-    {t:'Render Study', c:'#2ee078'}, {t:'Motion Piece', c:'#38bdf8'}, {t:'Concept Art', c:'#f4c430'},
-    {t:'Short Film', c:'#ff7ac2'}, {t:'3D Build', c:'#8b5cf6'}, {t:'Poster Set', c:'#f97316'} ];
+    {t:'The Broken NPC', c:'#2ee078', img:'./assets/Broken_NPC.jpg', video:'./assets/Broken_NPC.MP4', year:2024, desc:'A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.'},
+    {t:'Apple Accessory Prototypes', c:'#38bdf8', img:'./assets/Blender_Case.jpg', video:'./assets/Blender_Case_Video.mp4', year:2024, desc:'3D designed Apple product case prototypes developed using Blender.'},
+    {t:'Video Game Demo', c:'#f4c430', img:'./assets/Shiri_VIdeo_Game.jpg', video:'./assets/Shiri_Video_Game.mp4', year:2024, desc:'Animated and assembled collection of images created in Adobe After Effects.'},
+    {t:'Rendered 3D Model', c:'#ff7ac2', img:'./assets/Venom.PNG', year:2024, desc:'High-quality 3D rendered movie character with detailed modeling and texturing in Blender.'},
+    {t:'Custom Phone Case', c:'#8b5cf6', img:'./assets/My_Case.jpg', year:2025, desc:'Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.'},
+    {t:'Custom Airpod Case', c:'#f97316', img:'./assets/Airpod_Case.JPG', year:2026, desc:'Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.'},
+    {t:'HMI Sensor System', c:'#2ee078', img:'./assets/New_Radar_Sensor_front.jpg', video:'./assets/New_Radar_Sensor.mp4', year:2024, desc:'Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.'},
+    {t:'Custom RGB Controller', c:'#38bdf8', img:'./assets/New_LED_Box_Front.jpg', video:'./assets/New_LED_Box.mp4', year:2024, desc:'Functional system built from scratch. 3D printed geometric casing housing the microcontroller.'},
+    {t:'Product, not Consumer', c:'#f4c430', img:'./assets/Shyon_Sculpture.jpg', year:2024, desc:'Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.'},
+    {t:'Campaign Project', c:'#ff7ac2', img:'./assets/Adverstisement_Project.jpg', year:2024, desc:'Conceptual brand advertisement utilizing environmental storytelling and scenic composition.'},
+    {t:'Candid Studio Portrait', c:'#8b5cf6', img:'./assets/Max_Pic.JPG', year:2024, desc:'A vibrant portrait capturing authentic moments with professional lighting.'},
+    {t:'Studio Photography', c:'#f97316', img:'./assets/Photography_1.jpg', year:2024, desc:'Professional photography exploring composition and lighting techniques.'} ];
   const PROFESSIONAL=[
-    {t:'Web Design', c:'#38bdf8'}, {t:'Branding', c:'#f4c430'}, {t:'Consulting', c:'#2ee078'},
-    {t:'Development', c:'#8b5cf6'}, {t:'Strategy', c:'#ff7ac2'} ];
+    {t:'UI/UX, minasech.net', c:'#38bdf8', img:'./assets/Mina_Website.png', year:2025, desc:'Full-stack website design including React frontend and responsive interface.', links:[{label:'Visit minasech.net', href:'https://minasech.net'}]},
+    {t:'Everly Care Home', c:'#f4c430', img:'./assets/Everly_Cover_Image.png', year:2026, desc:'Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.', links:[{label:'Visit everlycarehome.com', href:'https://everlycarehome.com'}]},
+    {t:'Luning Dr Flyer', c:'#2ee078', img:'./assets/RealEstate_Luning_Flyer.jpg', year:2022, desc:'Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.'},
+    {t:'Colleen Dr Flyer', c:'#8b5cf6', img:'./assets/RealEstate_Colleen_Flyer.jpg', year:2022, desc:'A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.'},
+    {t:'Morning Star Dr Flyer', c:'#ff7ac2', img:'./assets/RealEstate_MorningStar_Flyer.png', year:2022, desc:'A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.'},
+    {t:'Moskowite Corner', c:'#f97316', img:'./assets/RealEstate_MoskowiteCorner_Concept.jpg', year:2026, desc:'An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It reimagines a closed gas station lot as a renewed fuel and retail destination.'} ];
   const ABOUT=[
-    {t:'Who I Am', c:'#38bdf8'}, {t:'Experience', c:'#f4c430'}, {t:'Skills', c:'#2ee078'} ];
+    {t:'Who I Am', c:'#38bdf8', img:'./assets/Shyon_About.png', desc:'I\'m a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. That range started early, with Lego stop-motion films, and turned into a habit of learning whatever a project needs.'},
+    {t:'Resume', c:'#f4c430', desc:'My full resume, with experience and skills.', links:[{label:'Open My Resume', href:'./My Resume.pdf'}]},
+    {t:'Contact', c:'#2ee078', desc:'Reach out for work, collaborations, or anything else.', links:[{label:'Email shyon2001@gmail.com', href:'mailto:shyon2001@gmail.com'},{label:'LinkedIn in/shyonshiri', href:'https://www.linkedin.com/in/shyonshiri/'}]} ];
+  const NABU=[
+    {t:'NABU Promotional Video', c:'#38bdf8', img:'./assets/Nabu_Poster_Banner.jpg', video:'./assets/Nabu_Poster_Banner.mp4', year:2023, desc:'Dynamic promotional video for NABU clothing, crafted with professional animation in Adobe After Effects.'},
+    {t:'NABU 2026 Teaser', c:'#2ee078', img:'./assets/NABU_Puffer_AD.jpg', video:'./assets/NABU_PUFFER_AD.mp4', year:2025, desc:'Professional promotional video for NABU\'s puffer jacket collection shot with cinematic quality.'},
+    {t:'NABU 2025 Summer Collection', c:'#f4c430', img:'./assets/NABU_SALE_AD.jpg', video:'./assets/NABU_SALE_AD.mp4', year:2025, desc:'Engaging promotional content showcasing NABU\'s latest collection.'},
+    {t:'NABU 2023 Spring Collection', c:'#ff7ac2', img:'./assets/Stevie_Pic.JPG', year:2022, desc:'Professional portrait photography showcasing design systems and visual aesthetics.'},
+    {t:'NABU 2024 Rerelease Promotion', c:'#8b5cf6', img:'./assets/Digital_Media_Cover.jpg', year:2024, desc:'Promotional campaign showcasing the return of our Persian rug pants, reimagined for 2024.'} ];
   let mode='hub', fading=false, viewerOpen=false, nearPortal=null, activePortal=null, camAnim=null;
   const camLook=new THREE.Vector3(0,0.95,0);
 
   function labelTex(text, bg, fg, wide){ const W=wide?900:512, H=wide?170:340; const c=document.createElement('canvas'); c.width=W; c.height=H;
     const x=c.getContext('2d'); if(bg){ x.fillStyle=bg; x.fillRect(0,0,W,H); }
     x.fillStyle=fg; x.textAlign='center'; x.textBaseline='middle';
-    let fs=wide?120:210; x.font='800 '+fs+'px "Bebas Neue",sans-serif';
-    while(x.measureText(text).width>W-60 && fs>22){ fs-=6; x.font='800 '+fs+'px "Bebas Neue",sans-serif'; }
+    let fs=wide?110:190; x.font='600 '+fs+'px "Fredoka",sans-serif';
+    while(x.measureText(text).width>W-60 && fs>22){ fs-=6; x.font='600 '+fs+'px "Fredoka",sans-serif'; }
     x.fillText(text,W/2,H/2+2); const tx=new THREE.CanvasTexture(c); tx.anisotropy=4; return tx; }
 
   // Separate scene: LEGO-framed project panels per portal, drawn sharp over the blurred interior snapshot.
@@ -460,6 +666,7 @@
   menuScene.add(new THREE.HemisphereLight(0xffffff,0x3a4658,1.05));
   const mdir=new THREE.DirectionalLight(0xffffff,0.75); mdir.position.set(3,5,7); menuScene.add(mdir);
   const studGeoP=new THREE.CylinderGeometry(0.062,0.062,0.055,12);
+  const PGAP=3.55;   // horizontal spacing between panel centers (frames are 2.67 wide, so ~0.9 of air between them)
   function buildPanels(projects){ const group=new THREE.Group(); const panels=[];
     projects.forEach((p,i)=>{ const n=projects.length, W=2.15,Hh=2.7,fr=0.26, mat=plastic(p.c,0.4), back=plastic(0x0c1120,0.6);
       const g=new THREE.Group();
@@ -470,21 +677,36 @@
       const nc=Math.max(3,Math.round((W+fr*2)/0.3));
       for(let s=0;s<nc;s++){ const sx=-(W+fr*2)/2+(s+0.5)*((W+fr*2)/nc);
         [Hh/2+fr/2,-Hh/2-fr/2].forEach(sy=>{ const st=new THREE.Mesh(studGeoP,mat); st.rotation.x=Math.PI/2; st.position.set(sx,sy,0.22); g.add(st); }); }
-      const media=new THREE.Mesh(new THREE.PlaneGeometry(W-0.14,Hh-0.14), new THREE.MeshBasicMaterial({map:labelTex(String(i+1),p.c,'#0c1120')})); media.position.z=0.1; g.add(media);
+      const media=new THREE.Mesh(new THREE.PlaneGeometry(W-0.14,Hh-0.14), new THREE.MeshBasicMaterial({map:labelTex(p.img?String(i+1):p.t,p.c,'#0c1120')})); media.position.z=0.1; g.add(media);
       const cap=new THREE.Mesh(new THREE.PlaneGeometry(W+fr,0.5), new THREE.MeshBasicMaterial({map:labelTex(p.t,'#0c1120','#ffffff',true),transparent:true})); cap.position.set(0,-Hh/2-fr-0.44,0.1); g.add(cap);
-      const off=i-(n-1)/2; g.position.set(off*2.75,0,-Math.abs(off)*0.55); g.rotation.y=-off*0.13; g.userData={i}; group.add(g); panels.push(g); });
+      const off=i-(n-1)/2; g.position.set(off*PGAP,0,-Math.abs(off)*0.55); g.rotation.y=-off*0.13; g.userData={i, media, bx:off*PGAP}; group.add(g); panels.push(g); });
     group.visible=false; menuScene.add(group); return {group, panels}; }
+  // Cover images load lazily, on the first E-press at each structure (cover-fit crop onto the panel plane)
+  const _texLoader=new THREE.TextureLoader();
+  function texPanels(P){ if(P.texed) return; P.texed=true;
+    P.panels.forEach((g,i)=>{ const p=P.projects[i]; if(!p.img) return;
+      _texLoader.load(p.img, tx=>{ tx.encoding=THREE.sRGBEncoding; tx.anisotropy=8;
+        const pa=2.01/2.56, ia=tx.image.width/tx.image.height;
+        if(ia>pa){ tx.repeat.set(pa/ia,1); tx.offset.x=(1-pa/ia)/2; } else { tx.repeat.set(1,ia/pa); tx.offset.y=(1-ia/pa)/2; }
+        const m=g.userData.media; m.material.map=tx; m.material.needsUpdate=true;
+      }, undefined, e=>console.warn('panel image failed', p.img)); }); }
   const PORTALS={
     professional:{ label:'Professional Services', projects:PROFESSIONAL, cells:shopCells,
       door:new THREE.Vector3(-9.975,0,-9.5), eye:new THREE.Vector3(-9.975,1.75,-9.3), look:new THREE.Vector3(-9.975,1.5,-14.0),
       exit:new THREE.Vector3(-9.975,0,-6), yaw:0 },              // step back out facing the world (+z)
-    creative:{ label:'Creative Projects', projects:CREATIVE, cells:ruinsCells,
-      door:new THREE.Vector3(-1,0,3), eye:new THREE.Vector3(-1,1.8,7.5), look:new THREE.Vector3(-1,1.4,13),
-      exit:new THREE.Vector3(-1,0,0.5), yaw:Math.PI },           // facing -z toward spawn
-    about:{ label:'About', projects:ABOUT, cells:houseCells,
+    creative:{ label:'Creative Projects', projects:CREATIVE, cells:null, doorR:2.6,   // front-door circle only: the house's wall cells would let you enter from the back
+      door:new THREE.Vector3(10.345,0,-8.47), eye:new THREE.Vector3(10.345,1.75,-9.6), look:new THREE.Vector3(10.345,1.5,-14.5),
+      exit:new THREE.Vector3(10.345,0,-6.5), yaw:0 },            // step back out onto the path, facing the walk (+z)
+    about:{ label:'About', projects:ABOUT, cells:houseCells, doorR:4.0,   // wide radius: the doorway itself has no wall cells, so the door circle must cover the whole approach
       door:new THREE.Vector3(19.5,0,0), eye:new THREE.Vector3(23,1.8,0), look:new THREE.Vector3(29,1.4,0),
-      exit:new THREE.Vector3(15,0,0), yaw:-Math.PI/2 } };        // facing -x toward spawn/world
-  Object.keys(PORTALS).forEach(k=>{ const mp=buildPanels(PORTALS[k].projects); PORTALS[k].group=mp.group; PORTALS[k].panels=mp.panels; });
+      exit:new THREE.Vector3(15,0,0), yaw:-Math.PI/2 },          // facing -x toward spawn/world
+    nabu:{ label:'NABU', projects:NABU, cells:null,              // the blue crystal on the Tardis is the NABU portal (balcony only)
+      door:new THREE.Vector3(2.0,3.2,5.55), eye:new THREE.Vector3(2.0,4.75,3.9), look:new THREE.Vector3(2.0,5.12,5.55),
+      exit:new THREE.Vector3(0.8,3.2,4.4), yaw:Math.PI } };      // zoom rises to the crystal itself; exit restores the user's own camera
+  Object.keys(PORTALS).forEach(k=>{ const mp=buildPanels(PORTALS[k].projects); PORTALS[k].group=mp.group; PORTALS[k].panels=mp.panels;
+    const n=PORTALS[k].projects.length; PORTALS[k].panMax = n>3 ? (n-1)/2*PGAP : 0; });   // rows wider than the view can be browsed
+  let menuPan=0, menuPanCur=0;   // carousel pan target/current (menu mode only)
+  function clampPan(v){ const P=activePortal?PORTALS[activePortal]:null; const mx=P?P.panMax:0; return Math.max(-mx,Math.min(mx,v)); }
 
   const fadeEl=document.getElementById('fade'), promptEl=document.getElementById('prompt'),
         viewerEl=document.getElementById('viewer'), shopbgEl=document.getElementById('shopbg');
@@ -492,22 +714,71 @@
   function cellsNear(set,x,z,R){ if(!set||!set.size) return false;
     for(let dx=-R;dx<=R+0.001;dx+=OCS) for(let dz=-R;dz<=R+0.001;dz+=OCS){ if(dx*dx+dz*dz>R*R) continue;
       if(set.has(Math.floor((x+dx)/OCS)*100003+Math.floor((z+dz)/OCS))) return true; } return false; }
-  function portalAt(px,pz){ for(const k in PORTALS){ const P=PORTALS[k];
-    if(cellsNear(P.cells,px,pz,2*PITCH+PRAD) || Math.hypot(px-P.door.x,pz-P.door.z)<2.0) return k; } return null; }
+  function portalAt(px,pz,py){ for(const k in PORTALS){ const P=PORTALS[k];
+    if(Math.abs((py||0)-P.door.y)>1.7) continue;                 // portals only trigger on their own floor (crystal = balcony, others = ground)
+    if(cellsNear(P.cells,px,pz,2*PITCH+PRAD) || Math.hypot(px-P.door.x,pz-P.door.z)<(P.doorR||2.0)) return k; } return null; }
+  let savedCam=null, savedPos=null;   // the user's own camera orbit + standing spot, restored when leaving the NABU crystal
   function enterPortal(k){ if(fading||mode!=='hub') return; if(document.exitPointerLock) document.exitPointerLock();
+    savedCam={yaw:camYaw, pitch:camPitch, dist:camDist};
+    savedPos={x:player.position.x, y:player.position.y, z:player.position.z, ry:player.rotation.y};
     const P=PORTALS[k]; activePortal=k; fading=true; figBody.visible=false;
+    texPanels(P); menuPan=menuPanCur=0;   // start images loading during the glide; carousel starts centered
+    menuCam.aspect=innerWidth/innerHeight; menuCam.updateProjectionMatrix();   // window may have resized (or loaded hidden) since startup
     tweenCam(P.eye, P.look, 1.15, ()=>{ renderer.render(scene,camera);
       try{ shopbgEl.style.backgroundImage='url('+renderer.domElement.toDataURL('image/jpeg',0.9)+')'; }catch(e){}
       shopbgEl.classList.add('on'); for(const kk in PORTALS) PORTALS[kk].group.visible=(kk===k); mode='menu'; fading=false; }); }
   function exitPortal(){ if(fading||mode!=='menu') return; const P=PORTALS[activePortal]; mode='hub'; shopbgEl.classList.remove('on');
-    figBody.visible=true; player.position.set(P.exit.x,0,P.exit.z); player.rotation.y=P.yaw; curYaw=P.yaw; velX=velZ=0;
-    camYaw=P.yaw+Math.PI; camAnim=null; }   // land in a clear spot, facing the world (camera behind)
+    figBody.visible=true; velX=velZ=0;
+    if(activePortal==='nabu' && savedPos && savedCam){   // NABU: pop back up exactly where you stood, camera as you left it
+      player.position.set(savedPos.x, savedPos.y, savedPos.z); player.rotation.y=savedPos.ry; curYaw=savedPos.ry;
+      camYaw=savedCam.yaw; camPitch=savedCam.pitch; camDist=savedCam.dist;
+    } else {
+      player.position.set(P.exit.x,P.exit.y||0,P.exit.z); player.rotation.y=P.yaw; curYaw=P.yaw;
+      camYaw=P.yaw+Math.PI;   // land in a clear spot, facing the world (camera behind)
+    }
+    camAnim=null; }
+  // ── RUINS DOOR TELEPORTERS — the ground doorway and the balcony doorway are linked both ways.
+  // Walk into either one: you pop out at the other, figure facing the camera (camera in front),
+  // and controls stay camera-relative (W always walks away from the camera), so keys never change.
+  let tpArmed=true;   // re-arms when you are outside both doorways, so each entry fires exactly once
+  function doTeleport(px,py,pz){
+    player.position.set(px,py,pz); velX=velZ=0; velY=0; grounded=true;
+    player.rotation.y=Math.PI; curYaw=Math.PI;      // figure faces outward, toward the camera
+    camYaw=Math.PI; camPitch=0.25;
+    camera.position.set(px, py+1.2, pz-3.6);        // snap the orbit in front of the figure
+  }
+  function ruinsDoorTeleport(){
+    if(mode!=='hub'||fading) return;
+    const p=player.position;
+    const lo = p.y<1.0 && p.x>-2.1 && p.x<-0.2 && p.z>5.8 && p.z<7.0;   // ground doorway
+    const hi = p.y>2.5 && p.y<4.3 && p.x>-1.3 && p.x<0.1 && p.z>6.6 && p.z<8.2;  // balcony doorway
+    if(!lo && !hi){ tpArmed=true; return; }
+    if(!tpArmed) return;
+    tpArmed=false;
+    if(lo) doTeleport(-0.6, 3.25, 5.5);               // ground door -> balcony doorway
+    else if(p.z<7.4) doTeleport(-1.2, 0, 4.4);        // entered from the balcony side -> back downstairs, facing out
+    // entered from the back corridor (up the stairs): no teleport, just walk through onto the balcony
+  }
   function openViewer(i){ const P=PORTALS[activePortal]; const p=P.projects[i]; viewerOpen=true; const m=viewerEl.querySelector('.media');
-    m.style.background=p.c; m.textContent=p.t; viewerEl.querySelector('.cap').textContent=P.label+' · '+p.t; viewerEl.classList.add('on'); }
-  function closeViewer(){ viewerOpen=false; viewerEl.classList.remove('on'); }
+    m.innerHTML=''; m.style.background='#0c1120'; m.style.color='';
+    if(p.video){ const v=document.createElement('video'); v.src=p.video; if(p.img) v.poster=p.img;
+      v.controls=true; v.autoplay=true; v.playsInline=true;
+      v.style.cssText='width:100%;height:100%;object-fit:contain;background:#000;display:block;'; m.appendChild(v); }
+    else if(p.img){ const im=document.createElement('img'); im.src=p.img; im.alt=p.t;
+      im.style.cssText='width:100%;height:100%;object-fit:contain;display:block;'; m.appendChild(im); }
+    else { m.style.background=p.c; m.style.color='#141720'; m.textContent=p.t; }
+    const cap=viewerEl.querySelector('.cap'); cap.innerHTML='';
+    const head=document.createElement('div'); head.textContent=P.label+' · '+p.t+(p.year?' · '+p.year:''); cap.appendChild(head);
+    if(p.desc){ const d=document.createElement('div'); d.className='d'; d.textContent=p.desc; cap.appendChild(d); }
+    if(p.links) p.links.forEach(l=>{ const a=document.createElement('a'); a.href=l.href; a.target='_blank'; a.rel='noopener';
+      a.textContent=l.label+' ↗'; cap.appendChild(a); });
+    viewerEl.classList.add('on'); }
+  function closeViewer(){ viewerOpen=false; const v=viewerEl.querySelector('video'); if(v){ v.pause(); v.removeAttribute('src'); v.load(); }
+    viewerEl.querySelector('.media').innerHTML=''; viewerEl.classList.remove('on'); }
   viewerEl.querySelector('.x').addEventListener('click', closeViewer);
   const _ray=new THREE.Raycaster(), _ndc=new THREE.Vector2();
   canvas.addEventListener('click', e=>{ if(mode!=='menu'||viewerOpen||fading||!activePortal) return;
+    if(mMoved>8){ mMoved=0; return; }   // a browse-drag release is not a panel click
     _ndc.set((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1); _ray.setFromCamera(_ndc, menuCam);
     const hits=_ray.intersectObjects(PORTALS[activePortal].panels,true); if(hits.length){ let g=hits[0].object; while(g && (!g.userData||g.userData.i===undefined)) g=g.parent; if(g) openViewer(g.userData.i); } });
 
@@ -537,29 +808,39 @@
   addEventListener('keydown', e=>{ const k=e.key.toLowerCase();
     if(k==='escape'){ if(viewerOpen) closeViewer(); else if(mode==='menu') exitPortal(); return; }
     if(k==='e'){ if(mode==='hub' && nearPortal && !fading) enterPortal(nearPortal); return; }
+    if(mode==='menu' && !viewerOpen){ if(k==='arrowleft'||k==='a'){ menuPan=clampPan(menuPan-PGAP); return; }
+      if(k==='arrowright'||k==='d'){ menuPan=clampPan(menuPan+PGAP); return; } }
     keys[k]=true; if(e.key===' '){ e.preventDefault(); jumpQ=true; } initAudio(); });
   addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
-  // drag to look (higher sensitivity)
+  // drag to look (higher sensitivity); in menu mode the same drag browses the panel row
   const SENS=0.0065;
-  let drag=false,lx=0,ly=0; const pt=e=>{const t=(e.touches&&e.touches[0])||e;return{x:t.clientX,y:t.clientY};};
-  canvas.addEventListener('mousedown',e=>{ initAudio(); if(mode==='hub'){ drag=true; const p=pt(e); lx=p.x; ly=p.y; } });
-  addEventListener('mousemove',e=>{ if(!drag||mode!=='hub'||fading||camAnim) return; const p=pt(e);
+  let drag=false,lx=0,ly=0,mdrag=false,mMoved=0; const pt=e=>{const t=(e.touches&&e.touches[0])||e;return{x:t.clientX,y:t.clientY};};
+  canvas.addEventListener('mousedown',e=>{ initAudio(); const p=pt(e); lx=p.x; ly=p.y;
+    if(mode==='hub') drag=true; else if(mode==='menu'&&!viewerOpen){ mdrag=true; mMoved=0; } });
+  addEventListener('mousemove',e=>{ const p=pt(e);
+    if(mdrag&&mode==='menu'){ mMoved+=Math.abs(p.x-lx); menuPan=clampPan(menuPan-(p.x-lx)*0.011); lx=p.x; ly=p.y; return; }
+    if(!drag||mode!=='hub'||fading||camAnim) return;
     camYaw-=(p.x-lx)*SENS; camPitch=Math.max(0.06,Math.min(1.2,camPitch+(p.y-ly)*SENS)); lx=p.x; ly=p.y; });
-  addEventListener('mouseup',()=>drag=false);
-  canvas.addEventListener('touchstart',e=>{ initAudio(); if(mode==='hub'){ drag=true; const p=pt(e); lx=p.x; ly=p.y; } },{passive:true});
-  canvas.addEventListener('touchmove',e=>{ if(!drag)return; const p=pt(e); camYaw-=(p.x-lx)*SENS; camPitch=Math.max(0.06,Math.min(1.2,camPitch+(p.y-ly)*SENS)); lx=p.x; ly=p.y; },{passive:true});
-  canvas.addEventListener('touchend',()=>drag=false);
-  canvas.addEventListener('wheel',e=>{ camDist=Math.max(3,Math.min(16,camDist+e.deltaY*0.01)); },{passive:true});
+  addEventListener('mouseup',()=>{ drag=false; mdrag=false; });
+  canvas.addEventListener('touchstart',e=>{ initAudio(); const p=pt(e); lx=p.x; ly=p.y;
+    if(mode==='hub') drag=true; else if(mode==='menu'&&!viewerOpen){ mdrag=true; mMoved=0; } },{passive:true});
+  canvas.addEventListener('touchmove',e=>{ const p=pt(e);
+    if(mdrag&&mode==='menu'){ mMoved+=Math.abs(p.x-lx); menuPan=clampPan(menuPan-(p.x-lx)*0.011); lx=p.x; ly=p.y; return; }
+    if(!drag)return; camYaw-=(p.x-lx)*SENS; camPitch=Math.max(0.06,Math.min(1.2,camPitch+(p.y-ly)*SENS)); lx=p.x; ly=p.y; },{passive:true});
+  canvas.addEventListener('touchend',()=>{ drag=false; mdrag=false; });
+  canvas.addEventListener('wheel',e=>{ if(mode==='menu'){ if(!viewerOpen) menuPan=clampPan(menuPan+(e.deltaY+e.deltaX)*0.012); return; }
+    camDist=Math.max(3,Math.min(16,camDist+e.deltaY*0.01)); },{passive:true});
   // control panel shows first; Enter dismisses it
   const startBtn=document.getElementById('startBtn');
   if(startBtn) startBtn.addEventListener('click',()=>{ document.getElementById('controls').classList.add('hide'); initAudio(); });
 
   // ── loop: LEGO waddle (fused-leg minifig) + hop ──
   const clock=new THREE.Clock();
-  let velX=0,velZ=0,curYaw=Math.PI,phase=0,prevSin=0,velY=0,grounded=true,jumpQ=false,swingAmt=0,jumpPose=0;
+  let velX=0,velZ=0,curYaw=Math.PI,phase=0,prevSin=0,velY=0,grounded=true,jumpQ=false,swingAmt=0,jumpPose=0,jumpSide=1;
   const fV=new THREE.Vector3(),rV=new THREE.Vector3(),mV=new THREE.Vector3(),_v=new THREE.Vector3();
-  const BX0=-15.5, BX1=31.5, BZ=16.8, WALK=2.7, RUN=5.0;
+  const BX0=-20, BX1=36, BZ=21.3, WALK=2.7, RUN=5.0;   // walk bounds pushed out onto the apron, so the invisible wall sits back from the old rim
   function frame(dt){
+    dayT=(dayT+dt/CYCLE_SECS)%1; applyTOD();   // day/night keeps turning; all lights fade smoothly
     let ix=0,iz=0;
     if(keys['w']||keys['arrowup'])iz+=1; if(keys['s']||keys['arrowdown'])iz-=1;
     if(keys['d']||keys['arrowright'])ix+=1; if(keys['a']||keys['arrowleft'])ix-=1;
@@ -579,8 +860,9 @@
     if(speed>0.3) curYaw=Math.atan2(velX,velZ);
     let dy=curYaw-player.rotation.y; dy=Math.atan2(Math.sin(dy),Math.cos(dy)); player.rotation.y+=dy*Math.min(1,dt*16);
     // hop + stair/floor following: step UP onto ledges only while grounded; otherwise land on the surface below (else fall)
-    let gy=surfaceBelow(player.position.x, player.position.z, player.position.y+(grounded?MAXSTEP:0.12)); if(gy===null) gy=0;
-    if(jumpQ&&grounded){ velY=4.4; grounded=false; } jumpQ=false;
+    const climb=inStair(player.position.x,player.position.z)?MAXSTEP:LOWSTEP;   // big steps only on the real stairs
+    let gy=surfaceBelow(player.position.x, player.position.z, player.position.y+(grounded?climb:0.12)); if(gy===null) gy=0;
+    if(jumpQ&&grounded){ velY=4.4; grounded=false; jumpSide=-jumpSide; } jumpQ=false;   // alternate the split pose each jump
     velY-=16*dt; player.position.y+=velY*dt;
     if(player.position.y<=gy){ player.position.y=gy; velY=0; grounded=true; } else grounded=false;
     // walk cycle: alternating legs + counter-swinging arms, with a light stiff waddle
@@ -596,30 +878,41 @@
     swingAmt += (tgt-swingAmt)*Math.min(1,dt*9);
     const sw = si*swingAmt;
     jumpPose += ((grounded?0:1)-jumpPose)*Math.min(1,dt*14);   // ease into a split leap pose while airborne
-    if(hipL&&hipR&&shL&&shR){ const jp=jumpPose;
-      hipL.rotation.x = sw*(1-jp) + 0.75*jp;      // left leg kicks up/forward
-      hipR.rotation.x = -sw*(1-jp) - 0.75*jp;     // right leg kicks back
-      shL.rotation.x  = -sw*0.85*(1-jp) - 0.6*jp; // left arm back
-      shR.rotation.x  =  sw*0.85*(1-jp) + 0.6*jp; // right arm up/forward
+    if(hipL&&hipR&&shL&&shR){ const jp=jumpPose*jumpSide;   // jumpSide mirrors the split pose on alternating jumps
+      hipL.rotation.x = sw*(1-jumpPose) + 0.75*jp;      // one leg kicks up/forward
+      hipR.rotation.x = -sw*(1-jumpPose) - 0.75*jp;     // the other kicks back
+      shL.rotation.x  = -sw*0.85*(1-jumpPose) - 0.6*jp; // opposite arm back
+      shR.rotation.x  =  sw*0.85*(1-jumpPose) + 0.6*jp; // and the other arm up/forward
     }
     if(grounded&&moving&&((prevSin<0&&si>=0)||(prevSin>0&&si<=0))) tick(speed);
     prevSin=si;
-    // ── portal proximity + contextual prompt ──
+    // NABU crystal idles with a slow spin so it reads as alive/interactive
+    if(window.__props && window.__props.crystal) window.__props.crystal.rotation.y += dt*0.8;
+    // ── ruins door teleporter + portal proximity + contextual prompt ──
+    ruinsDoorTeleport();
     if(!fading){
-      nearPortal = (mode==='hub') ? portalAt(player.position.x, player.position.z) : null;
+      nearPortal = (mode==='hub') ? portalAt(player.position.x, player.position.z, player.position.y) : null;
       let msg='';
       if(viewerOpen) msg='';
-      else if(mode==='menu') msg='Click a project &nbsp;·&nbsp; <b>Esc</b> to leave';
+      else if(mode==='menu') msg=(activePortal&&PORTALS[activePortal].panMax>0)
+        ? 'Click a project &nbsp;·&nbsp; Drag or scroll to browse &nbsp;·&nbsp; <b>Esc</b> to leave'
+        : 'Click a project &nbsp;·&nbsp; <b>Esc</b> to leave';
       else if(nearPortal) msg='Press <b>E</b> &nbsp;·&nbsp; Enter '+PORTALS[nearPortal].label;
       if(msg){ promptEl.innerHTML=msg; promptEl.classList.add('on'); } else promptEl.classList.remove('on');
     }
     // ── camera + render ──
     if(mode==='menu'){
       const tt=performance.now()*0.001;
-      for(let i=0;i<panels.length;i++){ panels[i].position.y=Math.sin(tt*1.1+i*0.7)*0.05; }
+      menuPanCur+=(menuPan-menuPanCur)*Math.min(1,dt*8);   // eased carousel pan; panels arc around wherever you've browsed to
+      const pp=activePortal?PORTALS[activePortal].panels:[];
+      for(let i=0;i<pp.length;i++){ const rel=pp[i].userData.bx-menuPanCur;
+        pp[i].position.x=rel; pp[i].position.z=-Math.min(3.0,Math.abs(rel)*0.43);
+        pp[i].rotation.y=-Math.max(-0.5,Math.min(0.5,rel*0.10));
+        pp[i].position.y=Math.sin(tt*1.1+i*0.7)*0.05; }
       renderer.setClearColor(0x000000,0); renderer.render(menuScene, menuCam);
     } else {
       key.position.set(player.position.x+SUN_OFF[0],SUN_OFF[1],player.position.z+SUN_OFF[2]); key.target.position.copy(player.position); key.target.updateMatrixWorld();
+      if(window.__FC){ const f=window.__FC; camera.position.set(f.eye[0],f.eye[1],f.eye[2]); camera.lookAt(f.look[0],f.look[1],f.look[2]); renderer.setClearColor(0x0c1120,1); renderer.render(scene,camera); return; }
       if(camAnim){ camAnim.t=Math.min(1,camAnim.t+dt/camAnim.dur);
         const e=camAnim.t<0.5?2*camAnim.t*camAnim.t:1-Math.pow(-2*camAnim.t+2,2)/2;
         camera.position.lerpVectors(camAnim.p0,camAnim.p1,e); camLook.lerpVectors(camAnim.l0,camAnim.l1,e); camera.lookAt(camLook);
@@ -627,7 +920,10 @@
       } else {
         let hd=camDist*Math.cos(camPitch);
         const dxc=Math.sin(camYaw), dzc=Math.cos(camYaw);   // camera-collision: pull in when a wall sits between player and camera
-        for(let d=0.6; d<hd; d+=OCS){ if(camCell(player.position.x+dxc*d, player.position.z+dzc*d)){ hd=Math.max(1.0, d-0.4); break; } }
+        // the occupancy grid is sampled at GROUND body height, so it only means anything while the
+        // player is near the ground; on the balcony those cells are the floor below, not obstructions
+        if(player.position.y<1.5)
+          for(let d=0.6; d<hd; d+=OCS){ if(camCell(player.position.x+dxc*d, player.position.z+dzc*d)){ hd=Math.max(1.0, d-0.4); break; } }
         const vd=hd*Math.tan(camPitch);
         const cx=player.position.x+dxc*hd, cz=player.position.z+dzc*hd;
         camera.position.lerp(_v.set(cx, player.position.y+0.6+vd, cz), 0.2);
@@ -636,9 +932,17 @@
       renderer.setClearColor(0x0c1120,1); renderer.render(scene, camera);
     }
   }
+  // ── DEBUG (temporary — removed before finalize): drive camera/player from the console for placement
+  window.__D={ THREE, scene, renderer,
+    get camera(){return camera}, player,
+    set yaw(v){camYaw=v}, set pitch(v){camPitch=v}, set dist(v){camDist=v},
+    get time(){return dayT}, set time(v){dayT=v; applyTOD();},
+    tp(x,z){ player.position.x=x; player.position.z=z; velX=velZ=0; },
+    blocked: blockedAt };
   function loop(){ requestAnimationFrame(loop); frame(Math.min(clock.getDelta(),0.05)); }
   loop();
-  addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+  addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+    menuCam.aspect=innerWidth/innerHeight; menuCam.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
   </script>
 </body>
 </html>
