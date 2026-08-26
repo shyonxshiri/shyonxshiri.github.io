@@ -525,7 +525,7 @@
     // extra scattered clusters with count, facing and size variation
     const extra=[[2,-6.5,2,0.9],[12.4,2.0,3,1.0],[-12,6.2,2,1.1],[20.3,10.2,3,0.85],[25.8,-9.8,2,1.05],
       // a flower row greeting the ruins entrance (on the grass just south of its pad, clear of the door approach)
-      [-6.2,2.0,2,1.0],[-4.0,1.7,3,0.9],[1.9,1.8,3,1.0],[4.6,2.1,2,0.95],
+      [-6.2,2.0,1,1.0],[-4.0,1.7,3,0.9],[1.9,1.8,3,1.0],[4.6,2.1,2,0.95],   // [-6.2,2.0] down to 1 plant: its second member stood on the sidewalk
       // and more colour scattered across the whole map
       [-15.5,-2.2,2,1.0],[-7.2,-15.6,2,0.9],[3.2,-16.2,2,1.0],[16.2,8.6,3,0.9],[19.2,9.6,2,1.0],
       [30.8,-11.2,2,0.95],[-15.2,15.4,2,1.05],[7.2,16.2,2,0.9],[23.2,13.2,2,1.0]];   // [x, z, count, base scale]
@@ -583,8 +583,9 @@
   loadProp('./assets/porsche.glb', {name:'porsche', pos:[20.6,4.4], y:0, rotY:-0.015, targetLen:5.6, solid:true});
   // Skull on the ground left of the ruins doorway, against the wall, face out. Same size as the figure's head, stamped in.
   loadProp('./assets/skull.glb',   {name:'skull',   pos:[-2.7,5.1], y:-0.03, rotY:Math.PI, targetH:0.46});
-  // LEGO rat on the ground right of the same doorway (mirror of the skull's spot), scurrying along the wall. Native blend size, stamped in.
-  loadProp('./assets/rat.glb',     {name:'rat',     pos:[0.95,5.1], y:-0.03, rotY:Math.PI/2});
+  // LEGO rat along the ruins' left side wall (east flank, wall face x 1.62), heading toward the back:
+  // nose toward the sidewalk (south), tail toward the back of the ruin. Native blend size, stamped in.
+  loadProp('./assets/rat.glb',     {name:'rat',     pos:[1.85,8.1], y:-0.03, rotY:Math.PI});
   // Tardis stamped into the ruins balcony (the old lower-flower spot) + the NABU crystal on its top
   loadProp('./assets/tardis.glb',  {name:'tardis',  pos:[2.0,5.55], y:2.97, rotY:0, targetH:1.9,   // balcony floor 3.0 (re-measured), stamped 0.03 in, clear of both railings
     onload:(holder,m)=>{ // crystal sits on the Tardis top; deep LEGO blue with a soft inner glow (it is the NABU portal)
