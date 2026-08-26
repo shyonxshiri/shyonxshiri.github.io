@@ -48,19 +48,19 @@ const PROJECTS: Project[] = [
       { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
       { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", aspectRatio: "16/9", relatedItems: ["Custom Airpod Case", "Custom Phone Case"] },
       { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", year: 2024, desc: "Animated and assembled collection of images created in Adobe After Effects.", aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Venom.PNG", title: "Rendered 3D Model", year: 2024, desc: "High-quality 3D rendered movie character with detailed modeling and texturing in Blender.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Venom.PNG", title: "Rendered 3D Model", year: 2024, desc: "Movie character modeled, textured, and rendered in Blender.", aspectRatio: "16/9" },
       { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Prototypes"] },
       { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", year: 2026, desc: "Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Prototypes"] },
       { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar — Front View", year: 2024, hidden: true },
       { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar — Back View", year: 2024, hidden: true },
       { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box — Front View", year: 2024, hidden: true },
       { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box — Back View", year: 2024, hidden: true },
-      { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "A vibrant portrait capturing authentic moments with professional lighting.", aspectRatio: "2/3" },
-      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", year: 2024, desc: "Professional photography exploring composition and lighting techniques.", aspectRatio: "1/1" },
+      { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "Studio portrait shot with controlled lighting.", aspectRatio: "2/3" },
+      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", year: 2024, desc: "Studio photography focused on composition and lighting.", aspectRatio: "1/1" },
       { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar — Front View", "Radar — Back View"] },
       { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box — Front View", "RGB Box — Back View"] },
       { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
-      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Campaign Project", year: 2024, desc: "Conceptual brand advertisement utilizing environmental storytelling and scenic composition.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Campaign Project", year: 2024, desc: "Conceptual brand advertisement built around scenic composition.", aspectRatio: "16/9" },
     ],
   },
   {
@@ -75,7 +75,7 @@ const PROJECTS: Project[] = [
       { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Real Estate Marketing — Luning Dr", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
       { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Real Estate Marketing — Colleen Dr", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
       { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.png", title: "Compass × Real Estate Experts — Morning Star Dr", year: 2022, desc: "A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.", aspectRatio: "4/5" },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner — Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It reimagines a closed gas station lot as a renewed fuel and retail destination. Built from aerial references, the photorealistic 'after' helps a developer picture the property's potential.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner — Existing Site"] },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner — Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner — Existing Site"] },
       { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.png", title: "Moskowite Corner — Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true },
     ],
   },
@@ -86,11 +86,11 @@ const PROJECTS: Project[] = [
     img: "/assets/New_NABU_Cover_Card.png",
     size: "tall",
     media: [
-      { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Dynamic promotional video for NABU clothing, crafted with professional animation in Adobe After Effects.", wide: true },
-      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Professional promotional video for NABU's puffer jacket collection shot with cinematic quality." },
-      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Engaging promotional content showcasing NABU's latest collection." },
-      { type: "image", src: "/assets/Stevie_Pic.JPG", title: "NABU 2023 Spring Collection", year: 2022, desc: "Professional portrait photography showcasing design systems and visual aesthetics." },
-      { type: "image", src: "/assets/Digital_Media_Cover.jpg", title: "NABU 2024 Rerelease Promotion", year: 2024, desc: "Promotional campaign showcasing the return of our Persian rug pants, reimagined for 2024.", aspectRatio: "3/4" },
+      { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Promotional video for NABU clothing, animated in Adobe After Effects.", wide: true },
+      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Promotional video for NABU's puffer jacket collection." },
+      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Promotional video for the NABU 2025 summer collection." },
+      { type: "image", src: "/assets/Stevie_Pic.JPG", title: "NABU 2023 Spring Collection", year: 2022, desc: "Portrait photography for the NABU 2023 spring collection." },
+      { type: "image", src: "/assets/Digital_Media_Cover.jpg", title: "NABU 2024 Rerelease Promotion", year: 2024, desc: "Promotional campaign for the 2024 rerelease of NABU's Persian rug pants.", aspectRatio: "3/4" },
     ],
   },
 ];
@@ -561,6 +561,15 @@ const GLOBAL_CSS = `
   .ss-asset-title {
     font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", -apple-system, system-ui, sans-serif !important;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 `;
 
 /* ─────────────────────────────────────────────────────────────
@@ -992,7 +1001,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {...hover}
           style={{ cursor: "none" }}
         >
-          <span className="ss-cue-label">The making of the realm</span>
+          <span className="ss-cue-label">Build breakdown</span>
           <span className="ss-cue-arrow">▼</span>
         </motion.button>
       </div>
@@ -1012,15 +1021,15 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {/* Chapter 01 · WHAT */}
           <StoryChapter
             kicker="01 · What it is"
-            title="A portfolio you can walk through."
+            title="The portfolio as a 3D environment."
             body="The Lego Realm is a real time 3D environment embedded in this site. It is a small town on a single baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after me. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Creative Projects, About, and NABU."
           />
-          <StoryFrame num="FR 01" scene="The realm" src="/assets/story/story_world_midday.jpg"
+          <StoryFrame num="FR 01" scene="Overview" src="/assets/story/story_world_midday.jpg"
             caption="The full map at midday. Four structures, a sidewalk loop, and a continuous day and night cycle running on a seven minute loop." />
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 02" scene="The minifig" src="/assets/story/story_figure_front.jpg"
+            <StoryFrame num="FR 02" scene="Player figure" src="/assets/story/story_figure_front.jpg"
               caption="The playable character, modeled after me. The hair, jacket, and denim legs were modeled and textured separately, then bound to the walk cycle rig." />
-            <StoryFrame num="FR 03" scene="Nightfall" src="/assets/story/story_lamp_night.jpg"
+            <StoryFrame num="FR 03" scene="Night cycle" src="/assets/story/story_lamp_night.jpg"
               caption="Night in the realm. The lampposts are driven by the day cycle and brighten as the sun goes down. All lighting is computed in real time." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
@@ -1033,28 +1042,28 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {/* Chapter 02 · WHY */}
           <StoryChapter
             kicker="02 · Why I made it"
-            title="Built on a childhood habit."
-            body="Most portfolios are static lists. I wanted mine to demonstrate the work directly. I grew up building LEGO, and that process still matches how I approach design and engineering: modular parts, a consistent grid, and structures you can inspect from any angle. The realm applies that to a portfolio, presenting the work in an environment you can explore instead of a page you scroll past."
+            title="It doubles as a work sample."
+            body="I grew up building LEGO, and the format fits how I work: modular parts, a consistent grid, and structures you can inspect from any angle. The realm also functions as a work sample in itself. It demonstrates the 3D modeling, engineering, and web development skills that the portfolio inside it presents."
           />
-          <StoryFrame num="FR 06" scene="Dusk on the plate" src="/assets/story/story_sunset.jpg"
+          <StoryFrame num="FR 06" scene="Lighting" src="/assets/story/story_sunset.jpg"
             caption="The map at dusk. Sky, fog, sun color, exposure, and lamp intensity are interpolated continuously across the cycle rather than switched between presets." />
 
           {/* Chapter 03 · HOW */}
           <StoryChapter
             kicker="03 · How it was made"
             title="Modeled in Blender, rendered with Three.js."
-            body="Every structure was assembled from individual bricks in Blender, using my own builds. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world is placed on the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
+            body="Every structure was assembled from individual bricks in Blender, using my own builds. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
           />
-          <StoryFrame num="FR 07" scene="The prop bench" src="/assets/story/story_blender_props.jpg"
+          <StoryFrame num="FR 07" scene="Props" src="/assets/story/story_blender_props.jpg"
             caption="Prop assets staged in Blender before export: the Porsche 912, the treasure chest, a lamppost, and the money bricks." />
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 08" scene="Under the hood" src="/assets/story/story_blender_shop_wire.jpg"
+            <StoryFrame num="FR 08" scene="Wireframe" src="/assets/story/story_blender_shop_wire.jpg"
               caption="The coffee shop in wireframe. Every brick is individually modeled geometry, not a texture or a decal." />
             <StoryFrame num="FR 09" scene="Edit mode" src="/assets/story/story_blender_hair.jpg"
               caption="The character's hair in edit mode. Modeled manually, then exported with cleaned normals for smooth shading." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 10" scene="Mid assembly" src="/assets/story/story_blender_figure.jpg"
+            <StoryFrame num="FR 10" scene="Figure build" src="/assets/story/story_blender_figure.jpg"
               caption="The figure mid build in Blender. The legs were exported as a separate asset and bound to the hip pivots for the walk animation." />
             <StoryFrame num="FR 11" scene="The ruins" src="/assets/story/story_blender_ruins.jpg"
               caption="The ruins in Blender. The exported geometry was edited further for the final build, including removing extra columns and flower petals." />
@@ -1069,11 +1078,11 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {/* Closing CTA */}
           <StoryChapter
             kicker="04 · Try it"
-            title="Explore it yourself."
-            body="Screenshots only cover so much. The realm is live on this site, with the full day cycle and all four portals active."
+            title="The live build."
+            body="The full version runs on this site, with the day cycle and all four portals active."
           />
-          <StoryFrame num="FR 14" scene="In the realm" src="/assets/story/story_figure_back.jpg"
-            caption="The realm is live. Enter below." />
+          <StoryFrame num="FR 14" scene="Live build" src="/assets/story/story_figure_back.jpg"
+            caption="The current build, running in-engine. The entry button is below." />
           <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
@@ -1492,10 +1501,10 @@ function AboutPage() {
             transition={{ duration: 0.8, delay: 0.55, ease: [0.16,1,0.3,1] }}
           >
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 300, lineHeight: 1.75, color: "#3a3a3a", maxWidth: 480 }}>
-              I'm a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. I move between mediums because I've never been interested in doing just one thing.
+              I'm a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. Covering several disciplines lets me take a project from concept to delivery without handing it off.
             </p>
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 300, lineHeight: 1.75, color: "#3a3a3a", maxWidth: 480, marginTop: 20 }}>
-              That range started early, with Lego stop-motion films, and turned into a habit of learning whatever a project needs. What stays constant is how I finish: the work isn't done until it's done right, by my own standard rather than anyone else's.
+              That range started in childhood with LEGO builds and stop motion films, and it became a working habit: learn the tools each project requires and use them properly. I hold finished work to a high standard of craft and detail.
             </p>
           </motion.div>
         </div>

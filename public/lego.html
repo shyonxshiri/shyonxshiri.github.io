@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>My Lego Realm</title>
+<title>My Lego Realm · Shyon Shiri</title>
+<meta name="description" content="A walkable LEGO world built brick by brick in Blender and Three.js. Explore the buildings to browse Shyon Shiri's design work.">
+<meta property="og:title" content="My Lego Realm">
+<meta property="og:description" content="A walkable LEGO world built brick by brick in Blender and Three.js. Step inside and explore.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.shyonshiri.com/lego.html">
+<meta property="og:image" content="https://www.shyonshiri.com/assets/story/story_world_midday.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -23,6 +31,10 @@
   #loader{position:fixed;inset:0;z-index:50;background:#12151c;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease;}
   #loader.hide{opacity:0;pointer-events:none;}
   #loader .m{font-family:'Fredoka',sans-serif;font-weight:600;font-size:46px;}
+  #loader .wrap{display:flex;flex-direction:column;align-items:center;gap:18px;}
+  #loader .bar{width:min(62vw,300px);height:10px;border-radius:99px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);overflow:hidden;}
+  #loader .bar i{display:block;height:100%;width:0%;background:#ffcf00;border-radius:99px;transition:width .25s ease;}
+  #loader .pct{font-weight:800;font-size:12px;letter-spacing:2px;color:#ffd23f;}
   #controls{position:fixed;inset:0;z-index:60;background:rgba(12,14,20,.82);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;transition:opacity .5s ease;}
   #controls.hide{opacity:0;pointer-events:none;}
   #controls .card{width:min(90vw,410px);padding:32px 38px 30px;background:rgba(26,29,38,.95);border:1px solid rgba(255,255,255,.12);border-radius:24px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45);}
@@ -60,6 +72,22 @@
   #c{z-index:1;}
   #shopbg{position:fixed;inset:0;z-index:0;background:#0c1120 center/cover no-repeat;filter:blur(20px) brightness(.68) saturate(1.15);opacity:0;transition:opacity .55s ease;pointer-events:none;transform:scale(1.09);}
   #shopbg.on{opacity:1;}
+  /* touch controls: only rendered on coarse-pointer devices (body.touch, set in JS) */
+  #joy,#btnJump,#btnAct,#btnBack{display:none;}
+  body.touch .hint{display:none;}
+  body.touch #joy{display:block;position:fixed;left:24px;bottom:24px;z-index:26;width:122px;height:122px;border-radius:50%;
+    background:rgba(18,21,28,.55);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);touch-action:none;}
+  body.touch #joy .knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;
+    background:rgba(255,207,0,.92);box-shadow:0 3px 0 #c79e00, 0 6px 14px rgba(0,0,0,.4);pointer-events:none;}
+  body.touch #btnJump{display:flex;position:fixed;right:24px;bottom:34px;z-index:26;width:76px;height:76px;border-radius:50%;border:none;
+    align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:14.5px;letter-spacing:.5px;color:#20222a;
+    background:rgba(255,207,0,.92);box-shadow:0 4px 0 #c79e00, 0 8px 18px rgba(0,0,0,.35);touch-action:none;user-select:none;-webkit-user-select:none;}
+  body.touch #btnAct.on{display:flex;position:fixed;right:32px;bottom:128px;z-index:26;border:none;align-items:center;justify-content:center;
+    font-family:'Fredoka',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;color:#20222a;border-radius:980px;padding:13px 26px;
+    background:rgba(255,255,255,.94);box-shadow:0 4px 0 rgba(0,0,0,.35), 0 8px 18px rgba(0,0,0,.35);touch-action:none;user-select:none;-webkit-user-select:none;}
+  body.touch #btnBack.on{display:flex;position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:46;border:none;align-items:center;justify-content:center;
+    font-family:'Fredoka',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;color:#f6f4ef;border-radius:980px;padding:12px 30px;
+    background:rgba(18,21,28,.74);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(8px);touch-action:none;user-select:none;-webkit-user-select:none;}
 </style>
 </head>
 <body>
@@ -67,7 +95,7 @@
   <canvas id="c"></canvas>
   <a id="leave" href="/">Leave the Realm</a>
   <div class="hint"><b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; drag to look</div>
-  <div id="loader"><div class="m">BUILDING…</div></div>
+  <div id="loader"><div class="wrap"><div class="m">BUILDING…</div><div class="bar"><i></i></div><div class="pct">0%</div></div></div>
   <div id="controls"><div class="card">
     <h2>LEGO REALM</h2><div class="sub">Controls</div>
     <div class="row"><span>Move</span><b>WASD / Arrows</b></div>
@@ -79,18 +107,22 @@
   </div></div>
   <div id="fade"></div>
   <div id="prompt"></div>
+  <div id="joy"><div class="knob" id="joyKnob"></div></div>
+  <button id="btnJump">JUMP</button>
+  <button id="btnAct">ENTER</button>
+  <button id="btnBack">BACK</button>
   <div id="viewer"><div class="x">Esc ✕</div><div class="card"><div class="media"></div><div class="cap"></div></div></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+  <script src="/vendor/three.min.js"></script>
+  <script src="/vendor/GLTFLoader.js"></script>
+  <script src="/vendor/DRACOLoader.js"></script>
   <script>
   // kick the display fonts loading immediately so canvas-drawn labels (signs, panels) use them
   if(document.fonts){ document.fonts.load('600 40px "Fredoka"'); document.fonts.load('800 14px "Nunito"'); }
   const canvas = document.getElementById('c');
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0c1120);
-  scene.fog = new THREE.Fog(0x0c1120, 21, 42);   // clear across the main space; the fade only starts behind the structures
+  scene.fog = new THREE.Fog(0x0c1120, 15, 32);   // closed-in: the border tree line (~21+ from mid-map) is the last clear layer; only a hint of apron shows past it before full fade
   // SKY DOME: linear fog only tints geometry, so without this the sky stays a flat clear color and
   // the "fog" reads as a ground gradient with a hard horizon line. The dome paints the fog color at
   // the horizon and blends it up into the sky color, so the fog visibly reaches into the sky.
@@ -116,7 +148,7 @@
 
   // lighting — cool sky + a warm key with soft shadows (one shared composition)
   const hemi=new THREE.HemisphereLight(0x9fc0ff, 0x20304a, 0.7); scene.add(hemi);
-  const amb=new THREE.AmbientLight(0xffffff, 0.2); scene.add(amb);
+  const amb=new THREE.AmbientLight(0xffedcf, 0.2); scene.add(amb);   // warm white: daylight reads yellow, not clinical white (night runs it at 0.11 so the tint barely registers there)
   const key = new THREE.DirectionalLight(0xffdf8f, 1.55);   // warm yellow sun
   key.position.set(7, 13, 6); key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048);
@@ -126,20 +158,60 @@
   scene.add(key); scene.add(key.target);
   const rim = new THREE.DirectionalLight(0x5a86ff, 0.5); rim.position.set(-7,6,-6); scene.add(rim);
 
+  // ── ENVIRONMENT REFLECTIONS — a tiny HDR sky (gradient dome + hot sun blob + cool fill)
+  // baked once through PMREM and applied scene-wide, so every brick has a real world to
+  // mirror. Per-material strength lives in userData.envBase; applyTOD scales all of them
+  // with the daylight so reflections dim at night instead of glinting with a daytime sky.
+  const ALL_MATS=new Set();
+  function regMat(m, base){ if(!m||ALL_MATS.has(m)) return; m.userData.envBase=base; ALL_MATS.add(m); }
+  // One polish pass per material: LEGO ABS gets a gloss ceiling, glass gets mirror-sharp
+  // clarity (the frosted look came from high roughness on the TRANS materials, not opacity).
+  function polish(o, cap){
+    (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{
+      if(!m || m.roughness==null || ALL_MATS.has(m)) return;
+      m.metalness=0;
+      const glassy = m.transparent===true || m.opacity<1 || /trans|glass/i.test(m.name||'');
+      if(glassy){ if(m.opacity<1) m.transparent=true; m.roughness=Math.min(m.roughness,0.08); regMat(m,2.0); }
+      else { m.roughness=Math.min(m.roughness, cap==null?0.38:cap); regMat(m,0.5); }
+    });
+  }
+  {
+    // The sky is painted on an equirect canvas (gradient + hot sun blob + soft ground band)
+    // and PMREM-filtered so every roughness level gets a clean pre-blurred reflection.
+    const cv=document.createElement('canvas'); cv.width=512; cv.height=256; const cc=cv.getContext('2d');
+    const grd=cc.createLinearGradient(0,0,0,256);
+    grd.addColorStop(0,'#7fb2e6'); grd.addColorStop(0.5,'#dce8f2'); grd.addColorStop(0.56,'#c7d6e2');
+    grd.addColorStop(0.62,'#45543f'); grd.addColorStop(1,'#242e26');
+    cc.fillStyle=grd; cc.fillRect(0,0,512,256);
+    const sun=cc.createRadialGradient(140,66,3,140,66,46);
+    sun.addColorStop(0,'rgba(255,252,235,1)'); sun.addColorStop(0.2,'rgba(255,243,205,0.95)'); sun.addColorStop(1,'rgba(255,243,205,0)');
+    cc.fillStyle=sun; cc.beginPath(); cc.arc(140,66,46,0,Math.PI*2); cc.fill();
+    const fill=cc.createRadialGradient(400,80,4,400,80,60);
+    fill.addColorStop(0,'rgba(190,215,255,0.75)'); fill.addColorStop(1,'rgba(190,215,255,0)');
+    cc.fillStyle=fill; cc.beginPath(); cc.arc(400,80,60,0,Math.PI*2); cc.fill();
+    const eqTex=new THREE.CanvasTexture(cv);
+    eqTex.mapping=THREE.EquirectangularReflectionMapping; eqTex.encoding=THREE.sRGBEncoding;
+    const pm=new THREE.PMREMGenerator(renderer); pm.compileEquirectangularShader();
+    scene.environment=pm.fromEquirectangular(eqTex).texture;
+    pm.dispose(); eqTex.dispose();
+    window.__R=renderer;   // debug handle for material/reflection tuning, strip with the rest of __D
+  }
+
   // ── day cycle: rotates continuously on a 7 minute loop (morning→midday→evening→night→morning) ──
   // At full night the sun is OFF (si 0) and the rim is soft, so no stray glint/reflection pools on
   // the ground; every value below is smoothly interpolated between neighbors, so lights fade in/out
   // slowly as the cycle turns instead of snapping.
   const TIMES=[
-    {n:'morning', sky:0xbcd6ea, fog:0xcdd9e6, sun:0xffe6bd, si:1.35, hs:0xcfe0ff, hg:0x54627a, hi:0.72, amb:0.28, exp:1.16, off:[11,7,8],  rim:0x8fb0ff, ri:0.40, lamp:0.15},
-    {n:'midday',  sky:0x9fc4e8, fog:0xbcd0e0, sun:0xfff1cf, si:1.70, hs:0xbfd8ff, hg:0x586274, hi:0.82, amb:0.30, exp:1.15, off:[6,15,6],  rim:0x7aa0ff, ri:0.35, lamp:0.0},
-    {n:'evening', sky:0x452f42, fog:0x6a3c3e, sun:0xff9040, si:1.30, hs:0xffb488, hg:0x33223c, hi:0.45, amb:0.18, exp:1.10, off:[14,4,3],  rim:0xff8a5a, ri:0.40, lamp:0.9},
-    {n:'night',   sky:0x070a14, fog:0x0a0e1c, sun:0x8aa0d0, si:0.0,  hs:0x2a3a60, hg:0x0a0e18, hi:0.30, amb:0.11, exp:0.98, off:[9,11,-6], rim:0x4a70c0, ri:0.10, lamp:1.6},
+    {n:'morning', sky:0x8fc0ec, fog:0xb2cade, sun:0xffcf83, si:1.22, hs:0xb3ccec, hg:0x4d5f78, hi:0.56, amb:0.18, exp:1.04, off:[11,7,8],  rim:0x8fb0ff, ri:0.40, lamp:0.15, env:0.8},
+    {n:'midday',  sky:0x6cb2ea, fog:0x9fc0dc, sun:0xffd88a, si:1.38, hs:0xa8c6e9, hg:0x50607a, hi:0.60, amb:0.18, exp:1.03, off:[6,15,6],  rim:0x7aa0ff, ri:0.35, lamp:0.0,  env:0.95},
+    {n:'evening', sky:0x452f42, fog:0x6a3c3e, sun:0xff9040, si:1.30, hs:0xffb488, hg:0x33223c, hi:0.45, amb:0.18, exp:1.10, off:[14,4,3],  rim:0xff8a5a, ri:0.40, lamp:0.9,  env:0.65},
+    {n:'night',   sky:0x070a14, fog:0x0a0e1c, sun:0x8aa0d0, si:0.0,  hs:0x2a3a60, hg:0x0a0e18, hi:0.30, amb:0.11, exp:0.98, off:[9,11,-6], rim:0x4a70c0, ri:0.10, lamp:1.6,  env:0.15},
   ];
   const CYCLE_SECS=420;                          // full day→night→day loop = 7 minutes
   let dayT=Math.random();                        // random time of day on load, then it rotates
   const SUN_OFF=[0,0,0];                         // sun-direction offset the follow-light uses in the loop
   const lampNodes=[];                            // {pl,bulb} per lamppost, updated live by the cycle
+  let crystalMat=null;                           // NABU crystal glass; its glow is re-driven by the cycle
   const _tc1=new THREE.Color(), _tc2=new THREE.Color();
   const lerp=(a,b,t)=>a+(b-a)*t;
   function applyTOD(){
@@ -158,11 +230,14 @@
     for(let k=0;k<3;k++) SUN_OFF[k]=lerp(A.off[k],B.off[k],t);
     const li=lerp(A.lamp,B.lamp,t), lit=li>0.08;
     for(const L of lampNodes){ L.pl.intensity=li*1.4; L.bulb.material.color.set(lit?(li>0.5?0xffe6a0:0xd8b45a):0x4a3d1e); }
+    const em=lerp(A.env,B.env,t);                 // reflection strength follows the daylight
+    for(const m of ALL_MATS) m.envMapIntensity=m.userData.envBase*em;
+    if(crystalMat) crystalMat.emissiveIntensity=0.35+li*0.5;   // subtle by day (glass reads), beacon at night
     return li;
   }
   applyTOD();
 
-  function plastic(color, rough){ return new THREE.MeshStandardMaterial({ color, roughness: rough==null?0.42:rough, metalness:0.0 }); }
+  function plastic(color, rough){ const m=new THREE.MeshStandardMaterial({ color, roughness: rough==null?0.34:rough, metalness:0.0 }); regMat(m,0.5); return m; }
 
   // ── stud grid + collision ──
   const PITCH=0.36945;                               // LEGO stud pitch — snap ALL placements to it
@@ -294,9 +369,13 @@
 
   const gltf = new THREE.GLTFLoader();
   const draco = new THREE.DRACOLoader();
-  draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.3/');
+  draco.setDecoderPath('/vendor/draco/');
   gltf.setDRACOLoader(draco);
   let loadedGround=false, loadedFig=false, groundTopY=0;
+  // loading progress: item counts from the shared default manager; displayed percent only ever climbs
+  const ldBar=document.querySelector('#loader .bar i'), ldPct=document.querySelector('#loader .pct'); let ldMax=0;
+  THREE.DefaultLoadingManager.onProgress=(u,l,t)=>{ const p=Math.min(100,Math.round(l/Math.max(1,t)*100));
+    if(p>ldMax){ ldMax=p; ldBar.style.width=p+'%'; ldPct.textContent=p+'%'; } };
   function ready(){ if(loadedGround && loadedFig) setTimeout(()=>document.getElementById('loader').classList.add('hide'), 300); }
 
   // GROUND — fine 2x2 plates (0.739u). GREEN grass is the base; GREY is used for a 6-stud
@@ -308,7 +387,9 @@
     const bb=geo.boundingBox, sx=bb.max.x-bb.min.x, sz=bb.max.z-bb.min.z;
     geo.translate(-(bb.min.x+bb.max.x)/2, -bb.max.y, -(bb.min.z+bb.max.z)/2);
     const matGrey = tm.material; if (matGrey.map) matGrey.map.encoding = THREE.sRGBEncoding;
+    matGrey.metalness=0; matGrey.roughness=Math.min(matGrey.roughness==null?0.6:matGrey.roughness, 0.55);   // plates are plastic too: subtle sheen
     const matGreen = matGrey.clone(); matGreen.color.setRGB(0.0529,0.266,0.0775);   // exact LegoGreen (linear)
+    regMat(matGrey,0.35); regMat(matGreen,0.35);
     window.__matGreen = matGreen;                                                    // synced to the mansion's grass on load
     const X0=-16.25, X1=32.5, Z0=-17.73, Z1=17.73;
     const NX=Math.round((X1-X0)/sx), NZ=Math.round((Z1-Z0)/sz), OX=(X0+X1)/2;
@@ -317,7 +398,7 @@
       if(x>-13.5 && x<-6.4 && z>-17.6 && z<-7.4) return true;   // coffee shop
       if(x>-8.4  && x<6.3  && z>2.7  && z<17.2)   return true;   // ruins (grey under the whole structure)
       if(x>21.7  && x<31.0 && z>-7   && z<6.95)    return true;   // mansion + garage floor, tucked fully UNDER the walls (no one-stud grey sliver peeking out)
-      // (the old driveway lane x 16.5..21.7 is gone: the Porsche parks on the grass beside the garage)
+      if(x>17.35 && x<21.7 && z>2.0  && z<6.4)     return true;   // driveway in front of the garage: the house's own raised plates were removed, so the single ground layer paints the grey here
       if(x>9.2   && x<11.5  && z>=-8.6 && z<-2.4)  return true;   // 6-stud path from the walk to the run-down house's door (no pad, house sits on the grass)
       return false; }
     // 6-stud-wide grey sidewalk loop through/near every building
@@ -330,28 +411,67 @@
     const grey=[], green=[];
     // APRON: extra rings of green tiles past the old rim, so the land continues under the fog
     // instead of cutting off at a plate edge with a drop to nothing (player bounds unchanged)
-    const APRON=8;   // shorter border trim: enough land past the rim to reach the closer fog, no more
+    const APRON=20;  // deep apron: real studded tiles cover ~11 units past the walk bounds, so the handoff to the bump-mapped far land happens where the eye can't tell
     for(let i=-APRON;i<NX+APRON;i++)for(let j=-APRON;j<NZ+APRON;j++){ const x=(i-(NX-1)/2)*sx+OX, z=(j-(NZ-1)/2)*sz;
       ((onPad(x,z)||onWalk(x,z))? grey : green).push([x,z]); }
     function field(list, material){ const im=new THREE.InstancedMesh(geo, material, list.length); im.castShadow=im.receiveShadow=true;
       const mm=new THREE.Matrix4(); list.forEach((p,k)=>{ mm.setPosition(p[0],0,p[1]); im.setMatrixAt(k,mm); }); im.instanceMatrix.needsUpdate=true; scene.add(im); return im; }
     field(grey, matGrey); field(green, matGreen);
-    // FAR LAND: a huge matching-green sheet just under the tiles, reaching well past the fog's
-    // full-opacity distance from anywhere on the map, so the horizon is always solid ground
-    // fading into fog and never reveals an edge or the void below
-    const farMat=new THREE.MeshStandardMaterial({ roughness:1, metalness:0 });
+    // FAR LAND: a huge matching-green sheet continuing past the apron to well beyond the fog's
+    // full-opacity distance. It sits FLUSH with the tiles' plate-top surface (measured by
+    // raycast, not assumed) and carries a stud-grid bump map aligned to the real tile grid,
+    // so the apron's last tile hands off to normal-mapped studs with no ledge and no seam
+    const probe=new THREE.Mesh(geo,matGreen); probe.updateMatrixWorld(true);
+    const pHit=new THREE.Raycaster(new THREE.Vector3(0,1,0),new THREE.Vector3(0,-1,0)).intersectObject(probe)[0];
+    const plateTop=pHit?pHit.point.y:-0.083;          // tile-top surface between the studs (stud tips are y 0)
+    const cv=document.createElement('canvas'); cv.width=cv.height=128; const cc=cv.getContext('2d');
+    cc.fillStyle='#808080'; cc.fillRect(0,0,128,128);                        // flat plate = neutral bump height
+    cc.strokeStyle='#6e6e6e'; cc.lineWidth=2; cc.strokeRect(1,1,126,126);    // faint seam matching the real 2x2 tile gaps
+    [[32,32],[96,32],[32,96],[96,96]].forEach(([px,py])=>{                   // 4 studs per 2x2 cell; LEGO stud = 0.6 pitch wide (r 19px of the 64px pitch)
+      const g=cc.createRadialGradient(px,py,11,px,py,19);
+      g.addColorStop(0,'#c6c6c6'); g.addColorStop(0.8,'#bcbcbc'); g.addColorStop(1,'#808080');
+      cc.fillStyle=g; cc.beginPath(); cc.arc(px,py,19,0,Math.PI*2); cc.fill(); });
+    const studTex=new THREE.CanvasTexture(cv); studTex.wrapS=studTex.wrapT=THREE.RepeatWrapping;
+    studTex.anisotropy=renderer.capabilities.getMaxAnisotropy();             // keeps the studs crisp at grazing angles; mipmaps fade them out smoothly with distance
+    studTex.repeat.set(360/sx,360/sz);
+    const fr=v=>v-Math.floor(v), c0x=-(NX-1)/2*sx+OX, c0z=-(NZ-1)/2*sz;      // a real tile center, to phase-lock the texture to the tile grid
+    studTex.offset.set(0.5-fr((c0x-OX+180)/sx), 0.5-fr((180-c0z)/sz));
+    const farMat=new THREE.MeshStandardMaterial({ roughness:1, metalness:0, bumpMap:studTex, bumpScale:0.05 }); regMat(farMat,0.25);
     farMat.color=matGreen.color;                      // share the Color instance so the mansion grass sync recolors both
     const farLand=new THREE.Mesh(new THREE.PlaneGeometry(360,360), farMat);
-    // sits fully BELOW the tiles (their tops are at y 0, bodies hang below): putting it inside the
-    // tile bodies flattens the whole ground to a sheet with stud tips poking through
-    farLand.rotation.x=-Math.PI/2; farLand.position.set(OX,-(bb.max.y-bb.min.y)-0.01,0); farLand.receiveShadow=true; scene.add(farLand);
+    // 0.01 below the plate top: hidden inside the tile bodies under the map, flush (no ledge) at the apron edge
+    farLand.rotation.x=-Math.PI/2; farLand.position.set(OX,plateTop-0.01,0); farLand.receiveShadow=true; scene.add(farLand);
+    // DISTANT HILLS: terraced green mounds far past the walk bounds, half-swallowed by the fog,
+    // so the horizon has a built-world silhouette instead of an empty flat fade. Every hill
+    // surface is >=18 units from anywhere standable, deep inside the fog ramp (13..28).
+    // Terraces are 1.32 high (3 bricks), stud-snapped centers, unreachable so no collision.
+    const HILLS=[ // [x, z, base radius, tiers, green tint]
+      [-52,-8,14,3,0.92],[-56,10,18,4,1.00],[-47,20,9,2,0.85],
+      [70,0,16,4,0.95],[64,-16,10,2,1.05],[66,18,12,3,0.88],
+      [-6,-54,15,3,1.00],[22,-57,18,4,0.90],[46,-48,10,2,1.05],
+      [0,55,16,4,0.93],[27,50,11,2,1.02],[-16,52,13,3,0.87] ];
+    HILLS.forEach(([hx,hz,r,tiers,tint])=>{
+      const mt=new THREE.MeshStandardMaterial({ roughness:1, metalness:0, flatShading:true }); regMat(mt,0.25);
+      mt.color.copy(matGreen.color).multiplyScalar(tint);
+      let y=plateTop-0.02, rr=r;
+      for(let t=0;t<tiers;t++){ const h=1.32;
+        const m=new THREE.Mesh(new THREE.CylinderGeometry(rr*0.8, rr, h, 14), mt);
+        m.position.set(snap(hx), y+h/2, snap(hz)); scene.add(m);
+        y+=h; rr*=0.66; } });
     loadedGround=true; ready();
   }, undefined, e=>{ console.warn('ground load failed', e); loadedGround=true; ready(); });
 
   // FIGURE — your minifig, scaled to ~5 studs tall, feet on the ground
   gltf.load('./assets/figure.glb', (g)=>{
     const model=g.scene;
-    model.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; } });
+    model.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o);
+      // SKIN: deeper tan than the baked #E8C99F, matte (no waxy sheen) and barely reflective,
+      // so the env/hemi fill cannot wash the face and hands pale
+      (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{ if(!m) return;
+        if(/TAN-SKIN/i.test(m.name||'')){ m.color.set(0xDDB184).convertSRGBToLinear(); m.roughness=0.55; m.userData.envBase=0.25; }
+        // FACE PRINT (eyes + mouth): true black already, but gloss + env made it mirror the blue
+        // sky and read blue-grey. Matte printed ink, no reflections, so it STAYS black.
+        if(/BLACK-FACE/i.test(m.name||'')){ m.color.set(0x000000); m.roughness=0.65; m.userData.envBase=0.0; } }); } });
     // native LEGO scale (shares blend units with plate + shop), centered, feet on ground
     let box=new THREE.Box3().setFromObject(model);
     model.position.x-=(box.min.x+box.max.x)/2; model.position.z-=(box.min.z+box.max.z)/2; model.position.y-=box.min.y;
@@ -360,7 +480,7 @@
     rigFigure(model);
     // LEGS SWAP — Bizarro's pants replace Jesse's legs, bound to the hip pivots so the walk still animates
     gltf.load('./assets/legs.glb', (lg)=>{
-      const legs=lg.scene; legs.traverse(o=>{ if(o.isMesh){ o.castShadow=o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+      const legs=lg.scene; legs.traverse(o=>{ if(o.isMesh){ o.castShadow=o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
       const inv=new THREE.Matrix4().copy(figBody.matrixWorld).invert();
       // measure the OLD pants (legs + hip block) BEFORE hiding them: the denim takes exactly their place,
       // same size and seat, only the look changes
@@ -377,6 +497,27 @@
       legs.position.z += (oldB.min.z+oldB.max.z)/2-(lb.min.z+lb.max.z)/2;
       legs.position.y += oldB.min.y-lb.min.y;                                        // feet exactly where the old feet were
       legs.updateWorldMatrix(true,true);
+      // close the waist seam: the denim's EXTERIOR top edge sits below the torso's bottom rim
+      // (its hidden inner plug is proportionally taller than the old pants', so the bbox-height
+      // fit leaves a thin see-through gap). Measure the exterior shoulder on the WAIST BAND's own
+      // front face (the plug above it is recessed in z; the feet stick out further, so neither can
+      // use a whole-assembly z filter) and stretch uniformly from the feet until the shoulder tucks
+      // slightly up into the torso rim. Uniform, not y-only: the hip attach() below decomposes
+      // world matrices and a non-uniform parent scale would shear the reattached leg parts.
+      let rim=1e9; model.traverse(o=>{ if(o.isMesh && /Base1349/.test(o.name)){ tB.setFromObject(o).applyMatrix4(inv); rim=Math.min(rim,tB.min.y); } });
+      let band=null, bandTop=-1e9; legs.traverse(o=>{ if(!o.isMesh) return;
+        tB.setFromObject(o).applyMatrix4(inv); if(tB.max.y>bandTop){ bandTop=tB.max.y; band=o; } });
+      let sh=-1e9; if(band){ const bb=new THREE.Box3().setFromObject(band).applyMatrix4(inv);
+        const mm=new THREE.Matrix4().multiplyMatrices(inv,band.matrixWorld), vv=new THREE.Vector3(), pp=band.geometry.attributes.position;
+        for(let i=0;i<pp.count;i++){ vv.fromBufferAttribute(pp,i).applyMatrix4(mm); if(vv.z>bb.max.z-0.01 && vv.y>sh) sh=vv.y; } }
+      if(rim<1e8 && sh>oldB.min.y+0.1 && sh<rim){                                    // feet sit at oldB.min.y after the seat above
+        legs.scale.multiplyScalar((rim+0.006-oldB.min.y)/(sh-oldB.min.y));
+        legs.updateWorldMatrix(true,true); lb=new THREE.Box3().setFromObject(legs).applyMatrix4(inv);
+        legs.position.x += (oldB.min.x+oldB.max.x)/2-(lb.min.x+lb.max.x)/2;          // recenter after the scale
+        legs.position.z += (oldB.min.z+oldB.max.z)/2-(lb.min.z+lb.max.z)/2;
+        legs.position.y += oldB.min.y-lb.min.y;                                      // feet back on the ground
+        legs.updateWorldMatrix(true,true);
+      }
       const parts=[]; legs.traverse(o=>{ if(o.isMesh){ const b=new THREE.Box3().setFromObject(o).applyMatrix4(inv); parts.push({o,cx:(b.min.x+b.max.x)/2,cy:(b.min.y+b.max.y)/2}); } });
       const WAIST_CUT=oldB.min.y+0.66*(oldB.max.y-oldB.min.y);   // upper third (waist band) stays with the body
       parts.forEach(p=>{ if(p.cy>WAIST_CUT) return;              // waist stays with the body
@@ -386,7 +527,7 @@
     // HAIR — Bizarro's hairpiece, snapped onto the figure's head (moves with the figure)
     gltf.load('./assets/hair.glb', (hg)=>{
       const hair=hg.scene;
-      hair.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });   // dark brown + smooth shading baked into hair.glb
+      hair.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });   // dark brown + smooth shading baked into hair.glb
       model.updateWorldMatrix(true,true);
       const inv=new THREE.Matrix4().copy(model.matrixWorld).invert();
       const headNode=model.getObjectByName('Inner-Node-jesse_dot_io-7');
@@ -412,8 +553,7 @@
   scene.add(shopHolder);
   gltf.load('./assets/coffee_shop.glb', (g)=>{
     const shop=g.scene;
-    shop.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false;
-      if(o.material){ o.material.metalness=0; if(o.material.roughness!=null) o.material.roughness=Math.min(0.6,o.material.roughness||0.5); } } });
+    shop.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
     shop.scale.setScalar(SHOP_SCALE); shop.updateMatrixWorld(true);
     let box=new THREE.Box3().setFromObject(shop);
     shop.position.x-=(box.min.x+box.max.x)/2; shop.position.z-=(box.min.z+box.max.z)/2; shop.position.y-=box.min.y;
@@ -424,13 +564,12 @@
   // MODERN HOUSE — About + Contact live here. Native scale (already 0.369 pitch),
   // seated on the extended right side of the platform.
   const houseHolder=new THREE.Group();
-  houseHolder.position.set(snap(24), -0.15, snap(0));        // full mansion (grey kept) seats onto the green base
+  houseHolder.position.set(snap(24)+2.0025, -0.15, snap(0)); // +2.0025: the glb's west yard plates/beds were removed, which moved the auto-recenter bbox; this offset keeps the walls exactly where they always were
   houseHolder.rotation.y=-Math.PI/2;                         // flipped 180° to face the opposite side
   scene.add(houseHolder);
   gltf.load('./assets/modern_house.glb', (g)=>{
     const house=g.scene;
-    house.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false;
-      if(o.material){ o.material.metalness=0; if(o.material.roughness!=null) o.material.roughness=Math.min(0.6,o.material.roughness||0.5); } } });
+    house.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
     house.updateMatrixWorld(true);
     let box=new THREE.Box3().setFromObject(house);
     house.position.x-=(box.min.x+box.max.x)/2; house.position.z-=(box.min.z+box.max.z)/2; house.position.y-=box.min.y;
@@ -444,7 +583,7 @@
   // TREES — a few of your tree model, stud-snapped onto the grass, trunks solid
   gltf.load('./assets/tree.glb', (g)=>{
     const proto=g.scene;
-    proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+    proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
     let pb=new THREE.Box3().setFromObject(proto); const s=5.2/((pb.max.y-pb.min.y)||1);   // ~native, proportionate to buildings
     const placed=[];
     function treeOK(x,z){
@@ -453,12 +592,24 @@
       if(x>-8.5 && x<6.4 && z>2.5 && z<17.4) return false;   // ruins
       if(x>4.5 && x<16 && z>-18 && z<-7.5)  return false;   // run-down house
       if(Math.abs(x)<3 && Math.abs(z)<3) return false;   // keep spawn clear
-      for(let i=0;i<placed.length;i++) if(Math.hypot(x-placed[i][0],z-placed[i][1])<5.5) return false;  // spacing
+      for(let i=0;i<placed.length;i++) if(Math.hypot(x-placed[i][0],z-placed[i][1])<3.5) return false;  // spacing (was 5.5; lowered for the border tree line, the original 16 are unaffected)
       return true; }
     // irregular scatter on the outer grass (off the central sidewalk loop) with varied spacing
     const cand=[[-15.3,-12.5],[-15.6,-5],[-13.8,3.5],[-15,11.5],[-8.5,15],[-2,-15.2],
                 [21,-13.5],[28.5,-14],[31,-3.5],[30.5,6.5],[31.2,13],[10.5,13.5],[16.5,12],
-                [24.3,15.3],[2.6,-11.5],[15.6,-5.4]];   // fill-ins: SE corner grass, south-central grass, pocket between the walk and the run-down house lawn
+                [24.3,15.3],[2.6,-11.5],[15.6,-5.4],   // fill-ins: SE corner grass, south-central grass, pocket between the walk and the run-down house lawn
+                // BORDER TREE LINE: a ring along the plate rim and just past it on the
+                // walkable apron, plus corner pockets and a few inner-edge fill-ins, so the
+                // borders/corners read as a tree line instead of empty grass. Generated
+                // against the pad/sidewalk math + all flower and lamp positions (trunks
+                // clear of grey and of every flower cluster).
+                [34.9,20.1],[34.9,-20.1],[-18.6,20.1],[-18.6,-20.1],[17.9,16.9],[23.9,-16.6],
+                [31.6,-16.6],[28.6,-8.9],[-11.6,7.9],[-14.9,21],[-10.1,-20.6],[-9.6,21.1],
+                [-5.6,-19.7],[-5.3,21.1],[-1,-19.9],[-0.6,20.6],[3.9,-20],[4.2,20.9],
+                [7.8,-20.5],[8.1,20.6],[13.1,-20.7],[13,20.8],[16.7,-20],[22.1,-19.8],
+                [22.3,19.9],[25.5,-21.1],[26.8,20.3],[-19.4,-15.4],[35.2,-16.1],[35.6,-11.5],
+                [34.5,-7.3],[-19.3,-2.6],[35.7,-2.5],[-19.4,1.6],[35.8,1.8],[-19.5,6.8],
+                [35.7,7.1],[-18.7,14.9],[35.8,15.4]];
     cand.forEach(([px,pz])=>{ if(!treeOK(px,pz)) return; placed.push([px,pz]);
       const sc=s*(0.82+Math.random()*0.4);                          // scale variation
       const t=proto.clone(true); t.scale.setScalar(sc); t.updateMatrixWorld(true);
@@ -467,6 +618,19 @@
       const grp=new THREE.Group(); grp.position.set(snap(px),0,snap(pz)); grp.rotation.y=Math.random()*Math.PI*2;  // random facing
       grp.add(t); scene.add(grp);
       grp.updateWorldMatrix(true,true); rasterizeSolid(grp); });
+    // DISTANT GIANT TREES: oversized clones far past the walk bounds, silhouettes in the fog
+    // alongside the distant hills. Unreachable, so no collision and no shadow-map cost.
+    const FAR_TREES=[ // [x, z, scale mult, facing]
+      [-45,4,2.0,0.4],[-42,-18,1.7,2.1],[8,-44,2.1,1.2],[34,-46,1.8,2.8],
+      [58,8,1.9,0.9],[55,-8,1.7,1.9],[18,46,2.0,0.2],[-8,45,1.7,2.5]];
+    FAR_TREES.forEach(([px,pz,sc,rot])=>{
+      const t=proto.clone(true); t.scale.setScalar(s*sc); t.updateMatrixWorld(true);
+      t.traverse(o=>{ if(o.isMesh) o.castShadow=false; });
+      const b=new THREE.Box3().setFromObject(t);
+      t.position.x-=(b.min.x+b.max.x)/2; t.position.z-=(b.min.z+b.max.z)/2;
+      t.position.y-=b.min.y+0.12;   // base sunk slightly into the far-land sheet (its top is ~0.09 below stud tips)
+      const grp=new THREE.Group(); grp.position.set(snap(px),0,snap(pz)); grp.rotation.y=rot;
+      grp.add(t); scene.add(grp); });
   }, undefined, e=>{ console.warn('tree load failed', e); });
 
   // RUINS — decorative structure, stud-snapped, on a grey pad. Entry NOT constrained yet (no collision).
@@ -476,7 +640,7 @@
   scene.add(ruinsHolder);
   gltf.load('./assets/ruins.glb', (g)=>{
     const ru=g.scene;
-    ru.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+    ru.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
     ru.scale.setScalar(1.3); ru.updateMatrixWorld(true);   // bigger overall
     let box=new THREE.Box3().setFromObject(ru);
     ru.position.x-=(box.min.x+box.max.x)/2; ru.position.z-=(box.min.z+box.max.z)/2; ru.position.y-=box.min.y;
@@ -493,7 +657,7 @@
   gltf.load('./assets/rundown_house.glb', (g)=>{
     const h=g.scene;
     h.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false;
-      if(o.material){ o.material.metalness=0; if(o.material.roughness!=null) o.material.roughness=Math.min(0.6,o.material.roughness||0.5);
+      if(o.material){ polish(o);
         // the run-down house alone sits deep in the fog: its own fog ramp starts much closer,
         // so it reads faded/haunted while the rest of the space stays clear
         o.material.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace(
@@ -513,7 +677,7 @@
   // the grey sidewalks/pads and well away from the buildings.
   gltf.load('./assets/flowers.glb', (g)=>{
     const proto=g.scene;
-    proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+    proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
     function plant(px,pz,rot,sc){ const f=proto.clone(true); f.scale.setScalar(sc); f.updateMatrixWorld(true);
       const b=new THREE.Box3().setFromObject(f);
       f.position.x-=(b.min.x+b.max.x)/2; f.position.z-=(b.min.z+b.max.z)/2; f.position.y-=b.min.y;
@@ -531,11 +695,31 @@
       [30.8,-11.2,2,0.95],[-15.2,15.4,2,1.05],[7.2,16.2,2,0.9],[23.2,13.2,2,1.0]];   // [x, z, count, base scale]
     extra.forEach(([px,pz,n,s],i)=>{ for(let j=0;j<n;j++){ const a=i*2.4+j*2.1;
       plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, s*(0.85+0.15*((i+j*3)%3))); } });
+    // 50 more plants in 23 clusters, spread over the open grass. Spots generated against
+    // the same onPad/onWalk math as the ground tiles, so every cluster (all members plus
+    // footprint) clears the grey sidewalks/pads, the buildings, trees, lamps and the
+    // earlier flowers. [x, z, count, base scale]
+    const more=[
+      [14.3,15.8,3,1.08],[12,10.9,2,0.87],[16.1,-16.6,2,0.86],[20.1,-15.1,3,1.08],[1.1,-13.3,2,0.92],
+      [-12.4,9.7,2,0.99],[11,15.9,2,0.91],[17.6,-8,2,0.89],[4.4,-8.2,2,0.89],[-1.8,-10.2,3,1],
+      [19.1,-5.6,2,0.98],[9.4,9.6,3,0.85],[22.4,15.5,1,0.97],[-13.7,-0.2,2,0.95],[24.5,9.9,3,1.08],
+      [24.4,-13.7,2,1.05],[17.5,-11.2,2,0.91],[30.1,14.6,3,0.88],[27.6,10,1,0.99],[18.5,7.6,3,0.9],
+      [-10.9,15.1,1,0.89],[0.6,-8.6,2,0.91],[17.5,14.6,2,0.92]];
+    more.forEach(([px,pz,n,s],i)=>{ for(let j=0;j<n;j++){ const a=i*2.9+j*2.1;
+      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, s*(0.85+0.15*((i+j*3)%3))); } });
+    // flower band in FRONT of the border tree line behind the ruins: on the grass strip between
+    // the ruins pad (ends z 17.2) and the south rim trees (z ~20.6..21.1), every center >=1.7
+    // from the nearest trunk so members (0.74 spread) stay clear. [x, z, count, base scale]
+    const ruinsBack=[
+      [-12.8,19.5,2,1.0],[-9.9,18.7,3,0.9],[-6.9,19.8,2,1.05],[-3.9,18.9,3,0.95],[-1.9,19.4,2,0.9],
+      [1.6,19.0,3,1.0],[5.4,19.2,2,0.9],[7.4,18.8,3,1.05],[10.1,19.9,2,0.95]];
+    ruinsBack.forEach(([px,pz,n,s],i)=>{ for(let j=0;j<n;j++){ const a=i*3.3+j*2.1;
+      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, s*(0.85+0.15*((i+j*3)%3))); } });
   }, undefined, e=>{ console.warn('flowers load failed', e); });
 
   // STREET LIGHTS — 6 lampposts in pairs, each with a warm-yellow glow (not too strong)
   gltf.load('./assets/lamppost.glb', (g)=>{
-    const proto=g.scene; proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; } });
+    const proto=g.scene; proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
     const L=1.086;   // base footprint = exactly 2x2 studs (0.739u), fully covering the tile
     const lampI=applyTOD(), lit=lampI>0.08;                     // off in daylight, stronger as day recedes; cycle re-drives them live
     const bulbCol=lit ? (lampI>0.5?0xffe6a0:0xd8b45a) : 0x4a3d1e;
@@ -562,7 +746,7 @@
     holder.rotation.y=cfg.rotY||0;
     scene.add(holder); window.__props[cfg.name]=holder; holder.userData.cfg=cfg;
     gltf.load(url,(g)=>{ const m=g.scene;
-      m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+      m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
       m.updateMatrixWorld(true);
       let box=new THREE.Box3().setFromObject(m);
       m.position.x-=(box.min.x+box.max.x)/2; m.position.z-=(box.min.z+box.max.z)/2; m.position.y-=box.min.y;
@@ -580,7 +764,17 @@
   // Porsche 912 on the mansion driveway, in front of the existing car, nose pointing out (-x).
   // Sized to the orange garage car's measured footprint (~2.2 wide, nose at x 25.75): same width class.
   // rotY 0.085 counters a slight baked-in tilt in the export so it parks straight on the stud rows.
-  loadProp('./assets/porsche.glb', {name:'porsche', pos:[20.6,4.4], y:0, rotY:-0.015, targetLen:5.6, solid:true});
+  loadProp('./assets/porsche.glb', {name:'porsche', pos:[20.6,4.4], y:0, rotY:-0.015, targetLen:5.6, solid:true,
+    onload:(holder,m)=>{ // wheel rims: metallic silver instead of the baked flat white, a touch more reflective than the plastic.
+      // MB309 also paints the rear lower trim (world x > 22.4 at this parking spot); only the wheel meshes go silver.
+      holder.updateWorldMatrix(true,true);
+      let rim=null;
+      m.traverse(o=>{ if(o.isMesh&&o.material&&o.material.name==='MB309'){
+        const cx=new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3()).x;
+        if(cx<22.4){ if(!rim){ rim=o.material.clone(); rim.name='MB309-silver';
+          rim.color.set(0x969ba3); rim.metalness=0.85; rim.roughness=0.2; regMat(rim,0.9); }
+          o.material=rim; } } });
+    }});
   // Skull on the ground left of the ruins doorway, against the wall, face out. Same size as the figure's head, stamped in.
   loadProp('./assets/skull.glb',   {name:'skull',   pos:[-2.7,5.1], y:-0.03, rotY:Math.PI, targetH:0.46});
   // LEGO rat along the ruins' left side wall (east flank, wall face x 1.62), heading toward the back:
@@ -593,8 +787,13 @@
       const cbox=new THREE.Box3().setFromObject(holder); const topY=cbox.max.y; // world Y of tardis top
       loadProp('./assets/crystal.glb', {name:'crystal', pos:[holder.position.x, holder.position.z], y:topY, rotY:0, targetH:0.5,
         onload:(ch,cm)=>{ cm.traverse(o=>{ if(o.isMesh&&o.material){ o.material=o.material.clone();
-          o.material.color.set(0x1d4ed8); o.material.emissive=new THREE.Color(0x1e50ff); o.material.emissiveIntensity=1.1;
-          o.material.roughness=0.25; if(o.material.map) o.material.map=null; } });
+          // real glass, not frosted plastic: deep blue body, mirror-sharp facets, see-through.
+          // depthWrite stays ON so the stacked inner facet shells don't alpha-compound to white,
+          // and the emissive is driven by the day cycle (applyTOD): subtle in daylight so the
+          // glass reads, full NABU beacon at night.
+          o.material.color.set(0x0a2496); o.material.emissive=new THREE.Color(0x0828f0); o.material.emissiveIntensity=0.35;
+          o.material.roughness=0.05; o.material.metalness=0; o.material.transparent=true; o.material.opacity=0.85; o.material.depthWrite=true;
+          if(o.material.map) o.material.map=null; regMat(o.material,0.7); crystalMat=o.material; } });
           const cpl=new THREE.PointLight(0x3b82f6, 2.2, 8, 2);   // electric blue radiance onto the Tardis top + balcony
           cpl.position.set(0, 0.25/(ch.scale.x||1), 0);          // mid-crystal in world units (holder is scaled)
           ch.add(cpl); }}); }});
@@ -606,7 +805,7 @@
       // deliberately NOT flat or stud-snapped: they rest on each other like two slabs settled in a box.
       gltf.load('./assets/money_brick.glb',(mg)=>{
         const proto=mg.scene;
-        proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; if(o.material) o.material.metalness=0; } });
+        proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
         const bx=new THREE.Box3().setFromObject(proto);
         proto.position.sub(bx.getCenter(new THREE.Vector3()));   // pivot through the slab's own center
         const a=new THREE.Group(); a.add(proto);
@@ -626,32 +825,32 @@
     {t:'The Broken NPC', c:'#2ee078', img:'./assets/Broken_NPC.jpg', video:'./assets/Broken_NPC.MP4', year:2024, desc:'A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.'},
     {t:'Apple Accessory Prototypes', c:'#38bdf8', img:'./assets/Blender_Case.jpg', video:'./assets/Blender_Case_Video.mp4', year:2024, desc:'3D designed Apple product case prototypes developed using Blender.'},
     {t:'Video Game Demo', c:'#f4c430', img:'./assets/Shiri_VIdeo_Game.jpg', video:'./assets/Shiri_Video_Game.mp4', year:2024, desc:'Animated and assembled collection of images created in Adobe After Effects.'},
-    {t:'Rendered 3D Model', c:'#ff7ac2', img:'./assets/Venom.PNG', year:2024, desc:'High-quality 3D rendered movie character with detailed modeling and texturing in Blender.'},
+    {t:'Rendered 3D Model', c:'#ff7ac2', img:'./assets/Venom.PNG', year:2024, desc:'Movie character modeled, textured, and rendered in Blender.'},
     {t:'Custom Phone Case', c:'#8b5cf6', img:'./assets/My_Case.jpg', year:2025, desc:'Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.'},
     {t:'Custom Airpod Case', c:'#f97316', img:'./assets/Airpod_Case.JPG', year:2026, desc:'Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.'},
     {t:'HMI Sensor System', c:'#2ee078', img:'./assets/New_Radar_Sensor_front.jpg', video:'./assets/New_Radar_Sensor.mp4', year:2024, desc:'Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.'},
     {t:'Custom RGB Controller', c:'#38bdf8', img:'./assets/New_LED_Box_Front.jpg', video:'./assets/New_LED_Box.mp4', year:2024, desc:'Functional system built from scratch. 3D printed geometric casing housing the microcontroller.'},
     {t:'Product, not Consumer', c:'#f4c430', img:'./assets/Shyon_Sculpture.jpg', year:2024, desc:'Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.'},
-    {t:'Campaign Project', c:'#ff7ac2', img:'./assets/Adverstisement_Project.jpg', year:2024, desc:'Conceptual brand advertisement utilizing environmental storytelling and scenic composition.'},
-    {t:'Candid Studio Portrait', c:'#8b5cf6', img:'./assets/Max_Pic.JPG', year:2024, desc:'A vibrant portrait capturing authentic moments with professional lighting.'},
-    {t:'Studio Photography', c:'#f97316', img:'./assets/Photography_1.jpg', year:2024, desc:'Professional photography exploring composition and lighting techniques.'} ];
+    {t:'Campaign Project', c:'#ff7ac2', img:'./assets/Adverstisement_Project.jpg', year:2024, desc:'Conceptual brand advertisement built around scenic composition.'},
+    {t:'Candid Studio Portrait', c:'#8b5cf6', img:'./assets/Max_Pic.JPG', year:2024, desc:'Studio portrait shot with controlled lighting.'},
+    {t:'Studio Photography', c:'#f97316', img:'./assets/Photography_1.jpg', year:2024, desc:'Studio photography focused on composition and lighting.'} ];
   const PROFESSIONAL=[
     {t:'UI/UX, minasech.net', c:'#38bdf8', img:'./assets/Mina_Website.png', year:2025, desc:'Full-stack website design including React frontend and responsive interface.', links:[{label:'Visit minasech.net', href:'https://minasech.net'}]},
     {t:'Everly Care Home', c:'#f4c430', img:'./assets/Everly_Cover_Image.png', year:2026, desc:'Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.', links:[{label:'Visit everlycarehome.com', href:'https://everlycarehome.com'}]},
     {t:'Luning Dr Flyer', c:'#2ee078', img:'./assets/RealEstate_Luning_Flyer.jpg', year:2022, desc:'Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.'},
     {t:'Colleen Dr Flyer', c:'#8b5cf6', img:'./assets/RealEstate_Colleen_Flyer.jpg', year:2022, desc:'A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.'},
     {t:'Morning Star Dr Flyer', c:'#ff7ac2', img:'./assets/RealEstate_MorningStar_Flyer.png', year:2022, desc:'A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.'},
-    {t:'Moskowite Corner', c:'#f97316', img:'./assets/RealEstate_MoskowiteCorner_Concept.jpg', year:2026, desc:'An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It reimagines a closed gas station lot as a renewed fuel and retail destination.'} ];
+    {t:'Moskowite Corner', c:'#f97316', img:'./assets/RealEstate_MoskowiteCorner_Concept.jpg', year:2026, desc:'An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references.'} ];
   const ABOUT=[
-    {t:'Who I Am', c:'#38bdf8', img:'./assets/Shyon_About.png', desc:'I\'m a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. That range started early, with Lego stop-motion films, and turned into a habit of learning whatever a project needs.'},
+    {t:'Who I Am', c:'#38bdf8', img:'./assets/Shyon_About.png', desc:'I\'m a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. That range started in childhood with LEGO builds and stop motion films, and it became a working habit: learn the tools each project requires and use them properly.'},
     {t:'Resume', c:'#f4c430', desc:'My full resume, with experience and skills.', links:[{label:'Open My Resume', href:'./My Resume.pdf'}]},
     {t:'Contact', c:'#2ee078', desc:'Reach out for work, collaborations, or anything else.', links:[{label:'Email shyon2001@gmail.com', href:'mailto:shyon2001@gmail.com'},{label:'LinkedIn in/shyonshiri', href:'https://www.linkedin.com/in/shyonshiri/'}]} ];
   const NABU=[
-    {t:'NABU Promotional Video', c:'#38bdf8', img:'./assets/Nabu_Poster_Banner.jpg', video:'./assets/Nabu_Poster_Banner.mp4', year:2023, desc:'Dynamic promotional video for NABU clothing, crafted with professional animation in Adobe After Effects.'},
-    {t:'NABU 2026 Teaser', c:'#2ee078', img:'./assets/NABU_Puffer_AD.jpg', video:'./assets/NABU_PUFFER_AD.mp4', year:2025, desc:'Professional promotional video for NABU\'s puffer jacket collection shot with cinematic quality.'},
-    {t:'NABU 2025 Summer Collection', c:'#f4c430', img:'./assets/NABU_SALE_AD.jpg', video:'./assets/NABU_SALE_AD.mp4', year:2025, desc:'Engaging promotional content showcasing NABU\'s latest collection.'},
-    {t:'NABU 2023 Spring Collection', c:'#ff7ac2', img:'./assets/Stevie_Pic.JPG', year:2022, desc:'Professional portrait photography showcasing design systems and visual aesthetics.'},
-    {t:'NABU 2024 Rerelease Promotion', c:'#8b5cf6', img:'./assets/Digital_Media_Cover.jpg', year:2024, desc:'Promotional campaign showcasing the return of our Persian rug pants, reimagined for 2024.'} ];
+    {t:'NABU Promotional Video', c:'#38bdf8', img:'./assets/Nabu_Poster_Banner.jpg', video:'./assets/Nabu_Poster_Banner.mp4', year:2023, desc:'Promotional video for NABU clothing, animated in Adobe After Effects.'},
+    {t:'NABU 2026 Teaser', c:'#2ee078', img:'./assets/NABU_Puffer_AD.jpg', video:'./assets/NABU_PUFFER_AD.mp4', year:2025, desc:'Promotional video for NABU\'s puffer jacket collection.'},
+    {t:'NABU 2025 Summer Collection', c:'#f4c430', img:'./assets/NABU_SALE_AD.jpg', video:'./assets/NABU_SALE_AD.mp4', year:2025, desc:'Promotional video for the NABU 2025 summer collection.'},
+    {t:'NABU 2023 Spring Collection', c:'#ff7ac2', img:'./assets/Stevie_Pic.JPG', year:2022, desc:'Portrait photography for the NABU 2023 spring collection.'},
+    {t:'NABU 2024 Rerelease Promotion', c:'#8b5cf6', img:'./assets/Digital_Media_Cover.jpg', year:2024, desc:'Promotional campaign for the 2024 rerelease of NABU\'s Persian rug pants.'} ];
   let mode='hub', fading=false, viewerOpen=false, nearPortal=null, activePortal=null, camAnim=null;
   const camLook=new THREE.Vector3(0,0.95,0);
 
@@ -824,12 +1023,39 @@
     if(!drag||mode!=='hub'||fading||camAnim) return;
     camYaw-=(p.x-lx)*SENS; camPitch=Math.max(0.06,Math.min(1.2,camPitch+(p.y-ly)*SENS)); lx=p.x; ly=p.y; });
   addEventListener('mouseup',()=>{ drag=false; mdrag=false; });
-  canvas.addEventListener('touchstart',e=>{ initAudio(); const p=pt(e); lx=p.x; ly=p.y;
+  // touch look-drag tracks its own touch identifier so the joystick finger never steals the camera
+  let lookId=null;
+  canvas.addEventListener('touchstart',e=>{ initAudio(); if(lookId!==null) return; const t=e.changedTouches[0];
+    lookId=t.identifier; lx=t.clientX; ly=t.clientY;
     if(mode==='hub') drag=true; else if(mode==='menu'&&!viewerOpen){ mdrag=true; mMoved=0; } },{passive:true});
-  canvas.addEventListener('touchmove',e=>{ const p=pt(e);
-    if(mdrag&&mode==='menu'){ mMoved+=Math.abs(p.x-lx); menuPan=clampPan(menuPan-(p.x-lx)*0.011); lx=p.x; ly=p.y; return; }
-    if(!drag)return; camYaw-=(p.x-lx)*SENS; camPitch=Math.max(0.06,Math.min(1.2,camPitch+(p.y-ly)*SENS)); lx=p.x; ly=p.y; },{passive:true});
-  canvas.addEventListener('touchend',()=>{ drag=false; mdrag=false; });
+  canvas.addEventListener('touchmove',e=>{ let t=null; for(const c of e.changedTouches) if(c.identifier===lookId) t=c; if(!t) return;
+    if(mdrag&&mode==='menu'){ mMoved+=Math.abs(t.clientX-lx); menuPan=clampPan(menuPan-(t.clientX-lx)*0.011); lx=t.clientX; ly=t.clientY; return; }
+    if(!drag)return; camYaw-=(t.clientX-lx)*SENS; camPitch=Math.max(0.06,Math.min(1.2,camPitch+(t.clientY-ly)*SENS)); lx=t.clientX; ly=t.clientY; },{passive:true});
+  const lookEnd=e=>{ for(const c of e.changedTouches) if(c.identifier===lookId){ lookId=null; drag=false; mdrag=false; } };
+  canvas.addEventListener('touchend',lookEnd); canvas.addEventListener('touchcancel',lookEnd);
+
+  // ── touch controls: virtual joystick + JUMP + contextual ENTER/BACK (coarse-pointer devices only) ──
+  const IS_TOUCH = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;
+  let joyX=0,joyY=0,joyRun=false,joyId=null;
+  const joyEl=document.getElementById('joy'), joyKnob=document.getElementById('joyKnob'),
+        btnJump=document.getElementById('btnJump'), btnAct=document.getElementById('btnAct'), btnBack=document.getElementById('btnBack');
+  if(IS_TOUCH){
+    document.body.classList.add('touch');
+    const touchRows=[['Move','Left stick'],['Run','Push stick far'],['Jump','JUMP button'],['Look around','Drag the screen'],['Enter a building','Tap ENTER']];
+    document.querySelectorAll('#controls .row').forEach((r,i)=>{ if(touchRows[i]) r.innerHTML='<span>'+touchRows[i][0]+'</span><b>'+touchRows[i][1]+'</b>'; });
+    const joySet=t=>{ const r=joyEl.getBoundingClientRect(); const R=r.width/2-10;
+      let dx=t.clientX-(r.left+r.width/2), dy=t.clientY-(r.top+r.height/2); const m=Math.hypot(dx,dy);
+      if(m>R){ dx*=R/m; dy*=R/m; }
+      joyKnob.style.transform='translate('+dx+'px,'+dy+'px)';
+      joyX=dx/R; joyY=dy/R; joyRun=Math.hypot(joyX,joyY)>0.86; };
+    joyEl.addEventListener('touchstart',e=>{ e.preventDefault(); initAudio(); if(joyId!==null) return; const t=e.changedTouches[0]; joyId=t.identifier; joySet(t); },{passive:false});
+    joyEl.addEventListener('touchmove',e=>{ e.preventDefault(); for(const t of e.changedTouches) if(t.identifier===joyId) joySet(t); },{passive:false});
+    const joyEnd=e=>{ for(const t of e.changedTouches) if(t.identifier===joyId){ joyId=null; joyX=0; joyY=0; joyRun=false; joyKnob.style.transform=''; } };
+    joyEl.addEventListener('touchend',joyEnd); joyEl.addEventListener('touchcancel',joyEnd);
+    btnJump.addEventListener('touchstart',e=>{ e.preventDefault(); initAudio(); jumpQ=true; },{passive:false});
+    btnAct.addEventListener('touchstart',e=>{ e.preventDefault(); if(mode==='hub'&&nearPortal&&!fading) enterPortal(nearPortal); },{passive:false});
+    btnBack.addEventListener('touchstart',e=>{ e.preventDefault(); if(viewerOpen) closeViewer(); else if(mode==='menu'&&!fading) exitPortal(); },{passive:false});
+  }
   canvas.addEventListener('wheel',e=>{ if(mode==='menu'){ if(!viewerOpen) menuPan=clampPan(menuPan+(e.deltaY+e.deltaX)*0.012); return; }
     camDist=Math.max(3,Math.min(16,camDist+e.deltaY*0.01)); },{passive:true});
   // control panel shows first; Enter dismisses it
@@ -846,10 +1072,11 @@
     let ix=0,iz=0;
     if(keys['w']||keys['arrowup'])iz+=1; if(keys['s']||keys['arrowdown'])iz-=1;
     if(keys['d']||keys['arrowright'])ix+=1; if(keys['a']||keys['arrowleft'])ix-=1;
+    if(joyId!==null){ ix+=joyX; iz-=joyY; }   // analog stick: up on the pad walks forward
     if(viewerOpen||fading||mode!=='hub'||camAnim){ ix=0; iz=0; }   // freeze the walk unless roaming the hub
     fV.set(-Math.sin(camYaw),0,-Math.cos(camYaw)); rV.set(-fV.z,0,fV.x);
     mV.set(0,0,0).addScaledVector(fV,iz).addScaledVector(rV,ix);
-    const mag=Math.min(1,mV.length()), running=!!keys['shift'];
+    const mag=Math.min(1,mV.length()), running=!!keys['shift']||joyRun;
     let dX=0,dZ=0; if(mag>0.02){ mV.normalize(); const s=(running?RUN:WALK)*mag; dX=mV.x*s; dZ=mV.z*s; }
     const kf=1-Math.exp(-12*dt); velX+=(dX-velX)*kf; velZ+=(dZ-velZ)*kf;
     // axis-separated move so you slide along walls and can hug them (0 gap); only real geometry blocks
@@ -896,11 +1123,15 @@
       nearPortal = (mode==='hub') ? portalAt(player.position.x, player.position.z, player.position.y) : null;
       let msg='';
       if(viewerOpen) msg='';
-      else if(mode==='menu') msg=(activePortal&&PORTALS[activePortal].panMax>0)
-        ? 'Click a project &nbsp;·&nbsp; Drag or scroll to browse &nbsp;·&nbsp; <b>Esc</b> to leave'
-        : 'Click a project &nbsp;·&nbsp; <b>Esc</b> to leave';
-      else if(nearPortal) msg='Press <b>E</b> &nbsp;·&nbsp; Enter '+PORTALS[nearPortal].label;
+      else if(mode==='menu') msg=IS_TOUCH
+        ? ((activePortal&&PORTALS[activePortal].panMax>0) ? 'Tap a project &nbsp;·&nbsp; Drag to browse' : 'Tap a project')
+        : ((activePortal&&PORTALS[activePortal].panMax>0)
+          ? 'Click a project &nbsp;·&nbsp; Drag or scroll to browse &nbsp;·&nbsp; <b>Esc</b> to leave'
+          : 'Click a project &nbsp;·&nbsp; <b>Esc</b> to leave');
+      else if(nearPortal) msg=IS_TOUCH ? 'Enter '+PORTALS[nearPortal].label : 'Press <b>E</b> &nbsp;·&nbsp; Enter '+PORTALS[nearPortal].label;
       if(msg){ promptEl.innerHTML=msg; promptEl.classList.add('on'); } else promptEl.classList.remove('on');
+      if(IS_TOUCH){ btnAct.classList.toggle('on', mode==='hub'&&!!nearPortal);
+        btnBack.classList.toggle('on', mode==='menu'&&!viewerOpen); }
     }
     // ── camera + render ──
     if(mode==='menu'){
@@ -940,6 +1171,7 @@
     set yaw(v){camYaw=v}, set pitch(v){camPitch=v}, set dist(v){camDist=v},
     get time(){return dayT}, set time(v){dayT=v; applyTOD();},
     tp(x,z){ player.position.x=x; player.position.z=z; velX=velZ=0; },
+    step(dt){ frame(Math.min(dt||0.033,0.05)); },   // manual frame pump for headless verification (rAF pauses in hidden panes)
     blocked: blockedAt };
   function loop(){ requestAnimationFrame(loop); frame(Math.min(clock.getDelta(),0.05)); }
   loop();

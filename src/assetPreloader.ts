@@ -145,7 +145,7 @@ const setupLazyLoadObserver = () => {
             // Fallback - load anyway
             element.src = element.dataset.src as string;
           });
-        } else if (element.tagName === 'VIDEO') {
+        } else if (element instanceof HTMLVideoElement) {
           element.preload = 'auto';
           observer.unobserve(element);
         }
