@@ -1003,9 +1003,9 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
           {/* Intro */}
           <StoryChapter
-            kicker="The Lego Realm · A storyboard"
-            title="One small world, told frame by frame."
-            body="This site hides a second one. Below is the story of the Lego Realm: what it is, why it exists, and how it was put together, one brick at a time."
+            kicker="The Lego Realm · Build breakdown"
+            title="An interactive 3D portfolio, documented frame by frame."
+            body="This site includes a second, interactive layer. The section below documents the Lego Realm: what it is, why I built it, and the pipeline used to produce it."
             first
           />
 
@@ -1013,67 +1013,67 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           <StoryChapter
             kicker="01 · What it is"
             title="A portfolio you can walk through."
-            body="The Lego Realm is a hand built LEGO world living inside this site. It is a small town on a single baseplate: a coffee shop, a modern house, ancient ruins, a run down cottage, and a minifig version of me to walk around as. Every building is a doorway. Step inside one and the realm opens a wing of my work."
+            body="The Lego Realm is a real time 3D environment embedded in this site. It is a small town on a single baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after me. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Creative Projects, About, and NABU."
           />
           <StoryFrame num="FR 01" scene="The realm" src="/assets/story/story_world_midday.jpg"
-            caption="The whole realm on one baseplate, seen at midday. Four buildings, a street of studs, and a seven minute sun." />
+            caption="The full map at midday. Four structures, a sidewalk loop, and a continuous day and night cycle running on a seven minute loop." />
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
             <StoryFrame num="FR 02" scene="The minifig" src="/assets/story/story_figure_front.jpg"
-              caption="The minifig is me. Denim legs, grey jacket, and the actual haircut, swapped in brick by brick." />
+              caption="The playable character, modeled after me. The hair, jacket, and denim legs were modeled and textured separately, then bound to the walk cycle rig." />
             <StoryFrame num="FR 03" scene="Nightfall" src="/assets/story/story_lamp_night.jpg"
-              caption="When the sun goes down the lampposts wake up. The world is lit by its own day cycle, nothing is faked." />
+              caption="Night in the realm. The lampposts are driven by the day cycle and brighten as the sun goes down. All lighting is computed in real time." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
             <StoryFrame num="FR 04" scene="The coffee shop" src="/assets/story/story_shop_evening.jpg"
-              caption="The coffee shop at dusk. Walk through its door and it opens my professional work." />
+              caption="The coffee shop at dusk. Its interior is the portal to Professional Services." />
             <StoryFrame num="FR 05" scene="The NABU crystal" src="/assets/story/story_crystal_night.jpg"
-              caption="A blue crystal glowing in the ruins guards the fourth portal, NABU." />
+              caption="The NABU portal: a crystal in the ruins built with an emissive material and a dedicated point light." />
           </div>
 
           {/* Chapter 02 · WHY */}
           <StoryChapter
             kicker="02 · Why I made it"
-            title="Because scrolling is not walking."
-            body="Most portfolios are lists. I wanted mine to be a place. I grew up building LEGO, and a brick world is the most honest picture of how I work: one piece at a time, everything snapped to a grid, nothing hidden behind the walls. So instead of telling you what I make, I built somewhere you can go and see it standing."
+            title="Built on a childhood habit."
+            body="Most portfolios are static lists. I wanted mine to demonstrate the work directly. I grew up building LEGO, and that process still matches how I approach design and engineering: modular parts, a consistent grid, and structures you can inspect from any angle. The realm applies that to a portfolio, presenting the work in an environment you can explore instead of a page you scroll past."
           />
           <StoryFrame num="FR 06" scene="Dusk on the plate" src="/assets/story/story_sunset.jpg"
-            caption="Dusk on the plate. Every hour of the day has its own light, and the loop never stops." />
+            caption="The map at dusk. Sky, fog, sun color, exposure, and lamp intensity are interpolated continuously across the cycle rather than switched between presets." />
 
           {/* Chapter 03 · HOW */}
           <StoryChapter
             kicker="03 · How it was made"
-            title="Built brick by brick, then shipped to the browser."
-            body="Every structure began as real bricks in Blender, assembled stud by stud from my own builds. Each model is exported, compressed, and loaded by a custom Three.js engine that runs the realm right here in the browser. The whole world snaps to a true LEGO stud grid, collision is measured per brick, stairs carry you and walls stop you, and the sun completes a full day every seven minutes."
+            title="Modeled in Blender, rendered with Three.js."
+            body="Every structure was assembled from individual bricks in Blender, using my own builds. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world is placed on the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
           />
           <StoryFrame num="FR 07" scene="The prop bench" src="/assets/story/story_blender_props.jpg"
-            caption="The prop bench in Blender. The Porsche, the treasure chest, the lamppost and the money bricks, staged before export." />
+            caption="Prop assets staged in Blender before export: the Porsche 912, the treasure chest, a lamppost, and the money bricks." />
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
             <StoryFrame num="FR 08" scene="Under the hood" src="/assets/story/story_blender_shop_wire.jpg"
-              caption="The coffee shop with its wireframe on. Every brick in the realm is a real modelled piece." />
+              caption="The coffee shop in wireframe. Every brick is individually modeled geometry, not a texture or a decal." />
             <StoryFrame num="FR 09" scene="Edit mode" src="/assets/story/story_blender_hair.jpg"
-              caption="Shaping the hair in edit mode, vertex by vertex." />
+              caption="The character's hair in edit mode. Modeled manually, then exported with cleaned normals for smooth shading." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
             <StoryFrame num="FR 10" scene="Mid assembly" src="/assets/story/story_blender_figure.jpg"
-              caption="The minifig mid assembly. The legs are missing because they were already out in the engine, learning to walk." />
+              caption="The figure mid build in Blender. The legs were exported as a separate asset and bound to the hip pivots for the walk animation." />
             <StoryFrame num="FR 11" scene="The ruins" src="/assets/story/story_blender_ruins.jpg"
-              caption="The ruins in Blender. The vines stayed, the flowers were stripped for the final build." />
+              caption="The ruins in Blender. The exported geometry was edited further for the final build, including removing extra columns and flower petals." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
             <StoryFrame num="FR 12" scene="The modern house" src="/assets/story/story_blender_house.jpg"
-              caption="The modern house, garden and garage included. In the realm, its door leads to my About page." />
+              caption="The modern house with its garage and garden. In the realm, its door opens the About section." />
             <StoryFrame num="FR 13" scene="The cottage" src="/assets/story/story_blender_rundown.jpg"
-              caption="The run down cottage and its vine, the newest corner of the realm." />
+              caption="The run down cottage, the most recent structure added to the map." />
           </div>
 
           {/* Closing CTA */}
           <StoryChapter
-            kicker="The end, almost"
-            title="Now walk it yourself."
-            body="Frames only get you so far. The realm is live on this site, day cycle running, doors unlocked."
+            kicker="04 · Try it"
+            title="Explore it yourself."
+            body="Screenshots only cover so much. The realm is live on this site, with the full day cycle and all four portals active."
           />
-          <StoryFrame num="FR 14" scene="Keep walking" src="/assets/story/story_figure_back.jpg"
-            caption="Enough reading. The realm is open." />
+          <StoryFrame num="FR 14" scene="In the realm" src="/assets/story/story_figure_back.jpg"
+            caption="The realm is live. Enter below." />
           <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
