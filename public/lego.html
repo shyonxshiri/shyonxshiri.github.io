@@ -54,7 +54,7 @@
   #leave:hover{background:rgba(255,207,0,.92);color:#20222a;border-color:rgba(255,207,0,.9);}
   #fade{position:fixed;inset:0;background:#05070d;opacity:0;pointer-events:none;transition:opacity .45s ease;z-index:40;}
   #fade.on{opacity:1;}
-  #prompt{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:25;font-weight:700;font-size:13px;
+  #prompt{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:25;font-weight:700;font-size:13px;
     color:#fff;background:rgba(18,21,28,.74);border:1px solid rgba(255,255,255,.16);border-radius:980px;
     padding:10px 22px;backdrop-filter:blur(8px);opacity:0;transition:opacity .18s ease;pointer-events:none;white-space:nowrap;}
   #prompt.on{opacity:1;}
@@ -63,7 +63,19 @@
   #viewer{position:fixed;inset:0;z-index:45;background:rgba(7,9,14,.93);display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;}
   #viewer.on{display:flex;}
   #viewer .card{max-width:min(860px,92vw);width:100%;background:#141720;border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden;}
+  #viewer .mwrap{position:relative;width:100%;}
   #viewer .media{width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:600;font-size:56px;color:#141720;}
+  /* ‹ › step through an asset's extra shots (only shown when it has more than one) */
+  #viewer .nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;
+    background:rgba(12,17,32,.74);border:1px solid rgba(255,255,255,.18);color:#e7eaf0;
+    font-family:'Nunito',sans-serif;font-weight:800;font-size:24px;line-height:1;padding-bottom:3px;
+    display:none;align-items:center;justify-content:center;cursor:pointer;user-select:none;z-index:2;
+    transition:background .18s ease,border-color .18s ease;}
+  #viewer .nav.on{display:flex;}
+  #viewer .nav:hover{background:rgba(56,189,248,.3);border-color:rgba(56,189,248,.65);}
+  #viewer .nav.prev{left:14px;}
+  #viewer .nav.next{right:14px;}
+  #viewer .cap .s{margin-top:7px;font-weight:800;font-size:11px;letter-spacing:1.4px;color:#38bdf8;}
   #viewer .cap{padding:16px 20px;font-weight:800;font-size:12.5px;letter-spacing:1px;color:#b9bdc6;}
   #viewer .cap .d{margin-top:7px;font-weight:500;font-size:12px;letter-spacing:.3px;line-height:1.55;color:#8f95a3;}
   #viewer .cap a{display:inline-block;margin:10px 16px 0 0;color:#38bdf8;font-size:12px;letter-spacing:1px;
@@ -111,7 +123,7 @@
   <button id="btnJump">JUMP</button>
   <button id="btnAct">ENTER</button>
   <button id="btnBack">BACK</button>
-  <div id="viewer"><div class="x">Esc ✕</div><div class="card"><div class="media"></div><div class="cap"></div></div></div>
+  <div id="viewer"><div class="x">Esc ✕</div><div class="card"><div class="mwrap"><div class="media"></div><div class="nav prev">‹</div><div class="nav next">›</div></div><div class="cap"></div></div></div>
 
   <script src="/vendor/three.min.js"></script>
   <script src="/vendor/GLTFLoader.js"></script>
@@ -122,7 +134,7 @@
   const canvas = document.getElementById('c');
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0c1120);
-  scene.fog = new THREE.Fog(0x0c1120, 15, 32);   // closed-in: the border tree line (~21+ from mid-map) is the last clear layer; only a hint of apron shows past it before full fade
+  scene.fog = new THREE.Fog(0x0c1120, 28, 62);   // pushed back: the world reads deep, the border tree line is fully clear and the background woodland past the walk bounds layers behind it
   // SKY DOME: linear fog only tints geometry, so without this the sky stays a flat clear color and
   // the "fog" reads as a ground gradient with a hard horizon line. The dome paints the fog color at
   // the horizon and blends it up into the sky color, so the fog visibly reaches into the sky.
@@ -248,7 +260,7 @@
   const _t1=new THREE.Vector3(),_t2=new THREE.Vector3(),_t3=new THREE.Vector3();
   function rasterizeSolid(root, extra){
     root.updateWorldMatrix(true,true);
-    root.traverse(o=>{ if(!o.isMesh||!o.geometry) return; const pos=o.geometry.attributes.position; if(!pos) return;
+    root.traverse(o=>{ if(!o.isMesh||!o.geometry||o.userData.noSolid) return; const pos=o.geometry.attributes.position; if(!pos) return;   // noSolid: scenery the player should walk straight through (the bridge's reeds)
       const idx=o.geometry.index, wm=o.matrixWorld, n=idx?idx.count:pos.count;
       for(let i=0;i<n;i+=3){ const a=idx?idx.getX(i):i, b=idx?idx.getX(i+1):i+1, c=idx?idx.getX(i+2):i+2;
         _t1.fromBufferAttribute(pos,a).applyMatrix4(wm); _t2.fromBufferAttribute(pos,b).applyMatrix4(wm); _t3.fromBufferAttribute(pos,c).applyMatrix4(wm);
@@ -270,12 +282,68 @@
     for(let cx=x0;cx<=x1;cx++) for(let cz=z0;cz<=z1;cz++){ const wx=(cx+0.5)*OCS, wz=(cz+0.5)*OCS;
       if((wx-x)*(wx-x)+(wz-z)*(wz-z)<=r*r) solidCells.add(cx*100003+cz); } }
 
+  // ── RIVER — a blue-plate stream with an ORGANIC, LEGO-BUILT shoreline. It runs east-west
+  // across the route to the run-down house (the bridge is the only crossing), bends north at
+  // RV_X and exits through the border tree line, so the house's corner of the map is reachable
+  // only over the bridge. The centerline is CHAMFERED at the bend (two 45 degree turns instead
+  // of one right angle) and each bank WANDERS independently along the run, from a fixed sum of
+  // sines: deterministic, seamless, identical every load. The straight 8-stud CORE is what the
+  // big blue plates cover; everything the banks add beyond it is laid in 1x1 pieces on the stud
+  // lattice by the SHORELINE MOSAIC in the ground loader, so the outline reads as a body of
+  // water someone assembled rather than a painted rectangle. The fringe eases back to the core
+  // across the bridge (so the span still reaches both banks) and again as the run leaves the
+  // plate (so the far-water strips that carry each end into the fog still line up).
+  // Water cells are solid (the player cannot step in) but are NOT in the building cell sets,
+  // so the camera ignores them; the bridge deck's heightmap surfaces carry the player across.
+  const RV_Z=-12.192, RV_X=8.867, RV_HW=1.478;   // junction centerlines + the CORE half width (4 studs)
+  const RV_CH=1.848;                             // corner chamfer (5 studs): the bend turns in two 45 degree steps
+  const RV_LINE=[[RV_X,-46],[RV_X,RV_Z-RV_CH],[RV_X+RV_CH,RV_Z],[76,RV_Z]];   // north end -> bend -> east end
+  const RV_S=[0];                                // cumulative arc length: a stable parameter for the bank wander
+  for(let i=1;i<RV_LINE.length;i++) RV_S.push(RV_S[i-1]+Math.hypot(RV_LINE[i][0]-RV_LINE[i-1][0],RV_LINE[i][1]-RV_LINE[i-1][1]));
+  const RV_BR=[18.3,22.4];                       // the bridge + its path corridor: the banks pull back to the core here
+  // the rectangles the big plates actually cover (bridge water + east run, and the north run).
+  // riverAt always returns true inside these, so a plate can never end up sitting on dry land.
+  const RV_CORE=[[13.29,69.45,-13.668,-10.716],[7.391,10.343,-43.24,-13.676]];
+  function riverHW(s,side){                      // half width at arc length s, per bank
+    const p=side>0?0:11.3;                       // the two banks read different phases, so they never mirror
+    const w=Math.sin(s*0.37+p)*0.55+Math.sin(s*0.81+p*1.7)*0.31+Math.sin(s*1.57+p*0.6)*0.14;
+    return RV_HW + PITCH*(1.9+1.55*w); }         // 0.5 to 5.4 studs of wander beyond the core
+  function riverProj(x,z){                       // closest point on the centerline -> [distance, arc length, side]
+    let bd=1e9,bs=0,bq=1;
+    for(let i=1;i<RV_LINE.length;i++){ const ax=RV_LINE[i-1][0], az=RV_LINE[i-1][1];
+      const dx=RV_LINE[i][0]-ax, dz=RV_LINE[i][1]-az, L2=dx*dx+dz*dz;
+      let t=((x-ax)*dx+(z-az)*dz)/L2; t=t<0?0:t>1?1:t;
+      const d=Math.hypot(x-ax-t*dx, z-az-t*dz);
+      if(d<bd){ bd=d; bs=RV_S[i-1]+t*Math.sqrt(L2); bq=((x-ax)*dz-(z-az)*dx)>=0?1:-1; } }
+    return [bd,bs,bq]; }
+  function riverPoint(s,side){                   // point on the centerline at arc length s, plus that bank's outward normal
+    let i=1; while(i<RV_S.length-1 && s>RV_S[i]) i++;
+    const ax=RV_LINE[i-1][0], az=RV_LINE[i-1][1], dx=RV_LINE[i][0]-ax, dz=RV_LINE[i][1]-az;
+    const L=Math.hypot(dx,dz), t=(s-RV_S[i-1])/L;
+    return [ax+dx*t, az+dz*t, (dz/L)*side, (-dx/L)*side]; }
+  function riverAt(x,z){
+    for(const c of RV_CORE) if(x>c[0]&&x<c[1]&&z>c[2]&&z<c[3]) return true;   // never expose a big plate
+    const p=riverProj(x,z);
+    if(p[0]<RV_HW) return true;                                               // the straight core channel
+    const dBr=x<RV_BR[0]?RV_BR[0]-x:x>RV_BR[1]?x-RV_BR[1]:0;                  // ease out across the bridge
+    let t=Math.min(1,dBr/2.6);
+    if(x>52) t=Math.min(t,Math.max(0,(62-x)/10));                             // and again where the run leaves the plate
+    if(z<-28) t=Math.min(t,Math.max(0,(z+38)/10));
+    t=t*t*(3-2*t);
+    return p[0] < RV_HW+(riverHW(p[1],p[2])-RV_HW)*t; }
+  // solid water cells, sampled at the occupancy resolution across the river's whole reach
+  for(let cx=Math.floor((RV_X-5)/OCS); cx<=Math.floor(76/OCS); cx++)
+    for(let cz=Math.floor(-46/OCS); cz<=Math.floor((RV_Z+5)/OCS); cz++){
+      const wx=(cx+0.5)*OCS, wz=(cz+0.5)*OCS;
+      if(riverAt(wx,wz)) solidCells.add(cx*100003+cz); }
+
   // ── walkable height map (stairs / upper floors, e.g. the ruins) ──
   // Each cell stores EVERY up-facing surface level (ground, each stair, the 2nd floor), so a
   // roof overhead doesn't hide the floor. We then pick the surface reachable from the player.
   const floorH=new Map(), MAXSTEP=1.55, LOWSTEP=0.35;   // MAXSTEP only on the real staircases; LOWSTEP is under one brick (0.44) so walls/rubble can't be walked up
-  // the ruins' actual staircases [x0,x1,z0,z1]: ground -> balcony (winding, mid-courtyard) and balcony -> top (back wall)
-  const STAIR_ZONES=[[-2.0,0.6,9.2,12.9],[-2.6,1.6,13.7,15.8]];
+  // the ruins' actual staircases [x0,x1,z0,z1] (ground -> balcony winding run, balcony -> top),
+  // translated with the ruins' 2x move, plus the bridge deck + ramps over the river
+  const STAIR_ZONES=[[-3.11,-0.51,19.18,22.88],[-3.71,0.49,23.68,25.78],[18.6,22.8,-16.6,-7.8]];
   function inStair(x,z){ for(let i=0;i<STAIR_ZONES.length;i++){ const s=STAIR_ZONES[i];
     if(x>=s[0]&&x<=s[1]&&z>=s[2]&&z<=s[3]) return true; } return false; }
   const _e1=new THREE.Vector3(),_e2=new THREE.Vector3(),_nrm=new THREE.Vector3();
@@ -283,7 +351,7 @@
   function addSurf(k,y){ let a=floorH.get(k); if(!a){ a=[]; floorH.set(k,a); }
     for(let i=0;i<a.length;i++) if(Math.abs(a[i]-y)<0.18) return; a.push(y); }
   function buildHeightmap(root){ root.updateWorldMatrix(true,true);
-    root.traverse(o=>{ if(!o.isMesh||!o.geometry) return; const pos=o.geometry.attributes.position; if(!pos) return;
+    root.traverse(o=>{ if(!o.isMesh||!o.geometry||o.userData.noHM) return; const pos=o.geometry.attributes.position; if(!pos) return;   // noHM: the bridge's water plates must never become walkable surfaces
       const idx=o.geometry.index, wm=o.matrixWorld, n=idx?idx.count:pos.count;
       for(let i=0;i<n;i+=3){ const a=idx?idx.getX(i):i, b=idx?idx.getX(i+1):i+1, c=idx?idx.getX(i+2):i+2;
         _t1.fromBufferAttribute(pos,a).applyMatrix4(wm); _t2.fromBufferAttribute(pos,b).applyMatrix4(wm); _t3.fromBufferAttribute(pos,c).applyMatrix4(wm);
@@ -391,32 +459,74 @@
     const matGreen = matGrey.clone(); matGreen.color.setRGB(0.0529,0.266,0.0775);   // exact LegoGreen (linear)
     regMat(matGrey,0.35); regMat(matGreen,0.35);
     window.__matGreen = matGreen;                                                    // synced to the mansion's grass on load
-    const X0=-16.25, X1=32.5, Z0=-17.73, Z1=17.73;
-    const NX=Math.round((X1-X0)/sx), NZ=Math.round((Z1-Z0)/sz), OX=(X0+X1)/2;
-    // grey foundation pads under the buildings
+    // CONSTRUCTION LAYOUT (2x): every structure sits at twice its old stud-snapped distance
+    // from the world center, so the plate roughly doubles per axis (asymmetric: the mansion
+    // pushes the east side out further than the shop pushes the west).
+    const X0=-26.6, X1=60.6, Z0=-31.0, Z1=28.4;
+    const NX=Math.round((X1-X0)/sx), NZ=Math.round((Z1-Z0)/sz), OX=(X0+X1)/2, OZ=(Z0+Z1)/2;
+    // grey foundation pads under the buildings (each rect = old rect + its structure's 2x move delta)
     function onPad(x,z){
-      if(x>-13.5 && x<-6.4 && z>-17.6 && z<-7.4) return true;   // coffee shop
-      if(x>-8.4  && x<6.3  && z>2.7  && z<17.2)   return true;   // ruins (grey under the whole structure)
-      if(x>21.7  && x<31.0 && z>-7   && z<6.95)    return true;   // mansion + garage floor, tucked fully UNDER the walls (no one-stud grey sliver peeking out)
-      if(x>17.35 && x<21.7 && z>2.0  && z<6.4)     return true;   // driveway in front of the garage: the house's own raised plates were removed, so the single ground layer paints the grey here
-      if(x>9.2   && x<11.5  && z>=-8.6 && z<-2.4)  return true;   // 6-stud path from the walk to the run-down house's door (no pad, house sits on the grass)
+      if(x>-23.48 && x<-16.38 && z>-30.17 && z<-19.96) return true;   // coffee shop
+      if(x>-9.51  && x<5.19  && z>12.68 && z<27.18)    return true;   // ruins (grey under the whole structure)
+      if(x>19.55  && x<21.84 && z>=-21.6 && z<-4.0 && !riverAt(x,z)) return true;   // 6-stud path from the walk to the run-down house's door; the river cuts it and the bridge carries it
       return false; }
+    // THE MANSION LAYS ITS OWN GROUND. modern_house.glb ships its plate layer with it
+    // (door path, driveway, patio, interior floor) and deliberately leaves gaps open so the
+    // world's greenery can grow right up to the walls. Those plates ARE the ground there,
+    // seated flush with these tiles, so no code tile is drawn underneath: two coplanar plate
+    // layers speckle against each other (the old green-studs-through-the-grey bug). In the
+    // gaps no tile is skipped, so the normal green grass reads through at the same height.
+    // One char per stud, measured off the model: '#' the glb lays a plate, '.' open ground.
+    // Origin = the model's plate corner in world space (houseHolder 50.2622 / 0.20165 less
+    // the glb's own recenter offsets); rows run +x from HP_X0, columns run +z from HP_Z0.
+    const HP_X0=43.3286, HP_Z0=-6.7546, HP_ROWS=(()=>{ const r=[],
+      a="..............########....##########..",   // door path (8 studs) and driveway strips, greenery between and either side
+      b="............############..##########..",   // the path widens at the door step
+      c="..######################..##########..",   // patio starts, wood floor edge
+      d="..##################################..",
+      e="..####################################",   // house footprint: wood floor + dark grey + east wing
+      f="......................################";   // north wing only
+      for(let i=0;i<12;i++)r.push(a); r.push(b,b,c,c); for(let i=0;i<4;i++)r.push(d);
+      for(let i=0;i<15;i++)r.push(e); r.push(f,f,f); return r; })();
+    function onHousePlate(x,z){
+      const gj=Math.floor((x-HP_X0)/PITCH), gi=Math.floor((z-HP_Z0)/PITCH);
+      if(gi<0||gi>37||gj<0||gj>37) return false;
+      return HP_ROWS[gj].charCodeAt(gi)!==46; }   // 46 = '.'
     // 6-stud-wide grey sidewalk loop through/near every building
-    const SW=[[-9.975,-6],[-4.4,-3],[0,-3],[4.2,-3],[14,-1],[20,0],[14,5],[0,6],[-9.975,2]];
+    const SW=[[-19.95,-19],[-13,-9],[-4.4,-3],[4,-3],[12,-4.5],[20.7,-5],[30,-3],[40,-1.5],[46.2,0],
+              [36,5],[24,8],[12,11],[3,12.5],[-2.2,13.5],[-12,9],[-17.5,-4]];
     const HALFW=4*PITCH;          // 8-stud-wide sidewalks
     function seg(px,pz,ax,az,bx,bz){ const dx=bx-ax,dz=bz-az,L2=dx*dx+dz*dz||1;
       let t=((px-ax)*dx+(pz-az)*dz)/L2; t=t<0?0:t>1?1:t; return Math.hypot(px-ax-t*dx, pz-az-t*dz); }
     function onWalk(x,z){ for(let i=0;i<SW.length;i++){ const a=SW[i], b=SW[(i+1)%SW.length];
       if(seg(x,z,a[0],a[1],b[0],b[1])<HALFW) return true; } return false; }
-    const grey=[], green=[];
-    // APRON: extra rings of green tiles past the old rim, so the land continues under the fog
-    // instead of cutting off at a plate edge with a drop to nothing (player bounds unchanged)
-    const APRON=20;  // deep apron: real studded tiles cover ~11 units past the walk bounds, so the handoff to the bump-mapped far land happens where the eye can't tell
-    for(let i=-APRON;i<NX+APRON;i++)for(let j=-APRON;j<NZ+APRON;j++){ const x=(i-(NX-1)/2)*sx+OX, z=(j-(NZ-1)/2)*sz;
+    const grey=[], green=[], under=[];
+    // APRON: extra rings of green tiles past the rim, so the land continues under the fog
+    // instead of cutting off at a plate edge with a drop to nothing. 12 rings on the 2x plate
+    // keeps the instance count sane; the flush bump-mapped far land does the rest.
+    const APRON=12;
+    const shore=[];                                    // every 2x2 tile the water touches: rebuilt below from 1x1 pieces
+    for(let i=-APRON;i<NX+APRON;i++)for(let j=-APRON;j<NZ+APRON;j++){ const x=(i-(NX-1)/2)*sx+OX, z=(j-(NZ-1)/2)*sz+OZ;
+      let nw=0;                                        // how many of this tile's 4 stud cells the water reaches
+      for(const ox of[-1,1])for(const oz of[-1,1]) if(riverAt(x+ox*sx/4, z+oz*sz/4)) nw++;
+      if(nw){ shore.push([x,z]); continue; }            // any water at all: the 2x2 tile gives way to the mosaic
+      if(onHousePlate(x,z)){ under.push([x,z]); continue; }   // the mansion's own plates are the ground here: this tile drops out of sight beneath them
       ((onPad(x,z)||onWalk(x,z))? grey : green).push([x,z]); }
-    function field(list, material){ const im=new THREE.InstancedMesh(geo, material, list.length); im.castShadow=im.receiveShadow=true;
-      const mm=new THREE.Matrix4(); list.forEach((p,k)=>{ mm.setPosition(p[0],0,p[1]); im.setMatrixAt(k,mm); }); im.instanceMatrix.needsUpdate=true; scene.add(im); return im; }
-    field(grey, matGrey); field(green, matGreen);
+    // GRAVEL PROTOTYPE part 1 — the grey walk is no longer one flat color: each 2x2 tile
+    // draws in one of a few grey tones via instance colors (seeded, stable across loads).
+    // Green grass tiles are untouched (no instance colors on that field).
+    const rngT=(s=>()=>(s=(Math.imul(48271,s)>>>0)%2147483647)/2147483647)(777);
+    const TILE_TONES=[1,1,1, 1.10,1.10, 0.87,0.87, 0.76,0.76].map(v=>new THREE.Color(v,v,v));
+    function field(list, material, vary, y){ const im=new THREE.InstancedMesh(geo, material, list.length); im.castShadow=im.receiveShadow=true;
+      const mm=new THREE.Matrix4(); list.forEach((p,k)=>{ mm.setPosition(p[0],y||0,p[1]); im.setMatrixAt(k,mm);
+        if(vary) im.setColorAt(k, TILE_TONES[Math.floor(rngT()*TILE_TONES.length)]); });
+      im.instanceMatrix.needsUpdate=true; if(im.instanceColor) im.instanceColor.needsUpdate=true; scene.add(im); return im; }
+    field(grey, matGrey, true); field(green, matGreen);
+    // The tiles under the mansion's plates ride 0.10 lower so their studs cannot poke up
+    // through them. This grid and the model's are a quarter stud out of phase, so a plate
+    // edge rarely lands on a tile edge: keeping the tile (recessed) instead of dropping it
+    // leaves grey under every sliver the plates miss, rather than a hole down to the far land.
+    field(under, matGrey, true, -0.10);
     // FAR LAND: a huge matching-green sheet continuing past the apron to well beyond the fog's
     // full-opacity distance. It sits FLUSH with the tiles' plate-top surface (measured by
     // raycast, not assumed) and carries a stud-grid bump map aligned to the real tile grid,
@@ -424,6 +534,69 @@
     const probe=new THREE.Mesh(geo,matGreen); probe.updateMatrixWorld(true);
     const pHit=new THREE.Raycaster(new THREE.Vector3(0,1,0),new THREE.Vector3(0,-1,0)).intersectObject(probe)[0];
     const plateTop=pHit?pHit.point.y:-0.083;          // tile-top surface between the studs (stud tips are y 0)
+    // ── SHORELINE MOSAIC — the banks are built the way a LEGO pond is. The straight 8-stud core
+    // stays as the big blue plates; every tile the wandering banks touch is dropped and relaid
+    // in 1x1 pieces on the stud lattice, so the water's outline steps stud by stud instead of
+    // running dead straight. Water cells are smooth 1x1 tiles: a flat shallows that reads as
+    // water and, being studless, keeps the big plates' own stud grid (offset a fifth of a stud
+    // from the tile grid) from visibly fighting the mosaic's. Land cells are 1x1 studded plates,
+    // so the grass stays grass right up to the edge. Cells the big plates already cover are
+    // skipped, and a cell straddling a plate edge is CLIPPED to the part outside it and tucked
+    // 6mm under, so the whole run has neither an overlap nor a gap.
+    const TILE_BOT=geo.boundingBox.min.y;             // the 2x2 plate's underside: the mosaic matches it
+    const WTOP=plateTop-0.008;                        // water sits a hair below the grass, and below the big plates
+    const STUD_H=-plateTop, STUD_R=0.1133;            // stud height/radius measured off this very tile
+    const matWater=new THREE.MeshStandardMaterial({ color:new THREE.Color('#2653a7').convertSRGBToLinear(),
+      metalness:0, roughness:0.12 }); regMat(matWater,1.4);                     // same wet sheen as the MOC's plates
+    const matBank=new THREE.MeshStandardMaterial({ metalness:0, roughness:0.55 });
+    matBank.color=matGreen.color;                     // shares the Color instance, so the mansion grass sync recolors the bank too
+    regMat(matBank,0.35);
+    const CEPS=0.006;                                 // clipped edges tuck under the big plate rather than butt against it
+    function clipOut(r,c){                            // r minus the plate rect c: the largest rectangle left over
+      if(r.x1<=c[0]||r.x0>=c[1]||r.z1<=c[2]||r.z0>=c[3]) return r;              // no overlap with this plate
+      const q=[];
+      if(r.x0<c[0]) q.push({x0:r.x0,x1:c[0]+CEPS,z0:r.z0,z1:r.z1});
+      if(r.x1>c[1]) q.push({x0:c[1]-CEPS,x1:r.x1,z0:r.z0,z1:r.z1});
+      if(r.z0<c[2]) q.push({x0:r.x0,x1:r.x1,z0:r.z0,z1:c[2]+CEPS});
+      if(r.z1>c[3]) q.push({x0:r.x0,x1:r.x1,z0:c[3]-CEPS,z1:r.z1});
+      let best=null,ba=2e-4;                          // anything smaller is a sliver not worth an instance
+      for(const p of q){ const a=(p.x1-p.x0)*(p.z1-p.z0); if(a>ba){ ba=a; best=p; } }
+      return best; }
+    const wCells=[], bCells=[];                       // water boxes [x,z,width,depth] · bank cells [x,z]
+    shore.forEach(([tx,tz])=>{ for(const ox of[-1,1])for(const oz of[-1,1]){
+      const cx=tx+ox*sx/4, cz=tz+oz*sz/4;
+      if(!riverAt(cx,cz)){ bCells.push([cx,cz]); continue; }
+      let r={x0:cx-sx/4,x1:cx+sx/4,z0:cz-sz/4,z1:cz+sz/4};
+      for(const c of RV_CORE){ r=clipOut(r,c); if(!r) break; }
+      // a cell keeps its stud only if it still owns its own center: a cell clipped back by a
+      // plate edge would otherwise plant a stud on top of that plate's own studs
+      if(r) wCells.push([(r.x0+r.x1)/2,(r.z0+r.z1)/2,r.x1-r.x0,r.z1-r.z0,
+        (cx>r.x0&&cx<r.x1&&cz>r.z0&&cz<r.z1)?[cx,cz]:null]); } });
+    (function(){
+      const box=new THREE.BoxGeometry(1,1,1), mm=new THREE.Matrix4(), q0=new THREE.Quaternion(),
+            pv=new THREE.Vector3(), sv=new THREE.Vector3();
+      const stud=new THREE.CylinderGeometry(STUD_R,STUD_R,STUD_H,12); stud.translate(0,STUD_H/2,0);
+      if(wCells.length){ const im=new THREE.InstancedMesh(box,matWater,wCells.length); im.receiveShadow=true;
+        wCells.forEach((c,k)=>{ mm.compose(pv.set(c[0],(WTOP+TILE_BOT)/2,c[1]), q0, sv.set(c[2],WTOP-TILE_BOT,c[3]));
+          im.setMatrixAt(k,mm); });
+        im.instanceMatrix.needsUpdate=true; scene.add(im); window.__shoreWater=im;
+        // studs, so the shallows carry the same grain as the big plates instead of reading as
+        // a flat band with a dead straight inner edge
+        const ws=wCells.filter(c=>c[4]);
+        if(ws.length){ const iw=new THREE.InstancedMesh(stud,matWater,ws.length); iw.receiveShadow=true;
+          const one=new THREE.Vector3(1,1,1);
+          ws.forEach((c,k)=>{ mm.compose(pv.set(c[4][0],WTOP,c[4][1]), q0, one); iw.setMatrixAt(k,mm); });
+          iw.instanceMatrix.needsUpdate=true; scene.add(iw); } }
+      if(bCells.length){                              // bank cell = 1x1 plate + its stud, so the grass keeps its texture
+        const ib=new THREE.InstancedMesh(box,matBank,bCells.length), is=new THREE.InstancedMesh(stud,matBank,bCells.length);
+        ib.receiveShadow=is.receiveShadow=is.castShadow=true;
+        const one=new THREE.Vector3(1,1,1);
+        bCells.forEach((c,k)=>{
+          mm.compose(pv.set(c[0],(plateTop+TILE_BOT)/2,c[1]), q0, sv.set(sx/2,plateTop-TILE_BOT,sz/2)); ib.setMatrixAt(k,mm);
+          mm.compose(pv.set(c[0],plateTop,c[1]), q0, one); is.setMatrixAt(k,mm); });
+        ib.instanceMatrix.needsUpdate=is.instanceMatrix.needsUpdate=true; scene.add(ib); scene.add(is);
+        window.__shoreBank=ib; }
+    })();
     const cv=document.createElement('canvas'); cv.width=cv.height=128; const cc=cv.getContext('2d');
     cc.fillStyle='#808080'; cc.fillRect(0,0,128,128);                        // flat plate = neutral bump height
     cc.strokeStyle='#6e6e6e'; cc.lineWidth=2; cc.strokeRect(1,1,126,126);    // faint seam matching the real 2x2 tile gaps
@@ -434,22 +607,22 @@
     const studTex=new THREE.CanvasTexture(cv); studTex.wrapS=studTex.wrapT=THREE.RepeatWrapping;
     studTex.anisotropy=renderer.capabilities.getMaxAnisotropy();             // keeps the studs crisp at grazing angles; mipmaps fade them out smoothly with distance
     studTex.repeat.set(360/sx,360/sz);
-    const fr=v=>v-Math.floor(v), c0x=-(NX-1)/2*sx+OX, c0z=-(NZ-1)/2*sz;      // a real tile center, to phase-lock the texture to the tile grid
-    studTex.offset.set(0.5-fr((c0x-OX+180)/sx), 0.5-fr((180-c0z)/sz));
+    const fr=v=>v-Math.floor(v), c0x=-(NX-1)/2*sx+OX, c0z=-(NZ-1)/2*sz+OZ;   // a real tile center, to phase-lock the texture to the tile grid
+    studTex.offset.set(0.5-fr((c0x-OX+180)/sx), 0.5-fr((OZ+180-c0z)/sz));
     const farMat=new THREE.MeshStandardMaterial({ roughness:1, metalness:0, bumpMap:studTex, bumpScale:0.05 }); regMat(farMat,0.25);
     farMat.color=matGreen.color;                      // share the Color instance so the mansion grass sync recolors both
     const farLand=new THREE.Mesh(new THREE.PlaneGeometry(360,360), farMat);
     // 0.01 below the plate top: hidden inside the tile bodies under the map, flush (no ledge) at the apron edge
-    farLand.rotation.x=-Math.PI/2; farLand.position.set(OX,plateTop-0.01,0); farLand.receiveShadow=true; scene.add(farLand);
+    farLand.rotation.x=-Math.PI/2; farLand.position.set(OX,plateTop-0.01,OZ); farLand.receiveShadow=true; scene.add(farLand);
     // DISTANT HILLS: terraced green mounds far past the walk bounds, half-swallowed by the fog,
     // so the horizon has a built-world silhouette instead of an empty flat fade. Every hill
-    // surface is >=18 units from anywhere standable, deep inside the fog ramp (13..28).
+    // surface is >=28 units from anywhere standable, deep inside the fog ramp (18..40).
     // Terraces are 1.32 high (3 bricks), stud-snapped centers, unreachable so no collision.
     const HILLS=[ // [x, z, base radius, tiers, green tint]
-      [-52,-8,14,3,0.92],[-56,10,18,4,1.00],[-47,20,9,2,0.85],
-      [70,0,16,4,0.95],[64,-16,10,2,1.05],[66,18,12,3,0.88],
-      [-6,-54,15,3,1.00],[22,-57,18,4,0.90],[46,-48,10,2,1.05],
-      [0,55,16,4,0.93],[27,50,11,2,1.02],[-16,52,13,3,0.87] ];
+      [-74,-14,14,3,0.92],[-78,8,18,4,1.00],[-68,24,9,2,0.85],
+      [110,2,16,4,0.95],[104,-18,10,2,1.05],[106,20,12,3,0.88],
+      [-4,-82,15,3,1.00],[28,-85,18,4,0.90],[52,-74,10,2,1.05],
+      [2,78,16,4,0.93],[33,72,11,2,1.02],[-16,74,13,3,0.87] ];
     HILLS.forEach(([hx,hz,r,tiers,tint])=>{
       const mt=new THREE.MeshStandardMaterial({ roughness:1, metalness:0, flatShading:true }); regMat(mt,0.25);
       mt.color.copy(matGreen.color).multiplyScalar(tint);
@@ -458,6 +631,50 @@
         const m=new THREE.Mesh(new THREE.CylinderGeometry(rr*0.8, rr, h, 14), mt);
         m.position.set(snap(hx), y+h/2, snap(hz)); scene.add(m);
         y+=h; rr*=0.66; } });
+    // GRAVEL PROTOTYPE part 2 — real LEGO pieces from the blend (1x1 round-stud plate,
+    // 1x1 plate, 1x2 tile, 1x1 curved pebble dome in gravel_bits.glb; all verified closed
+    // solids, exported upright), recolored across a grey mix and stud-snapped onto the
+    // walkway/driveway/path tiles. Seeded layout, no collision, purely visual.
+    (function(){
+      const rng=(s=>()=>(s=(Math.imul(48271,s)>>>0)%2147483647)/2147483647)(12345);
+      const cols=['#878d92','#757a80','#63686e','#53585d','#45494e','#7b7264']
+        .map(h=>new THREE.Color(h).convertSRGBToLinear());
+      const wts=[0.16,0.24,0.25,0.19,0.11,0.05];            // mid grey down to charcoal, plus a rare warm pebble; nothing white, nothing black
+      function pick(){ let r=rng(),a=0; for(let i=0;i<cols.length;i++){ a+=wts[i]; if(r<a) return cols[i]; } return cols[1]; }
+      gltf.load('./assets/gravel_bits.glb',(g)=>{
+        g.scene.updateMatrixWorld(true);
+        const kits=[];                                      // [0 round-stud, 1 plate, 2 duo, 3 dome] by node name
+        const ORDER={grav_round:0, grav_plate:1, grav_duo:2, grav_dome:3};
+        g.scene.traverse(o=>{ if(o.isMesh){ const ge=o.geometry.clone(); ge.applyMatrix4(o.matrixWorld);
+          ge.computeBoundingBox(); const b=ge.boundingBox;
+          ge.translate(-(b.min.x+b.max.x)/2,-b.min.y,-(b.min.z+b.max.z)/2);
+          const idx=ORDER[o.name]!=null?ORDER[o.name]:(o.parent&&ORDER[o.parent.name]);
+          if(idx!=null) kits[idx]={geo:ge, w:b.max.x-b.min.x}; }});
+        const spots=[[],[],[],[]];
+        const drive=(x,z)=>(x>43.58&&x<47.93&&z>2.0&&z<6.4);
+        const rdpath=(x,z)=>(x>19.55&&x<21.84&&z>=-21.6&&z<-4.0);
+        grey.forEach(([cx,cz])=>{
+          if(!(onWalk(cx,cz)||drive(cx,cz)||rdpath(cx,cz))) return;
+          for(const ox of[-1,1]) for(const oz of[-1,1]){    // the 4 stud positions of each 2x2 tile
+            if(rng()>0.28) continue;
+            const x=cx+ox*PITCH/2, z=cz+oz*PITCH/2, r=rng();
+            if(r<0.48) spots[0].push([x,z,Math.floor(rng()*4)*Math.PI/2,pick()]);         // round-stud plate (square body: keep 90° steps)
+            else if(r<0.70) spots[1].push([x,z,Math.floor(rng()*4)*Math.PI/2,pick()]);    // flat 1x1 tile
+            else if(r<0.82) spots[3].push([x,z,Math.floor(rng()*4)*Math.PI/2,pick()]);    // curved pebble dome (square base: 90° steps)
+            else { const ax=rng()<0.5; spots[2].push([x+(ax?PITCH/2:0), z+(ax?0:PITCH/2), ax?0:Math.PI/2, pick()]); }  // 1x2 tile over two studs
+          }});
+        const gmat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.5,metalness:0,side:THREE.DoubleSide}); regMat(gmat,0.35);
+        const meshes=[];
+        kits.forEach((k,i)=>{ const L=spots[i]; if(!L.length) return;
+          const im=new THREE.InstancedMesh(k.geo,gmat,L.length);
+          im.castShadow=false; im.receiveShadow=true;
+          const mm=new THREE.Matrix4();
+          L.forEach((s,j)=>{ mm.makeRotationY(s[2]); mm.setPosition(s[0],plateTop,s[1]);
+            im.setMatrixAt(j,mm); im.setColorAt(j,s[3]); });
+          im.instanceMatrix.needsUpdate=true; im.instanceColor.needsUpdate=true; scene.add(im); meshes.push(im); });
+        window.__gravel={kits,spots,meshes};               // debug handle, strip with the rest
+      }, undefined, e=>console.warn('gravel load failed', e));
+    })();
     loadedGround=true; ready();
   }, undefined, e=>{ console.warn('ground load failed', e); loadedGround=true; ready(); });
 
@@ -548,7 +765,7 @@
   // (0.250) matches the ground plate (0.369): factor 1.4771 → studs register + bigger.
   const SHOP_SCALE=1.47709;                                 // PITCH/snap are defined globally above
   const shopHolder=new THREE.Group();
-  shopHolder.position.set(snap(-9.975), -0.12, snap(-12.56)); // stud-snapped back-left corner, stamped in
+  shopHolder.position.set(snap(-19.95), -0.12, snap(-25.12)); // 2x layout: doubled from snap(-9.975)/snap(-12.56), still stud-snapped, stamped in
   shopHolder.rotation.y=-Math.PI/2;                           // counter/awning/patio face the spawn
   scene.add(shopHolder);
   gltf.load('./assets/coffee_shop.glb', (g)=>{
@@ -564,7 +781,13 @@
   // MODERN HOUSE — About + Contact live here. Native scale (already 0.369 pitch),
   // seated on the extended right side of the platform.
   const houseHolder=new THREE.Group();
-  houseHolder.position.set(snap(24)+2.0025, -0.15, snap(0)); // +2.0025: the glb's west yard plates/beds were removed, which moved the auto-recenter bbox; this offset keeps the walls exactly where they always were
+  // The holder is NOT a round stud value: the loader auto-recenters the glb on its own bbox,
+  // so the position is derived backwards from where the walls have to land. These numbers put
+  // the LegoWhite structure at exactly x 47.717..57.187, z -6.755..7.158, its approved spot
+  // since the 2x layout. Re-derive them if the glb's outer bbox ever changes again.
+  // y: the model's plate layer is seated flush with the ground tiles (stud tips at y 0), so
+  // the mansion's own plates and the world's grass read as one continuous ground.
+  houseHolder.position.set(50.2622, -0.215, 0.20165);
   houseHolder.rotation.y=-Math.PI/2;                         // flipped 180° to face the opposite side
   scene.add(houseHolder);
   gltf.load('./assets/modern_house.glb', (g)=>{
@@ -574,7 +797,9 @@
     let box=new THREE.Box3().setFromObject(house);
     house.position.x-=(box.min.x+box.max.x)/2; house.position.z-=(box.min.z+box.max.z)/2; house.position.y-=box.min.y;
     houseHolder.add(house); rasterizeSolid(houseHolder, houseCells);   // solid = the real walls only; lawn/garden stays walkable
-    // sync the ground grass to the mansion's exact LegoGreen so they match seamlessly
+    // If the glb ever carries grass of its own again, the ground takes its exact LegoGreen so
+    // the two match seamlessly. The current model has no green: its yard plates were pulled out
+    // to leave room for the world's greenery, so the grass keeps its own LegoGreen constant.
     let lg=null; house.traverse(o=>{ if(o.isMesh){ (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{ if(m&&/green/i.test(m.name||'')) lg=m; }); } });
     if(lg && window.__matGreen) window.__matGreen.color.copy(lg.color);
     window.__house=house; window.__houseHolder=houseHolder;
@@ -587,29 +812,45 @@
     let pb=new THREE.Box3().setFromObject(proto); const s=5.2/((pb.max.y-pb.min.y)||1);   // ~native, proportionate to buildings
     const placed=[];
     function treeOK(x,z){
-      if(x>-14 && x<-6 && z>-18 && z<-7) return false;   // shop
-      if(x>20 && x<32 && z>-8 && z<8)    return false;   // mansion
-      if(x>-8.5 && x<6.4 && z>2.5 && z<17.4) return false;   // ruins
-      if(x>4.5 && x<16 && z>-18 && z<-7.5)  return false;   // run-down house
+      if(x>-24 && x<-16 && z>-31 && z<-19.4) return false;   // shop
+      if(x>42.8 && x<58 && z>-8 && z<8) return false;   // mansion, out to the west end of its own door-path plates
+      if(x>-9.6 && x<5.3 && z>12.4 && z<27.4) return false;   // ruins
+      if(x>14.5 && x<27 && z>-31 && z<-19.5)  return false;   // run-down house + chest + door approach
+      if(x>18.5 && x<23 && z>-22 && z<-4) return false;       // bridge + its path corridor
+      if(riverAt(x,z)||riverAt(x+1.4,z)||riverAt(x-1.4,z)||riverAt(x,z+1.4)||riverAt(x,z-1.4)) return false;   // trunks clear of the water
       if(Math.abs(x)<3 && Math.abs(z)<3) return false;   // keep spawn clear
       for(let i=0;i<placed.length;i++) if(Math.hypot(x-placed[i][0],z-placed[i][1])<3.5) return false;  // spacing (was 5.5; lowered for the border tree line, the original 16 are unaffected)
       return true; }
     // irregular scatter on the outer grass (off the central sidewalk loop) with varied spacing
-    const cand=[[-15.3,-12.5],[-15.6,-5],[-13.8,3.5],[-15,11.5],[-8.5,15],[-2,-15.2],
-                [21,-13.5],[28.5,-14],[31,-3.5],[30.5,6.5],[31.2,13],[10.5,13.5],[16.5,12],
-                [24.3,15.3],[2.6,-11.5],[15.6,-5.4],   // fill-ins: SE corner grass, south-central grass, pocket between the walk and the run-down house lawn
-                // BORDER TREE LINE: a ring along the plate rim and just past it on the
-                // walkable apron, plus corner pockets and a few inner-edge fill-ins, so the
-                // borders/corners read as a tree line instead of empty grass. Generated
-                // against the pad/sidewalk math + all flower and lamp positions (trunks
-                // clear of grey and of every flower cluster).
-                [34.9,20.1],[34.9,-20.1],[-18.6,20.1],[-18.6,-20.1],[17.9,16.9],[23.9,-16.6],
-                [31.6,-16.6],[28.6,-8.9],[-11.6,7.9],[-14.9,21],[-10.1,-20.6],[-9.6,21.1],
-                [-5.6,-19.7],[-5.3,21.1],[-1,-19.9],[-0.6,20.6],[3.9,-20],[4.2,20.9],
-                [7.8,-20.5],[8.1,20.6],[13.1,-20.7],[13,20.8],[16.7,-20],[22.1,-19.8],
-                [22.3,19.9],[25.5,-21.1],[26.8,20.3],[-19.4,-15.4],[35.2,-16.1],[35.6,-11.5],
-                [34.5,-7.3],[-19.3,-2.6],[35.7,-2.5],[-19.4,1.6],[35.8,1.8],[-19.5,6.8],
-                [35.7,7.1],[-18.7,14.9],[35.8,15.4]];
+    // inner scatter on the open grass of the 2x layout, then the BORDER TREE LINE: a ring
+    // along the new plate rim and just past it on the walkable apron, with corner pockets.
+    // treeOK validates every spot (pads, walk, river, buildings, spacing), so a bad
+    // candidate simply doesn't plant.
+    const cand=[[-24,-13],[-25.5,-3],[-22,6],[-24,15],[-13,20],[-3,-24],[30,-24],[44,-27],
+                [58,-8],[56,10],[57,19],[16,20],[26,16],[36,22],[3.4,-19],[24,-7],[34,10],
+                [12,-24],[-10,-16],[13,-30],[46,-22],
+                // north rim (the gap at x 5..12 is where the river exits through the tree line)
+                [-27,-32.6],[-21.5,-33.2],[-16,-32.3],[-10.4,-33],[-4.9,-32.2],[0.7,-33.3],
+                [13.5,-32.4],[19,-33.1],[24.6,-32.2],[30.2,-33.4],[35.8,-32.5],[41.3,-33.2],
+                [46.9,-32.3],[52.4,-33],[58,-32.4],[62.5,-33.5],
+                // south rim
+                [-27.2,30.8],[-21.7,31.4],[-16.2,30.4],[-10.7,31.2],[-5.2,30.3],[0.3,31.5],
+                [5.8,30.5],[11.3,31.3],[16.8,30.4],[22.3,31.1],[27.8,30.3],[33.3,31.4],
+                [38.8,30.5],[44.3,31.2],[49.8,30.4],[55.3,31.3],[60.8,30.6],[64.5,31.6],
+                // west rim
+                [-28.6,-29],[-29.2,-23.4],[-28.3,-17.8],[-29,-12.2],[-28.4,-6.6],[-29.3,-1],
+                [-28.5,4.6],[-29.1,10.2],[-28.4,15.8],[-29.2,21.4],[-28.6,26.6],
+                // east rim (river-exit entries auto-skip via riverAt)
+                [62.8,-29.3],[63.4,-23.7],[62.5,-18.1],[63.2,-12.5],[62.6,-6.9],[63.3,-1.3],
+                [62.7,4.3],[63.4,9.9],[62.8,15.5],[63.5,21.1],[62.9,26.3],
+                // corner pockets
+                [-25,-30],[59.5,-30.5],[-25.5,28],[60,28.5],
+                // SPAWN AREA: the lawns either side of the spawn walk were bare. Each spot is
+                // vetted clear of every grey tile (sidewalk/pad) and the river, so no trunk stands
+                // on a pathway and canopies barely reach one, and >=3.5 from every other trunk.
+                [-8.5,2.22],[-4.06,6.28],[1.85,4.43],[7.02,2.59],[-10.71,-1.11],
+                [-2.22,-7.76],[3.69,-9.24],[-9.24,-12.56],[9.61,6.65]];
+    window.__treeSpots=placed;   // debug: placement audit, strip with __D
     cand.forEach(([px,pz])=>{ if(!treeOK(px,pz)) return; placed.push([px,pz]);
       const sc=s*(0.82+Math.random()*0.4);                          // scale variation
       const t=proto.clone(true); t.scale.setScalar(sc); t.updateMatrixWorld(true);
@@ -620,22 +861,60 @@
       grp.updateWorldMatrix(true,true); rasterizeSolid(grp); });
     // DISTANT GIANT TREES: oversized clones far past the walk bounds, silhouettes in the fog
     // alongside the distant hills. Unreachable, so no collision and no shadow-map cost.
-    const FAR_TREES=[ // [x, z, scale mult, facing]
-      [-45,4,2.0,0.4],[-42,-18,1.7,2.1],[8,-44,2.1,1.2],[34,-46,1.8,2.8],
-      [58,8,1.9,0.9],[55,-8,1.7,1.9],[18,46,2.0,0.2],[-8,45,1.7,2.5]];
-    FAR_TREES.forEach(([px,pz,sc,rot])=>{
+    // BACKGROUND WOODLAND: a band of trees in the unreachable land past the walk bounds
+    // (BX0/BX1/BZ0/BZ1), from 2 to 30 units out, so the pushed-back fog reveals depth instead
+    // of empty ground. Seeded scatter, min 4-6 spacing, clear of the hills, the existing giant
+    // trees and the river's exit channel. Unreachable, so no collision and no shadow-map cost;
+    // unlike the planted trees these clones ARE frustum-culled, so only the ones actually in
+    // view cost anything (79k tris each).
+    // [x, z, scale mult, facing, base sink] — sink 0.05 on the apron tiles, 0.12 on the far-land sheet
+    const FAR_TREES=[
+      [-62,6,2.0,0.4,0.12],[-58,-24,1.7,2.1,0.12],[10,-68,2.1,1.2,0.12],[38,-70,1.8,2.8,0.12],
+      [94,10,1.9,0.9,0.12],[90,-10,1.7,1.9,0.12],[24,64,2.0,0.2,0.12],[-10,62,1.7,2.5,0.12],
+      [-48.03,5.54,1.43,6.14,0.12],[65.02,52.09,1.46,1.00,0.12],[-44.70,62.07,1.65,3.00,0.12],
+      [-22.91,-52.83,1.47,3.86,0.12],[78.69,-59.11,1.63,5.86,0.12],[93.47,36.95,1.75,0.85,0.12],
+      [-25.12,-62.07,1.48,6.11,0.12],[81.65,41.75,1.74,3.33,0.12],[-16.63,49.88,1.59,5.79,0.12],
+      [-41.38,-26.60,1.34,4.62,0.12],[75.00,29.19,1.54,5.76,0.12],[40.27,34.73,1.01,0.34,0.05],
+      [49.88,-48.03,1.86,2.41,0.12],[76.11,22.91,1.56,1.34,0.12],[50.25,60.59,1.62,2.00,0.12],
+      [73.52,-28.45,1.60,4.92,0.12],[75.37,39.53,1.82,2.35,0.12],[-6.28,-54.68,1.52,4.72,0.12],
+      [67.98,-57.26,1.50,0.63,0.12],[78.32,45.07,1.49,0.29,0.12],[86.08,-21.80,1.36,4.92,0.12],
+      [8.87,46.55,1.30,2.80,0.12],[79.80,-39.16,1.37,5.97,0.12],[56.16,-50.25,1.43,4.62,0.12],
+      [3.69,49.88,1.75,3.45,0.12],[-41.38,22.17,1.35,3.74,0.12],[1.48,-59.48,1.88,4.02,0.12],
+      [-38.05,1.85,1.21,3.14,0.12],[-46.55,26.60,1.85,3.01,0.12],[90.15,-32.51,1.39,5.21,0.12],
+      [-41.75,50.61,1.73,1.20,0.12],[17.36,-47.29,1.56,5.48,0.12],[85.34,4.06,1.79,3.34,0.12],
+      [-35.10,48.40,1.34,0.47,0.12],[-53.94,-38.42,1.72,5.14,0.12],[-25.12,58.74,1.37,3.61,0.12],
+      [-42.12,5.54,1.31,3.25,0.12],[75.74,-21.80,1.77,2.85,0.12],[24.75,-55.79,1.41,1.08,0.12],
+      [78.69,-49.14,1.64,0.81,0.12],[-41.75,-2.22,1.53,4.01,0.12],[68.72,-42.86,1.50,6.12,0.12],
+      [-48.40,15.52,1.75,0.29,0.12],[-11.45,39.16,1.77,0.44,0.12],[-51.35,-31.40,1.40,4.89,0.12],
+      [75.74,4.43,1.56,0.79,0.12],[67.98,-37.31,1.25,0.62,0.05],[83.13,-29.56,1.41,1.04,0.12],
+      [-59.85,-45.07,1.81,4.57,0.12],[-55.42,41.38,1.86,4.36,0.12],[5.91,58.00,1.70,0.57,0.12],
+      [89.78,-1.85,1.64,4.44,0.12],[-33.62,-46.55,1.88,1.50,0.12],[79.80,61.33,1.68,6.09,0.12],
+      [69.83,-8.50,1.01,2.27,0.05],[-46.92,-21.06,1.36,5.13,0.12],[14.41,-59.85,1.50,6.17,0.12],
+      [83.50,16.63,1.87,6.26,0.12],[25.12,49.88,1.33,4.79,0.12],[-22.91,45.81,1.68,6.25,0.12],
+      [-55.05,-45.81,1.69,3.34,0.12],[-44.70,33.25,1.42,2.68,0.12],[35.47,-58.00,1.27,1.94,0.12],
+      [26.60,-40.27,1.13,2.97,0.05],[26.23,-62.07,1.26,0.59,0.12],[-48.77,-50.25,1.45,0.57,0.12],
+      [-37.31,36.21,1.54,2.31,0.12],[36.21,56.16,1.46,0.88,0.12],[71.30,16.26,1.80,3.54,0.12],
+      [-9.98,-46.92,1.73,6.23,0.12],[-59.11,-37.68,1.25,6.06,0.12],[41.01,43.60,1.86,5.99,0.12],
+      [63.91,35.47,1.03,6.20,0.05],[-0.74,42.12,1.68,5.18,0.12],[50.25,33.99,1.21,5.64,0.05],
+      [-38.79,11.08,1.83,0.13,0.12],[80.54,-20.32,1.59,0.32,0.12],[-51.35,-15.89,1.44,0.06,0.12],
+      [-38.42,-7.76,1.48,0.81,0.12],[49.51,-56.16,1.27,5.98,0.12],[89.78,-48.77,1.23,3.91,0.12],
+      [-40.64,-56.16,1.47,3.91,0.12],[65.39,-65.02,1.37,5.81,0.12],[87.56,-44.70,1.39,1.08,0.12],
+      [88.67,39.53,1.23,1.45,0.12],[68.72,24.01,1.20,0.11,0.05],[-31.03,-54.31,1.53,0.42,0.12],
+      [-26.97,39.16,1.47,4.20,0.12],[-18.10,-50.25,1.82,0.44,0.12],[50.25,51.35,1.73,3.35,0.12],
+      [-35.84,-36.21,1.14,5.71,0.05],[19.58,41.75,1.48,0.33,0.12]];
+    FAR_TREES.forEach(([px,pz,sc,rot,sink])=>{
       const t=proto.clone(true); t.scale.setScalar(s*sc); t.updateMatrixWorld(true);
-      t.traverse(o=>{ if(o.isMesh) o.castShadow=false; });
+      t.traverse(o=>{ if(o.isMesh){ o.castShadow=false; o.frustumCulled=true; } });
       const b=new THREE.Box3().setFromObject(t);
       t.position.x-=(b.min.x+b.max.x)/2; t.position.z-=(b.min.z+b.max.z)/2;
-      t.position.y-=b.min.y+0.12;   // base sunk slightly into the far-land sheet (its top is ~0.09 below stud tips)
+      t.position.y-=b.min.y+(sink==null?0.12:sink);   // base sunk slightly into the sheet it stands on (far-land top is ~0.09 below stud tips)
       const grp=new THREE.Group(); grp.position.set(snap(px),0,snap(pz)); grp.rotation.y=rot;
       grp.add(t); scene.add(grp); });
   }, undefined, e=>{ console.warn('tree load failed', e); });
 
   // RUINS — decorative structure, stud-snapped, on a grey pad. Entry NOT constrained yet (no collision).
   const ruinsHolder=new THREE.Group();
-  ruinsHolder.position.set(snap(-1), -0.5, snap(10));   // stamped into the ground
+  ruinsHolder.position.set(snap(-2.2), -0.5, snap(19.95));   // 2x layout: doubled from snap(-1)/snap(10), stamped into the ground
   ruinsHolder.rotation.y=Math.PI;                        // 180° — entrance now faces the front
   scene.add(ruinsHolder);
   gltf.load('./assets/ruins.glb', (g)=>{
@@ -651,7 +930,7 @@
   // RUN-DOWN HOUSE, an old brick house on the north grass. Native 0.369 stud pitch,
   // stamped onto its grey pad, with a 6-stud grey path connecting it to the walk.
   const rdhHolder=new THREE.Group();
-  rdhHolder.position.set(snap(10.3), -0.15, snap(-12.93)); // centered on the path, pushed to the plate rim (back face -17.39, rim -17.73, nothing hangs off)
+  rdhHolder.position.set(snap(20.7), -0.15, snap(-25.86)); // 2x layout: doubled from snap(10.3)/snap(-12.93); centered on the path, back face -30.3 vs plate rim -31, nothing hangs off
   rdhHolder.rotation.y=-Math.PI/2;                           // front door + porch face the walk
   scene.add(rdhHolder);
   gltf.load('./assets/rundown_house.glb', (g)=>{
@@ -671,50 +950,115 @@
     window.__rdh=h; window.__rdhHolder=rdhHolder;
   }, undefined, e=>{ console.warn('run-down house load failed', e); });
 
-  // FLOWERS — clusters copied from the mansion/ruins gardens, stud-snapped across the grass.
-  // Every planted cluster gets a small solid disc proportionate to its own footprint
-  // (blocks the player, ignored by the camera). All spots sit on open grass, clear of
-  // the grey sidewalks/pads and well away from the buildings.
+  // FLOWERS — LEGO-exact planting. Every flower is the SAME piece at ONE size: K is
+  // measured so the base's bottom socket (inner r ~0.1075 at scale 1) pops onto a stud
+  // (r 0.1133) exactly like the real piece. Each plant snaps to the REAL stud lattice
+  // of the 2x2 tile grid: ON a stud (the socket swallows it) or BETWEEN four studs
+  // (the round base wedges into the gap, as real 1x1 round pieces do), and is STAMPED
+  // with its base seated on the plate top (y -0.0673, measured), not floating at
+  // stud-tip level. Each plant gets a small solid disc (blocks the player, camera
+  // ignores it). All spots sit on open grass, clear of the grey sidewalks/pads.
   gltf.load('./assets/flowers.glb', (g)=>{
     const proto=g.scene;
     proto.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });
-    function plant(px,pz,rot,sc){ const f=proto.clone(true); f.scale.setScalar(sc); f.updateMatrixWorld(true);
-      const b=new THREE.Box3().setFromObject(f);
-      f.position.x-=(b.min.x+b.max.x)/2; f.position.z-=(b.min.z+b.max.z)/2; f.position.y-=b.min.y;
-      const grp=new THREE.Group(); grp.position.set(snap(px),0,snap(pz)); grp.rotation.y=rot; grp.add(f); scene.add(grp);
-      const half=Math.min(b.max.x-b.min.x, b.max.z-b.min.z)/2;                       // footprint-proportionate
-      solidifyDisc(grp.position.x, grp.position.z, Math.min(0.45, Math.max(0.18, 0.6*half))); }
-    const pairs=[[-14,-6],[-13,12],[30,11],[8.2,1.8]];   // the ruins-side pair pushed back off the sidewalk edge, fully on the grass ([13,-13] made way for the run-down house)
-    pairs.forEach(([px,pz],i)=>{ for(let j=0;j<2;j++) plant(px+j*0.74, pz+(j?0.74:0), ((i*2+j)%4)*Math.PI/2, 1); });
-    // extra scattered clusters with count, facing and size variation
-    const extra=[[2,-6.5,2,0.9],[12.4,2.0,3,1.0],[-12,6.2,2,1.1],[20.3,10.2,3,0.85],[25.8,-9.8,2,1.05],
-      // a flower row greeting the ruins entrance (on the grass just south of its pad, clear of the door approach)
-      [-6.2,2.0,1,1.0],[-4.0,1.7,3,0.9],[1.9,1.8,3,1.0],[4.6,2.1,2,0.95],   // [-6.2,2.0] down to 1 plant: its second member stood on the sidewalk
+    // socket axis: centroid of the stem's bottom rim. The leafy bbox is asymmetric, so
+    // bbox-centering would put the socket ~0.07 off the stud; measure the real opening.
+    proto.updateMatrixWorld(true);
+    let sock;
+    { let gm=null; proto.traverse(o=>{ if(o.isMesh && /green/i.test(o.material.name||'')) gm=o; });
+      const pos=gm.geometry.attributes.position, v=new THREE.Vector3(); let mY=Infinity;
+      for(let i=0;i<pos.count;i++){ v.fromBufferAttribute(pos,i).applyMatrix4(gm.matrixWorld); if(v.y<mY) mY=v.y; }
+      let sx=0,sz=0,n=0;
+      for(let i=0;i<pos.count;i++){ v.fromBufferAttribute(pos,i).applyMatrix4(gm.matrixWorld);
+        if(v.y<mY+1e-3){ sx+=v.x; sz+=v.z; n++; } }
+      sock=new THREE.Vector3(sx/n, mY, sz/n); }
+    const K=1.05, PLATE_TOP=-0.0673, SOFF=0.1839;         // uniform scale · seat y · stud offset from tile center
+    const GSX=0.738544, GSZ=0.739792, GOX=17, GOZ=-1.3;    // tile grid replica (measured off the live instance grid; the tile glb is a hair rectangular)
+    const tcx=x=>GOX+(Math.round((x-GOX)/GSX-0.5)+0.5)*GSX;
+    const tcz=z=>GOZ+(Math.round((z-GOZ)/GSZ-0.5)+0.5)*GSZ;
+    const taken=new Set();
+    function studSpot(px,pz,between){                       // nearest FREE lattice spot in the 3x3 tile neighbourhood
+      const cx=tcx(px), cz=tcz(pz), cands=[];
+      for(let ti=-1;ti<=1;ti++)for(let tj=-1;tj<=1;tj++){
+        const tx=cx+ti*GSX, tz=cz+tj*GSZ;
+        if(between) cands.push([tx,tz]);
+        else for(const ox of[-1,1])for(const oz of[-1,1]) cands.push([tx+ox*SOFF,tz+oz*SOFF]); }
+      cands.sort((a,b)=>Math.hypot(a[0]-px,a[1]-pz)-Math.hypot(b[0]-px,b[1]-pz));
+      for(const c of cands){ const k=c[0].toFixed(2)+','+c[1].toFixed(2);
+        if(!taken.has(k)){ taken.add(k); return c; } }
+      return null; }
+    // PETAL PALETTE — prepared for color variation: with 2+ entries every plant gets its
+    // own petal material clone, cycling through the list; while the list is empty or has
+    // one entry, the original shared purplish-pink material stays untouched (zero cost).
+    // Candidate LEGO petal colors, pending the user's pick:
+    // '#C4281B' red · '#F5CD2F' yellow · '#F4F4F4' white · '#C870A0' pink · '#DA8541' orange
+    const PETAL_COLORS=[];
+    let nPlanted=0;
+    function plant(px,pz,rot,between){
+      const s=studSpot(px,pz,between); if(!s) return;
+      const f=proto.clone(true); f.scale.setScalar(K);
+      f.position.set(-K*sock.x, -K*sock.y, -K*sock.z);     // socket axis to the group origin, rim at y 0
+      if(PETAL_COLORS.length>1){ const c=PETAL_COLORS[nPlanted%PETAL_COLORS.length];
+        f.traverse(o=>{ if(o.isMesh && /pink/i.test(o.material.name||'')){
+          const m=o.material.clone(); m.color.set(c).convertSRGBToLinear(); regMat(m,0.5); o.material=m; } }); }
+      const grp=new THREE.Group(); grp.position.set(s[0],PLATE_TOP,s[1]); grp.rotation.y=rot; grp.add(f); scene.add(grp);
+      nPlanted++;
+      (window.__flowerSpots=window.__flowerSpots||[]).push([s[0],s[1]]);   // debug: placement audit, strip with __D
+      solidifyDisc(s[0], s[1], 0.30); }
+    const pairs=[[-22.9,-10.5],[-14.1,22],[56.2,11],[9.5,14.6]];   // re-laid for the 2x construction layout (structure-adjacent pairs moved with their structures)
+    pairs.forEach(([px,pz],i)=>{ for(let j=0;j<2;j++) plant(px+j*0.74, pz+(j?0.74:0), ((i*2+j)%4)*Math.PI/2, (i+j)%3===2); });
+    // extra scattered clusters with count and facing variation (the old per-entry size
+    // value is retired: all flowers are one size now; the 4th entry is ignored)
+    const extra=[[3.3,-11.4,2],[23.1,3.2,3],[-19.6,9.9,2],[37.9,16.3,3],[48.1,-17.1,2],
+      // a flower row greeting the ruins entrance (on the grass just before its pad, clear of the door approach)
+      [-8.6,7.8,1],[-5.1,10.2,3],[0.8,10.4,3],[3.5,10.7,2],
       // and more colour scattered across the whole map
-      [-15.5,-2.2,2,1.0],[-7.2,-15.6,2,0.9],[3.2,-16.2,2,1.0],[16.2,8.6,3,0.9],[19.2,9.6,2,1.0],
-      [30.8,-11.2,2,0.95],[-15.2,15.4,2,1.05],[7.2,16.2,2,0.9],[23.2,13.2,2,1.0]];   // [x, z, count, base scale]
-    extra.forEach(([px,pz,n,s],i)=>{ for(let j=0;j<n;j++){ const a=i*2.4+j*2.1;
-      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, s*(0.85+0.15*((i+j*3)%3))); } });
+      [-25.4,-3.8,2],[-11.8,-27.3,2],[5.2,-28.3,2],[30.2,13.8,3],[35.8,15.4,2],
+      [57.4,-19.6,2],[-24.9,24.7,2],[13.4,25.9,2],[43.3,21.1,2]];   // [x, z, count]
+    extra.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*2.4+j*2.1;
+      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
     // 50 more plants in 23 clusters, spread over the open grass. Spots generated against
     // the same onPad/onWalk math as the ground tiles, so every cluster (all members plus
     // footprint) clears the grey sidewalks/pads, the buildings, trees, lamps and the
-    // earlier flowers. [x, z, count, base scale]
+    // earlier flowers. [x, z, count]
     const more=[
-      [14.3,15.8,3,1.08],[12,10.9,2,0.87],[16.1,-16.6,2,0.86],[20.1,-15.1,3,1.08],[1.1,-13.3,2,0.92],
-      [-12.4,9.7,2,0.99],[11,15.9,2,0.91],[17.6,-8,2,0.89],[4.4,-8.2,2,0.89],[-1.8,-10.2,3,1],
-      [19.1,-5.6,2,0.98],[9.4,9.6,3,0.85],[22.4,15.5,1,0.97],[-13.7,-0.2,2,0.95],[24.5,9.9,3,1.08],
-      [24.4,-13.7,2,1.05],[17.5,-11.2,2,0.91],[30.1,14.6,3,0.88],[27.6,10,1,0.99],[18.5,7.6,3,0.9],
-      [-10.9,15.1,1,0.89],[0.6,-8.6,2,0.91],[17.5,14.6,2,0.92]];
-    more.forEach(([px,pz,n,s],i)=>{ for(let j=0;j<n;j++){ const a=i*2.9+j*2.1;
-      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, s*(0.85+0.15*((i+j*3)%3))); } });
+      [26.7,25.3,3],[22.4,17.5,2],[30,-29,2],[37.5,-26.4,3],[1.8,-23.3,2],
+      [-20.3,15.5,2],[20.5,25.5,2],[32.8,-16,2],[5.6,-15,2],[-2.9,-17.8,3],
+      // [35.9,-8.6] was [35.6,-9.8]: pulled back off the north bank, whose wander now reaches z -9.8 here
+      [35.9,-8.6,2],[17.5,15.4,3],[41.8,24.8,1],[-22.4,-0.3,2],[45.7,15.9,3],
+      [45.5,-24,2],[32.6,-19.6,2],[56.1,23.4,3],[51.5,16,1],[34.5,12.2,3],
+      [-17.8,24.2,1],[1,-15,2],[32.6,23.4,2]];
+    more.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*2.9+j*2.1;
+      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
     // flower band in FRONT of the border tree line behind the ruins: on the grass strip between
     // the ruins pad (ends z 17.2) and the south rim trees (z ~20.6..21.1), every center >=1.7
-    // from the nearest trunk so members (0.74 spread) stay clear. [x, z, count, base scale]
+    // from the nearest trunk so members (0.74 spread) stay clear. [x, z, count]
     const ruinsBack=[
-      [-12.8,19.5,2,1.0],[-9.9,18.7,3,0.9],[-6.9,19.8,2,1.05],[-3.9,18.9,3,0.95],[-1.9,19.4,2,0.9],
-      [1.6,19.0,3,1.0],[5.4,19.2,2,0.9],[7.4,18.8,3,1.05],[10.1,19.9,2,0.95]];
-    ruinsBack.forEach(([px,pz,n,s],i)=>{ for(let j=0;j<n;j++){ const a=i*3.3+j*2.1;
-      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, s*(0.85+0.15*((i+j*3)%3))); } });
+      [-13.9,28.7,2],[-11,27.9,3],[-8,29,2],[-5,28.1,3],[-3,28.6,2],
+      [0.5,28.2,3],[4.3,28.4,2],[6.3,28,3],[9,29.1,2]];
+    ruinsBack.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*3.3+j*2.1;
+      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
+    // 65 MORE plants in 26 fresh clusters (2026-08-26): spots generated and vetted LIVE
+    // in-page (raycast: every center plus 0.9-unit offsets hits __matGreen; >=1.8 from
+    // the older flowers, >=1.5 from tree trunks, >=2.2 from lamps, prop bboxes +0.8;
+    // >=6.5 pairwise so they spread over the whole map). [x, z, count]
+    const fresh=[
+      [59.3,-21.9,3],[45.7,12.4,2],[39.2,-7.6,3],[-18.6,4.4,2],[59,7,3],[42,-23.9,2],
+      [53.3,-18.4,3],[3.6,-7.5,2],[6.4,20.4,3],[24.7,-27.2,2],[-1.9,-21.5,3],[52.9,23.2,2],
+      [41.9,26.6,3],[2.4,-26.9,2],[40.2,20.1,3],[22.2,20.7,2],[39.2,7.6,3],[30.6,25.9,2],
+      [-22.4,-15.8,3],[2.5,1.1,2],[-7.5,-18.1,3],[12.1,0.9,2],[20.3,6.2,3],[54.1,-29.1,2],
+      [-22.2,-6.9,3],[28.3,1.9,2]];
+    fresh.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*2.6+j*2.1;
+      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
+    // SPAWN AREA: 26 plants in 10 clusters on the two lawns either side of the spawn walk,
+    // which had no greenery at all. Every center is vetted >=1.5 clear of every grey tile
+    // (sidewalk/pad) and the river, so no cluster spills onto a pathway, and >=1.8 from the
+    // older flowers / >=1.6 from the new spawn-area trunks. [x, z, count]
+    const spawnArea=[
+      [-7.02,0.37,3],[-2.59,3.33,2],[2.22,8.13,3],[5.54,6.28,2],[-9.98,5.54,3],
+      [0.74,-6.28,2],[-4.43,-9.98,3],[-10.71,-3.33,2],[5.54,-7.02,3],[9.24,1.48,3]];
+    spawnArea.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*2.2+j*2.1;
+      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
   }, undefined, e=>{ console.warn('flowers load failed', e); });
 
   // STREET LIGHTS — 6 lampposts in pairs, each with a warm-yellow glow (not too strong)
@@ -723,7 +1067,7 @@
     const L=1.086;   // base footprint = exactly 2x2 studs (0.739u), fully covering the tile
     const lampI=applyTOD(), lit=lampI>0.08;                     // off in daylight, stronger as day recedes; cycle re-drives them live
     const bulbCol=lit ? (lampI>0.5?0xffe6a0:0xd8b45a) : 0x4a3d1e;
-    const spots=[[-12.5,-5.5],[18.1,-2.5]];                     // shop (umbrella/flower side) · mansion (4 studs back from the house); the mid-path one by the run-down house was removed
+    const spots=[[-22.48,-18.06],[44.33,-2.5]];                 // shop (umbrella/flower side) · mansion (4 studs back from the house); both moved with their structures' 2x deltas
     spots.forEach(([px,pz])=>{ const lp=proto.clone(true); lp.scale.setScalar(L);
       const b=new THREE.Box3().setFromObject(lp);
       lp.position.x-=(b.min.x+b.max.x)/2; lp.position.z-=(b.min.z+b.max.z)/2; lp.position.y-=b.min.y;
@@ -754,6 +1098,7 @@
       let s=1;
       if(cfg.targetH) s=cfg.targetH/((box.max.y-box.min.y)||1);
       else if(cfg.targetLen) s=cfg.targetLen/(Math.max(box.max.x-box.min.x, box.max.z-box.min.z)||1);
+      else if(cfg.scale) s=cfg.scale;   // exact scale factor (e.g. stud-pitch matching)
       holder.scale.setScalar(s);
       holder.userData.model=m; window.__props[cfg.name].userData.model=m;
       if(cfg.solid){ holder.updateWorldMatrix(true,true); rasterizeSolid(holder); }
@@ -764,24 +1109,24 @@
   // Porsche 912 on the mansion driveway, in front of the existing car, nose pointing out (-x).
   // Sized to the orange garage car's measured footprint (~2.2 wide, nose at x 25.75): same width class.
   // rotY 0.085 counters a slight baked-in tilt in the export so it parks straight on the stud rows.
-  loadProp('./assets/porsche.glb', {name:'porsche', pos:[20.6,4.4], y:0, rotY:-0.015, targetLen:5.6, solid:true,
+  loadProp('./assets/porsche.glb', {name:'porsche', pos:[46.83,4.4], y:0, rotY:-0.015, targetLen:5.6, solid:true,
     onload:(holder,m)=>{ // wheel rims: metallic silver instead of the baked flat white, a touch more reflective than the plastic.
-      // MB309 also paints the rear lower trim (world x > 22.4 at this parking spot); only the wheel meshes go silver.
+      // MB309 also paints the rear lower trim (world x > 48.63 at this parking spot); only the wheel meshes go silver.
       holder.updateWorldMatrix(true,true);
       let rim=null;
       m.traverse(o=>{ if(o.isMesh&&o.material&&o.material.name==='MB309'){
         const cx=new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3()).x;
-        if(cx<22.4){ if(!rim){ rim=o.material.clone(); rim.name='MB309-silver';
+        if(cx<48.63){ if(!rim){ rim=o.material.clone(); rim.name='MB309-silver';
           rim.color.set(0x969ba3); rim.metalness=0.85; rim.roughness=0.2; regMat(rim,0.9); }
           o.material=rim; } } });
     }});
   // Skull on the ground left of the ruins doorway, against the wall, face out. Same size as the figure's head, stamped in.
-  loadProp('./assets/skull.glb',   {name:'skull',   pos:[-2.7,5.1], y:-0.03, rotY:Math.PI, targetH:0.46});
+  loadProp('./assets/skull.glb',   {name:'skull',   pos:[-3.81,15.08], y:-0.03, rotY:Math.PI, targetH:0.46});
   // LEGO rat along the ruins' left side wall (east flank, wall face x 1.62), heading toward the back:
   // nose toward the sidewalk (south), tail toward the back of the ruin. Native blend size, stamped in.
-  loadProp('./assets/rat.glb',     {name:'rat',     pos:[1.85,8.1], y:-0.03, rotY:Math.PI});
+  loadProp('./assets/rat.glb',     {name:'rat',     pos:[0.74,18.08], y:-0.03, rotY:Math.PI});
   // Tardis stamped into the ruins balcony (the old lower-flower spot) + the NABU crystal on its top
-  loadProp('./assets/tardis.glb',  {name:'tardis',  pos:[2.0,5.55], y:2.97, rotY:0, targetH:1.9,   // balcony floor 3.0 (re-measured), stamped 0.03 in, clear of both railings
+  loadProp('./assets/tardis.glb',  {name:'tardis',  pos:[0.89,15.53], y:2.97, rotY:0, targetH:1.9,   // balcony floor 3.0 (re-measured), stamped 0.03 in, clear of both railings; moved with the ruins' 2x delta
     onload:(holder,m)=>{ // crystal sits on the Tardis top; deep LEGO blue with a soft inner glow (it is the NABU portal)
       holder.updateWorldMatrix(true,true);
       const cbox=new THREE.Box3().setFromObject(holder); const topY=cbox.max.y; // world Y of tardis top
@@ -799,7 +1144,7 @@
           ch.add(cpl); }}); }});
   // PIRATE CHEST tucked behind the run-down house, hinge side against the back wall, lid open,
   // stamped into the grass. Native blend scale (about 4.5 studs wide next to the minifig).
-  loadProp('./assets/pirate_chest.glb', {name:'chest', pos:[9.6,-15.03], y:-0.03, rotY:Math.PI,
+  loadProp('./assets/pirate_chest.glb', {name:'chest', pos:[19.94,-27.96], y:-0.03, rotY:Math.PI,
     onload:(holder,m)=>{
       // two money bricks lie tumbled on the treasure inside. Kept at their native blend size and
       // deliberately NOT flat or stud-snapped: they rest on each other like two slabs settled in a box.
@@ -816,6 +1161,107 @@
       }, undefined, e=>console.warn('money brick load failed', e));
     }});
 
+  // ── BRIDGE + RIVER WATER ── the LEGO bridge MOC (brown arch + its own blue water plates +
+  // green bank bushes) is the only crossing to the run-down house. The MOC's stud pitch is
+  // its own (see BRIDGE_SCALE below), so the scale registers its studs with the world grid. Holder y -0.22 seats
+  // the water plates' top flush with the ground tiles' plate top; the arch's feet stamp into
+  // the grey path. rotY PI/2 turns the MOC's water run east-west so the deck crosses it
+  // north-south, in line with the path to the house. The deck and steps are climbable via
+  // the heightmap + the bridge STAIR_ZONE; the water plates are flagged noHM so they never
+  // become walkable, and riverAt's solid cells keep the player out of the water.
+  // 0.3513 is the MOC's stud pitch MEASURED off the shipped glb (water plate 2.8104 across its
+  // 8 studs, deck 2.1069 across its 6), not a guess. Re-measure it if bridge.glb is re-exported:
+  // the 2026-08-26 planted rebuild came out 1.5% smaller than the first export (0.35666).
+  const BRIDGE_SCALE=PITCH/0.3513;
+  loadProp('./assets/bridge.glb', {name:'bridge', pos:[20.69,-12.19], y:-0.22, rotY:Math.PI/2, scale:BRIDGE_SCALE,
+    onload:(holder,m)=>{
+      m.traverse(o=>{ if(!o.isMesh||!o.material) return; const n=o.material.name||'';
+        if(/MB23/i.test(n)){
+          o.userData.noHM=true;                                              // water is scenery, never a floor
+          o.material.roughness=0.12; o.material.userData.envBase=1.4; }      // wet sheen; the day cycle still dims it at night
+        // the planted bridge carries its reeds well past the water and onto both banks, right
+        // across the path. They are scenery like the reeds instanced down the rest of the river:
+        // never a floor, never an obstacle, or they would wall off the approach to the deck.
+        if(/MB28|MB154/i.test(n)) o.userData.noHM=o.userData.noSolid=true; });
+      holder.updateWorldMatrix(true,true);
+      rasterizeSolid(holder);                                                // after the flags above, so the reeds stay walk-through
+      buildHeightmap(holder);                                                // deck + steps become walkable surfaces
+      // BANK PLANTS — the MOC's own reed clumps, repeated down the WHOLE river instead of only
+      // where the bridge stands. Their geometry is lifted straight out of the model (world
+      // space, then recentered on its own base) and instanced along both banks at irregular
+      // intervals, seated just inside the water line the way the MOC's originals sit. Scenery
+      // only: no collision, and the bridge's own stretch is skipped so nothing doubles up.
+      const kits=[];
+      m.traverse(o=>{ if(o.isMesh && /MB28/i.test(o.material.name||'')){
+        const ge=o.geometry.clone(); ge.applyMatrix4(o.matrixWorld); ge.computeBoundingBox();
+        const b=ge.boundingBox; ge.translate(-(b.min.x+b.max.x)/2, -b.min.y, -(b.min.z+b.max.z)/2);
+        kits.push({geo:ge, mat:o.material}); } });
+      if(kits.length){
+        const rng=(s=>()=>(s=(Math.imul(48271,s)>>>0)%2147483647)/2147483647)(90210);
+        const picks=kits.map(()=>[]), END=RV_S[RV_S.length-1];
+        for(let s=2.0; s<END-2.0; s+=0.85+rng()*1.0){
+          const side=rng()<0.5?1:-1, p=riverPoint(s,side);
+          // measure how far the water actually reaches along this normal rather than trusting
+          // riverHW: the bridge and map-edge tapers pull the bank in, and the mosaic quantises
+          // it to whole studs, so a clump placed off the raw wander can end up on dry land
+          let lo=RV_HW, hi=RV_HW+2.4;
+          while(hi-lo>0.04){ const m2=(lo+hi)/2;
+            if(riverAt(p[0]+p[2]*m2, p[1]+p[3]*m2)) lo=m2; else hi=m2; }
+          if(lo-RV_HW<0.55) continue;                                          // bank too tight here to stand a clump in
+          const off=RV_HW+(lo-RV_HW)*(0.15+rng()*0.45);                        // in the shallows, well inside the edge
+          const x=p[0]+p[2]*off, z=p[1]+p[3]*off;
+          if(x>RV_BR[0]-3.4 && x<RV_BR[1]+3.4) continue;                       // the bridge already has its own
+          if(x>64 || z<-36) continue;                                          // past the walkable plate, in the fog
+          picks[Math.floor(rng()*kits.length)].push([x,z,rng()*Math.PI*2]); }
+        const mm=new THREE.Matrix4(), q=new THREE.Quaternion(), ax=new THREE.Vector3(0,1,0),
+              pv=new THREE.Vector3(), one=new THREE.Vector3(1,1,1);
+        kits.forEach((k,i)=>{ const L=picks[i]; if(!L.length) return;
+          const im=new THREE.InstancedMesh(k.geo,k.mat,L.length); im.castShadow=im.receiveShadow=true;
+          L.forEach((s,j)=>{ q.setFromAxisAngle(ax,s[2]); mm.compose(pv.set(s[0],-0.22,s[1]),q,one); im.setMatrixAt(j,mm); });
+          im.instanceMatrix.needsUpdate=true; scene.add(im); });
+        window.__reeds=picks;                                                  // debug handle, strip with the rest
+      }
+    }});
+  // The river continues past the MOC's own 40-stud water run with cloned 8x16 water plates
+  // (the user's own blue pieces), tiled flush at 16-stud pitch with real seam gaps: west to
+  // the bend, east out past the apron, north out through the border tree line. The exported
+  // plate is long in z, so east-west stretches rotate PI/2. Ground tiles are skipped under
+  // all of it (riverAt), and thin matching planes continue each stretch into the fog so the
+  // water never shows an end from anywhere standable.
+  gltf.load('./assets/water_plate.glb',(g)=>{
+    let src=null; g.scene.traverse(o=>{ if(o.isMesh&&!src) src=o; });
+    src.updateWorldMatrix(true,true);
+    const geo=src.geometry.clone(); geo.applyMatrix4(src.matrixWorld); geo.computeBoundingBox();
+    const b=geo.boundingBox;
+    geo.translate(-(b.min.x+b.max.x)/2, -b.min.y, -(b.min.z+b.max.z)/2);     // center, base at y 0
+    const mat=src.material; mat.metalness=0; mat.roughness=0.12; regMat(mat,1.4);
+    const LP=16*PITCH;                          // one plate = 16 studs of river after pitch matching
+    const spots=[];                             // [x, z, rotY]
+    // NOTE: the old west-stretch plate (bend -> bridge water) is deliberately gone. A 16x8
+    // rectangle sitting across the bend is exactly what made the corner read square, so that
+    // span is left to the shoreline mosaic, which can round it stud by stud.
+    for(let k=0;k<7;k++) spots.push([31.03+k*LP,RV_Z,Math.PI/2]);            // east stretch: bridge water -> past the apron
+    for(let k=0;k<5;k++) spots.push([RV_X,-16.63-k*LP,0]);                   // north stretch: bend -> out past the apron
+    const im=new THREE.InstancedMesh(geo,mat,spots.length);
+    im.castShadow=false; im.receiveShadow=true;
+    // water_plate.glb was cut from the FIRST bridge export, so it keeps that export's 0.35666
+    // pitch and needs its own scale. Do NOT reuse BRIDGE_SCALE here: the 2026-08-26 planted
+    // bridge came out at 0.3513, and borrowing its scale stretched these plates to 8.11 studs,
+    // pushing them past the channel edge and overlapping every 16-stud seam.
+    const WATER_SCALE=PITCH/0.35666;
+    const mm=new THREE.Matrix4(), sc=new THREE.Vector3(WATER_SCALE,WATER_SCALE,WATER_SCALE);
+    const q=new THREE.Quaternion(), ax=new THREE.Vector3(0,1,0), pv=new THREE.Vector3();
+    spots.forEach((s,i)=>{ q.setFromAxisAngle(ax,s[2]); mm.compose(pv.set(s[0],-0.22,s[1]),q,sc); im.setMatrixAt(i,mm); });
+    im.instanceMatrix.needsUpdate=true; scene.add(im);
+    // far-water: flat matching strips carrying each open end into the fog (2mm under the
+    // plate tops, above the far land sheet), so the river reads as flowing off the map
+    const fw=new THREE.MeshStandardMaterial({ color:mat.color, metalness:0, roughness:0.12 }); regMat(fw,1.2);
+    [[89.5,RV_Z,41,2.956],[RV_X,-61.5,2.956,37]].forEach(([px,pz,w,d])=>{
+      const p=new THREE.Mesh(new THREE.PlaneGeometry(w,d), fw);
+      p.rotation.x=-Math.PI/2; p.position.set(px,-0.0695,pz); scene.add(p); });
+    window.__water=im;                          // debug handle, strip with the rest
+  }, undefined, e=>console.warn('water plate load failed', e));
+
   // ══════════ PORTALS — first-person showcase (blurred interior + LEGO-framed panels) ══════════
   // Each structure is a portal: walk up, press E → camera glides 3rd→1st person inside, the real
   // interior is snapshotted + blurred as the backdrop, projects float in front as framed panels.
@@ -828,8 +1274,10 @@
     {t:'Rendered 3D Model', c:'#ff7ac2', img:'./assets/Venom.PNG', year:2024, desc:'Movie character modeled, textured, and rendered in Blender.'},
     {t:'Custom Phone Case', c:'#8b5cf6', img:'./assets/My_Case.jpg', year:2025, desc:'Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.'},
     {t:'Custom Airpod Case', c:'#f97316', img:'./assets/Airpod_Case.JPG', year:2026, desc:'Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.'},
-    {t:'HMI Sensor System', c:'#2ee078', img:'./assets/New_Radar_Sensor_front.jpg', video:'./assets/New_Radar_Sensor.mp4', year:2024, desc:'Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.'},
-    {t:'Custom RGB Controller', c:'#38bdf8', img:'./assets/New_LED_Box_Front.jpg', video:'./assets/New_LED_Box.mp4', year:2024, desc:'Functional system built from scratch. 3D printed geometric casing housing the microcontroller.'},
+    {t:'HMI Sensor System', c:'#2ee078', img:'./assets/New_Radar_Sensor_front.jpg', video:'./assets/New_Radar_Sensor.mp4', year:2024, desc:'Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.',
+      mainLabel:'Demo', extras:[{img:'./assets/New_Radar_Sensor_front.jpg', label:'Front'},{img:'./assets/New_Radar_Sensor_Back.jpg', label:'Back'},{img:'./assets/Programming_Cover_Pic.jpg', label:'Both builds'}]},
+    {t:'Custom RGB Controller', c:'#38bdf8', img:'./assets/New_LED_Box_Front.jpg', video:'./assets/New_LED_Box.mp4', year:2024, desc:'Functional system built from scratch. 3D printed geometric casing housing the microcontroller.',
+      mainLabel:'Demo', extras:[{img:'./assets/New_LED_Box_Front.jpg', label:'Front'},{img:'./assets/New_LED_Box_Back.jpg', label:'Back'},{img:'./assets/Programming_Cover_Pic.jpg', label:'Both builds'}]},
     {t:'Product, not Consumer', c:'#f4c430', img:'./assets/Shyon_Sculpture.jpg', year:2024, desc:'Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.'},
     {t:'Campaign Project', c:'#ff7ac2', img:'./assets/Adverstisement_Project.jpg', year:2024, desc:'Conceptual brand advertisement built around scenic composition.'},
     {t:'Candid Studio Portrait', c:'#8b5cf6', img:'./assets/Max_Pic.JPG', year:2024, desc:'Studio portrait shot with controlled lighting.'},
@@ -840,14 +1288,16 @@
     {t:'Luning Dr Flyer', c:'#2ee078', img:'./assets/RealEstate_Luning_Flyer.jpg', year:2022, desc:'Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.'},
     {t:'Colleen Dr Flyer', c:'#8b5cf6', img:'./assets/RealEstate_Colleen_Flyer.jpg', year:2022, desc:'A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.'},
     {t:'Morning Star Dr Flyer', c:'#ff7ac2', img:'./assets/RealEstate_MorningStar_Flyer.png', year:2022, desc:'A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.'},
-    {t:'Moskowite Corner', c:'#f97316', img:'./assets/RealEstate_MoskowiteCorner_Concept.jpg', year:2026, desc:'An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references.'} ];
+    {t:'Moskowite Corner', c:'#f97316', img:'./assets/RealEstate_MoskowiteCorner_Concept.jpg', year:2026, desc:'An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references.',
+      mainLabel:'Concept', extras:[{img:'./assets/RealEstate_MoskowiteCorner_Before.png', label:'Existing site'}]} ];
   const ABOUT=[
     {t:'Who I Am', c:'#38bdf8', img:'./assets/Shyon_About.png', desc:'I\'m a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. That range started in childhood with LEGO builds and stop motion films, and it became a working habit: learn the tools each project requires and use them properly.'},
     {t:'Resume', c:'#f4c430', desc:'My full resume, with experience and skills.', links:[{label:'Open My Resume', href:'./My Resume.pdf'}]},
     {t:'Contact', c:'#2ee078', desc:'Reach out for work, collaborations, or anything else.', links:[{label:'Email shyon2001@gmail.com', href:'mailto:shyon2001@gmail.com'},{label:'LinkedIn in/shyonshiri', href:'https://www.linkedin.com/in/shyonshiri/'}]} ];
   const NABU=[
     {t:'NABU Promotional Video', c:'#38bdf8', img:'./assets/Nabu_Poster_Banner.jpg', video:'./assets/Nabu_Poster_Banner.mp4', year:2023, desc:'Promotional video for NABU clothing, animated in Adobe After Effects.'},
-    {t:'NABU 2026 Teaser', c:'#2ee078', img:'./assets/NABU_Puffer_AD.jpg', video:'./assets/NABU_PUFFER_AD.mp4', year:2025, desc:'Promotional video for NABU\'s puffer jacket collection.'},
+    {t:'NABU 2026 Teaser', c:'#2ee078', img:'./assets/NABU_Puffer_AD.jpg', video:'./assets/NABU_PUFFER_AD.mp4', year:2025, desc:'Promotional video for NABU\'s puffer jacket collection.',
+      mainLabel:'Teaser', extras:[{img:'./assets/NABU_Puffer_Front.jpg', label:'Puffer front'},{img:'./assets/NABU_Puffer_Back.jpg', label:'Puffer back'}]},
     {t:'NABU 2025 Summer Collection', c:'#f4c430', img:'./assets/NABU_SALE_AD.jpg', video:'./assets/NABU_SALE_AD.mp4', year:2025, desc:'Promotional video for the NABU 2025 summer collection.'},
     {t:'NABU 2023 Spring Collection', c:'#ff7ac2', img:'./assets/Stevie_Pic.JPG', year:2022, desc:'Portrait photography for the NABU 2023 spring collection.'},
     {t:'NABU 2024 Rerelease Promotion', c:'#8b5cf6', img:'./assets/Digital_Media_Cover.jpg', year:2024, desc:'Promotional campaign for the 2024 rerelease of NABU\'s Persian rug pants.'} ];
@@ -856,10 +1306,12 @@
 
   function labelTex(text, bg, fg, wide){ const W=wide?900:512, H=wide?170:340; const c=document.createElement('canvas'); c.width=W; c.height=H;
     const x=c.getContext('2d'); if(bg){ x.fillStyle=bg; x.fillRect(0,0,W,H); }
+    else { x.shadowColor='rgba(0,0,0,.9)'; x.shadowBlur=14; x.shadowOffsetY=3; }   // boxless labels get a soft shadow so they read over any backdrop
     x.fillStyle=fg; x.textAlign='center'; x.textBaseline='middle';
     let fs=wide?110:190; x.font='600 '+fs+'px "Fredoka",sans-serif';
     while(x.measureText(text).width>W-60 && fs>22){ fs-=6; x.font='600 '+fs+'px "Fredoka",sans-serif'; }
-    x.fillText(text,W/2,H/2+2); const tx=new THREE.CanvasTexture(c); tx.anisotropy=4; return tx; }
+    x.fillText(text,W/2,H/2+2); if(!bg) x.fillText(text,W/2,H/2+2);
+    const tx=new THREE.CanvasTexture(c); tx.anisotropy=4; return tx; }
 
   // Separate scene: LEGO-framed project panels per portal, drawn sharp over the blurred interior snapshot.
   const menuScene=new THREE.Scene();
@@ -867,7 +1319,7 @@
   menuScene.add(new THREE.HemisphereLight(0xffffff,0x3a4658,1.05));
   const mdir=new THREE.DirectionalLight(0xffffff,0.75); mdir.position.set(3,5,7); menuScene.add(mdir);
   const studGeoP=new THREE.CylinderGeometry(0.062,0.062,0.055,12);
-  const PGAP=3.55;   // horizontal spacing between panel centers (frames are 2.67 wide, so ~0.9 of air between them)
+  const PGAP=4.4;    // horizontal spacing between panel centers (frames are 2.67 wide, so ~1.7 of air between them)
   function buildPanels(projects){ const group=new THREE.Group(); const panels=[];
     projects.forEach((p,i)=>{ const n=projects.length, W=2.15,Hh=2.7,fr=0.26, mat=plastic(p.c,0.4), back=plastic(0x0c1120,0.6);
       const g=new THREE.Group();
@@ -878,32 +1330,53 @@
       const nc=Math.max(3,Math.round((W+fr*2)/0.3));
       for(let s=0;s<nc;s++){ const sx=-(W+fr*2)/2+(s+0.5)*((W+fr*2)/nc);
         [Hh/2+fr/2,-Hh/2-fr/2].forEach(sy=>{ const st=new THREE.Mesh(studGeoP,mat); st.rotation.x=Math.PI/2; st.position.set(sx,sy,0.22); g.add(st); }); }
-      const media=new THREE.Mesh(new THREE.PlaneGeometry(W-0.14,Hh-0.14), new THREE.MeshBasicMaterial({map:labelTex(p.img?String(i+1):p.t,p.c,'#0c1120')})); media.position.z=0.1; g.add(media);
-      const cap=new THREE.Mesh(new THREE.PlaneGeometry(W+fr,0.5), new THREE.MeshBasicMaterial({map:labelTex(p.t,'#0c1120','#ffffff',true),transparent:true})); cap.position.set(0,-Hh/2-fr-0.44,0.1); g.add(cap);
-      const off=i-(n-1)/2; g.position.set(off*PGAP,0,-Math.abs(off)*0.55); g.rotation.y=-off*0.13; g.userData={i, media, bx:off*PGAP}; group.add(g); panels.push(g); });
-    group.visible=false; menuScene.add(group); return {group, panels}; }
+      const media=new THREE.Mesh(new THREE.PlaneGeometry(W,Hh), new THREE.MeshBasicMaterial({map:labelTex(p.img?String(i+1):p.t,p.c,'#0c1120')})); media.position.z=0.1; g.add(media);   // full-bleed: no backing rim shows around the image
+      const cap=new THREE.Mesh(new THREE.PlaneGeometry(W+fr,0.5), new THREE.MeshBasicMaterial({map:labelTex(p.t,null,'#ffffff',true),transparent:true})); cap.position.set(0,-Hh/2-fr-0.44,0.1); g.add(cap);
+      const off=i-(n-1)/2; g.position.set(off*PGAP,0,-Math.abs(off)*0.55); g.rotation.y=-off*0.13; g.userData={i, media, bx:off*PGAP, frameMat:mat}; group.add(g); panels.push(g); });
+    group.visible=false; group.position.y=0.8; menuScene.add(group); return {group, panels}; }   // raised so captions clear the bottom UI stack
   // Cover images load lazily, on the first E-press at each structure (cover-fit crop onto the panel plane)
   const _texLoader=new THREE.TextureLoader();
+  // The strongest color in a cover image: 6 hue sectors x 2 lightness bands, saturation^2-weighted,
+  // so a dark blue denim beats a larger area of near-black; near-grey/white/black pixels are skipped.
+  // Falls back to the image's average tone for (near-)monochrome covers. Returned in linear space.
+  function strongColor(img){ const S=40, c=document.createElement('canvas'); c.width=c.height=S;
+    const x=c.getContext('2d'); x.drawImage(img,0,0,S,S); const d=x.getImageData(0,0,S,S).data;
+    const bk=[]; for(let i=0;i<12;i++) bk.push({w:0,r:0,g:0,b:0});
+    let ar=0,ag=0,ab=0;
+    for(let i=0;i<d.length;i+=4){ const r=d[i]/255, g=d[i+1]/255, b=d[i+2]/255; ar+=r; ag+=g; ab+=b;
+      const mx=Math.max(r,g,b), mn=Math.min(r,g,b), df=mx-mn, l=(mx+mn)/2;
+      if(df<0.06 || l>0.93 || l<0.04) continue;
+      let h; if(mx===r) h=((g-b)/df+6)%6; else if(mx===g) h=(b-r)/df+2; else h=(r-g)/df+4;
+      const s=df/(1-Math.abs(2*l-1)), w=s*s, q=bk[Math.floor(h)*2+(l<0.5?0:1)];
+      q.w+=w; q.r+=r*w; q.g+=g*w; q.b+=b*w; }
+    let best=null; for(const q of bk) if(q.w>6 && (!best||q.w>best.w)) best=q;
+    const col=new THREE.Color();
+    if(best) col.setRGB(best.r/best.w, best.g/best.w, best.b/best.w);
+    else { const n=S*S; col.setRGB(ar/n, ag/n, ab/n); }
+    const hsl={}; col.getHSL(hsl);   // clamp so the frame still shades like plastic (studs/bevels stay readable)
+    col.setHSL(hsl.h, Math.min(0.85,hsl.s), Math.max(0.16,Math.min(0.62,hsl.l)));
+    return col.convertSRGBToLinear(); }
   function texPanels(P){ if(P.texed) return; P.texed=true;
     P.panels.forEach((g,i)=>{ const p=P.projects[i]; if(!p.img) return;
       _texLoader.load(p.img, tx=>{ tx.encoding=THREE.sRGBEncoding; tx.anisotropy=8;
-        const pa=2.01/2.56, ia=tx.image.width/tx.image.height;
+        const pa=2.15/2.7, ia=tx.image.width/tx.image.height;
         if(ia>pa){ tx.repeat.set(pa/ia,1); tx.offset.x=(1-pa/ia)/2; } else { tx.repeat.set(1,ia/pa); tx.offset.y=(1-ia/pa)/2; }
         const m=g.userData.media; m.material.map=tx; m.material.needsUpdate=true;
+        if(g.userData.frameMat) g.userData.frameMat.color.copy(strongColor(tx.image));   // frame matches the cover's strongest color
       }, undefined, e=>console.warn('panel image failed', p.img)); }); }
   const PORTALS={
     professional:{ label:'Professional Services', projects:PROFESSIONAL, cells:shopCells,
-      door:new THREE.Vector3(-9.975,0,-9.5), eye:new THREE.Vector3(-9.975,1.75,-9.3), look:new THREE.Vector3(-9.975,1.5,-14.0),
-      exit:new THREE.Vector3(-9.975,0,-6), yaw:0 },              // step back out facing the world (+z)
+      door:new THREE.Vector3(-19.95,0,-22.06), eye:new THREE.Vector3(-19.95,1.75,-21.86), look:new THREE.Vector3(-19.95,1.5,-26.56),
+      exit:new THREE.Vector3(-19.95,0,-18.56), yaw:0 },          // step back out facing the world (+z)
     creative:{ label:'Creative Projects', projects:CREATIVE, cells:null, doorR:2.6,   // front-door circle only: the house's wall cells would let you enter from the back
-      door:new THREE.Vector3(10.345,0,-8.47), eye:new THREE.Vector3(10.345,1.75,-9.6), look:new THREE.Vector3(10.345,1.5,-14.5),
-      exit:new THREE.Vector3(10.345,0,-6.5), yaw:0 },            // step back out onto the path, facing the walk (+z)
+      door:new THREE.Vector3(20.69,0,-21.40), eye:new THREE.Vector3(20.69,1.75,-22.53), look:new THREE.Vector3(20.69,1.5,-27.43),
+      exit:new THREE.Vector3(20.69,0,-19.43), yaw:0 },           // step back out onto the path (north of the bridge), facing the walk (+z)
     about:{ label:'About', projects:ABOUT, cells:houseCells, doorR:4.0,   // wide radius: the doorway itself has no wall cells, so the door circle must cover the whole approach
-      door:new THREE.Vector3(19.5,0,0), eye:new THREE.Vector3(23,1.8,0), look:new THREE.Vector3(29,1.4,0),
-      exit:new THREE.Vector3(15,0,0), yaw:-Math.PI/2 },          // facing -x toward spawn/world
+      door:new THREE.Vector3(45.73,0,0), eye:new THREE.Vector3(49.23,1.8,0), look:new THREE.Vector3(55.23,1.4,0),
+      exit:new THREE.Vector3(41.23,0,0), yaw:-Math.PI/2 },       // facing -x toward spawn/world
     nabu:{ label:'NABU', projects:NABU, cells:null,              // the blue crystal on the Tardis is the NABU portal (balcony only)
-      door:new THREE.Vector3(2.0,3.2,5.55), eye:new THREE.Vector3(2.0,4.75,3.9), look:new THREE.Vector3(2.0,5.12,5.55),
-      exit:new THREE.Vector3(0.8,3.2,4.4), yaw:Math.PI } };      // zoom rises to the crystal itself; exit restores the user's own camera
+      door:new THREE.Vector3(0.89,3.2,15.53), eye:new THREE.Vector3(0.89,4.75,13.88), look:new THREE.Vector3(0.89,5.12,15.53),
+      exit:new THREE.Vector3(-0.31,3.2,14.38), yaw:Math.PI } };  // zoom rises to the crystal itself; exit restores the user's own camera
   Object.keys(PORTALS).forEach(k=>{ const mp=buildPanels(PORTALS[k].projects); PORTALS[k].group=mp.group; PORTALS[k].panels=mp.panels;
     const n=PORTALS[k].projects.length; PORTALS[k].panMax = n>3 ? (n-1)/2*PGAP : 0; });   // rows wider than the view can be browsed
   let menuPan=0, menuPanCur=0;   // carousel pan target/current (menu mode only)
@@ -951,32 +1424,60 @@
   function ruinsDoorTeleport(){
     if(mode!=='hub'||fading) return;
     const p=player.position;
-    const lo = p.y<1.0 && p.x>-2.1 && p.x<-0.2 && p.z>5.8 && p.z<7.0;   // ground doorway
-    const hi = p.y>2.5 && p.y<4.3 && p.x>-1.3 && p.x<0.1 && p.z>6.6 && p.z<8.2;  // balcony doorway
+    const lo = p.y<1.0 && p.x>-3.21 && p.x<-1.31 && p.z>15.78 && p.z<16.98;   // ground doorway
+    const hi = p.y>2.5 && p.y<4.3 && p.x>-2.41 && p.x<-1.01 && p.z>16.58 && p.z<18.18;  // balcony doorway
     if(!lo && !hi){ tpArmed=true; return; }
     if(!tpArmed) return;
     tpArmed=false;
-    if(lo) doTeleport(-0.6, 3.25, 5.5);               // ground door -> balcony doorway
-    else if(p.z<7.4) doTeleport(-1.2, 0, 4.4);        // entered from the balcony side -> back downstairs, facing out
+    if(lo) doTeleport(-1.71, 3.25, 15.48);            // ground door -> balcony doorway
+    else if(p.z<17.38) doTeleport(-2.31, 0, 14.38);   // entered from the balcony side -> back downstairs, facing out
     // entered from the back corridor (up the stairs): no teleport, just walk through onto the balcony
   }
-  function openViewer(i){ const P=PORTALS[activePortal]; const p=P.projects[i]; viewerOpen=true; const m=viewerEl.querySelector('.media');
-    m.innerHTML=''; m.style.background='#0c1120'; m.style.color='';
-    if(p.video){ const v=document.createElement('video'); v.src=p.video; if(p.img) v.poster=p.img;
+  // Some assets were shot more than once (front/back photos, a before shot). Those carry an
+  // `extras` list; the viewer then stacks the main media first and the extras after it, with
+  // ‹ › arrows, arrow keys, and swipe to step through the set.
+  let vShots=[], vIdx=0, vProj=null;
+  const navPrev=viewerEl.querySelector('.nav.prev'), navNext=viewerEl.querySelector('.nav.next');
+  function shotsOf(p){ const s=[];
+    if(p.video) s.push({video:p.video, img:p.img, label:p.mainLabel||'Film'});
+    else if(p.img) s.push({img:p.img, label:p.mainLabel||'Cover'});
+    else s.push({label:''});
+    (p.extras||[]).forEach(e=>s.push(e)); return s; }
+  function stopShot(){ const v=viewerEl.querySelector('video'); if(v){ v.pause(); v.removeAttribute('src'); v.load(); } }
+  function renderShot(){ const s=vShots[vIdx], m=viewerEl.querySelector('.media');
+    stopShot(); m.innerHTML=''; m.style.background='#0c1120'; m.style.color='';
+    if(s.video){ const v=document.createElement('video'); v.src=s.video; if(s.img) v.poster=s.img;
       v.controls=true; v.autoplay=true; v.playsInline=true;
       v.style.cssText='width:100%;height:100%;object-fit:contain;background:#000;display:block;'; m.appendChild(v); }
-    else if(p.img){ const im=document.createElement('img'); im.src=p.img; im.alt=p.t;
+    else if(s.img){ const im=document.createElement('img'); im.src=s.img; im.alt=vProj.t;
       im.style.cssText='width:100%;height:100%;object-fit:contain;display:block;'; m.appendChild(im); }
-    else { m.style.background=p.c; m.style.color='#141720'; m.textContent=p.t; }
+    else { m.style.background=vProj.c; m.style.color='#141720'; m.textContent=vProj.t; }
+    const sh=viewerEl.querySelector('.cap .s');
+    if(sh){ if(vShots.length>1){ sh.style.display='block'; sh.textContent=(s.label?s.label+' · ':'')+(vIdx+1)+' / '+vShots.length; }
+      else sh.style.display='none'; } }
+  function stepShot(d){ if(vShots.length<2) return; vIdx=(vIdx+d+vShots.length)%vShots.length; renderShot(); }
+  function openViewer(i){ const P=PORTALS[activePortal]; const p=P.projects[i]; viewerOpen=true;
+    vProj=p; vShots=shotsOf(p); vIdx=0;
     const cap=viewerEl.querySelector('.cap'); cap.innerHTML='';
     const head=document.createElement('div'); head.textContent=P.label+' · '+p.t+(p.year?' · '+p.year:''); cap.appendChild(head);
+    const sh=document.createElement('div'); sh.className='s'; cap.appendChild(sh);
     if(p.desc){ const d=document.createElement('div'); d.className='d'; d.textContent=p.desc; cap.appendChild(d); }
     if(p.links) p.links.forEach(l=>{ const a=document.createElement('a'); a.href=l.href; a.target='_blank'; a.rel='noopener';
       a.textContent=l.label+' ↗'; cap.appendChild(a); });
+    const many=vShots.length>1; navPrev.classList.toggle('on',many); navNext.classList.toggle('on',many);
+    renderShot();
     viewerEl.classList.add('on'); }
-  function closeViewer(){ viewerOpen=false; const v=viewerEl.querySelector('video'); if(v){ v.pause(); v.removeAttribute('src'); v.load(); }
-    viewerEl.querySelector('.media').innerHTML=''; viewerEl.classList.remove('on'); }
+  function closeViewer(){ viewerOpen=false; stopShot();
+    viewerEl.querySelector('.media').innerHTML=''; viewerEl.classList.remove('on'); vShots=[]; vProj=null; }
   viewerEl.querySelector('.x').addEventListener('click', closeViewer);
+  navPrev.addEventListener('click', e=>{ e.stopPropagation(); stepShot(-1); });
+  navNext.addEventListener('click', e=>{ e.stopPropagation(); stepShot(1); });
+  (function(){ const w=viewerEl.querySelector('.mwrap'); let sx=0,sy=0,live=false;   // swipe the shot set on touch
+    w.addEventListener('touchstart', e=>{ const t=e.touches[0]; live = vShots.length>1 && e.target.tagName!=='VIDEO';
+      sx=t.clientX; sy=t.clientY; },{passive:true});
+    w.addEventListener('touchend', e=>{ if(!live) return; live=false; const t=e.changedTouches[0];
+      const dx=t.clientX-sx, dy=t.clientY-sy;
+      if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.5) stepShot(dx<0?1:-1); },{passive:true}); })();
   const _ray=new THREE.Raycaster(), _ndc=new THREE.Vector2();
   canvas.addEventListener('click', e=>{ if(mode!=='menu'||viewerOpen||fading||!activePortal) return;
     if(mMoved>8){ mMoved=0; return; }   // a browse-drag release is not a panel click
@@ -1009,6 +1510,7 @@
   addEventListener('keydown', e=>{ const k=e.key.toLowerCase();
     if(k==='escape'){ if(viewerOpen) closeViewer(); else if(mode==='menu') exitPortal(); return; }
     if(k==='e'){ if(mode==='hub' && nearPortal && !fading) enterPortal(nearPortal); return; }
+    if(viewerOpen){ if(k==='arrowleft'){ stepShot(-1); return; } if(k==='arrowright'){ stepShot(1); return; } }
     if(mode==='menu' && !viewerOpen){ if(k==='arrowleft'||k==='a'){ menuPan=clampPan(menuPan-PGAP); return; }
       if(k==='arrowright'||k==='d'){ menuPan=clampPan(menuPan+PGAP); return; } }
     keys[k]=true; if(e.key===' '){ e.preventDefault(); jumpQ=true; } initAudio(); });
@@ -1066,7 +1568,7 @@
   const clock=new THREE.Clock();
   let velX=0,velZ=0,curYaw=Math.PI,phase=0,prevSin=0,velY=0,grounded=true,jumpQ=false,swingAmt=0,jumpPose=0,jumpSide=1;
   const fV=new THREE.Vector3(),rV=new THREE.Vector3(),mV=new THREE.Vector3(),_v=new THREE.Vector3();
-  const BX0=-20, BX1=36, BZ=21.3, WALK=2.7, RUN=5.0;   // walk bounds pushed out onto the apron, so the invisible wall sits back from the old rim
+  const BX0=-30, BX1=64, BZ0=-35, BZ1=32, WALK=2.7, RUN=5.0;   // 2x-layout walk bounds, pushed a few units onto the apron past each rim
   function frame(dt){
     dayT=(dayT+dt/CYCLE_SECS)%1; applyTOD();   // day/night keeps turning; all lights fade smoothly
     let ix=0,iz=0;
@@ -1084,7 +1586,7 @@
     if(mode!=='hub' || !stepBlocked(nx, player.position.z)) player.position.x=nx; else velX*=0.2;
     if(mode!=='hub' || !stepBlocked(player.position.x, nz)) player.position.z=nz; else velZ*=0.2;
     player.position.x=Math.max(BX0,Math.min(BX1,player.position.x));
-    player.position.z=Math.max(-BZ,Math.min(BZ,player.position.z));
+    player.position.z=Math.max(BZ0,Math.min(BZ1,player.position.z));
     const speed=Math.hypot(velX,velZ), moving=speed>0.15;
     if(speed>0.3) curYaw=Math.atan2(velX,velZ);
     let dy=curYaw-player.rotation.y; dy=Math.atan2(Math.sin(dy),Math.cos(dy)); player.rotation.y+=dy*Math.min(1,dt*16);

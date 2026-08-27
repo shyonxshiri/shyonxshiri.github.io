@@ -51,14 +51,15 @@ const PROJECTS: Project[] = [
       { type: "image", src: "/assets/Venom.PNG", title: "Rendered 3D Model", year: 2024, desc: "Movie character modeled, textured, and rendered in Blender.", aspectRatio: "16/9" },
       { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Prototypes"] },
       { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", year: 2026, desc: "Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Prototypes"] },
-      { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar — Front View", year: 2024, hidden: true },
-      { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar — Back View", year: 2024, hidden: true },
-      { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box — Front View", year: 2024, hidden: true },
-      { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box — Back View", year: 2024, hidden: true },
+      { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar — Front View", year: 2024, desc: "Front of the radar enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar — Back View", "Hardware Builds Together", "HMI Sensor System"] },
+      { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar — Back View", year: 2024, desc: "Back of the radar enclosure, showing the access panel, wiring routing, and the power and control cutouts.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar — Front View", "Hardware Builds Together", "HMI Sensor System"] },
+      { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box — Front View", year: 2024, desc: "Front of the RGB controller. A faceted 3D printed shell with the addressable LED strip seated in a chamfered channel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box — Back View", "Hardware Builds Together", "Custom RGB Controller"] },
+      { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box — Back View", year: 2024, desc: "Back of the RGB controller, with the potentiometer, mode button, and toggle switch mounted through the top panel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box — Front View", "Hardware Builds Together", "Custom RGB Controller"] },
+      { type: "image", src: "/assets/Programming_Cover_Pic.jpg", title: "Hardware Builds Together", year: 2024, desc: "The radar module and the RGB controller side by side. Each enclosure was modeled around its own board, display, and controls, then 3D printed and finished by hand.", aspectRatio: "4/3", hidden: true, relatedItems: ["HMI Sensor System", "Custom RGB Controller"] },
       { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "Studio portrait shot with controlled lighting.", aspectRatio: "2/3" },
       { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", year: 2024, desc: "Studio photography focused on composition and lighting.", aspectRatio: "1/1" },
-      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar — Front View", "Radar — Back View"] },
-      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box — Front View", "RGB Box — Back View"] },
+      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar — Front View", "Radar — Back View", "Hardware Builds Together"] },
+      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box — Front View", "RGB Box — Back View", "Hardware Builds Together"] },
       { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
       { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Campaign Project", year: 2024, desc: "Conceptual brand advertisement built around scenic composition.", aspectRatio: "16/9" },
     ],
@@ -76,7 +77,7 @@ const PROJECTS: Project[] = [
       { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Real Estate Marketing — Colleen Dr", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
       { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.png", title: "Compass × Real Estate Experts — Morning Star Dr", year: 2022, desc: "A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.", aspectRatio: "4/5" },
       { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner — Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner — Existing Site"] },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.png", title: "Moskowite Corner — Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.png", title: "Moskowite Corner — Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner — Concept Visualization"] },
     ],
   },
   {
@@ -87,9 +88,11 @@ const PROJECTS: Project[] = [
     size: "tall",
     media: [
       { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Promotional video for NABU clothing, animated in Adobe After Effects.", wide: true },
-      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Promotional video for NABU's puffer jacket collection." },
+      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Promotional video for NABU's puffer jacket collection.", relatedItems: ["NABU Puffer Front", "NABU Puffer Back"] },
       { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Promotional video for the NABU 2025 summer collection." },
       { type: "image", src: "/assets/Stevie_Pic.JPG", title: "NABU 2023 Spring Collection", year: 2022, desc: "Portrait photography for the NABU 2023 spring collection." },
+      { type: "image", src: "/assets/NABU_Puffer_Front.jpg", title: "NABU Puffer Front", year: 2025, desc: "Studio still from the puffer collection shoot. Woven bandana panelling across the body, sleeves, and hood, shot on a white cyclorama.", aspectRatio: "9/16", hidden: true, relatedItems: ["NABU Puffer Back", "NABU 2026 Teaser"] },
+      { type: "image", src: "/assets/NABU_Puffer_Back.jpg", title: "NABU Puffer Back", year: 2025, desc: "Back of the same puffer, showing how the bandana medallion is centered and mirrored across the shoulders and hem.", aspectRatio: "2/3", hidden: true, relatedItems: ["NABU Puffer Front", "NABU 2026 Teaser"] },
       { type: "image", src: "/assets/Digital_Media_Cover.jpg", title: "NABU 2024 Rerelease Promotion", year: 2024, desc: "Promotional campaign for the 2024 rerelease of NABU's Persian rug pants.", aspectRatio: "3/4" },
     ],
   },
@@ -964,32 +967,8 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             >
               here
             </span>{" "}
-            to browse my site{!isMobile ? ", or the button below to step into My Lego Realm." : "."}
+            to browse my site{!isMobile ? ", or scroll down for the interactive 3D environment built into it, documented from Blender to browser. The entrance is at the end." : "."}
           </motion.p>
-
-          {/* Ghost: enter the 3D realm (desktop only) */}
-          {!isMobile && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.72, ease: [0.16,1,0.3,1] }}
-              style={{ marginTop: 24 }}
-            >
-              <a
-                href="/lego.html"
-                {...hover}
-                className="ss-contact-btn"
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 10,
-                  padding: "15px 28px", borderRadius: 980,
-                  border: "1px solid rgba(245,242,237,.4)",
-                  color: "var(--white)", textDecoration: "none",
-                  fontSize: 13, fontWeight: 600, cursor: "none",
-                }}
-              >
-                <span>Enter My Lego Realm</span><span>→</span>
-              </a>
-            </motion.div>
-          )}
         </div>
 
         {/* Scroll cue into the storyboard */}
@@ -1012,9 +991,9 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
           {/* Intro */}
           <StoryChapter
-            kicker="The Lego Realm · Build breakdown"
+            kicker="Build breakdown · Blender to browser"
             title="An interactive 3D portfolio, documented frame by frame."
-            body="This site includes a second, interactive layer. The section below documents the Lego Realm: what it is, why I built it, and the pipeline used to produce it."
+            body="This site includes a second, interactive layer: a real time 3D environment that runs in the browser. The section below documents what it is, why I built it, and the pipeline used to produce it."
             first
           />
 
@@ -1022,7 +1001,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           <StoryChapter
             kicker="01 · What it is"
             title="The portfolio as a 3D environment."
-            body="The Lego Realm is a real time 3D environment embedded in this site. It is a small town on a single baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after me. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Creative Projects, About, and NABU."
+            body="The environment is a small town on a single LEGO baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after myself. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Creative Projects, About, and NABU."
           />
           <StoryFrame num="FR 01" scene="Overview" src="/assets/story/story_world_midday.jpg"
             caption="The full map at midday. Four structures, a sidewalk loop, and a continuous day and night cycle running on a seven minute loop." />
@@ -1030,7 +1009,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <StoryFrame num="FR 02" scene="Player figure" src="/assets/story/story_figure_front.jpg"
               caption="The playable character, modeled after me. The hair, jacket, and denim legs were modeled and textured separately, then bound to the walk cycle rig." />
             <StoryFrame num="FR 03" scene="Night cycle" src="/assets/story/story_lamp_night.jpg"
-              caption="Night in the realm. The lampposts are driven by the day cycle and brighten as the sun goes down. All lighting is computed in real time." />
+              caption="The map at night. The lampposts are driven by the day cycle and brighten as the sun goes down. All lighting is computed in real time." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
             <StoryFrame num="FR 04" scene="The coffee shop" src="/assets/story/story_shop_evening.jpg"
@@ -1043,7 +1022,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           <StoryChapter
             kicker="02 · Why I made it"
             title="It doubles as a work sample."
-            body="I grew up building LEGO, and the format fits how I work: modular parts, a consistent grid, and structures you can inspect from any angle. The realm also functions as a work sample in itself. It demonstrates the 3D modeling, engineering, and web development skills that the portfolio inside it presents."
+            body="The environment is a work sample in its own right. Building it required the same disciplines the portfolio presents: 3D modeling, engineering, and web development. It also traces back to where my work began, stop motion films built from LEGO, and to the technologies I have taken on since."
           />
           <StoryFrame num="FR 06" scene="Lighting" src="/assets/story/story_sunset.jpg"
             caption="The map at dusk. Sky, fog, sun color, exposure, and lamp intensity are interpolated continuously across the cycle rather than switched between presets." />
@@ -1054,25 +1033,25 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             title="Modeled in Blender, rendered with Three.js."
             body="Every structure was assembled from individual bricks in Blender, using my own builds. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
           />
-          <StoryFrame num="FR 07" scene="Props" src="/assets/story/story_blender_props.jpg"
-            caption="Prop assets staged in Blender before export: the Porsche 912, the treasure chest, a lamppost, and the money bricks." />
+          <StoryFrame num="FR 07" scene="UV and texturing" src="/assets/story/story_blender_skull_uv.jpg"
+            caption="The skull prop in the UV Editing workspace. On the left the mesh is unwrapped flat over its painted texture, on the right the same texture is shown mapped onto the model. Every printed detail in the world is applied this way." />
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 08" scene="Wireframe" src="/assets/story/story_blender_shop_wire.jpg"
-              caption="The coffee shop in wireframe. Every brick is individually modeled geometry, not a texture or a decal." />
-            <StoryFrame num="FR 09" scene="Edit mode" src="/assets/story/story_blender_hair.jpg"
-              caption="The character's hair in edit mode. Modeled manually, then exported with cleaned normals for smooth shading." />
+            <StoryFrame num="FR 08" scene="Assembly" src="/assets/story/story_blender_shop_assembly.jpg"
+              caption="The coffee shop taken apart in Blender. The roof and the top wall course are lifted off the build. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." />
+            <StoryFrame num="FR 09" scene="Sculpting" src="/assets/story/story_blender_hair_sculpt.jpg"
+              caption="The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 10" scene="Figure build" src="/assets/story/story_blender_figure.jpg"
-              caption="The figure mid build in Blender. The legs were exported as a separate asset and bound to the hip pivots for the walk animation." />
-            <StoryFrame num="FR 11" scene="The ruins" src="/assets/story/story_blender_ruins.jpg"
-              caption="The ruins in Blender. The exported geometry was edited further for the final build, including removing extra columns and flower petals." />
+            <StoryFrame num="FR 10" scene="Figure assembly" src="/assets/story/story_blender_figure_exploded.jpg"
+              caption="The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." />
+            <StoryFrame num="FR 11" scene="Mesh editing" src="/assets/story/story_blender_ruins_edit.jpg"
+              caption="The ruins in Edit Mode with the upper storey selected. The export was edited directly at the mesh level to remove extra columns and flower petals before shipping." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 12" scene="The modern house" src="/assets/story/story_blender_house.jpg"
-              caption="The modern house with its garage and garden. In the realm, its door opens the About section." />
-            <StoryFrame num="FR 13" scene="The cottage" src="/assets/story/story_blender_rundown.jpg"
-              caption="The run down cottage, the most recent structure added to the map." />
+            <StoryFrame num="FR 12" scene="Materials" src="/assets/story/story_blender_house_nodes.jpg"
+              caption="The modern house in the Shading workspace. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." />
+            <StoryFrame num="FR 13" scene="Render preview" src="/assets/story/story_blender_cottage_render.jpg"
+              caption="The run down cottage in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." />
           </div>
 
           {/* Closing CTA */}
@@ -1081,8 +1060,8 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             title="The live build."
             body="The full version runs on this site, with the day cycle and all four portals active."
           />
-          <StoryFrame num="FR 14" scene="Live build" src="/assets/story/story_figure_back.jpg"
-            caption="The current build, running in-engine. The entry button is below." />
+          <StoryFrame num="FR 14" scene="Live build" src="/assets/story/story_aerial_sunset.jpg"
+            caption="The current build, running in-engine: the full town from above at sunset, lampposts coming on. The entry button is below." />
           <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
@@ -2001,7 +1980,7 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
             </p>
           )}
 
-          {item.relatedItems && item.relatedItems.length > 0 && !(item.title === "HMI Sensor System" || item.title === "Custom RGB Controller") ? (
+          {item.relatedItems && item.relatedItems.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 48 }}>
               {item.relatedItems.map((relatedTitle, idx) => (
                 <button
