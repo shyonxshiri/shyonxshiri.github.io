@@ -2296,9 +2296,8 @@
       for(let s=0;s<nc;s++){ const sx=-(W+fr*2)/2+(s+0.5)*((W+fr*2)/nc);
         [Hh/2+fr/2,-Hh/2-fr/2].forEach(sy=>{ const st=new THREE.Mesh(studGeoP,mat); st.rotation.x=Math.PI/2; st.position.set(sx,sy,0.22); g.add(st); }); }
       const media=new THREE.Mesh(new THREE.PlaneGeometry(W,Hh), new THREE.MeshBasicMaterial({map:labelTex(p.img?String(i+1):p.t,p.c,'#0c1120')})); media.position.z=0.1; g.add(media);   // full-bleed: no backing rim shows around the image
-      const cap=new THREE.Mesh(new THREE.PlaneGeometry(W+fr,0.5), new THREE.MeshBasicMaterial({map:labelTex(p.t,null,'#ffffff',true),transparent:true})); cap.position.set(0,-Hh/2-fr-0.44,0.1); g.add(cap);
       const off=i-(n-1)/2; g.position.set(off*PGAP,0,-Math.abs(off)*0.55); g.rotation.y=-off*0.13; g.userData={i, media, bx:off*PGAP, frameMat:mat}; group.add(g); panels.push(g); });
-    group.visible=false; group.position.y=0.8; menuScene.add(group); return {group, panels}; }   // raised so captions clear the bottom UI stack
+    group.visible=false; group.position.y=0.8; menuScene.add(group); return {group, panels}; }   // raised so the row clears the bottom UI stack
   // Cover images load lazily, on the first E-press at each structure (cover-fit crop onto the panel plane)
   const _texLoader=new THREE.TextureLoader();
   // The strongest color in a cover image: 6 hue sectors x 2 lightness bands, saturation^2-weighted,
