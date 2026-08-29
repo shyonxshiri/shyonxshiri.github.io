@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────
    TYPES
@@ -39,7 +39,7 @@ type Project = {
 const PROJECTS: Project[] = [
   {
     id: "creative-projects",
-    title: "Creative Projects",
+    title: "Personal Projects",
     tag: "Design, 3D & Craft",
     img: "/assets/3D_Models_Cover_Pic.jpg",
     size: "tall",
@@ -326,6 +326,8 @@ const GLOBAL_CSS = `
     font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
     color: rgba(245,242,237,.6);
   }
+  .ss-frame { overflow: hidden; }                 /* the head strip slides in from outside the box */
+  .ss-frame .ss-frame-shot { display: block; overflow: hidden; }   /* and the still settles out of scale without spilling past the border */
   .ss-frame .ss-frame-img { display: block; width: 100%; height: auto; }
   .ss-frame figcaption {
     padding: 12px 14px 14px;
@@ -336,6 +338,22 @@ const GLOBAL_CSS = `
   .ss-frame-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 26px;
     align-items: start;
+  }
+  /* chapter header with a still alongside it */
+  .ss-chapter-split {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
+    gap: 54px; align-items: center;
+  }
+  .ss-chapter-shot {
+    margin: 0;
+    border: 1px solid rgba(245,242,237,.16);
+    background: #0a0a0c;
+  }
+  .ss-chapter-shot img { display: block; width: 100%; height: auto; }
+  /* chapter opener: the still runs the full column width under the text */
+  .ss-chapter-hero { margin: 40px 0 0; }
+  @media (max-width: 1000px) {
+    .ss-chapter-split { grid-template-columns: 1fr; gap: 34px; }
   }
   @media (max-width: 760px) {
     .ss-frame-grid { grid-template-columns: 1fr; }
@@ -572,6 +590,9 @@ const GLOBAL_CSS = `
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+    /* the storyboard's entrances are inline transforms from framer-motion, which the rules
+       above cannot reach: pin every part at its finished state instead */
+    .ss-story, .ss-story * { opacity: 1 !important; transform: none !important; }
   }
 `;
 
@@ -967,7 +988,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             >
               here
             </span>{" "}
-            to browse my site{!isMobile ? ", or scroll down for the interactive 3D environment built into it, documented from Blender to browser. The entrance is at the end." : "."}
+            to browse my site{!isMobile ? ", or scroll down for the interactive 3D environment built into it." : "."}
           </motion.p>
         </div>
 
@@ -980,41 +1001,36 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {...hover}
           style={{ cursor: "none" }}
         >
-          <span className="ss-cue-label">Build breakdown</span>
+          <span className="ss-cue-label">The 3D environment</span>
           <span className="ss-cue-arrow">▼</span>
         </motion.button>
       </div>
 
       {/* ── STORYBOARD ── */}
-      <div style={{ position: "relative", background: "#060606", padding: "0 8vw" }}>
+      <div className="ss-story" style={{ position: "relative", background: "#060606", padding: "0 8vw" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-
-          {/* Intro */}
-          <StoryChapter
-            kicker="Build breakdown · Blender to browser"
-            title="An interactive 3D portfolio, documented frame by frame."
-            body="This site includes a second, interactive layer: a real time 3D environment that runs in the browser. The section below documents what it is, why I built it, and the pipeline used to produce it."
-            first
-          />
 
           {/* Chapter 01 · WHAT */}
           <StoryChapter
             kicker="01 · What it is"
             title="The portfolio as a 3D environment."
-            body="The environment is a small town on a single LEGO baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after myself. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Creative Projects, About, and NABU."
+            first
+            hero
+            heroLabel={["Overview", "In engine"]}
+            img="/assets/story/story_aerial_town.jpg"
+            imgAlt="Aerial view of the LEGO town at dusk: the coffee shop, the run down cottage, the river and bridge, and the modern house"
+            body="The environment is a small town on a single LEGO baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after myself. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Personal Projects, About, and NABU."
           />
-          <StoryFrame num="FR 01" scene="Overview" src="/assets/story/story_world_midday.jpg"
-            caption="The full map at midday. Four structures, a sidewalk loop, and a continuous day and night cycle running on a seven minute loop." />
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 02" scene="Player figure" src="/assets/story/story_figure_front.jpg"
-              caption="The playable character, modeled after me. The hair, jacket, and denim legs were modeled and textured separately, then bound to the walk cycle rig." />
-            <StoryFrame num="FR 03" scene="Night cycle" src="/assets/story/story_lamp_night.jpg"
-              caption="The map at night. The lampposts are driven by the day cycle and brighten as the sun goes down. All lighting is computed in real time." />
+            <StoryFrame num="FR 01" scene="Player figure" src="/assets/story/story_figure_front.jpg"
+              caption="The playable character, a younger me by design. Assembled from separate parts rather than one mesh: each was modeled and textured on its own, then measured into place and bound to the rig at load time." />
+            <StoryFrame num="FR 02" scene="Night cycle" src="/assets/story/story_lamp_night.jpg"
+              caption="The modern house after dark. The lampposts are driven by the day cycle and brighten as the sun goes down. All lighting is computed in real time." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 04" scene="The coffee shop" src="/assets/story/story_shop_evening.jpg"
+            <StoryFrame num="FR 03" scene="The coffee shop" src="/assets/story/story_shop_evening.jpg"
               caption="The coffee shop at dusk. Its interior is the portal to Professional Services." />
-            <StoryFrame num="FR 05" scene="The NABU crystal" src="/assets/story/story_crystal_night.jpg"
+            <StoryFrame num="FR 04" scene="The NABU crystal" src="/assets/story/story_crystal_night.jpg"
               caption="The NABU portal: a crystal in the ruins built with an emissive material and a dedicated point light." />
           </div>
 
@@ -1024,34 +1040,34 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             title="It doubles as a work sample."
             body="The environment is a work sample in its own right. Building it required the same disciplines the portfolio presents: 3D modeling, engineering, and web development. It also traces back to where my work began, stop motion films built from LEGO, and to the technologies I have taken on since."
           />
-          <StoryFrame num="FR 06" scene="Lighting" src="/assets/story/story_sunset.jpg"
-            caption="The map at dusk. Sky, fog, sun color, exposure, and lamp intensity are interpolated continuously across the cycle rather than switched between presets." />
+          <StoryFrame num="FR 05" scene="Lighting" src="/assets/story/story_sunset.jpg"
+            caption="The run down cottage and the river crossing at dusk. Sky, fog, sun color, exposure, and lamp intensity are interpolated continuously across the cycle rather than switched between presets." />
 
           {/* Chapter 03 · HOW */}
           <StoryChapter
-            kicker="03 · How it was made"
-            title="Modeled in Blender, rendered with Three.js."
+            kicker="03 · How I made it"
+            title="From modeled bricks to a running engine."
             body="Every structure was assembled from individual bricks in Blender, using my own builds. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
           />
-          <StoryFrame num="FR 07" scene="UV and texturing" src="/assets/story/story_blender_skull_uv.jpg"
+          <StoryFrame num="FR 06" scene="UV and texturing" src="/assets/story/story_blender_skull_uv.jpg"
             caption="The skull prop in the UV Editing workspace. On the left the mesh is unwrapped flat over its painted texture, on the right the same texture is shown mapped onto the model. Every printed detail in the world is applied this way." />
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 08" scene="Assembly" src="/assets/story/story_blender_shop_assembly.jpg"
-              caption="The coffee shop taken apart in Blender. The roof and the top wall course are lifted off the build. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." />
-            <StoryFrame num="FR 09" scene="Sculpting" src="/assets/story/story_blender_hair_sculpt.jpg"
+            <StoryFrame num="FR 07" scene="Assembly" src="/assets/story/story_blender_shop_assembly.jpg"
+              caption="The coffee shop part way up: walls built to the halfway course, the roof and awning not yet placed, the umbrella pole still bare. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." />
+            <StoryFrame num="FR 08" scene="Sculpting" src="/assets/story/story_blender_hair_sculpt.jpg"
               caption="The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 10" scene="Figure assembly" src="/assets/story/story_blender_figure_exploded.jpg"
+            <StoryFrame num="FR 09" scene="Figure assembly" src="/assets/story/story_blender_figure_exploded.jpg"
               caption="The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." />
-            <StoryFrame num="FR 11" scene="Mesh editing" src="/assets/story/story_blender_ruins_edit.jpg"
-              caption="The ruins in Edit Mode with the upper storey selected. The export was edited directly at the mesh level to remove extra columns and flower petals before shipping." />
+            <StoryFrame num="FR 10" scene="Mesh editing" src="/assets/story/story_blender_ruins_edit.jpg"
+              caption="The ruins in Edit Mode, built up to the doorway arch with the upper storey still to come. The highlighted course is the one going on next. This export was later edited at the mesh level to remove extra columns and flower petals." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 12" scene="Materials" src="/assets/story/story_blender_house_nodes.jpg"
-              caption="The modern house in the Shading workspace. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." />
-            <StoryFrame num="FR 13" scene="Render preview" src="/assets/story/story_blender_cottage_render.jpg"
-              caption="The run down cottage in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." />
+            <StoryFrame num="FR 11" scene="Materials" src="/assets/story/story_blender_house_nodes.jpg"
+              caption="The modern house with the ground floor closed and the upper storey just started. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." />
+            <StoryFrame num="FR 12" scene="Render preview" src="/assets/story/story_blender_cottage_render.jpg"
+              caption="The run down cottage with its walls finished and the roof not yet on, in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." />
           </div>
 
           {/* Closing CTA */}
@@ -1060,8 +1076,8 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             title="The live build."
             body="The full version runs on this site, with the day cycle and all four portals active."
           />
-          <StoryFrame num="FR 14" scene="Live build" src="/assets/story/story_aerial_sunset.jpg"
-            caption="The current build, running in-engine: the full town from above at sunset, lampposts coming on. The entry button is below." />
+          <StoryFrame num="FR 13" scene="Live build" src="/assets/story/story_aerial_sunset.jpg"
+            caption="The current build, running in-engine: the town from above at sunset, lampposts coming on. The entry button is below." />
           <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
@@ -1107,44 +1123,95 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 }
 
 /* One storyboard cell: numbered head strip, still, caption */
+/* ── STORYBOARD MOTION ───────────────────────────────────────────────────────────────
+   Every block brings its parts in one after another instead of arriving as a single
+   slab: the label slides in from the left, the heading and the body rise, the still
+   fades while settling out of a hair of scale. Deliberately gentle. Short travel, a
+   long ease-out, and a small stagger, so the page reads as alive without anything
+   flying at you. Variants propagate down the tree, so a child only has to name which
+   of these it uses and the parent decides when. */
+const SB_EASE = [0.16, 1, 0.3, 1] as const;
+const sbGroup: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.11, delayChildren: 0.04 } },
+};
+const sbSlide: Variants = {                       // labels and head strips, in from the left
+  hidden: { opacity: 0, x: -16 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: SB_EASE } },
+};
+const sbRise: Variants = {                        // headings, body copy, captions
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.72, ease: SB_EASE } },
+};
+const sbShot: Variants = {                        // stills: fade, easing out of a touch of scale
+  hidden: { opacity: 0, scale: 1.035 },
+  show: { opacity: 1, scale: 1, transition: { duration: 0.95, ease: SB_EASE } },
+};
+
 function StoryFrame({ num, scene, src, caption }: { num: string; scene: string; src: string; caption: string }) {
   return (
     <motion.figure
       className="ss-frame"
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.18 }}
-      transition={{ duration: 0.8, ease: [0.16,1,0.3,1] }}
+      variants={sbGroup}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.25 }}
     >
-      <div className="ss-frame-head"><span>{num}</span><span>{scene}</span></div>
-      <img className="ss-frame-img" src={src} alt={scene} loading="lazy" decoding="async" />
-      <figcaption>{caption}</figcaption>
+      <motion.div className="ss-frame-head" variants={sbSlide}><span>{num}</span><span>{scene}</span></motion.div>
+      <motion.div className="ss-frame-shot" variants={sbShot}>
+        <img className="ss-frame-img" src={src} alt={scene} loading="lazy" decoding="async" />
+      </motion.div>
+      <motion.figcaption variants={sbRise}>{caption}</motion.figcaption>
     </motion.figure>
   );
 }
 
 /* Storyboard chapter header: mono kicker, display title, serif body */
-function StoryChapter({ kicker, title, body, first }: { kicker: string; title: string; body: string; first?: boolean }) {
+function StoryChapter({ kicker, title, body, first, img, imgAlt, hero, heroLabel }: { kicker: string; title: string; body: string; first?: boolean; img?: string; imgAlt?: string; hero?: boolean; heroLabel?: [string, string] }) {
+  // hero: the still runs FULL WIDTH under the text, in the same panel treatment as the numbered
+  // frames below, instead of sitting in a column beside it. Nothing else on the page competes
+  // with it, which is what makes it read as the opening shot.
+  const split = !!img && !hero;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 26 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.35 }}
-      transition={{ duration: 0.8, ease: [0.16,1,0.3,1] }}
+      variants={sbGroup}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.3 }}
       style={{ padding: first ? "13vh 0 46px" : "15vh 0 46px" }}
     >
-      <div className="ss-story-kicker">{kicker}</div>
-      <h2 style={{
-        marginTop: 14,
-        fontSize: "clamp(34px, 4.6vw, 62px)",
-        lineHeight: 1.04, letterSpacing: "-0.015em", fontWeight: 700,
-        color: "var(--white)", maxWidth: 820,
-      }}>
-        {title}
-      </h2>
-      <p style={{ marginTop: 20, maxWidth: 660, fontSize: 18, lineHeight: 1.65, color: "rgba(245,242,237,.78)" }}>
-        {body}
-      </p>
+      <div className={split ? "ss-chapter-split" : undefined}>
+        <div>
+          <motion.div className="ss-story-kicker" variants={sbSlide}>{kicker}</motion.div>
+          <motion.h2 variants={sbRise} style={{
+            marginTop: 14,
+            fontSize: split ? "clamp(32px, 3.5vw, 50px)" : "clamp(34px, 4.6vw, 62px)",
+            lineHeight: 1.04, letterSpacing: "-0.015em", fontWeight: 700,
+            color: "var(--white)", maxWidth: split ? "none" : 820,
+          }}>
+            {title}
+          </motion.h2>
+          <motion.p variants={sbRise} style={{ marginTop: 20, maxWidth: split ? "none" : 720, fontSize: 18, lineHeight: 1.65, color: "rgba(245,242,237,.78)" }}>
+            {body}
+          </motion.p>
+        </div>
+        {split && (
+          <motion.figure className="ss-chapter-shot" variants={sbShot}>
+            <img src={img} alt={imgAlt || title} loading="lazy" decoding="async" />
+          </motion.figure>
+        )}
+      </div>
+      {img && hero && (
+        <motion.figure className="ss-frame ss-chapter-hero" variants={sbGroup}>
+          <motion.div className="ss-frame-head" variants={sbSlide}>
+            <span>{heroLabel ? heroLabel[0] : "Overview"}</span>
+            <span>{heroLabel ? heroLabel[1] : "In engine"}</span>
+          </motion.div>
+          <motion.div className="ss-frame-shot" variants={sbShot}>
+            <img className="ss-frame-img" src={img} alt={imgAlt || title} decoding="async" />
+          </motion.div>
+        </motion.figure>
+      )}
     </motion.div>
   );
 }

@@ -17,7 +17,7 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;overflow:hidden;background:#12151c;font-family:'Nunito',sans-serif;color:#f6f4ef;}
-  canvas{display:block;position:fixed;inset:0;touch-action:none;}
+  canvas{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none;}
   .hud{position:fixed;z-index:20;pointer-events:none;}
   .tl{top:20px;left:24px;}
   .tl .t{font-family:'Fredoka',sans-serif;font-weight:700;font-size:27px;letter-spacing:.5px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.35);}
@@ -37,29 +37,37 @@
   #loader .pct{font-weight:800;font-size:12px;letter-spacing:2px;color:#ffd23f;}
   #controls{position:fixed;inset:0;z-index:60;background:rgba(12,14,20,.82);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;transition:opacity .5s ease;}
   #controls.hide{opacity:0;pointer-events:none;}
-  #controls .card{width:min(90vw,410px);padding:32px 38px 30px;background:rgba(26,29,38,.95);border:1px solid rgba(255,255,255,.12);border-radius:24px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45);}
-  #controls h2{font-family:'Fredoka',sans-serif;font-weight:700;font-size:34px;letter-spacing:.5px;line-height:1;}
-  #controls .sub{font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffd23f;margin:7px 0 20px;}
-  #controls .row{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13.5px;color:#cfd3da;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.07);}
+  #controls .card{width:min(92vw,470px);padding:38px 44px 34px;background:rgba(26,29,38,.95);border:1px solid rgba(255,255,255,.12);border-radius:24px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45);}
+  #controls h2{font-family:'Fredoka',sans-serif;font-weight:700;font-size:39px;letter-spacing:.5px;line-height:1;
+    margin:0 0 30px;}   /* takes over the spacing the old subtitle line used to provide */
+  #controls .row{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:15.5px;color:#cfd3da;padding:10px 2px;border-bottom:1px solid rgba(255,255,255,.07);}
   #controls .row b{font-family:'Nunito',sans-serif;font-weight:800;color:#ffd23f;background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:7px;padding:1px 8px;}
-  #controls .go{margin-top:26px;padding:12px 44px;background:#ffcf00;color:#20222a;border:none;border-radius:14px;
-    font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px;letter-spacing:.5px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:8px;padding:2px 10px;font-size:14.5px;}
+  #controls .go{margin-top:30px;padding:14px 52px;background:#ffcf00;color:#20222a;border:none;border-radius:16px;
+    font-family:'Fredoka',sans-serif;font-weight:600;font-size:18.5px;letter-spacing:.5px;cursor:pointer;
     box-shadow:0 4px 0 #c79e00, 0 8px 18px rgba(0,0,0,.35);transition:transform .08s ease, box-shadow .08s ease, background .15s ease;}
   #controls .go:hover{background:#ffda33;}
   #controls .go:active{transform:translateY(3px);box-shadow:0 1px 0 #c79e00, 0 4px 10px rgba(0,0,0,.3);}
-  #leave{position:fixed;top:20px;right:24px;z-index:30;font-family:'Nunito',sans-serif;font-weight:800;font-size:12.5px;
-    color:#f6f4ef;text-decoration:none;background:rgba(18,21,28,.68);border:1px solid rgba(255,255,255,.16);border-bottom-width:2px;
-    border-radius:980px;padding:8px 18px;backdrop-filter:blur(8px);transition:background .15s ease, color .15s ease;}
-  #leave:hover{background:rgba(255,207,0,.92);color:#20222a;border-color:rgba(255,207,0,.9);}
+  /* top-right cluster: laid out by flex so the sound button can never collide with the
+     Leave link, whatever width the font gives that text */
+  #topright{position:fixed;top:20px;right:24px;z-index:30;display:flex;align-items:center;gap:10px;}
+  #leave,#snd{font-family:'Nunito',sans-serif;font-weight:800;font-size:12.5px;
+    color:#f6f4ef;text-decoration:none;background:rgba(18,21,28,.68);border:1px solid rgba(255,255,255,.16);
+    border-bottom-width:2px;border-radius:980px;backdrop-filter:blur(8px);
+    transition:background .15s ease, color .15s ease;}
+  #leave{padding:8px 18px;}
+  #leave:hover,#snd:hover{background:rgba(255,207,0,.92);color:#20222a;border-color:rgba(255,207,0,.9);}
+  #snd{width:36px;height:33px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+  #snd svg{width:17px;height:17px;display:block;}
+  #snd .x{display:none;} #snd.off .x{display:block;} #snd.off .w{display:none;}
   #fade{position:fixed;inset:0;background:#05070d;opacity:0;pointer-events:none;transition:opacity .45s ease;z-index:40;}
   #fade.on{opacity:1;}
-  #prompt{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:25;font-weight:700;font-size:13px;
+  #prompt{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:25;font-weight:700;font-size:15px;
     color:#fff;background:rgba(18,21,28,.74);border:1px solid rgba(255,255,255,.16);border-radius:980px;
-    padding:10px 22px;backdrop-filter:blur(8px);opacity:0;transition:opacity .18s ease;pointer-events:none;white-space:nowrap;}
+    padding:12px 26px;backdrop-filter:blur(8px);opacity:0;transition:opacity .18s ease;pointer-events:none;white-space:nowrap;}
   #prompt.on{opacity:1;}
   #prompt b{font-family:'Nunito',sans-serif;font-weight:800;color:#ffd23f;background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:7px;padding:0 7px;}
+    border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:8px;padding:1px 9px;}
   #viewer{position:fixed;inset:0;z-index:45;background:rgba(7,9,14,.93);display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;}
   #viewer.on{display:flex;}
   #viewer .card{max-width:min(860px,92vw);width:100%;background:#141720;border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden;}
@@ -105,16 +113,23 @@
 <body>
   <div id="shopbg"></div>
   <canvas id="c"></canvas>
-  <a id="leave" href="/">Leave the Realm</a>
+  <div id="topright">
+    <button id="snd" title="Sound" aria-label="Toggle sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/>
+      <g class="w"><path d="M15.6 9.2a4 4 0 0 1 0 5.6"/><path d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8"/></g>
+      <g class="x"><path d="M16.5 9.5l5 5"/><path d="M21.5 9.5l-5 5"/></g></svg></button>
+    <a id="leave" href="/">Leave the Realm</a>
+  </div>
   <div class="hint"><b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; drag to look</div>
   <div id="loader"><div class="wrap"><div class="m">BUILDING…</div><div class="bar"><i></i></div><div class="pct">0%</div></div></div>
   <div id="controls"><div class="card">
-    <h2>LEGO REALM</h2><div class="sub">Controls</div>
+    <h2>CONTROLS</h2>
     <div class="row"><span>Move</span><b>WASD / Arrows</b></div>
     <div class="row"><span>Run</span><b>Shift</b></div>
     <div class="row"><span>Jump</span><b>Space</b></div>
     <div class="row"><span>Look around</span><b>Drag mouse</b></div>
     <div class="row"><span>Enter a building</span><b>E</b></div>
+    <div class="row"><span>Arms</span><b>T</b></div>
     <button class="go" id="startBtn">Enter</button>
   </div></div>
   <div id="fade"></div>
@@ -123,34 +138,59 @@
   <button id="btnJump">JUMP</button>
   <button id="btnAct">ENTER</button>
   <button id="btnBack">BACK</button>
-  <div id="viewer"><div class="x">Esc ✕</div><div class="card"><div class="mwrap"><div class="media"></div><div class="nav prev">‹</div><div class="nav next">›</div></div><div class="cap"></div></div></div>
+  <div id="viewer"><div class="x">Q ✕</div><div class="card"><div class="mwrap"><div class="media"></div><div class="nav prev">‹</div><div class="nav next">›</div></div><div class="cap"></div></div></div>
 
   <script src="/vendor/three.min.js"></script>
   <script src="/vendor/GLTFLoader.js"></script>
   <script src="/vendor/DRACOLoader.js"></script>
+  <!-- post FX (three r128 examples, vendored): bloom + SMAA. The AO and the AgX grade are ours, below. -->
+  <script src="/vendor/pp/Pass.js"></script>
+  <script src="/vendor/pp/CopyShader.js"></script>
+  <script src="/vendor/pp/LuminosityHighPassShader.js"></script>
+  <script src="/vendor/pp/UnrealBloomPass.js"></script>
+  <script src="/vendor/pp/SMAAShader.js"></script>
+  <script src="/vendor/pp/SMAAPass.js"></script>
   <script>
   // kick the display fonts loading immediately so canvas-drawn labels (signs, panels) use them
   if(document.fonts){ document.fonts.load('600 40px "Fredoka"'); document.fonts.load('800 14px "Nunito"'); }
   const canvas = document.getElementById('c');
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0c1120);
-  scene.fog = new THREE.Fog(0x0c1120, 28, 62);   // pushed back: the world reads deep, the border tree line is fully clear and the background woodland past the walk bounds layers behind it
+  scene.fog = new THREE.Fog(0x0c1120, 34, 76);   // pushed back again: from the spawn point every structure reads (mansion near face ~52 away, run-down house ~34, shop ~27, ruins ~24), and the border tree line + background woodland still layer into the haze
   // SKY DOME: linear fog only tints geometry, so without this the sky stays a flat clear color and
   // the "fog" reads as a ground gradient with a hard horizon line. The dome paints the fog color at
   // the horizon and blends it up into the sky color, so the fog visibly reaches into the sky.
   const skyDome=new THREE.Mesh(
-    new THREE.SphereGeometry(150, 24, 16),
+    new THREE.SphereGeometry(150, 64, 40),   // enough segments that the gradient has no faceting at the horizon
     new THREE.ShaderMaterial({ side:THREE.BackSide, depthWrite:false, fog:false,
       uniforms:{ topColor:{value:new THREE.Color(0x9fc4e8)}, bottomColor:{value:new THREE.Color(0xbcd0e0)},
-                 offset:{value:6.0}, exponent:{value:0.55} },
-      vertexShader:'varying vec3 vWorldPosition; void main(){ vec4 wp=modelMatrix*vec4(position,1.0); vWorldPosition=wp.xyz; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+                 offset:{value:6.0}, exponent:{value:0.55}, hzn:{value:0.10} },
+      // OBJECT space, not world: the dome rides with the camera, and world position would fold
+      // the camera's own height back into h, which is what put the true horizon a quarter of the
+      // way up the gradient. In object space h depends only on the direction you are looking.
+      vertexShader:'varying vec3 vWorldPosition; void main(){ vWorldPosition=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
       fragmentShader:'uniform vec3 topColor; uniform vec3 bottomColor; uniform float offset; uniform float exponent; varying vec3 vWorldPosition;\n'+
-        'void main(){ float h=normalize(vWorldPosition+vec3(0.0,offset,0.0)).y; gl_FragColor=vec4(mix(bottomColor,topColor,max(pow(max(h,0.0),exponent),0.0)),1.0); }' }));
+        // hzn: the gradient does not start climbing until a little way above the horizon, so
+        // there is a band of pure fog colour where the sky meets the ground. Without it the
+        // gradient rises fast enough (exponent 0.55) that fully fogged ground and the sky just
+        // above it differ by a visible step, and every horizon reads as an edge.
+        'uniform float hzn;\n'+
+        'void main(){ float h=normalize(vWorldPosition+vec3(0.0,offset,0.0)).y;\n'+
+        '  float t=pow(max(h-hzn,0.0)/max(1.0-hzn,1e-4),exponent);\n'+
+        '  gl_FragColor=vec4(mix(bottomColor,topColor,t),1.0); }' }));
+
+  skyDome.frustumCulled=false;
   scene.add(skyDome);
+  // The dome has to RIDE WITH THE CAMERA. Parked at the world origin its own horizon (h=0) sits
+  // wherever the origin is, so from a camera 34 units up a horizontal ray landed at h~0.27 on the
+  // dome, a quarter of the way up the gradient: the sky just above the true horizon came out ~21
+  // luminance levels darker than the fully fogged ground and every horizon read as a hard line.
+  // Centred on the camera, h at the true horizon is offset/radius, which the hzn band covers.
+  function skyFollow(c){ skyDome.position.copy(c.position); }
 
   const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 200);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(innerWidth, innerHeight, false);   // updateStyle false: CSS inset:0 + 100% owns the layout box
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.shadowMap.enabled = true;
@@ -183,7 +223,14 @@
       if(!m || m.roughness==null || ALL_MATS.has(m)) return;
       m.metalness=0;
       const glassy = m.transparent===true || m.opacity<1 || /trans|glass/i.test(m.name||'');
-      if(glassy){ if(m.opacity<1) m.transparent=true; m.roughness=Math.min(m.roughness,0.08); regMat(m,2.0); }
+      if(glassy){ if(m.opacity<1) m.transparent=true; m.roughness=Math.min(m.roughness,0.08);
+        // A LEGO glass brick is a SOLID piece, so double-sided alpha blended its front and back
+        // faces both, in arbitrary order (depthWrite is off): two layers of ~50% alpha compound
+        // toward white, which is what made every window read as a milky slab you could not see
+        // through. Front faces only gives one layer per brick and the interiors read again.
+        m.side=THREE.FrontSide;
+        // and 2.0 made them mirror the painted canvas sky hard enough to wash out on their own
+        regMat(m,0.85); }
       else { m.roughness=Math.min(m.roughness, cap==null?0.38:cap); regMat(m,0.5); }
     });
   }
@@ -207,6 +254,299 @@
     scene.environment=pm.fromEquirectangular(eqTex).texture;
     pm.dispose(); eqTex.dispose();
     window.__R=renderer;   // debug handle for material/reflection tuning, strip with the rest of __D
+  }
+
+  // ══ RENDER PIPELINE ═══════════════════════════════════════════════════════════
+  // Blender's rendered viewport gets its solidity from two things this page never had:
+  // contact darkening in every crevice, and a filmic view transform that holds saturated
+  // colour instead of washing it out. So the world now renders into a linear HDR buffer,
+  // picks up screen-space ambient occlusion, blooms, and is graded through AgX (the same
+  // transform Blender has used since 4.0) rather than ACES.
+  //
+  // Cost is ONE geometry pass, exactly as before: the AO reads the depth texture the main
+  // pass already writes, at half resolution. Everything after it is fullscreen quads.
+  // The portal menu keeps the old direct-to-screen ACES path (see frame()), so its
+  // approved look and its transparent backdrop are untouched.
+  const PIPE = (function(){
+    const coarse = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;
+    // Touch devices keep the old direct render: the HDR buffers alone are ~130MB at 2x dpr.
+    if(location.hash==='#nopipe' || coarse || !renderer.capabilities.isWebGL2 || !THREE.FullScreenQuad) return null;
+
+    const V='varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }';
+    // shared depth helpers: the depth texture is non-linear perspective depth in [0,1]
+    const DEPTH_FNS=`
+      uniform sampler2D tDepth; uniform mat4 projMat; uniform mat4 invProjMat;
+      uniform float cNear; uniform float cFar;
+      float rawDepth(vec2 uv){ return texture2D(tDepth,uv).x; }
+      float viewZ(float d){ return (cNear*cFar)/((cFar-cNear)*d-cFar); }
+      vec3 viewPos(vec2 uv, float d){
+        float vz=viewZ(d);
+        float clipW=projMat[2][3]*vz+projMat[3][3];
+        vec4 clip=vec4((vec3(uv,d)-0.5)*2.0,1.0)*clipW;
+        return (invProjMat*clip).xyz;
+      }`;
+
+    // ── ambient occlusion ──────────────────────────────────────────────────────
+    // Alchemy/SAO style: sample a spiral of neighbours inside a world-space radius and
+    // ask how much each one rises above the surface. Normals are rebuilt from the depth
+    // buffer by picking, per axis, whichever neighbour is nearer in depth, which keeps
+    // silhouettes crisp. LEGO is all flat planes and cylinders, so depth-derived normals
+    // are effectively exact here and we never need a second geometry pass for them.
+    const aoMat=new THREE.ShaderMaterial({
+      defines:{ SAMPLES:16 },
+      uniforms:{ tDepth:{value:null}, projMat:{value:new THREE.Matrix4()}, invProjMat:{value:new THREE.Matrix4()},
+                 cNear:{value:0.1}, cFar:{value:200}, texel:{value:new THREE.Vector2()},
+                 radius:{value:0.9}, bias:{value:0.02}, intensity:{value:4.0},
+                 maxR:{value:0.075}, minR:{value:0.004} },
+      vertexShader:V,
+      fragmentShader:DEPTH_FNS+`
+      uniform vec2 texel; uniform float radius; uniform float bias; uniform float intensity;
+      uniform float maxR; uniform float minR;
+      varying vec2 vUv;
+      // interleaved gradient noise: unlike a sin/fract hash it varies smoothly across a small
+      // neighbourhood, so the blur below actually cancels it instead of smearing it around
+      float ign(vec2 p){ return fract(52.9829189*fract(dot(p,vec2(0.06711056,0.00583715)))); }
+      vec3 normalAt(vec2 uv, vec3 P){
+        vec2 tx=vec2(texel.x,0.0), ty=vec2(0.0,texel.y);
+        vec3 pr=viewPos(uv+tx,rawDepth(uv+tx)), pl=viewPos(uv-tx,rawDepth(uv-tx));
+        vec3 pu=viewPos(uv+ty,rawDepth(uv+ty)), pd=viewPos(uv-ty,rawDepth(uv-ty));
+        vec3 dx = abs(pr.z-P.z) < abs(P.z-pl.z) ? (pr-P) : (P-pl);
+        vec3 dy = abs(pu.z-P.z) < abs(P.z-pd.z) ? (pu-P) : (P-pd);
+        vec3 n=normalize(cross(dx,dy));
+        return n.z<0.0 ? -n : n;   // view-space surfaces face the camera
+      }
+      void main(){
+        float d=rawDepth(vUv);
+        if(d>=0.9999){ gl_FragColor=vec4(1.0); return; }   // sky: no occlusion
+        vec3 P=viewPos(vUv,d);
+        vec3 N=normalAt(vUv,P);
+        vec2 rUV=vec2(projMat[0][0],projMat[1][1])*radius*0.5/max(-P.z,0.001);
+        // CLAMP THE DISC. A world radius projects bigger the nearer the surface is, and the
+        // camera pulls right in against walls and portals: at 1.5 units the unclamped disc
+        // covered ~63% of the screen height, so the samples landed on unrelated geometry and
+        // the result was grain no blur could reach. The floor keeps far AO above a texel.
+        rUV*=clamp(rUV.y,minR,maxR)/max(rUV.y,1e-6);
+        float rnd=ign(gl_FragCoord.xy);
+        float r2=radius*radius, occ=0.0;
+        for(int i=0;i<SAMPLES;i++){
+          float a=(float(i)+0.5)/float(SAMPLES);
+          float ang=a*6.2831853*7.0+rnd*6.2831853;      // spiral, rotated per pixel
+          vec2 suv=vUv+vec2(cos(ang),sin(ang))*a*rUV;
+          float sd=rawDepth(suv);
+          if(sd<0.9999){
+            vec3 v=viewPos(suv,sd)-P;
+            float vv=dot(v,v);
+            float f=max(r2-vv,0.0)/r2;                   // smooth falloff to the radius
+            // clamped to 1 per sample: unbounded, a neighbour a hair above the surface
+            // returns a huge value and the whole pixel crushes to black. Bounded, "every
+            // sample occludes" == 1, so intensity 1.0 is roughly physically calibrated:
+            // an interior corner occludes about half the spiral and lands near ao 0.5.
+            occ+=f*f*f*min(max((dot(v,N)-bias)/(0.05+vv),0.0),1.0);
+          }
+        }
+        float ao=max(0.0,1.0-occ*intensity/float(SAMPLES));
+        gl_FragColor=vec4(ao,ao,ao,1.0);
+      }`});
+
+    // depth-aware separable blur: smooths the sampling noise without bleeding occlusion
+    // across silhouettes (a flower's AO must not smear onto the ground behind it)
+    const blurMat=new THREE.ShaderMaterial({
+      uniforms:{ tAO:{value:null}, tDepth:{value:null}, cNear:{value:0.1}, cFar:{value:200}, dir:{value:new THREE.Vector2()} },
+      vertexShader:V,
+      fragmentShader:`
+      uniform sampler2D tAO; uniform sampler2D tDepth; uniform vec2 dir;
+      uniform float cNear; uniform float cFar; varying vec2 vUv;
+      float viewZ(float d){ return (cNear*cFar)/((cFar-cNear)*d-cFar); }
+      void main(){
+        float zc=viewZ(texture2D(tDepth,vUv).x);
+        float sum=0.0, wsum=0.0;
+        for(int i=-4;i<=4;i++){
+          vec2 uv=vUv+dir*float(i);
+          float w=exp(-float(i*i)/12.0);
+          w*=max(0.0,1.0-abs(viewZ(texture2D(tDepth,uv).x)-zc)*2.0);
+          sum+=texture2D(tAO,uv).r*w; wsum+=w;
+        }
+        gl_FragColor=vec4(vec3(sum/max(wsum,1e-4)),1.0);
+      }`});
+
+    const compMat=new THREE.ShaderMaterial({
+      uniforms:{ tDiffuse:{value:null}, tAO:{value:null}, strength:{value:1.0} },
+      vertexShader:V,
+      fragmentShader:`
+      uniform sampler2D tDiffuse; uniform sampler2D tAO; uniform float strength; varying vec2 vUv;
+      void main(){ vec4 c=texture2D(tDiffuse,vUv);
+        gl_FragColor=vec4(c.rgb*mix(1.0,texture2D(tAO,vUv).r,strength),c.a); }`});
+
+    // ── AgX ────────────────────────────────────────────────────────────────────
+    // Blender's default view transform. ACES (what this used before) hue-skews and
+    // desaturates saturated primaries, which is why the crystal kept washing to pastel
+    // and why the whole scene went pale whenever reflections were pushed. AgX rolls
+    // highlights off without dragging the hue with them, so LEGO reds/blues/yellows
+    // survive full sun.
+    const gradeMat=new THREE.ShaderMaterial({
+      uniforms:{ tDiffuse:{value:null}, exposure:{value:1.0}, saturation:{value:1.25}, vignette:{value:0.16},
+                 slope:{value:1.0}, offset:{value:0.0}, power:{value:1.12}, gain:{value:1.45} },
+      vertexShader:V,
+      fragmentShader:`
+      uniform sampler2D tDiffuse; uniform float exposure; uniform float saturation; uniform float vignette;
+      uniform float slope; uniform float offset; uniform float power; uniform float gain;
+      varying vec2 vUv;
+      const mat3 SRGB_TO_REC2020=mat3(0.6274,0.0691,0.0164, 0.3293,0.9195,0.0880, 0.0433,0.0113,0.8956);
+      const mat3 REC2020_TO_SRGB=mat3(1.6605,-0.1246,-0.0182, -0.5876,1.1329,-0.1006, -0.0728,-0.0083,1.1187);
+      const mat3 AGX_IN=mat3(0.856627153315983,0.137318972929847,0.11189821299995,
+                             0.0951212405381588,0.761241990602591,0.0767994186031903,
+                             0.0482516061458583,0.101439036467562,0.811302368396859);
+      const mat3 AGX_OUT=mat3(1.1271005818144368,-0.1413297634984383,-0.14132976349843826,
+                              -0.11060664309660323,1.157823702216272,-0.11060664309660294,
+                              -0.016493938717834573,-0.016493938717834257,1.2519364065950405);
+      vec3 agxContrast(vec3 x){
+        vec3 x2=x*x, x4=x2*x2;
+        return 15.5*x4*x2 - 40.14*x4*x + 31.96*x4 - 6.868*x2*x + 0.4298*x2 + 0.1191*x - 0.00232;
+      }
+      vec3 agx(vec3 c){
+        c=SRGB_TO_REC2020*c; c=AGX_IN*c;
+        c=log2(max(c,1e-10));
+        c=clamp((c+12.47393)/(4.026069+12.47393),0.0,1.0);
+        // ASC-CDL style "look", applied on the log-encoded value, which is where Blender
+        // applies its own AgX looks. Base AgX is deliberately flat; a little power puts the
+        // contrast back without touching hue the way a plain contrast curve would.
+        c=pow(max(c*slope+offset,0.0),vec3(power));
+        c=agxContrast(c);
+        c=AGX_OUT*c;
+        c=pow(max(c,vec3(0.0)),vec3(2.2));          // AgX outputs display-encoded; back to linear
+        return clamp(REC2020_TO_SRGB*c,0.0,1.0);
+      }
+      void main(){
+        // gain sits on top of the day cycle's exposure: the TIMES keyframes were tuned for
+        // ACES, and AgX plus the contrast look below lands about a stop lower without it
+        vec3 c=agx(texture2D(tDiffuse,vUv).rgb*exposure*gain);
+        c=mix(vec3(dot(c,vec3(0.2126,0.7152,0.0722))),c,saturation);
+        vec2 q=(vUv-0.5)*2.0;
+        c*=1.0-vignette*dot(q,q)*0.5;
+        // linear -> sRGB (this pass owns the encode; the HDR buffers before it are linear)
+        gl_FragColor=vec4(mix(c*12.92, 1.055*pow(max(c,vec3(0.0)),vec3(1.0/2.4))-0.055, step(vec3(0.0031308),c)),1.0);
+      }`});
+
+    // raw AO straight to the screen, for tuning radius/intensity (window.__D.pipe.debugAO)
+    const aoViewMat=new THREE.ShaderMaterial({ uniforms:{ tAO:{value:null} }, vertexShader:V,
+      fragmentShader:'uniform sampler2D tAO; varying vec2 vUv; void main(){ float a=texture2D(tAO,vUv).r; gl_FragColor=vec4(a,a,a,1.0); }' });
+    // ── MASTER DIAL ────────────────────────────────────────────────────────────
+    // FULL is the 100% look; setAmount(a) lerps every effect from neutral (a=0, which is
+    // plain AgX with no AO, bloom, vignette or contrast look) up to FULL (a=1). One knob
+    // so the whole thing stays balanced instead of drifting as individual values are poked.
+    // gain is NOT an effect, it is the exposure calibration that keeps AgX from sitting a
+    // stop under ACES, so it only moves enough to hold brightness steady as `power` eases.
+    const FULL={ ao:1.0, bloom:0.22, vignette:0.16, power:1.12, saturation:1.25 };
+    let aoAmount=FULL.ao, amount=1;
+    function setAmount(a){
+      amount=Math.max(0,Math.min(1,a));
+      aoAmount=FULL.ao*amount;
+      if(bloom) bloom.strength=FULL.bloom*amount;
+      gradeMat.uniforms.vignette.value=FULL.vignette*amount;
+      gradeMat.uniforms.power.value=1+(FULL.power-1)*amount;
+      gradeMat.uniforms.saturation.value=1+(FULL.saturation-1)*amount;
+      gradeMat.uniforms.gain.value=1.45-0.09*(1-amount);
+    }
+    const quad=new THREE.FullScreenQuad(compMat);
+    const HDR={ type:THREE.HalfFloatType, minFilter:THREE.LinearFilter, magFilter:THREE.LinearFilter, format:THREE.RGBAFormat, depthBuffer:true };
+    const LDR={ type:THREE.UnsignedByteType, minFilter:THREE.LinearFilter, magFilter:THREE.LinearFilter, format:THREE.RGBAFormat, depthBuffer:false };
+    let rtScene,rtLit,rtLDR,rtAO,rtAOb,bloom,smaa,W=0,H=0;
+
+    function alloc(w,h){
+      const hw=Math.max(1,Math.floor(w/2)), hh=Math.max(1,Math.floor(h/2));
+      if(!rtScene){
+        rtScene=new THREE.WebGLRenderTarget(w,h,HDR);
+        rtScene.depthTexture=new THREE.DepthTexture(w,h);
+        rtScene.depthTexture.type=THREE.UnsignedIntType;
+        rtLit=new THREE.WebGLRenderTarget(w,h,HDR);
+        rtLDR=new THREE.WebGLRenderTarget(w,h,LDR);
+        rtAO=new THREE.WebGLRenderTarget(hw,hh,LDR);
+        rtAOb=new THREE.WebGLRenderTarget(hw,hh,LDR);
+        // threshold is in LINEAR HDR: a sunlit brick sits near 1.0, so anything under ~1.2
+        // blooms the whole image into haze. Only speculars, lamps and the crystal clear this.
+        // HALF RESOLUTION. Bloom is a wide soft glow, so the mip chain does not need full
+        // res, and at full res it was the single most expensive thing in the pipeline (~4.2ms
+        // of a ~4ms total cost). Halving it is ~4x cheaper and visually indistinguishable.
+        bloom=new THREE.UnrealBloomPass(new THREE.Vector2(w/2,h/2),0.22,0.62,1.7);
+        // the vendored pass allocates 8-bit mips, which clips the highlights we want to bloom
+        [bloom.renderTargetBright].concat(bloom.renderTargetsHorizontal,bloom.renderTargetsVertical)
+          .forEach(rt=>{ rt.texture.type=THREE.HalfFloatType; });
+        smaa=new THREE.SMAAPass(w,h);
+        smaa.renderToScreen=true;
+        setAmount(amount);        // bloom is built here, so re-apply the dial to it
+      } else {
+        rtScene.setSize(w,h); rtLit.setSize(w,h); rtLDR.setSize(w,h);
+        rtAO.setSize(hw,hh); rtAOb.setSize(hw,hh);
+        bloom.setSize(w/2,h/2); smaa.setSize(w,h);
+      }
+      W=w; H=h;
+      aoMat.uniforms.texel.value.set(1/w,1/h);
+    }
+
+    // sized off the renderer's own drawing buffer, never innerWidth: a page that loads in a
+    // hidden tab reports innerWidth 0 and would allocate 1x1 buffers that never recover
+    const _sz=new THREE.Vector2();
+    function setSize(){
+      renderer.getDrawingBufferSize(_sz);
+      alloc(Math.max(1,Math.floor(_sz.x)), Math.max(1,Math.floor(_sz.y)));
+    }
+
+    function draw(mat,target){ quad.material=mat; renderer.setRenderTarget(target); renderer.clear(); quad.render(renderer); }
+
+    const API={
+      debugAO:false, bypass:false, useAO:true, useBloom:true, useSMAA:true,
+      get amount(){ return amount; }, set amount(v){ setAmount(v); },
+      ao:aoMat.uniforms, grade:gradeMat.uniforms,
+      get aoStrength(){ return aoAmount; }, set aoStrength(v){ aoAmount=v; },
+      get bloom(){ return bloom; },
+      setSize,
+      render(){
+        if(API.bypass){   // old path: straight to the screen through ACES, for A/B comparison
+          renderer.toneMapping=THREE.ACESFilmicToneMapping;
+          renderer.setRenderTarget(null); renderer.setClearColor(0x0c1120,1); renderer.render(scene,camera);
+          renderer.toneMapping=THREE.NoToneMapping; return;
+        }
+        if(!rtScene) setSize();
+        // 1. the world, once, into linear HDR (the target's encoding makes the output linear,
+        //    and toneMapping is off, so nothing is graded until the AgX pass at the end)
+        renderer.setRenderTarget(rtScene);
+        renderer.setClearColor(0x0c1120,1); renderer.clear();
+        renderer.render(scene,camera);
+        // 2. AO from that pass's own depth buffer, half res, then a depth-aware blur
+        aoMat.uniforms.tDepth.value=rtScene.depthTexture;
+        aoMat.uniforms.projMat.value.copy(camera.projectionMatrix);
+        aoMat.uniforms.invProjMat.value.copy(camera.projectionMatrixInverse);
+        aoMat.uniforms.cNear.value=blurMat.uniforms.cNear.value=camera.near;
+        aoMat.uniforms.cFar.value=blurMat.uniforms.cFar.value=camera.far;
+        if(API.useAO){
+          draw(aoMat,rtAO);
+          blurMat.uniforms.tDepth.value=rtScene.depthTexture;
+          blurMat.uniforms.tAO.value=rtAO.texture;
+          blurMat.uniforms.dir.value.set(3/W,0); draw(blurMat,rtAOb);
+          blurMat.uniforms.tAO.value=rtAOb.texture;
+          blurMat.uniforms.dir.value.set(0,3/H); draw(blurMat,rtAO);
+        }
+        // 3. multiply the occlusion in, still in HDR
+        compMat.uniforms.tDiffuse.value=rtScene.texture;
+        compMat.uniforms.tAO.value=API.useAO?rtAO.texture:null;
+        compMat.uniforms.strength.value=API.useAO?aoAmount:0;
+        if(API.debugAO){ aoViewMat.uniforms.tAO.value=rtAO.texture;
+          renderer.setRenderTarget(null); renderer.clear(); quad.material=aoViewMat; quad.render(renderer); return; }
+        draw(compMat,rtLit);
+        // 4. bloom (adds into rtLit in place), 5. AgX grade, 6. SMAA to the screen
+        if(API.useBloom) bloom.render(renderer,null,rtLit);
+        gradeMat.uniforms.tDiffuse.value=rtLit.texture;
+        gradeMat.uniforms.exposure.value=renderer.toneMappingExposure;
+        if(API.useSMAA){ draw(gradeMat,rtLDR); renderer.setRenderTarget(null); smaa.render(renderer,null,rtLDR); }
+        else draw(gradeMat,null);
+      }
+    };
+    return API;
+  })();
+  if(PIPE){
+    renderer.toneMapping=THREE.NoToneMapping;   // the AgX pass grades instead; exposure still comes from applyTOD
+    PIPE.setSize();
+    PIPE.amount=0.8;      // dialled back from the full look; window.__D.pipe.amount to taste
   }
 
   // ── day cycle: rotates continuously on a 7 minute loop (morning→midday→evening→night→morning) ──
@@ -239,9 +579,18 @@
     rim.color.copy(_tc1.set(A.rim).lerp(_tc2.set(B.rim),t)); rim.intensity=lerp(A.ri,B.ri,t);
     skyDome.material.uniforms.topColor.value.copy(scene.background);      // sky above
     skyDome.material.uniforms.bottomColor.value.copy(scene.fog.color);    // fog at the horizon, blending upward
+    // Graded pipeline: the dome writes straight into the linear HDR buffer, so its colours have
+    // to be linear like every other material's. The TOP is converted, which is what gives the
+    // approved sky its depth. The BOTTOM must NOT be: a fully fogged pixel is exactly
+    // scene.fog.color in that buffer, so converting the dome's bottom made the sky a good deal
+    // darker than the fogged ground and every horizon came out as a hard line, whatever the
+    // ground did. Leaving it raw makes the two identical at h=0, which together with the hzn
+    // band above is what lets the ground dissolve into the sky with no seam at all.
+    if(PIPE && !PIPE.bypass) skyDome.material.uniforms.topColor.value.convertSRGBToLinear();
     for(let k=0;k<3;k++) SUN_OFF[k]=lerp(A.off[k],B.off[k],t);
     const li=lerp(A.lamp,B.lamp,t), lit=li>0.08;
-    for(const L of lampNodes){ L.pl.intensity=li*1.4; L.bulb.material.color.set(lit?(li>0.5?0xffe6a0:0xd8b45a):0x4a3d1e); }
+    for(const L of lampNodes){ L.pl.intensity=li*(L.k||1.4);
+      if(L.bulb) L.bulb.material.color.set(lit?(li>0.5?0xffe6a0:0xd8b45a):0x4a3d1e); }
     const em=lerp(A.env,B.env,t);                 // reflection strength follows the daylight
     for(const m of ALL_MATS) m.envMapIntensity=m.userData.envBase*em;
     if(crystalMat) crystalMat.emissiveIntensity=0.35+li*0.5;   // subtle by day (glass reads), beacon at night
@@ -257,17 +606,32 @@
   // Collision is a fine occupancy grid sampled from the ACTUAL geometry at body height —
   // so only the physical bricks/pole are solid (walk the open patio, right up to the walls).
   const solidCells=new Set(), shopCells=new Set(), ruinsCells=new Set(), houseCells=new Set(), rdhCells=new Set(), OCS=0.16, OY_LO=0.30, OY_HI=1.5;
+  // UPPER-LEVEL COLLISION. solidCells is a single 2D grid built from geometry at GROUND body
+  // height (0.30..1.5), which is why you can walk the ruins' balcony at all: the cells under you
+  // are solid from the walls below, and the heightmap gives you a surface to stand on. It also
+  // means nothing standing ON the balcony is solid, so before this the railing was scenery you
+  // walked straight through and off the edge. This second grid holds the ruins' balcony-level
+  // barriers, rasterized at BALCONY body height, and only applies while the player is up there.
+  // Band MEASURED off the loaded model, not converted from model space: the balcony deck's own
+  // surface sits at world y 3.30..3.34 (the player stands at 3.343) and the railing runs up to
+  // about 4.7. Starting the band at 3.30 swallowed the deck itself and froze the player where
+  // they stood; 3.62 clears the deck's stud tops and still catches the whole railing.
+  const ruinsUpCells=new Set(), UP_Y0=3.62, UP_Y1=4.90, UP_FROM=2.40;
   const _t1=new THREE.Vector3(),_t2=new THREE.Vector3(),_t3=new THREE.Vector3();
-  function rasterizeSolid(root, extra){
+  // ylo/yhi override the body-height band; `only` sends the cells to `extra` alone, leaving the
+  // ground-level grid untouched (an upper-floor barrier must not block the ground floor under it)
+  function rasterizeSolid(root, extra, ylo, yhi, only){
+    const LO=ylo==null?OY_LO:ylo, HI=yhi==null?OY_HI:yhi;
     root.updateWorldMatrix(true,true);
     root.traverse(o=>{ if(!o.isMesh||!o.geometry||o.userData.noSolid) return; const pos=o.geometry.attributes.position; if(!pos) return;   // noSolid: scenery the player should walk straight through (the bridge's reeds)
       const idx=o.geometry.index, wm=o.matrixWorld, n=idx?idx.count:pos.count;
       for(let i=0;i<n;i+=3){ const a=idx?idx.getX(i):i, b=idx?idx.getX(i+1):i+1, c=idx?idx.getX(i+2):i+2;
         _t1.fromBufferAttribute(pos,a).applyMatrix4(wm); _t2.fromBufferAttribute(pos,b).applyMatrix4(wm); _t3.fromBufferAttribute(pos,c).applyMatrix4(wm);
-        if(Math.max(_t1.y,_t2.y,_t3.y)<OY_LO || Math.min(_t1.y,_t2.y,_t3.y)>OY_HI) continue;
+        if(Math.max(_t1.y,_t2.y,_t3.y)<LO || Math.min(_t1.y,_t2.y,_t3.y)>HI) continue;
         const x0=Math.floor(Math.min(_t1.x,_t2.x,_t3.x)/OCS), x1=Math.floor(Math.max(_t1.x,_t2.x,_t3.x)/OCS);
         const z0=Math.floor(Math.min(_t1.z,_t2.z,_t3.z)/OCS), z1=Math.floor(Math.max(_t1.z,_t2.z,_t3.z)/OCS);
-        for(let x=x0;x<=x1;x++) for(let z=z0;z<=z1;z++){ const kk=x*100003+z; solidCells.add(kk); if(extra) extra.add(kk); }
+        for(let x=x0;x<=x1;x++) for(let z=z0;z<=z1;z++){ const kk=x*100003+z;
+          if(!only) solidCells.add(kk); if(extra) extra.add(kk); }
       }
     });
   }
@@ -369,7 +733,11 @@
     for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++){ const a=floorH.get((cx+dx)*100003+(cz+dz)); if(!a) continue;
       for(let i=0;i<a.length;i++){ const s=a[i]; if(s<=maxY+0.02 && (best===null||s>best)) best=s; } }
     return best; }
-  function stepOne(px,pz){ if(!cell(px,pz)) return false;                       // no body-height geometry → free
+  function stepOne(px,pz){
+    // up on the ruins' balcony the railing is the barrier, and it is a barrier outright: its top
+    // is 0.8 above the deck, well over LOWSTEP, so there is nothing to step onto
+    if(player.position.y>UP_FROM && ruinsUpCells.has(floorKey(px,pz))) return true;
+    if(!cell(px,pz)) return false;                                             // no body-height geometry → free
     return surfaceBelow(px,pz, player.position.y+(inStair(px,pz)?MAXSTEP:LOWSTEP))===null; }  // solid with no reachable surface → wall
   function stepBlocked(x,z){ return stepOne(x,z)||stepOne(x+PRAD,z)||stepOne(x-PRAD,z)||stepOne(x,z+PRAD)||stepOne(x,z-PRAD); }
   // prompt shows only within ~2 studs of the shop's actual barrier
@@ -400,7 +768,8 @@
 
   // ── player + figure ──
   const player = new THREE.Group(); scene.add(player);
-  player.position.set(snap(-4.4),0,snap(-3.4));            // spawn where the Work structure used to be
+  player.position.set(snap(-2.61),0,snap(-2.65));          // spawn on the gravel junction, looking straight down the path
+  player.rotation.y=Math.PI;                               // already facing away from the camera: no spin on the first frame
   const figBody = new THREE.Group(); player.add(figBody);  // waddle applied here
 
   // limb pivots for the walk cycle — placed at the REAL sockets/hinges so each
@@ -435,6 +804,40 @@
     if(rightArm.length) shR=shoulder(rightArm);
   }
 
+  // ── SHARED GREY-BOUNDARY MATH. wob() is a fixed sum of sines (deterministic, identical
+  // every load) that wanders every grey boundary; rrect() is a rounded-rectangle distance;
+  // fringe() is the outward-only spill past a pad rim. These live out here rather than
+  // inside the ground loader because the coffee shop's portal trigger zone is defined from
+  // the SAME outline the grey tiles are laid from: one source of truth, so the "Press E"
+  // area can never drift out of sync with the grey the player can see under their feet.
+  const wob=(x,z)=>0.55*Math.sin(x*0.42+z*0.17+1.7)+0.30*Math.sin(z*0.51-x*0.23+4.1)+0.15*Math.sin((x+z)*0.88+2.3);
+  const rrect=(x,z,x0,x1,z0,z1,r)=>{ const dx=Math.abs(x-(x0+x1)/2)-((x1-x0)/2-r), dz=Math.abs(z-(z0+z1)/2)-((z1-z0)/2-r);
+    return Math.hypot(Math.max(dx,0),Math.max(dz,0))+Math.min(Math.max(dx,dz),0)-r; };
+  const cl=u=>u<0?0:u>1?1:u;
+  const fringe=(x,z)=>0.36+0.45*(0.5+0.5*wob(x*1.31+7.2,z*1.31-3.4));   // outward only: 0.36..0.81 of gravel spilling past a pad rim
+  // bank(u, side): how far one EDGE of a path wanders out from its nominal half width, u units
+  // along it. This is what the river's banks do and what wob() alone cannot: wob is a function
+  // of POSITION, so it moves both edges of a path the same way at the same time and the ribbon
+  // just breathes, staying an even width. Giving each side its own phase (11.3 apart, the same
+  // trick riverHW uses) lets one edge swell while the other pulls in, which is what reads as
+  // hand-laid gravel rather than a ribbon with a wobble on it. Deterministic, no randomness.
+  const bank=(u,side)=>{ const p=side>0?0:11.3;
+    return 0.30*Math.sin(u*0.55+p)+0.17*Math.sin(u*1.09+p*1.7+2.1)+0.09*Math.sin(u*2.13+p*0.6+0.7); };
+  const BANK_A=0.56;                                                   // |bank| never exceeds this
+  // The coffee shop's grey foundation pad. The rect encloses the whole shop footprint
+  // (bbox x -23.41..-16.49, z -30.08..-20.17), so this covers the open patio out front as
+  // well as the ring of grey around the walls, ending exactly where the grass and the
+  // sidewalk's gravel begin.
+  // m = optional outward margin. The tiles are laid per STUD CELL, so a cell whose center is
+  // just inside the boundary still draws a 1x1 piece reaching 0.185 further out; the portal
+  // zone passes m=0.2 so the outermost half-stud of visible grey prompts too.
+  function shopPad(x,z,m){ return rrect(x,z,-23.48,-16.38,-30.17,-19.96,1.1) < fringe(x,z)+(m||0); }
+
+  // What is under a given spot: 'grey' (gravel walk, pads, paths), 'green' (grass) or 'water'.
+  // Filled in by the ground loader from the SAME predicates the tiles are laid from, so the
+  // footstep you hear can never disagree with the tile you are standing on.
+  let surfaceAt=()=>'green';
+
   const gltf = new THREE.GLTFLoader();
   const draco = new THREE.DRACOLoader();
   draco.setDecoderPath('/vendor/draco/');
@@ -464,11 +867,47 @@
     // pushes the east side out further than the shop pushes the west).
     const X0=-26.6, X1=60.6, Z0=-31.0, Z1=28.4;
     const NX=Math.round((X1-X0)/sx), NZ=Math.round((Z1-Z0)/sz), OX=(X0+X1)/2, OZ=(Z0+Z1)/2;
+    // ── ORGANIC GREYS — the gravel is shaped the way the river is: nothing is left as a bare
+    // rectangle. wob() is a fixed sum of sines (deterministic, identical every load) that
+    // wanders every grey boundary, and rrect() is a rounded-rectangle distance, so the pads
+    // turn their corners instead of cutting them at 90 degrees. How much each region may
+    // wander depends on what stands on it:
+    //  · the SHOP PAD only ever grows. The shop's own bbox sits within 0.07 of the old rect,
+    //    so any inward wander would show grass under its walls; its fringe spills 0.36..0.81
+    //    past the rect all the way round, and the 0.36 floor always clears the 1.1 corner
+    //    radius (a rounded corner cuts in at most 0.293r), so the old rect is never eaten into.
+    //  · the RUINS PAD has 1.2 to 2.3 of margin to the structure, so it wanders both ways
+    //    (+/-0.5) over a heavy 1.8 corner radius: a weathered gravel apron, not a square.
+    //  · the two NARROW PATHS wander per side (-0.12 to +0.56, so 5.4 to 9 studs across),
+    //    tapered back to their exact rect wherever something has to line up: the ruins
+    //    doorway, the bridge deck, the sidewalk junctions.
+    //  · the SIDEWALK's two edges wander INDEPENDENTLY along the arc (6.4 to 12.4 studs
+    //    across, 9.5 on average against the old flat 8), and every bend carries a lobed
+    //    corner disc so junctions widen out instead of turning a clean arc.
+    // The tile loop below then rebuilds every tile the boundary crosses out of 1x1 pieces, so
+    // the outline steps stud by stud (same treatment as the shoreline mosaic).
+    // wob / rrect / cl / fringe / shopPad are hoisted to module scope (above the loader)
+    // GRAVEL PATH from the spawn walk to the ruins doorway. 6 studs wide (3 tile columns:
+    // centers -3.31 / -2.571 / -1.833, so the strip spans x -3.679..-1.464), which brackets
+    // the doorway opening measured off the model by raycast (gap x -3.325..-1.415 in the front
+    // wall face at z 16.03). It runs due +z from inside the walk's north edge (the walk covers
+    // z -4.478..-1.522 here, directly behind the spawn point at -4.43/-3.33) and now overruns
+    // into the ruins' own pad at 13.6, so the two greys still meet with no seam even where the
+    // pad's wandering rim pulls back. The wander tapers out at both junctions.
+    function ruinsPath(x,z){ const t=cl((z+2.6)/2.0)*cl((13.6-z)/2.0);
+      return rrect(x,z,-3.6,-1.5,-2.6,13.6,0.5) < t*(0.22+0.6*bank(z*1.3, x<-2.55?-1:1)); }
+    // 6-stud path from the walk to the run-down house's door. The river cuts it and the bridge
+    // carries it, so the wander is held flat across the bridge corridor (the deck's own ends
+    // must meet a full-width path) and at the walk and door junctions.
+    function rdPath(x,z){ const t=cl((-4.0-z)/1.8)*cl((z+21.6)/1.8)*(1-cl((z+17.6)/1.5)*cl((-7.0-z)/1.5));
+      return rrect(x,z,19.55,21.84,-21.6,-4.0,0.5) < t*(0.22+0.6*bank(z*1.3+40, x<20.7?-1:1)); }
     // grey foundation pads under the buildings (each rect = old rect + its structure's 2x move delta)
     function onPad(x,z){
-      if(x>-23.48 && x<-16.38 && z>-30.17 && z<-19.96) return true;   // coffee shop
-      if(x>-9.51  && x<5.19  && z>12.68 && z<27.18)    return true;   // ruins (grey under the whole structure)
-      if(x>19.55  && x<21.84 && z>=-21.6 && z<-4.0 && !riverAt(x,z)) return true;   // 6-stud path from the walk to the run-down house's door; the river cuts it and the bridge carries it
+      if(ruinsPath(x,z)) return true;                                              // spawn -> ruins doorway
+      if(shopPad(x,z)) return true;                                                // coffee shop (shared with the portal trigger zone)
+      if(rrect(x,z,-9.51,5.19,12.68,27.18,1.8) < 0.5*wob(x*0.9-4.1,z*0.9+2.3)) return true;   // ruins (grey under the whole structure)
+      if(rdPath(x,z) && !riverAt(x,z)) return true;
+      if(mansionDrive(x,z)) return true;                                           // the channel the mansion's own plates leave open beside the Porsche
       return false; }
     // THE MANSION LAYS ITS OWN GROUND. modern_house.glb ships its plate layer with it
     // (door path, driveway, patio, interior floor) and deliberately leaves gaps open so the
@@ -492,26 +931,72 @@
       const gj=Math.floor((x-HP_X0)/PITCH), gi=Math.floor((z-HP_Z0)/PITCH);
       if(gi<0||gi>37||gj<0||gj>37) return false;
       return HP_ROWS[gj].charCodeAt(gi)!==46; }   // 46 = '.'
+    // THE DOOR-PATH / DRIVEWAY CHANNEL. The model's plate layer leaves a 4-stud gap open
+    // between the door path and the driveway (mask columns 22..25), narrowing to 2 studs
+    // where the patio widens (rows 12..15). Left to itself the code ground grasses it, which
+    // cuts the mansion's pavement in half with a strip of lawn right where the Porsche parks,
+    // so the ground paves it grey the way the old driveway rect did before the model was
+    // swapped in. The lawn on the other side of the path, in front of the window, stays grass.
+    // Straight edges, no wander: both sides butt against a dead-straight plate edge. The rect
+    // overruns two thirds of a stud INTO the plate on every side on purpose. Those cells are on
+    // the mask, so they still give way to the model (studless, recessed underneath it) and only
+    // their edge shows, in the quarter-stud the two grids are out of phase by; painting them
+    // grey turns that hairline from a green seam into part of the pavement. The west end runs
+    // into the sidewalk, which is a good stud wider than 43.15 the whole way down this stretch.
+    function mansionDrive(x,z){
+      return x>43.15 && x<HP_X0+16.6*PITCH                    // west into the sidewalk, east to the wall
+          && z>HP_Z0+21.3*PITCH && z<HP_Z0+26.7*PITCH; }      // z 1.11..3.11
     // 6-stud-wide grey sidewalk loop through/near every building
     const SW=[[-19.95,-19],[-13,-9],[-4.4,-3],[4,-3],[12,-4.5],[20.7,-5],[30,-3],[40,-1.5],[46.2,0],
               [36,5],[24,8],[12,11],[3,12.5],[-2.2,13.5],[-12,9],[-17.5,-4]];
-    const HALFW=4*PITCH;          // 8-stud-wide sidewalks
-    function seg(px,pz,ax,az,bx,bz){ const dx=bx-ax,dz=bz-az,L2=dx*dx+dz*dz||1;
-      let t=((px-ax)*dx+(pz-az)*dz)/L2; t=t<0?0:t>1?1:t; return Math.hypot(px-ax-t*dx, pz-az-t*dz); }
-    function onWalk(x,z){ for(let i=0;i<SW.length;i++){ const a=SW[i], b=SW[(i+1)%SW.length];
-      if(seg(x,z,a[0],a[1],b[0],b[1])<HALFW) return true; } return false; }
-    const grey=[], green=[], under=[];
+    const HALFW=4*PITCH;          // 8 studs nominal; each edge then wanders on its own
+    const WBASE=0.26;             // the walk sits a little wider than nominal before wandering
+    // arc length along the (closed) sidewalk loop, so the wander runs DOWN the path rather
+    // than across the map: two points on opposite edges get different phases, two points a
+    // few units apart along one edge get a smooth swell.
+    const SWL=[], SWC=[]; (function(){ let acc=0;
+      for(let i=0;i<SW.length;i++){ const a=SW[i], b=SW[(i+1)%SW.length];
+        const L=Math.hypot(b[0]-a[0],b[1]-a[1]); SWC.push(acc); SWL.push(L); acc+=L; } })();
+    const HW_LO=HALFW+WBASE-BANK_A, HW_HI=HALFW+WBASE+BANK_A;   // 6.4 to 12.4 studs across
+    // CORNER LOBES. A bend used to be nothing but two capsules overlapping, which turns a
+    // corner in a perfect arc. Each vertex now carries its own lobed disc (radius varying
+    // with the angle around it, seeded off the vertex index), so a bend reads as a widened,
+    // irregular junction the way the river's bend does.
+    const CR=HALFW+WBASE+0.30, CR_HI=CR+0.54;
+    function onWalk(x,z){
+      for(let i=0;i<SW.length;i++){ const a=SW[i], b=SW[(i+1)%SW.length];
+        const dx=b[0]-a[0], dz=b[1]-a[1], L2=dx*dx+dz*dz||1;
+        let t=((x-a[0])*dx+(z-a[1])*dz)/L2; t=t<0?0:t>1?1:t;
+        const px=x-a[0]-t*dx, pz=z-a[1]-t*dz, d=Math.hypot(px,pz);
+        if(d>HW_HI) continue; if(d<HW_LO) return true;                 // skip the wander unless it can decide it
+        if(d < HALFW+WBASE+bank(SWC[i]+t*SWL[i], (dx*pz-dz*px)>=0?1:-1)) return true; }
+      for(let i=0;i<SW.length;i++){ const v=SW[i], ax=x-v[0], az=z-v[1], d=Math.hypot(ax,az);
+        if(d>CR_HI) continue; if(d<CR-0.54) return true;
+        const an=Math.atan2(az,ax);
+        if(d < CR+0.34*Math.sin(an*3+i*2.1)+0.20*Math.sin(an*2-i*1.3)) return true; }
+      return false; }
+    surfaceAt=(x,z)=> riverAt(x,z) ? 'water' : (onPad(x,z)||onWalk(x,z)) ? 'grey' : 'green';
+    const grey=[], green=[], edge=[], gCells=[];   // edge = tiles a grey boundary (or the mansion's plate edge) crosses, relaid in 1x1 pieces · gCells = their grey stud cells (gravel scatters on them too)
     // APRON: extra rings of green tiles past the rim, so the land continues under the fog
     // instead of cutting off at a plate edge with a drop to nothing. 12 rings on the 2x plate
     // keeps the instance count sane; the flush bump-mapped far land does the rest.
-    const APRON=12;
+    const APRON=18;
     const shore=[];                                    // every 2x2 tile the water touches: rebuilt below from 1x1 pieces
     for(let i=-APRON;i<NX+APRON;i++)for(let j=-APRON;j<NZ+APRON;j++){ const x=(i-(NX-1)/2)*sx+OX, z=(j-(NZ-1)/2)*sz+OZ;
       let nw=0;                                        // how many of this tile's 4 stud cells the water reaches
       for(const ox of[-1,1])for(const oz of[-1,1]) if(riverAt(x+ox*sx/4, z+oz*sz/4)) nw++;
       if(nw){ shore.push([x,z]); continue; }            // any water at all: the 2x2 tile gives way to the mosaic
-      if(onHousePlate(x,z)){ under.push([x,z]); continue; }   // the mansion's own plates are the ground here: this tile drops out of sight beneath them
-      ((onPad(x,z)||onWalk(x,z))? grey : green).push([x,z]); }
+      // classify by the tile's 4 STUD CELLS, not its center: a tile that a grey boundary, or
+      // the mansion's plate outline, runs through is not one thing, and goes to the mosaic so
+      // the edge can step stud by stud. The house test HAS to be per cell: this grid and the
+      // model's are a quarter stud out of phase, so a center-only test left whole tiles (and
+      // their studs) standing on top of the mansion's own plates.
+      let ng=0, nh=0; const cells=[];
+      for(const ox of[-1,1])for(const oz of[-1,1]){ const cx=x+ox*sx/4, cz=z+oz*sz/4;
+        const h=onHousePlate(cx,cz); if(h) nh++;
+        const g=onPad(cx,cz)||onWalk(cx,cz); if(g) ng++; cells.push([cx,cz,g,h]); }
+      if(nh) edge.push(cells);                          // any cell the mansion floors: split, so only that cell gives way
+      else if(ng===0) green.push([x,z]); else if(ng===4) grey.push([x,z]); else edge.push(cells); }
     // GRAVEL PROTOTYPE part 1 — the grey walk is no longer one flat color: each 2x2 tile
     // draws in one of a few grey tones via instance colors (seeded, stable across loads).
     // Green grass tiles are untouched (no instance colors on that field).
@@ -522,11 +1007,7 @@
         if(vary) im.setColorAt(k, TILE_TONES[Math.floor(rngT()*TILE_TONES.length)]); });
       im.instanceMatrix.needsUpdate=true; if(im.instanceColor) im.instanceColor.needsUpdate=true; scene.add(im); return im; }
     field(grey, matGrey, true); field(green, matGreen);
-    // The tiles under the mansion's plates ride 0.10 lower so their studs cannot poke up
-    // through them. This grid and the model's are a quarter stud out of phase, so a plate
-    // edge rarely lands on a tile edge: keeping the tile (recessed) instead of dropping it
-    // leaves grey under every sliver the plates miss, rather than a hole down to the far land.
-    field(under, matGrey, true, -0.10);
+    // (the cells the mansion's plates floor are laid by the mosaic below, studless and recessed)
     // FAR LAND: a huge matching-green sheet continuing past the apron to well beyond the fog's
     // full-opacity distance. It sits FLUSH with the tiles' plate-top surface (measured by
     // raycast, not assumed) and carries a stud-grid bump map aligned to the real tile grid,
@@ -597,6 +1078,56 @@
         ib.instanceMatrix.needsUpdate=is.instanceMatrix.needsUpdate=true; scene.add(ib); scene.add(is);
         window.__shoreBank=ib; }
     })();
+    // ── GRAVEL EDGE MOSAIC — the same treatment the shoreline gets. Every tile the grey
+    // boundary runs through was held back above; each is relaid here as four 1x1 pieces on the
+    // stud lattice, so the gravel's outline steps stud by stud instead of jumping a whole 2x2
+    // plate at a time. Grey cells keep the walk's tone variation (stud tinted with its plate,
+    // or the two read as different pieces); green cells stay grass, studs and all. Same body
+    // and stud heights as the 2x2 tiles, so nothing sits proud of its neighbours.
+    (function(){
+      if(!edge.length) return;
+      const box=new THREE.BoxGeometry(1,1,1), stud=new THREE.CylinderGeometry(STUD_R,STUD_R,STUD_H,12);
+      stud.translate(0,STUD_H/2,0);
+      const gp=[], gr=[], hp=[[],[]];                   // grey cells · green cells · [grey,green] cells the mansion floors
+      edge.forEach(t=>t.forEach(c=>{
+        if(c[3]){ hp[c[2]?0:1].push(c); return; }        // the model's own plate is the ground here
+        if(c[2]){ gp.push(c); gCells.push([c[0],c[1]]); } else gr.push(c); }));
+      const mm=new THREE.Matrix4(), q0=new THREE.Quaternion(), pv=new THREE.Vector3(),
+            sv=new THREE.Vector3(sx/2,plateTop-TILE_BOT,sz/2), one=new THREE.Vector3(1,1,1);
+      [[gp,matGrey,true],[gr,matGreen,false]].forEach(([L,mat,vary])=>{ if(!L.length) return;
+        const ib=new THREE.InstancedMesh(box,mat,L.length), is=new THREE.InstancedMesh(stud,mat,L.length);
+        ib.receiveShadow=is.receiveShadow=is.castShadow=true;
+        L.forEach((c,k)=>{ mm.compose(pv.set(c[0],(plateTop+TILE_BOT)/2,c[1]),q0,sv); ib.setMatrixAt(k,mm);
+          mm.compose(pv.set(c[0],plateTop,c[1]),q0,one); is.setMatrixAt(k,mm);
+          if(vary){ const t=TILE_TONES[Math.floor(rngT()*TILE_TONES.length)]; ib.setColorAt(k,t); is.setColorAt(k,t); } });
+        ib.instanceMatrix.needsUpdate=is.instanceMatrix.needsUpdate=true;
+        if(ib.instanceColor) ib.instanceColor.needsUpdate=true;
+        if(is.instanceColor) is.instanceColor.needsUpdate=true;
+        scene.add(ib); scene.add(is); });
+      // CELLS THE MANSION FLOORS. modern_house.glb ships its own plate layer (door path,
+      // driveway, patio, interior floor) and that layer IS the ground there, so this grid
+      // gives way to it: no stud, and the body dropped 2cm so the model's plate always wins
+      // the surface. It is not simply skipped, because the two grids are a quarter stud out
+      // of phase: the leftover sliver keeps its own colour (grass stays grass, gravel stays
+      // gravel) and reads as ground meeting the plate edge, not as a hole down to the far land.
+      // (matGrey is only ever instanced WITH instance colours: r128 keys the compiled program
+      // per material, so an uncoloured InstancedMesh sharing it renders against a shader that
+      // expects the attribute and throws. The grey filler therefore takes a tone like the rest.)
+      // HPY sits in the 0.017 of headroom between the FAR LAND sheet and the model's plate top:
+      // low enough that the model always wins the surface (its plate top is plateTop-0.004, so
+      // 0.008 of clearance), but ABOVE the far land, which is the whole point. Recessed too far
+      // (it was plateTop-0.02, under the far land at plateTop-0.01) the sheet won the depth test
+      // in the quarter-stud sliver the two grids are out of phase by, and painted a green
+      // hairline right around the mansion's plate layer, reading as a gap in the ground.
+      const HPY=plateTop-0.012, hsv=new THREE.Vector3(sx/2,HPY-TILE_BOT,sz/2);
+      [[hp[0],matGrey,true],[hp[1],matGreen,false]].forEach(([L,mat,vary])=>{ if(!L.length) return;
+        const ib=new THREE.InstancedMesh(box,mat,L.length); ib.receiveShadow=true;
+        L.forEach((c,k)=>{ mm.compose(pv.set(c[0],(HPY+TILE_BOT)/2,c[1]),q0,hsv); ib.setMatrixAt(k,mm);
+          if(vary) ib.setColorAt(k, TILE_TONES[Math.floor(rngT()*TILE_TONES.length)]); });
+        ib.instanceMatrix.needsUpdate=true;
+        if(ib.instanceColor) ib.instanceColor.needsUpdate=true; scene.add(ib); });
+      window.__greyEdge={cells:gp.length+gr.length, grey:gp.length, house:hp[0].length+hp[1].length};   // debug handle, strip with the rest
+    })();
     const cv=document.createElement('canvas'); cv.width=cv.height=128; const cc=cv.getContext('2d');
     cc.fillStyle='#808080'; cc.fillRect(0,0,128,128);                        // flat plate = neutral bump height
     cc.strokeStyle='#6e6e6e'; cc.lineWidth=2; cc.strokeRect(1,1,126,126);    // faint seam matching the real 2x2 tile gaps
@@ -606,14 +1137,54 @@
       cc.fillStyle=g; cc.beginPath(); cc.arc(px,py,19,0,Math.PI*2); cc.fill(); });
     const studTex=new THREE.CanvasTexture(cv); studTex.wrapS=studTex.wrapT=THREE.RepeatWrapping;
     studTex.anisotropy=renderer.capabilities.getMaxAnisotropy();             // keeps the studs crisp at grazing angles; mipmaps fade them out smoothly with distance
-    studTex.repeat.set(360/sx,360/sz);
+    // FAR_SIZE was 360, so the sheet ran out about 180 units from the map centre. From an
+    // elevated camera that end was IN FRAME: two straight edges meeting at a corner with sky
+    // above them, which is the "border of the base ground" visible in the aerials. At 1600 the
+    // nearest edge is over 700 units from anywhere a camera goes, which is past the main
+    // camera's own far plane (200) and far past the point where the fog is fully saturated, so
+    // the ground now ends at the horizon and nowhere else.
+    const FAR_SIZE=1600, FAR_H=FAR_SIZE/2;
+    studTex.repeat.set(FAR_SIZE/sx,FAR_SIZE/sz);
     const fr=v=>v-Math.floor(v), c0x=-(NX-1)/2*sx+OX, c0z=-(NZ-1)/2*sz+OZ;   // a real tile center, to phase-lock the texture to the tile grid
-    studTex.offset.set(0.5-fr((c0x-OX+180)/sx), 0.5-fr((OZ+180-c0z)/sz));
-    const farMat=new THREE.MeshStandardMaterial({ roughness:1, metalness:0, bumpMap:studTex, bumpScale:0.05 }); regMat(farMat,0.25);
-    farMat.color=matGreen.color;                      // share the Color instance so the mansion grass sync recolors both
-    const farLand=new THREE.Mesh(new THREE.PlaneGeometry(360,360), farMat);
-    // 0.01 below the plate top: hidden inside the tile bodies under the map, flush (no ledge) at the apron edge
-    farLand.rotation.x=-Math.PI/2; farLand.position.set(OX,plateTop-0.01,OZ); farLand.receiveShadow=true; scene.add(farLand);
+    studTex.offset.set(0.5-fr((c0x-OX+FAR_H)/sx), 0.5-fr((OZ+FAR_H-c0z)/sz));
+    // THE FAR LAND MUST NOT READ AS A DIFFERENT SURFACE. It used to: roughness 1 against the
+    // plates' 0.55 and envMapIntensity 0.25 against their 0.35 made it flatter and paler, and the
+    // ambient occlusion pass darkens the crevice around every real stud while a bump map gets no
+    // AO at all, so the tiled area came out measurably darker. The result was a straight
+    // rectangular boundary visible from the air wherever the fog was thin enough, which is the
+    // "border of the base ground" the user could see in the storyboard shots.
+    // Fix: identical roughness and reflection to the plates, and a tint standing in for the AO
+    // the sheet cannot have. FAR_TINT was MEASURED, not guessed: rendered frames were sampled
+    // either side of the seam and the tint solved so the two match (see CLAUDE.md).
+    // Two corrections, both MEASURED by rendering the seam and averaging pixels either side:
+    //  · FAR_TINT stands in for the ambient occlusion the sheet cannot have. AO darkens the
+    //    crevice around every real stud; a bump map gets none, so flat-on the sheet came out
+    //    5 luminance levels brighter. 0.94 brings that to within half a level at every time of
+    //    day (midday, sunset, night, morning all measured).
+    //  · uGraze is the one that actually mattered. A tint alone cannot fix this, because the
+    //    mismatch is VIEW DEPENDENT: seen flat-on the two match, but at a grazing angle the real
+    //    tiles show the shadowed SIDES of their studs while the sheet stays a flat plane, so it
+    //    read 19 luminance levels too bright. That is the straight rectangular border that was
+    //    visible from the air. The shader darkens the sheet toward uGraze as the surface turns
+    //    away from the camera, on the GEOMETRIC normal (not the bump-perturbed one, which is the
+    //    macro angle we want), which lands it back on the tiles at every angle.
+    const FAR_TINT=0.94;
+    const farMat=new THREE.MeshStandardMaterial({ roughness:matGreen.roughness, metalness:0,
+      bumpMap:studTex, bumpScale:0.05 }); regMat(farMat,0.35);
+    farMat.color=matGreen.color.clone().multiplyScalar(FAR_TINT);
+    farMat.onBeforeCompile=(sh)=>{
+      sh.uniforms.uGraze={value:0.68}; sh.uniforms.uGrazeK={value:8.0};
+      sh.fragmentShader='uniform float uGraze; uniform float uGrazeK;\n'+sh.fragmentShader;
+      sh.fragmentShader=sh.fragmentShader.replace('#include <color_fragment>',
+        '#include <color_fragment>\n\t{ float nv = clamp( dot( normalize( vNormal ), normalize( vViewPosition ) ), 0.0, 1.0 );\n'+
+        '\t  diffuseColor.rgb *= mix( uGraze, 1.0, pow( nv, uGrazeK ) ); }');
+      farMat.userData.sh=sh; };
+    window.__farMat=farMat; window.__farTint=FAR_TINT;   // debug handles, strip with the rest
+    const farLand=new THREE.Mesh(new THREE.PlaneGeometry(FAR_SIZE,FAR_SIZE), farMat);
+    // 0.018 below the plate top: hidden inside the tile bodies under the map, and still flush
+    // enough to read as no ledge at the apron edge (which is 9 units past where the player can
+    // walk). It has to stay clear BELOW the mansion's recessed plate-edge cells, see HPY above.
+    farLand.rotation.x=-Math.PI/2; farLand.position.set(OX,plateTop-0.018,OZ); farLand.receiveShadow=true; scene.add(farLand);
     // DISTANT HILLS: terraced green mounds far past the walk bounds, half-swallowed by the fog,
     // so the horizon has a built-world silhouette instead of an empty flat fade. Every hill
     // surface is >=28 units from anywhere standable, deep inside the fog ramp (18..40).
@@ -652,17 +1223,37 @@
           if(idx!=null) kits[idx]={geo:ge, w:b.max.x-b.min.x}; }});
         const spots=[[],[],[],[]];
         const drive=(x,z)=>(x>43.58&&x<47.93&&z>2.0&&z<6.4);
-        const rdpath=(x,z)=>(x>19.55&&x<21.84&&z>=-21.6&&z<-4.0);
-        grey.forEach(([cx,cz])=>{
-          if(!(onWalk(cx,cz)||drive(cx,cz)||rdpath(cx,cz))) return;
-          for(const ox of[-1,1]) for(const oz of[-1,1]){    // the 4 stud positions of each 2x2 tile
-            if(rng()>0.28) continue;
-            const x=cx+ox*PITCH/2, z=cz+oz*PITCH/2, r=rng();
+        const gritty=(x,z)=>onWalk(x,z)||drive(x,z)||rdPath(x,z)||ruinsPath(x,z)||mansionDrive(x,z);   // the spawn->ruins path and the paved channel are gravel too
+        // every stud position the bits may land on: the 4 of each full grey tile, plus the
+        // mosaic's own grey 1x1 cells, so the scatter runs right out to the ragged edge
+        const studPos=[];
+        // a bit is up to a stud wide, so keep it a stud clear of the mansion's own plate layer:
+        // sitting on the last free cell it would still overhang the plate and pop up through it
+        const nearHouse=(x,z)=>onHousePlate(x,z)||onHousePlate(x+PITCH/2,z)||onHousePlate(x-PITCH/2,z)
+                             ||onHousePlate(x,z+PITCH/2)||onHousePlate(x,z-PITCH/2);
+        grey.forEach(([cx,cz])=>{ if(!gritty(cx,cz)) return;
+          for(const ox of[-1,1]) for(const oz of[-1,1]){ const gx=cx+ox*PITCH/2, gz=cz+oz*PITCH/2;
+            if(!nearHouse(gx,gz)) studPos.push([gx,gz]); } });
+        gCells.forEach(([cx,cz])=>{ if(gritty(cx,cz) && !nearHouse(cx,cz)) studPos.push([cx,cz]); });
+        // ONE PIECE PER STUD. The 1x2 covers TWO cells, and nothing used to stop the second
+        // cell from also getting its own bit: two flat pieces then shared a top face at exactly
+        // plateTop and z-fought, which is the shimmering white slivers that showed up all over
+        // the greys. `taken` reserves both of the duo's cells, and a duo is only laid when its
+        // far cell is a free gravel stud (so it also can no longer hang off the path onto the
+        // grass, or reach onto the mansion's own plates).
+        const CK=(x,z)=>Math.round(x/PITCH)+'|'+Math.round(z/PITCH);
+        const free=new Set(studPos.map(([x,z])=>CK(x,z))), taken=new Set();
+        studPos.forEach(([x,z])=>{
+          const k=CK(x,z); if(taken.has(k)) return;
+            if(rng()>0.28) return;
+            const r=rng();
             if(r<0.48) spots[0].push([x,z,Math.floor(rng()*4)*Math.PI/2,pick()]);         // round-stud plate (square body: keep 90° steps)
             else if(r<0.70) spots[1].push([x,z,Math.floor(rng()*4)*Math.PI/2,pick()]);    // flat 1x1 tile
             else if(r<0.82) spots[3].push([x,z,Math.floor(rng()*4)*Math.PI/2,pick()]);    // curved pebble dome (square base: 90° steps)
-            else { const ax=rng()<0.5; spots[2].push([x+(ax?PITCH/2:0), z+(ax?0:PITCH/2), ax?0:Math.PI/2, pick()]); }  // 1x2 tile over two studs
-          }});
+            else { const ax=rng()<0.5, fx=x+(ax?PITCH:0), fz=z+(ax?0:PITCH), fk=CK(fx,fz);   // 1x2 tile over two studs
+              if(!free.has(fk) || taken.has(fk)) spots[1].push([x,z,0,pick()]);           // no room for the far stud: lay a 1x1 instead
+              else { spots[2].push([x+(ax?PITCH/2:0), z+(ax?0:PITCH/2), ax?0:Math.PI/2, pick()]); taken.add(fk); } }
+            taken.add(k); });
         const gmat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.5,metalness:0,side:THREE.DoubleSide}); regMat(gmat,0.35);
         const meshes=[];
         kits.forEach((k,i)=>{ const L=spots[i]; if(!L.length) return;
@@ -685,14 +1276,22 @@
       // SKIN: deeper tan than the baked #E8C99F, matte (no waxy sheen) and barely reflective,
       // so the env/hemi fill cannot wash the face and hands pale
       (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{ if(!m) return;
-        if(/TAN-SKIN/i.test(m.name||'')){ m.color.set(0xDDB184).convertSRGBToLinear(); m.roughness=0.55; m.userData.envBase=0.25; }
+        // SKIN: the figure is meant to look like Shyon, who is Persian, so this is a warmer olive
+        // mid tone rather than the pale LEGO tan the model ships with (and warmer/deeper than the
+        // #DDB184 an earlier pass used). Matte and barely reflective for the same reason as before:
+        // the shine pass's gloss made it read waxy, and reflections wash a mid tone pale.
+        if(/TAN-SKIN/i.test(m.name||'')){ m.color.set(0xC68B5E).convertSRGBToLinear(); m.roughness=0.58; m.userData.envBase=0.22; }
         // FACE PRINT (eyes + mouth): true black already, but gloss + env made it mirror the blue
         // sky and read blue-grey. Matte printed ink, no reflections, so it STAYS black.
-        if(/BLACK-FACE/i.test(m.name||'')){ m.color.set(0x000000); m.roughness=0.65; m.userData.envBase=0.0; } }); } });
+        if(/BLACK-FACE/i.test(m.name||'')){ m.color.set(0x000000); m.roughness=0.65; m.userData.envBase=0.0; }
+        // BROWS: same story. The baked dark brown is near-black, so ANY gloss or env on it is
+        // pure reflection and the brows flashed light grey/white whenever the sky caught them.
+        // Printed ink like the rest of the face: true black, matte, zero reflections.
+        if(/BROWS/i.test(m.name||'')){ m.color.set(0x000000); m.roughness=0.9; m.userData.envBase=0.0; } }); } });
     // native LEGO scale (shares blend units with plate + shop), centered, feet on ground
     let box=new THREE.Box3().setFromObject(model);
     model.position.x-=(box.min.x+box.max.x)/2; model.position.z-=(box.min.z+box.max.z)/2; model.position.y-=box.min.y;
-    figBody.add(model);
+    figBody.add(model); window.__figModel=model;
     window.__fig=model;
     rigFigure(model);
     // LEGS SWAP — Bizarro's pants replace Jesse's legs, bound to the hip pivots so the walk still animates
@@ -745,18 +1344,75 @@
     gltf.load('./assets/hair.glb', (hg)=>{
       const hair=hg.scene;
       hair.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; o.frustumCulled=false; polish(o); } });   // dark brown + smooth shading baked into hair.glb
+      // ── SEATED ON THE STUD, the way the real part goes on. A hairpiece is not fitted by bounding
+      // box: its underside is a CAVITY that swallows the head, and at the top of that cavity is a
+      // BORE that the head's stud goes up into. Everything below is measured off the geometry, so
+      // it survives the piece being swapped again.
       model.updateWorldMatrix(true,true);
       const inv=new THREE.Matrix4().copy(model.matrixWorld).invert();
       const headNode=model.getObjectByName('Inner-Node-jesse_dot_io-7');
       const headBox=new THREE.Box3().setFromObject(headNode||model).applyMatrix4(inv);
-      model.add(hair); hair.updateWorldMatrix(true,true);
-      let hb=new THREE.Box3().setFromObject(hair).applyMatrix4(inv);
-      hair.scale.setScalar(((headBox.max.x-headBox.min.x)*1.18)/(hb.max.x-hb.min.x));   // resized down to fit the head
-      hair.updateWorldMatrix(true,true); hb=new THREE.Box3().setFromObject(hair).applyMatrix4(inv);
-      hair.position.x += (headBox.min.x+headBox.max.x)/2 - (hb.min.x+hb.max.x)/2;
-      hair.position.z += (headBox.min.z+headBox.max.z)/2 - (hb.min.z+hb.max.z)/2;
-      hair.position.y += headBox.max.y - hb.max.y + 0.05;   // top of hair just above the head
+      model.add(hair); hair.rotation.set(0,0,0); hair.scale.setScalar(1); hair.position.set(0,0,0);
+      hair.updateWorldMatrix(true,true);
+      const hv=[]; { const t=new THREE.Vector3(), hinv=new THREE.Matrix4().copy(hair.matrixWorld).invert();
+        hair.traverse(o=>{ if(!o.isMesh||!o.geometry) return; const pa=o.geometry.attributes.position; if(!pa) return;
+          o.updateWorldMatrix(true,false);
+          const m=new THREE.Matrix4().multiplyMatrices(hinv, o.matrixWorld);
+          for(let i=0;i<pa.count;i++){ t.fromBufferAttribute(pa,i).applyMatrix4(m); hv.push([t.x,t.y,t.z]); } }); }
+      const hx=hv.map(p=>p[0]), hy=hv.map(p=>p[1]), hz=hv.map(p=>p[2]);
+      const ax=(Math.min(...hx)+Math.max(...hx))/2, az=(Math.min(...hz)+Math.max(...hz))/2;
+      const y0=Math.min(...hy), HH=Math.max(...hy)-y0;
+      const minRad=(a,b)=>{ let r=1e9;
+        for(const p of hv){ if(p[1]<a||p[1]>=b) continue; const d=Math.hypot(p[0]-ax,p[2]-az); if(d<r) r=d; }
+        return r; };
+      const cavR=minRad(y0, y0+HH*0.35);                 // head cavity
+      let shoulder=y0+HH*0.7;
+      for(let k=1;k<26;k++){ const a=y0+HH*k/26;
+        if(minRad(a,a+HH/26) < cavR*0.6){ shoulder=a; break; } }
+      const boreR=minRad(shoulder, shoulder+HH*0.14);    // the anti-stud above it
+      let boreTop=shoulder+HH*0.14;
+      for(let k=0;k<20;k++){ const a=shoulder+HH*0.14*k/20;
+        if(minRad(a,a+HH*0.02) < boreR*0.5){ boreTop=a; break; } }
+      const hd=[]; { const t=new THREE.Vector3();
+        headNode.traverse(o=>{ if(!o.isMesh||!o.geometry) return; const pa=o.geometry.attributes.position; if(!pa) return;
+          const m=new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld);
+          for(let i=0;i<pa.count;i++){ t.fromBufferAttribute(pa,i).applyMatrix4(m); hd.push([t.x,t.y,t.z]); } }); }
+      const hcx=(headBox.min.x+headBox.max.x)/2, hcz=(headBox.min.z+headBox.max.z)/2;
+      let headR=0; for(const p of hd){ const d=Math.hypot(p[0]-hcx,p[2]-hcz); if(d>headR) headR=d; }
+      // the stud, off its TOP FACE RING: a band down from the top catches the skull's dome and
+      // reads it twice as wide, and slicing downward finds nothing because the stud's side wall
+      // carries no vertices between its top and base rings.
+      const studTop=headBox.max.y; let studR=0;
+      for(const p of hd){ if(p[1] < studTop-0.008) continue;
+        const d=Math.hypot(p[0]-hcx,p[2]-hcz); if(d>studR) studR=d; }
+      // Seating the bore exactly on the stud top leaves the piece riding a little high on this
+      // head, because the head's dome is shallower than the one the part was made for. 0.05 of
+      // extra drop puts the hairline above the brows and the sides past the ears; past ~0.07 it
+      // starts eating the forehead.
+      const HAIR_DROP=0.05;
+      // SIZE comes from the CAVITY matching the head, not from the bore matching the stud. The
+      // bore on this piece is narrower than this head's stud, so sizing off the stud blows the
+      // whole hairpiece up about 16% and it reads far too big. The cavity match puts it at ~1.00,
+      // which is the size that looks right on the figure; the stud then sits a little proud
+      // inside its hole, which nobody can see from outside.
+      // 0.89: the exact cavity match reads heavy on this head, so the piece is trimmed. Tuned
+      // with the user in decreasing steps, 1.00 -> 0.96 -> 0.94 -> 0.90 -> 0.89.
+      const s=(headR/cavR)*0.89;
+      // The part in this style does not run along the piece's own axes: left as exported it lies
+      // diagonally across the head from the top. 20 degrees brings it front-to-back down the
+      // middle (at 26 it tips over the other way). Rotated about the CAVITY AXIS, not the object
+      // origin, or the piece swings off the head instead of spinning in place.
+      const HAIR_SPIN=20*Math.PI/180;
+      const rx= ax*Math.cos(HAIR_SPIN)+az*Math.sin(HAIR_SPIN);
+      const rz=-ax*Math.sin(HAIR_SPIN)+az*Math.cos(HAIR_SPIN);
+      hair.rotation.set(0,HAIR_SPIN,0);
+      hair.scale.setScalar(s);
+      hair.position.set(hcx - rx*s, studTop - boreTop*s - HAIR_DROP, hcz - rz*s);
+      hair.updateWorldMatrix(true,true);
       window.__hair=hair;
+      window.__hairFit={ax,az,y0,HH,boreTop,hcx,hcz,studTop,s,
+        info:{cavR:+cavR.toFixed(4),boreR:+boreR.toFixed(4),headR:+headR.toFixed(4),
+              studR:+studR.toFixed(4),scale:+s.toFixed(5)}};
     }, undefined, e=>{ console.warn('hair load failed', e); });
     loadedFig=true; ready();
   }, undefined, e=>{ console.warn('figure load failed', e); loadedFig=true; ready(); });
@@ -801,7 +1457,8 @@
     // the two match seamlessly. The current model has no green: its yard plates were pulled out
     // to leave room for the world's greenery, so the grass keeps its own LegoGreen constant.
     let lg=null; house.traverse(o=>{ if(o.isMesh){ (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{ if(m&&/green/i.test(m.name||'')) lg=m; }); } });
-    if(lg && window.__matGreen) window.__matGreen.color.copy(lg.color);
+    if(lg && window.__matGreen){ window.__matGreen.color.copy(lg.color);
+      if(window.__farMat) window.__farMat.color.copy(lg.color).multiplyScalar(window.__farTint); }
     window.__house=house; window.__houseHolder=houseHolder;
   }, undefined, e=>{ console.warn('house load failed', e); });
 
@@ -826,8 +1483,10 @@
     // along the new plate rim and just past it on the walkable apron, with corner pockets.
     // treeOK validates every spot (pads, walk, river, buildings, spacing), so a bad
     // candidate simply doesn't plant.
+    // [24,-7] REMOVED (user): it stood right at the bridge entrance, in the figure's view from
+    // the spawn. That pocket is flowers now (see bridgeArea in the flowers loader).
     const cand=[[-24,-13],[-25.5,-3],[-22,6],[-24,15],[-13,20],[-3,-24],[30,-24],[44,-27],
-                [58,-8],[56,10],[57,19],[16,20],[26,16],[36,22],[3.4,-19],[24,-7],[34,10],
+                [58,-8],[56,10],[57,19],[16,20],[26,16],[36,22],[3.4,-19],[34,10],
                 [12,-24],[-10,-16],[13,-30],[46,-22],
                 // north rim (the gap at x 5..12 is where the river exits through the tree line)
                 [-27,-32.6],[-21.5,-33.2],[-16,-32.3],[-10.4,-33],[-4.9,-32.2],[0.7,-33.3],
@@ -845,11 +1504,11 @@
                 [62.7,4.3],[63.4,9.9],[62.8,15.5],[63.5,21.1],[62.9,26.3],
                 // corner pockets
                 [-25,-30],[59.5,-30.5],[-25.5,28],[60,28.5],
-                // SPAWN AREA: the lawns either side of the spawn walk were bare. Each spot is
-                // vetted clear of every grey tile (sidewalk/pad) and the river, so no trunk stands
-                // on a pathway and canopies barely reach one, and >=3.5 from every other trunk.
-                [-8.5,2.22],[-4.06,6.28],[1.85,4.43],[7.02,2.59],[-10.71,-1.11],
-                [-2.22,-7.76],[3.69,-9.24],[-9.24,-12.56],[9.61,6.65]];
+                // SPAWN AREA: deliberately EMPTY. The 9 trees that stood on the two lawns either
+                // side of the spawn walk were removed (user request): they crowded the spawn and
+                // one of them stood in the gravel path's corridor. The spawn lawns keep their
+                // flowers, so the view from the spawn opens straight down the path to the ruins.
+                ];
     window.__treeSpots=placed;   // debug: placement audit, strip with __D
     cand.forEach(([px,pz])=>{ if(!treeOK(px,pz)) return; placed.push([px,pz]);
       const sc=s*(0.82+Math.random()*0.4);                          // scale variation
@@ -924,6 +1583,7 @@
     let box=new THREE.Box3().setFromObject(ru);
     ru.position.x-=(box.min.x+box.max.x)/2; ru.position.z-=(box.min.z+box.max.z)/2; ru.position.y-=box.min.y;
     ruinsHolder.add(ru); rasterizeSolid(ruinsHolder, ruinsCells); buildHeightmap(ruinsHolder);   // solid walls + climbable stairs/floors
+    rasterizeSolid(ruinsHolder, ruinsUpCells, UP_Y0, UP_Y1, true);   // and the balcony's own railing, for when you are up there
     window.__ruins=ru; window.__ruinsHolder=ruinsHolder;
   }, undefined, e=>{ console.warn('ruins load failed', e); });
 
@@ -987,78 +1647,144 @@
       for(const c of cands){ const k=c[0].toFixed(2)+','+c[1].toFixed(2);
         if(!taken.has(k)){ taken.add(k); return c; } }
       return null; }
-    // PETAL PALETTE — prepared for color variation: with 2+ entries every plant gets its
-    // own petal material clone, cycling through the list; while the list is empty or has
-    // one entry, the original shared purplish-pink material stays untouched (zero cost).
-    // Candidate LEGO petal colors, pending the user's pick:
-    // '#C4281B' red · '#F5CD2F' yellow · '#F4F4F4' white · '#C870A0' pink · '#DA8541' orange
-    const PETAL_COLORS=[];
-    let nPlanted=0;
+    // ── PETALS — one flower head per stem, each a single flat color ─────────────────────
+    // flowers.glb's petal mesh IS one composite head: three LEGO pieces stacked on the -x
+    // stem (measured off the glb: a 456-tri flower plate spanning z 0.762..1.027, a 120-tri
+    // piece seated under it, and the 132-tri centre stud that plugs the plate's hole). An
+    // earlier pass kept only the biggest of those three, which is exactly what left a hollow
+    // ring in the middle of every flower. The whole mesh is the head, so the whole mesh is
+    // the kit, EXACTLY as the model authors it: same pieces, same tilt, same seat on the
+    // stalk, nothing moved. The plant has FOUR stems, arcing out at -x / +z / +x / -z,
+    // 90 degrees apart and identical (measured off the green mesh's islands: centers +/-0.29,
+    // tops y 0.844), so the head lands exactly on another stem when it is rotated about the
+    // plant's own axis. Each plant gets 1..4 of them, one per stem, each in ONE flat color
+    // (never mixed within a head). Every petal in the world rides in a single InstancedMesh:
+    // one draw call, one shared geometry, per-instance color.
+    const PETAL_HUES=[['#C91A09','#9E1B10','#E4402B','#7E1710','#E8543A'],    // reds
+                      ['#0A47B0','#1268D6','#3E8FE0','#062E7A','#5FA9EE'],    // blues
+                      ['#F5CD2F','#E0A507','#FFDE5C','#C98A05','#FFE45E']];   // yellows
+    const PETAL_LIN=PETAL_HUES.map(h=>h.map(c=>new THREE.Color(c).convertSRGBToLinear()));
+    const prng=(s=>()=>(s=(Math.imul(48271,s)>>>0)%2147483647)/2147483647)(20260827);
+    const PETAL_N=[0.20,0.30,0.30,0.20];                 // how many stems flower: 1 · 2 · 3 · 4
+    let petalGeo=null, petalMat=null;
+    { let pm=null; proto.traverse(o=>{ if(o.isMesh && /pink/i.test(o.material.name||'')) pm=o; });
+      if(pm){
+        // the kit, in PLANT space: the same transform plant() gives its clone (socket to the
+        // origin, then the uniform K), so an instance matrix is just the plant's own matrix
+        petalGeo=pm.geometry.clone(); petalGeo.applyMatrix4(pm.matrixWorld);
+        petalGeo.translate(-sock.x,-sock.y,-sock.z); petalGeo.scale(K,K,K);
+        petalGeo.computeBoundingSphere();
+        petalMat=pm.material.clone(); petalMat.color.setRGB(1,1,1); regMat(petalMat,0.5); } }
+    function petalShade(){                               // ONE flat color for a whole head
+      const h=Math.floor(prng()*3); return PETAL_LIN[h][Math.floor(prng()*PETAL_LIN[h].length)]; }
+    function petalStems(){                               // which of the 4 stems carry a head
+      let r=prng(), n=1; for(let i=0,a=0;i<4;i++){ a+=PETAL_N[i]; if(r<a){ n=i+1; break; } }
+      const k=[0,1,2,3];
+      for(let i=3;i>0;i--){ const j=Math.floor(prng()*(i+1)); const t=k[i]; k[i]=k[j]; k[j]=t; }
+      return k.slice(0,n); }
+    // The stalks are one shared geometry too (same model, same K, only the spot and the facing
+    // change), so a plant is NOT a model clone any more: plant() records its matrix and the whole
+    // meadow draws as one instanced mesh, the way the heads already do. That is what keeps a few
+    // hundred plants cheap: two draw calls for every flower on the map.
+    let stemGeo=null, stemMat=null;
+    { let sm2=null; proto.traverse(o=>{ if(o.isMesh && /green/i.test(o.material.name||'')) sm2=o; });
+      if(sm2){ stemGeo=sm2.geometry.clone(); stemGeo.applyMatrix4(sm2.matrixWorld);
+        stemGeo.translate(-sock.x,-sock.y,-sock.z); stemGeo.scale(K,K,K);   // plant space: socket on the origin
+        stemMat=sm2.material; } }
+    const stems=[], petals=[];                           // stalk matrices · [plant matrix, stem index, color]
+    const UPV=new THREE.Vector3(0,1,0), ONEV=new THREE.Vector3(1,1,1);
     function plant(px,pz,rot,between){
       const s=studSpot(px,pz,between); if(!s) return;
-      const f=proto.clone(true); f.scale.setScalar(K);
-      f.position.set(-K*sock.x, -K*sock.y, -K*sock.z);     // socket axis to the group origin, rim at y 0
-      if(PETAL_COLORS.length>1){ const c=PETAL_COLORS[nPlanted%PETAL_COLORS.length];
-        f.traverse(o=>{ if(o.isMesh && /pink/i.test(o.material.name||'')){
-          const m=o.material.clone(); m.color.set(c).convertSRGBToLinear(); regMat(m,0.5); o.material=m; } }); }
-      const grp=new THREE.Group(); grp.position.set(s[0],PLATE_TOP,s[1]); grp.rotation.y=rot; grp.add(f); scene.add(grp);
-      nPlanted++;
+      const M=new THREE.Matrix4().compose(new THREE.Vector3(s[0],PLATE_TOP,s[1]),
+        new THREE.Quaternion().setFromAxisAngle(UPV,rot), ONEV);
+      stems.push(M);
+      if(petalGeo) petalStems().forEach(k=>petals.push([M,k,petalShade()]));
       (window.__flowerSpots=window.__flowerSpots||[]).push([s[0],s[1]]);   // debug: placement audit, strip with __D
       solidifyDisc(s[0], s[1], 0.30); }
-    const pairs=[[-22.9,-10.5],[-14.1,22],[56.2,11],[9.5,14.6]];   // re-laid for the 2x construction layout (structure-adjacent pairs moved with their structures)
-    pairs.forEach(([px,pz],i)=>{ for(let j=0;j<2;j++) plant(px+j*0.74, pz+(j?0.74:0), ((i*2+j)%4)*Math.PI/2, (i+j)%3===2); });
-    // extra scattered clusters with count and facing variation (the old per-entry size
-    // value is retired: all flowers are one size now; the 4th entry is ignored)
-    const extra=[[3.3,-11.4,2],[23.1,3.2,3],[-19.6,9.9,2],[37.9,16.3,3],[48.1,-17.1,2],
-      // a flower row greeting the ruins entrance (on the grass just before its pad, clear of the door approach)
-      [-8.6,7.8,1],[-5.1,10.2,3],[0.8,10.4,3],[3.5,10.7,2],
-      // and more colour scattered across the whole map
-      [-25.4,-3.8,2],[-11.8,-27.3,2],[5.2,-28.3,2],[30.2,13.8,3],[35.8,15.4,2],
-      [57.4,-19.6,2],[-24.9,24.7,2],[13.4,25.9,2],[43.3,21.1,2]];   // [x, z, count]
-    extra.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*2.4+j*2.1;
+    // ── THE SCATTER — 243 sites / 461 plants, spread EVENLY over every open patch of grass.
+    // The old layout was seven hand-written cluster lists stacked up over as many sessions, so
+    // the map had knots of flowers in some places and bare acres in others. This list replaces
+    // all of them. Generated by stratified (jittered-grid) sampling: one candidate per 4.4-unit
+    // cell, up to 12 tries, at least 3.2 apart, which is what guarantees there is no bald region
+    // AND no clump. Every candidate was vetted against replicas of the page's own ground math
+    // (onPad / onWalk / riverAt / onHousePlate, driven by the same shared wob and rrect the tiles
+    // are laid from, cross-checked against raycasts of the real ground): the centre plus a 0.62
+    // ring, and each cluster member's own spot, must be grass; >=1.8 from a tree trunk, >=2.2
+    // from a lamp, 2.4 from the spawn point, 0.8 past every prop's bbox and 0.7 past every
+    // structure's. Coverage over 2176 grass samples: the nearest flower is 1.84 away at the
+    // median, 4.66 at the 99th percentile, 6.55 at the very worst (a gap inside the mansion's
+    // courtyard). Re-run the generator if the paths, river or trees move. [x, z, count]
+    const SPOTS=[
+      [-28.84,-31.34,2],[-27.71,-26.59,1],[-25.94,-22.45,3],[-26.04,-19.12,2],[-26.64,-15.16,3],
+      [-28.79,-9.1,1],[-26.34,-4.8,1],[-26.4,-1.12,2],[-28.39,2.67,2],[-26.34,6.6,3],
+      [-27.55,12.88,2],[-26.21,16.02,3],[-26.81,20.12,1],[-28.91,24.61,3],[-27.25,27.93,1],
+      [-23.77,-33.34,3],[-22.09,-13.73,1],[-23.02,-9.24,3],[-21.97,-4.67,2],[-22.51,-0.72,1],
+      [-22.2,3.46,3],[-21.59,8.77,2],[-24.44,12.01,1],[-22.76,16.83,2],[-22.25,20.5,1],
+      [-24,23.31,3],[-22.53,27.76,3],[-17.74,-33.43,1],[-19.27,-1.07,2],[-19.92,2.94,3],
+      [-17.04,8.79,1],[-19.27,12.87,2],[-17.88,16.16,2],[-17.33,19.51,2],[-16.87,23.84,3],
+      [-17.87,27.73,2],[-13.91,-32.1,2],[-13.55,-27.81,2],[-14.66,-24.18,1],[-14.58,-20.58,2],
+      [-14.48,-16.35,1],[-14.71,-4.8,2],[-12.78,-0.24,1],[-13.09,11.08,1],[-13.02,15.78,2],
+      [-14.49,21.17,1],[-12.86,26.48,3],[-14.34,30.49,2],[-8.84,-30.86,2],[-9.18,-27.09,2],
+      [-10.97,-23.65,1],[-10.64,-17.72,2],[-8.69,-13.4,2],[-11.33,-11.38,1],[-9.85,-3.7,2],
+      [-8.62,-0.89,1],[-10.85,2.91,1],[-8.48,6.5,2],[-10.2,12.89,1],[-11.03,19.72,1],
+      [-10.7,23.57,1],[-9.23,29.49,3],[-6.03,-33.67,1],[-4.32,-29.57,3],[-6.22,-23.59,2],
+      [-6.68,-19.96,3],[-3.72,-15.01,1],[-5.73,-10.62,1],[-5.11,-7.2,1],[-4.66,0.04,1],
+      [-5.97,3.74,1],[-6.05,8.65,1],[-3.65,28.2,1],[-1.7,-32.38,2],[-0.92,-27.69,1],
+      [-2.56,-22.1,2],[-1.57,-18.51,3],[-0.31,-15,3],[-0.57,-11.06,1],[-1.11,-7.17,1],
+      [0.04,-0.54,1],[-0.4,8.18,2],[-0.53,29.7,3],[3.58,-31.3,3],[3.68,-27.75,2],
+      [2.21,-23.3,3],[5.16,-14.21,2],[4.88,-10.77,3],[2.46,-7.11,2],[4.04,-0.48,1],
+      [3.42,3.39,1],[3.94,7.55,2],[4.31,29.38,2],[7.93,-8.92,2],[6.38,-5.96,2],
+      [9.62,-1.33,1],[7.42,1.65,3],[8.7,7.63,1],[9.41,16.43,2],[7.44,21,1],
+      [7.98,26.31,3],[8.6,30.52,2],[11.86,-31.8,2],[12.56,-27.56,2],[12.97,-23.96,3],
+      [12.39,-19.45,2],[11.53,-15.88,1],[10.71,-7.88,2],[13.01,-1.14,3],[13,2.31,3],
+      [13.7,6.94,3],[13.59,13.64,1],[13.35,16.85,3],[12.33,21.7,3],[12.22,25.1,1],
+      [12.8,29.14,2],[15.43,-31.71,2],[17.52,-17.47,3],[15.21,-6.85,1],[16.9,-0.24,1],
+      [16.49,4.18,2],[17.55,13.17,3],[18.05,16.53,2],[18.23,21.19,1],[15.21,26.39,2],
+      [18.33,29.11,1],[21.9,-33.49,1],[22.59,-7.46,1],[22.25,-0.22,2],[21.27,3.88,2],
+      [21.22,11.13,3],[21.63,15.11,1],[22.3,19.98,2],[20.63,25.01,2],[22.16,28.17,2],
+      [25.89,-30.73,3],[25.98,-24.15,1],[26.26,-18.14,2],[26.68,-1.66,1],[26.78,4.09,3],
+      [25.05,11.01,2],[24.51,17.65,2],[25.2,21.36,1],[26.59,24.91,1],[26.27,28.73,3],
+      [31.36,-31.85,3],[28.96,-29.05,2],[28.99,-21.91,2],[30.01,-18.57,3],[30.86,-9.01,1],
+      [28.42,-6.58,2],[30.68,-0.04,1],[31.44,3.54,3],[31.03,8.94,1],[28.48,12.41,3],
+      [30.1,16.56,2],[28.45,21.32,2],[30.4,25.52,1],[30.14,30.24,2],[34.85,-28.82,2],
+      [33.01,-23.69,1],[35.09,-17.82,1],[33,-6.26,1],[34.74,1.54,2],[36.41,8.62,2],
+      [35.73,12.79,3],[33.99,16.71,2],[32.99,21.8,2],[35.32,25.44,2],[35.33,30.28,1],
+      [39.59,-30.97,2],[38.02,-26.51,1],[37.74,-23.21,3],[39.06,-19.79,3],[39.08,-15.11,1],
+      [39.3,-4.94,1],[39.41,7.92,1],[38.95,13.35,3],[38.47,17.62,1],[39.05,21.07,2],
+      [39.97,25.36,2],[40.31,29.32,1],[44.46,-33.59,3],[42.69,-28.57,2],[42.96,-24.59,2],
+      [42.37,-19.67,3],[42.26,-16.23,2],[44.32,-9.36,1],[42.56,-4.99,1],[44.13,8.69,1],
+      [43.29,11.82,1],[42.08,16.31,2],[44.54,19.93,3],[42.95,24.14,3],[43.78,29.37,3],
+      [48.25,-33.66,2],[47.38,-27.2,2],[46.53,-23.77,3],[47.78,-19.95,1],[48.98,-16.34,2],
+      [48.18,-7.47,2],[48.87,8.41,2],[46.79,11.49,3],[49.1,16.87,3],[47.95,21.93,1],
+      [48,26.49,2],[47.1,29.62,1],[52.86,-31.15,3],[53.47,-27.87,2],[52.07,-24.33,2],
+      [53.27,-19.49,1],[52.16,-15.12,2],[51.61,-7.48,2],[51.51,10.9,3],[52.16,15.29,3],
+      [53.52,19.15,2],[51.27,24.14,2],[51.12,27.89,1],[56.01,-31.93,3],[57.24,-28.85,1],
+      [57.4,-22.97,2],[57.03,-17.56,2],[55.68,-8.69,2],[57.79,10.3,2],[56.68,16.18,2],
+      [57.76,21.18,1],[56.07,25.09,3],[56.28,28.86,3],[60.96,-31.31,1],[60.97,-26.74,3],
+      [60.94,-22.81,1],[59.05,-20.17,1],[61.47,-15.55,2],[60.64,-8.88,1],[60.32,-4.59,3],
+      [59.52,0.16,3],[62.04,2.22,1],[60.16,6.91,2],[62.19,12.96,2],[60.59,16.23,2],
+      [61.67,20.49,1],[59.41,24.83,1],[62.02,28.68,2]];
+    SPOTS.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*2.7+j*2.1;
       plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
-    // 50 more plants in 23 clusters, spread over the open grass. Spots generated against
-    // the same onPad/onWalk math as the ground tiles, so every cluster (all members plus
-    // footprint) clears the grey sidewalks/pads, the buildings, trees, lamps and the
-    // earlier flowers. [x, z, count]
-    const more=[
-      [26.7,25.3,3],[22.4,17.5,2],[30,-29,2],[37.5,-26.4,3],[1.8,-23.3,2],
-      [-20.3,15.5,2],[20.5,25.5,2],[32.8,-16,2],[5.6,-15,2],[-2.9,-17.8,3],
-      // [35.9,-8.6] was [35.6,-9.8]: pulled back off the north bank, whose wander now reaches z -9.8 here
-      [35.9,-8.6,2],[17.5,15.4,3],[41.8,24.8,1],[-22.4,-0.3,2],[45.7,15.9,3],
-      [45.5,-24,2],[32.6,-19.6,2],[56.1,23.4,3],[51.5,16,1],[34.5,12.2,3],
-      [-17.8,24.2,1],[1,-15,2],[32.6,23.4,2]];
-    more.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*2.9+j*2.1;
-      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
-    // flower band in FRONT of the border tree line behind the ruins: on the grass strip between
-    // the ruins pad (ends z 17.2) and the south rim trees (z ~20.6..21.1), every center >=1.7
-    // from the nearest trunk so members (0.74 spread) stay clear. [x, z, count]
-    const ruinsBack=[
-      [-13.9,28.7,2],[-11,27.9,3],[-8,29,2],[-5,28.1,3],[-3,28.6,2],
-      [0.5,28.2,3],[4.3,28.4,2],[6.3,28,3],[9,29.1,2]];
-    ruinsBack.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*3.3+j*2.1;
-      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
-    // 65 MORE plants in 26 fresh clusters (2026-08-26): spots generated and vetted LIVE
-    // in-page (raycast: every center plus 0.9-unit offsets hits __matGreen; >=1.8 from
-    // the older flowers, >=1.5 from tree trunks, >=2.2 from lamps, prop bboxes +0.8;
-    // >=6.5 pairwise so they spread over the whole map). [x, z, count]
-    const fresh=[
-      [59.3,-21.9,3],[45.7,12.4,2],[39.2,-7.6,3],[-18.6,4.4,2],[59,7,3],[42,-23.9,2],
-      [53.3,-18.4,3],[3.6,-7.5,2],[6.4,20.4,3],[24.7,-27.2,2],[-1.9,-21.5,3],[52.9,23.2,2],
-      [41.9,26.6,3],[2.4,-26.9,2],[40.2,20.1,3],[22.2,20.7,2],[39.2,7.6,3],[30.6,25.9,2],
-      [-22.4,-15.8,3],[2.5,1.1,2],[-7.5,-18.1,3],[12.1,0.9,2],[20.3,6.2,3],[54.1,-29.1,2],
-      [-22.2,-6.9,3],[28.3,1.9,2]];
-    fresh.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*2.6+j*2.1;
-      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
-    // SPAWN AREA: 26 plants in 10 clusters on the two lawns either side of the spawn walk,
-    // which had no greenery at all. Every center is vetted >=1.5 clear of every grey tile
-    // (sidewalk/pad) and the river, so no cluster spills onto a pathway, and >=1.8 from the
-    // older flowers / >=1.6 from the new spawn-area trunks. [x, z, count]
-    const spawnArea=[
-      [-7.02,0.37,3],[-2.59,3.33,2],[2.22,8.13,3],[5.54,6.28,2],[-9.98,5.54,3],
-      [0.74,-6.28,2],[-4.43,-9.98,3],[-10.71,-3.33,2],[5.54,-7.02,3],[9.24,1.48,3]];
-    spawnArea.forEach(([px,pz,n],i)=>{ for(let j=0;j<n;j++){ const a=i*2.2+j*2.1;
-      plant(px+(j?Math.cos(a)*0.74:0), pz+(j?Math.sin(a)*0.74:0), (i+j)*1.7, (i+j)%3===2); } });
+    // the whole meadow's stalks in one instanced draw
+    if(stemGeo && stems.length){
+      const im=new THREE.InstancedMesh(stemGeo, stemMat, stems.length);
+      im.castShadow=im.receiveShadow=true; im.frustumCulled=false;
+      stems.forEach((M,i)=>im.setMatrixAt(i,M));
+      im.instanceMatrix.needsUpdate=true; scene.add(im);
+      window.__stems=im;                                 // debug handle, strip with the rest
+    }
+    // every head in the world in one instanced draw: the plant's own matrix times a quarter
+    // turn per stem, and a flat per-instance color
+    if(petalGeo && petals.length){
+      const im=new THREE.InstancedMesh(petalGeo, petalMat, petals.length);
+      im.castShadow=im.receiveShadow=true; im.frustumCulled=false;
+      const mm=new THREE.Matrix4(), rk=new THREE.Matrix4();
+      petals.forEach((p,i)=>{ rk.makeRotationY(p[1]*Math.PI/2); mm.multiplyMatrices(p[0], rk);
+        im.setMatrixAt(i,mm); im.setColorAt(i,p[2]); });
+      im.instanceMatrix.needsUpdate=true; im.instanceColor.needsUpdate=true; scene.add(im);
+      window.__petals={mesh:im, list:petals};            // debug handle, strip with the rest
+    }
   }, undefined, e=>{ console.warn('flowers load failed', e); });
 
   // STREET LIGHTS — 6 lampposts in pairs, each with a warm-yellow glow (not too strong)
@@ -1067,7 +1793,7 @@
     const L=1.086;   // base footprint = exactly 2x2 studs (0.739u), fully covering the tile
     const lampI=applyTOD(), lit=lampI>0.08;                     // off in daylight, stronger as day recedes; cycle re-drives them live
     const bulbCol=lit ? (lampI>0.5?0xffe6a0:0xd8b45a) : 0x4a3d1e;
-    const spots=[[-22.48,-18.06],[44.33,-2.5]];                 // shop (umbrella/flower side) · mansion (4 studs back from the house); both moved with their structures' 2x deltas
+    const spots=[[-22.48,-18.06]];                              // shop only (umbrella/flower side); the mansion's lamp was removed in favour of lights inside the house
     spots.forEach(([px,pz])=>{ const lp=proto.clone(true); lp.scale.setScalar(L);
       const b=new THREE.Box3().setFromObject(lp);
       lp.position.x-=(b.min.x+b.max.x)/2; lp.position.z-=(b.min.z+b.max.z)/2; lp.position.y-=b.min.y;
@@ -1079,6 +1805,191 @@
       lampNodes.push({pl,bulb});
       scene.add(grp); grp.updateWorldMatrix(true,true); rasterizeSolid(grp); });
   }, undefined, e=>{ console.warn('lamppost load failed', e); });
+
+  // ── LIGHTS INSIDE THE MANSION. The street lamp that used to stand outside it is gone; the house
+  // lights itself instead, one lamp per floor, and both run off the same day-cycle value the
+  // street lamps use (pushed into lampNodes with no bulb mesh and their own multiplier).
+  // The spots are MEASURED room centres, not guesses: a grid was probed through the loaded model
+  // requiring a ceiling above, a floor below, and a wall found in all four horizontal directions,
+  // then ranked by clearance. Ground floor (52.4,-2.8) has 3.2 clear on every side, the upper
+  // floor (54.0,-2.0) has 2.44, so neither sits in a window or on the balcony: they are as deep
+  // inside their rooms as the plan allows, and what you see from outside is the spill through the
+  // openings. Floors measured at y 0 and y 3.78 with the ceiling at 3.25 and the roof at 6.25.
+  // Range is deliberately short. These cast no shadows (a point-light shadow is six renders of a
+  // 20M-triangle scene), and without shadows a long range would throw light through the walls
+  // onto the ground outside; at this distance it dies before it gets there, and wall exteriors
+  // stay dark anyway because their normals face away from the lamp.
+  (function(){
+    const HOUSE_LIGHTS=[[52.4,1.80,-2.8,2.4,6.5],[54.0,5.00,-2.0,2.0,5.8]];   // x,y,z,mult,range
+    const lampI=applyTOD();
+    HOUSE_LIGHTS.forEach(([x,y,z,k,dist])=>{
+      const pl=new THREE.PointLight(0xffd39a, lampI*k, dist, 2);
+      pl.position.set(x,y,z); pl.castShadow=false;
+      scene.add(pl); lampNodes.push({pl, bulb:null, k});
+    });
+    window.__houseLights=lampNodes.slice(-HOUSE_LIGHTS.length);   // debug handle, strip with the rest
+  })();
+
+  // ══════════ THE EASTER EGG: FOUR ARMS ══════════════════════════════════════════════════════
+  // Inspecting the chest behind the run-down house grants a second body. Each of Doc Ock's four
+  // tentacles is a 41-bone chain carrying 40 discrete segment meshes, one per bone, so the whole
+  // thing can be driven from JS: posing bone i moves everything below it. That is what lets the
+  // arms CREEP OUT of the player's back a segment at a time instead of popping in.
+  let tentRig=null, tentArms=[], tentClaws=[], tentHolder=null, tentFrontZ=0;
+  let tentOn=false, tentGrow=0;                        // 0 = fully retracted, 1 = fully out
+  const TENT_SPEED=0.42;                               // how fast the whole set creeps in or out
+  gltf.load('./assets/tentacles.glb', (g)=>{
+    const root=g.scene; root.updateMatrixWorld(true);
+    root.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=false; o.frustumCulled=false;
+      if(o.material){ o.material=o.material.clone(); o.material.metalness=0.75; o.material.roughness=0.32;
+        regMat(o.material,0.8); } } });
+    // The glTF binds ONE skeleton per skinned mesh, so there are 164 of them, but they all point
+    // at the same underlying bones: 4 chains of 41 (the arms) and 4 of 3 (the claws at the tips).
+    // Collect the unique bones and walk each root down its single-child chain instead.
+    const all=new Set();
+    root.traverse(o=>{ if(o.isSkinnedMesh && o.skeleton) o.skeleton.bones.forEach(b=>all.add(b)); });
+    const roots=[...all].filter(b=>!b.parent||!b.parent.isBone);
+    roots.forEach(r=>{
+      const chain=[]; let n=r;
+      while(n){ chain.push(n); n=(n.children||[]).filter(k=>k.isBone)[0]; }
+      const rec={chain, rest:chain.map(b=>b.quaternion.clone())};
+      // 4 chains of 41 are the arms; 4 of 3 are the harness clamps that bolt them to the back.
+      // The clamps have their own armatures with no link to the arms, so they must be grown
+      // alongside them or they sit on the back fully formed while the arms are still retracted.
+      if(chain.length>10) tentArms.push(rec); else tentClaws.push(rec);
+    });
+    // MOUNTING. All four chains share a root JOINT at the figure's origin, but each arm actually
+    // begins at its bone1, and those four sit in a square 0.27 wide x 0.21 tall whose centre is
+    // 1.078 ABOVE that shared root (measured off the rig in Blender). Shifting the rig by the
+    // root therefore floats the square a whole 1.078 up the body, which is why the arms grew out
+    // of the neck. Shift by the SQUARE'S CENTRE instead and it lands on the mount.
+    // Blender (x,y,z) -> three (x, z, -y). Root three (6.114, 0, 7.163); the four bone1 sockets
+    // sit at three offsets (-0.088,1.176,-0.201) (-0.103,0.971,-0.205) (0.180,0.973,-0.123)
+    // (0.172,1.186,-0.125) from it: a square 0.283 wide x 0.215 tall centred (0.039,1.079,-0.164).
+    // The arms run out along -z from there, which is exactly the direction the figure's back
+    // faces (the face print sits at the head's MAX z), so no extra rotation is needed.
+    root.position.set(-6.152, -1.079, -6.999);
+    tentRig=root;
+    // The authored square is not perfectly flat: it carries a slight yaw, so two of the four
+    // sockets sit ~0.04 deeper than the other two. Measure the DEEPEST one and stand the whole
+    // rig off by it, or that pair ends up buried inside the torso instead of on its back.
+    root.updateMatrixWorld(true);
+    // THE EXPORT HAS NO SHAPE IN IT. Measured off the glb: every segment bone carries local
+    // translation (0, 0.2464, 0) and IDENTITY rotation, so all four arms are perfectly straight
+    // rods (straightness 1.000, arc == chord == 4.337) aimed within a few degrees of each other.
+    // The curved look in Blender comes from the rig's IK/control setup, which glTF does not bake;
+    // what exported is the bind pose. So the tentacle curve is built here rather than preserved.
+    // A constant rotation at every joint of a uniform straight chain bends it into a circular arc,
+    // which is exactly the shape wanted, and bone1 aims that arc.
+    { const v=new THREE.Vector3(), c=new THREE.Vector3();
+      tentArms.forEach(a=>{ a.chain[1].getWorldPosition(v); a.socket=v.clone(); c.add(v);
+        tentFrontZ=Math.max(tentFrontZ, v.z); });
+      c.divideScalar(tentArms.length||1);
+      tentArms.forEach(a=>{
+        // which corner of the back square this arm sits in, so the pose is derived from the rig
+        // rather than from the order the skins happen to come out of the file
+        a.sx=Math.sign(a.socket.x-c.x)||1; a.sy=Math.sign(a.socket.y-c.y)||1;
+        const top=a.sy>0;
+        // out to its own side, up, and back (-z is the figure's back). The upper pair rises
+        // higher and arcs further so it sweeps over the shoulders; the lower pair sweeps wide.
+        a.aim=new THREE.Vector3(a.sx*(top?0.90:0.72), top?0.55:0.16, top?-0.55:-0.75).normalize();
+        a.arc=top?1.30:1.10;                          // total turn along the whole arm, radians
+        const qA=new THREE.Quaternion().setFromUnitVectors(UPV, a.aim);
+        // bend about a HORIZONTAL axis perpendicular to the aim, so each arm curves in the
+        // vertical plane it points along instead of corkscrewing sideways
+        const w=new THREE.Vector3().crossVectors(a.aim, UPV).normalize();
+        const X0=new THREE.Vector3(1,0,0).applyQuaternion(qA);
+        const Z0=new THREE.Vector3(0,0,1).applyQuaternion(qA);
+        const roll=Math.atan2(-w.dot(Z0), w.dot(X0));  // spin about the aim until local X lands on w
+        const qW=qA.clone().multiply(new THREE.Quaternion().setFromAxisAngle(UPV, roll));
+        const pq=new THREE.Quaternion(); a.chain[1].parent.getWorldQuaternion(pq);
+        a.q1=pq.invert().multiply(qW);                 // bone1's local rotation that aims the arc
+        a.phase=(a.sx+1)+(a.sy>0?0.7:2.3);
+      }); }
+    window.__tent={root, arms:tentArms, mounted:false};
+  }, undefined, e=>console.warn('tentacles load failed', e));
+
+  // Mounted on the first frame both the rig and the figure exist, so it never depends on which
+  // of the two finishes loading first.
+  // Measured on the blend rig: the Doc Ock figure is 1.91 tall (feet to hair top) and its arms
+  // hang off it at that proportion, so scaling by minifigHeight/1.91 gives them the same length
+  // relative to the body that they have in Blender.
+  const UPV=new THREE.Vector3(0,1,0), XAX=new THREE.Vector3(1,0,0);
+  const TENT_BEND=1;                                   // +1 arcs them up over the figure; -1 drives them into the ground
+  const DOCOCK_H=1.91;
+  const TENT_BACK=0.012;                               // clearance behind the torso's back face
+  function mountTentacles(){
+    const model=window.__figModel;
+    if(tentHolder || !tentRig || !model) return;
+    model.updateWorldMatrix(true,true);
+    const inv=new THREE.Matrix4().copy(model.matrixWorld).invert();
+    const lbox=o=>new THREE.Box3().setFromObject(o).applyMatrix4(inv);
+    const body=lbox(model);
+    // THE TORSO, not the head and not the whole bbox. Measured off figure.glb in Blender:
+    // Base.1349 is the torso brick, model-local x -0.299..0.323, y 0.837..1.558, z 0.920..1.245,
+    // and the face print (sym_11.002) sits at the head's MAX z, so +z is the front and the
+    // torso's BACK FACE is its min z. Found by geometry rather than by that name alone so a
+    // re-export cannot silently break it.
+    let torso=model.getObjectByName('Base.1349'), tb=torso?lbox(torso):null;
+    if(!tb || tb.max.y<1.0){
+      let best=0; tb=null;
+      model.traverse(o=>{ if(!o.isMesh) return; const b=lbox(o);
+        const v=(b.max.x-b.min.x)*(b.max.y-b.min.y)*(b.max.z-b.min.z);
+        if(b.min.y>0.75 && Math.abs((b.min.x+b.max.x)/2)<0.35 && v>best){ best=v; tb=b; } });
+      if(!tb) tb=body;
+    }
+    const figH=body.max.y-body.min.y;                  // 1.646 on the shipped figure
+    tentHolder=new THREE.Group();
+    tentHolder.scale.setScalar(figH/DOCOCK_H);
+    // The rig has already been shifted so the four sockets' SQUARE sits at its origin, so the
+    // holder position IS where that square lands: centred on the torso's back panel.
+    tentHolder.position.set((tb.min.x+tb.max.x)/2, (tb.min.y+tb.max.y)/2,
+                           tb.min.z-TENT_BACK-tentFrontZ*(figH/DOCOCK_H));
+    tentHolder.add(tentRig);
+    model.add(tentHolder);                              // rides with the body, waddle and all
+    tentHolder.visible=false;
+    window.__tent.holder=tentHolder; window.__tent.mounted=true;
+    window.__tent.info={figH:+figH.toFixed(3), scale:+(figH/DOCOCK_H).toFixed(3),
+      torso:[+tb.min.x.toFixed(3),+tb.max.x.toFixed(3),+tb.min.y.toFixed(3),+tb.max.y.toFixed(3),+tb.min.z.toFixed(3),+tb.max.z.toFixed(3)],
+      mount:[+tentHolder.position.x.toFixed(3),+tentHolder.position.y.toFixed(3),+tentHolder.position.z.toFixed(3)]};
+  }
+
+  // ── THE CREEP-OUT. Each arm is 40 segments on 40 bones, so "growing" is just deciding how many
+  // of them exist yet: bones past the growth front collapse to nothing and take everything below
+  // them with it, which reads as the arm unspooling out of the back rather than popping in. The
+  // four are staggered so they emerge one after another.
+  function updateTentacles(dt){
+    if(!tentArms.length) return;
+    mountTentacles();
+    if(!tentHolder) return;
+    const want = tentOn?1:0;
+    if(tentGrow!==want){
+      tentGrow += Math.sign(want-tentGrow)*dt*TENT_SPEED;
+      tentGrow = Math.max(0, Math.min(1, tentGrow));
+    }
+    const showing = tentGrow>0.001;
+    tentHolder.visible = showing && mode==='hub';
+    if(!showing) return;
+    const now=performance.now()*0.001;
+    tentArms.forEach((a,i)=>{
+      const n=a.chain.length;
+      // stagger: each arm waits until the one before it is part way out
+      const t=Math.max(0, Math.min(1, (tentGrow - i*0.11) / (1 - (tentArms.length-1)*0.11)));
+      const front=t*n;
+      const th=TENT_BEND*a.arc/(n-2)*t;               // constant turn per joint = a circular arc
+      for(let j=0;j<n;j++){
+        const b=a.chain[j];
+        const k=Math.max(0, Math.min(1, front-j));
+        b.scale.setScalar(k<0.02?0.02:k);              // never exactly 0: a zero matrix is degenerate
+        if(j===0) b.quaternion.copy(a.rest[0]);
+        else if(j===1) b.quaternion.copy(a.q1);        // aims the arc out of its corner of the square
+        else b.quaternion.setFromAxisAngle(XAX, th + 0.0025*Math.sin(now*1.15 + a.phase + j*0.20)*t);
+      }
+    });
+    // the clamps seat first, so they are up before the arm they hold starts to unspool
+    const cs=Math.max(0.02, Math.min(1, tentGrow*3));
+    tentClaws.forEach(c=>{ c.chain.forEach(b=>b.scale.setScalar(cs)); });
+  }
 
   // ── PROPS: Porsche (driveway), skull (by ruins door), Tardis + crystal (ruins balcony) ──
   // Each loads into a stud-snapped holder, recentered on X/Z with feet on the ground, then scaled
@@ -1102,6 +2013,11 @@
       holder.scale.setScalar(s);
       holder.userData.model=m; window.__props[cfg.name].userData.model=m;
       if(cfg.solid){ holder.updateWorldMatrix(true,true); rasterizeSolid(holder); }
+      // solidUp: a prop standing on the ruins' BALCONY. cfg.solid would rasterize it at ground
+      // body height, where it does not exist, so it would stay walk-through up top; this puts it
+      // in the balcony grid instead, and only there (never in the ground grid underneath it).
+      if(cfg.solidUp){ holder.updateWorldMatrix(true,true);
+        rasterizeSolid(holder, ruinsUpCells, UP_Y0, UP_Y1, true); }
       if(cfg.onload) cfg.onload(holder,m);
     }, undefined, e=>console.warn(url+' load failed', e));
     return holder;
@@ -1126,7 +2042,15 @@
   // nose toward the sidewalk (south), tail toward the back of the ruin. Native blend size, stamped in.
   loadProp('./assets/rat.glb',     {name:'rat',     pos:[0.74,18.08], y:-0.03, rotY:Math.PI});
   // Tardis stamped into the ruins balcony (the old lower-flower spot) + the NABU crystal on its top
-  loadProp('./assets/tardis.glb',  {name:'tardis',  pos:[0.89,15.53], y:2.97, rotY:0, targetH:1.9,   // balcony floor 3.0 (re-measured), stamped 0.03 in, clear of both railings; moved with the ruins' 2x delta
+  // MOVED to the diagonally opposite balcony corner (user, 2026-08-28). It used to sit just inside
+  // the FRONT railing at (0.74,15.52), which made sense while walls boxed that corner in; with the
+  // upper room gone the deck is one open terrace and it read as left over rather than placed.
+  // The deck spans x -7.05..2.56 and z 14.16..25.66, so its centre is (-2.245,19.91) and the
+  // diagonal mirror of the old spot is (-5.23,24.30): just inside the BACK railing on the far
+  // side. (A first pass used -1.94 from a partial scan that missed the deck's west half; that
+  // spot overhung the stairwell opening, which reaches x -1.38 and z 23.65.) The NABU title
+  // bubble deliberately stays where it was, over the front arch.
+  loadProp('./assets/tardis.glb',  {name:'tardis',  pos:[-5.23,24.30], y:2.97, rotY:0, targetH:1.9, solidUp:true,   // balcony floor 3.0 (re-measured), stamped 0.03 in, clear of both railings; moved with the ruins' 2x delta
     onload:(holder,m)=>{ // crystal sits on the Tardis top; deep LEGO blue with a soft inner glow (it is the NABU portal)
       holder.updateWorldMatrix(true,true);
       const cbox=new THREE.Box3().setFromObject(holder); const topY=cbox.max.y; // world Y of tardis top
@@ -1138,13 +2062,14 @@
           // glass reads, full NABU beacon at night.
           o.material.color.set(0x0a2496); o.material.emissive=new THREE.Color(0x0828f0); o.material.emissiveIntensity=0.35;
           o.material.roughness=0.05; o.material.metalness=0; o.material.transparent=true; o.material.opacity=0.85; o.material.depthWrite=true;
+          o.material.side=THREE.DoubleSide;   // pinned: this clone inherits polish()'s FrontSide otherwise, and the approved crystal look needs both faces
           if(o.material.map) o.material.map=null; regMat(o.material,0.7); crystalMat=o.material; } });
           const cpl=new THREE.PointLight(0x3b82f6, 2.2, 8, 2);   // electric blue radiance onto the Tardis top + balcony
           cpl.position.set(0, 0.25/(ch.scale.x||1), 0);          // mid-crystal in world units (holder is scaled)
           ch.add(cpl); }}); }});
   // PIRATE CHEST tucked behind the run-down house, hinge side against the back wall, lid open,
   // stamped into the grass. Native blend scale (about 4.5 studs wide next to the minifig).
-  loadProp('./assets/pirate_chest.glb', {name:'chest', pos:[19.94,-27.96], y:-0.03, rotY:Math.PI,
+  loadProp('./assets/pirate_chest.glb', {name:'chest', pos:[19.94,-27.96], y:-0.03, rotY:Math.PI, solid:true,
     onload:(holder,m)=>{
       // two money bricks lie tumbled on the treasure inside. Kept at their native blend size and
       // deliberately NOT flat or stud-snapped: they rest on each other like two slabs settled in a box.
@@ -1186,40 +2111,57 @@
       holder.updateWorldMatrix(true,true);
       rasterizeSolid(holder);                                                // after the flags above, so the reeds stay walk-through
       buildHeightmap(holder);                                                // deck + steps become walkable surfaces
-      // BANK PLANTS — the MOC's own reed clumps, repeated down the WHOLE river instead of only
-      // where the bridge stands. Their geometry is lifted straight out of the model (world
-      // space, then recentered on its own base) and instanced along both banks at irregular
-      // intervals, seated just inside the water line the way the MOC's originals sit. Scenery
-      // only: no collision, and the bridge's own stretch is skipped so nothing doubles up.
+      // WATER PLANTS — the MOC's own green clumps and bank plates, repeated over the WHOLE
+      // river instead of only where the bridge stands. Their geometry is lifted straight out
+      // of the model (world space, then recentered on its own base) and instanced across the
+      // full width of the water, mid-channel as well as along both banks, at the same y the
+      // MOC seats them (bases on the riverbed, poking up through the plates), so they read
+      // exactly as they do at the bridge. Scenery only: no collision, and the bridge's own
+      // stretch is skipped so nothing doubles up.
       const kits=[];
       m.traverse(o=>{ if(o.isMesh && /MB28/i.test(o.material.name||'')){
         const ge=o.geometry.clone(); ge.applyMatrix4(o.matrixWorld); ge.computeBoundingBox();
         const b=ge.boundingBox; ge.translate(-(b.min.x+b.max.x)/2, -b.min.y, -(b.min.z+b.max.z)/2);
-        kits.push({geo:ge, mat:o.material}); } });
+        kits.push({geo:ge, mat:o.material, r:0.5*Math.max(b.max.x-b.min.x, b.max.z-b.min.z)}); } });
       if(kits.length){
         const rng=(s=>()=>(s=(Math.imul(48271,s)>>>0)%2147483647)/2147483647)(90210);
         const picks=kits.map(()=>[]), END=RV_S[RV_S.length-1];
-        for(let s=2.0; s<END-2.0; s+=0.85+rng()*1.0){
-          const side=rng()<0.5?1:-1, p=riverPoint(s,side);
-          // measure how far the water actually reaches along this normal rather than trusting
-          // riverHW: the bridge and map-edge tapers pull the bank in, and the mosaic quantises
-          // it to whole studs, so a clump placed off the raw wander can end up on dry land
-          let lo=RV_HW, hi=RV_HW+2.4;
-          while(hi-lo>0.04){ const m2=(lo+hi)/2;
-            if(riverAt(p[0]+p[2]*m2, p[1]+p[3]*m2)) lo=m2; else hi=m2; }
-          if(lo-RV_HW<0.55) continue;                                          // bank too tight here to stand a clump in
-          const off=RV_HW+(lo-RV_HW)*(0.15+rng()*0.45);                        // in the shallows, well inside the edge
-          const x=p[0]+p[2]*off, z=p[1]+p[3]*off;
-          if(x>RV_BR[0]-3.4 && x<RV_BR[1]+3.4) continue;                       // the bridge already has its own
-          if(x>64 || z<-36) continue;                                          // past the walkable plate, in the fog
-          picks[Math.floor(rng()*kits.length)].push([x,z,rng()*Math.PI*2]); }
+        // spacing hash: clumps may crowd the way the MOC's own do, but never grow through each other
+        const acc=new Map(), CELL=1.4, key=(cx,cz)=>cx*100003+cz;
+        const fits=(x,z,r)=>{ const cx=Math.floor(x/CELL), cz=Math.floor(z/CELL);
+          for(let i=-2;i<=2;i++) for(let j=-2;j<=2;j++){ const L=acc.get(key(cx+i,cz+j)); if(!L) continue;
+            for(const q of L) if(Math.hypot(q[0]-x,q[1]-z) < (q[2]+r)*0.8) return false; } return true; };
+        const add=(x,z,r)=>{ const k=key(Math.floor(x/CELL),Math.floor(z/CELL));
+          let L=acc.get(k); if(!L) acc.set(k,L=[]); L.push([x,z,r]); };
+        // a plant must stand INSIDE the water: riverAt is the same test the shoreline mosaic
+        // quantises to whole studs, so sampling a quarter stud out on each axis keeps clumps
+        // off the ragged edge cells and out of the grass
+        const wet=(x,z)=>riverAt(x,z)&&riverAt(x+0.2,z)&&riverAt(x-0.2,z)&&riverAt(x,z+0.2)&&riverAt(x,z-0.2);
+        for(let s=1.0; s<END-1.0; s+=0.6+rng()*0.5){
+          for(const side of [1,-1]){ const p=riverPoint(s,side);
+            // measure how far the water actually reaches along this normal rather than trusting
+            // riverHW: the bridge and map-edge tapers pull the bank in, and the mosaic quantises
+            // it to whole studs, so a clump placed off the raw wander can end up on dry land
+            let lo=0, hi=RV_HW+2.6;
+            while(hi-lo>0.04){ const m2=(lo+hi)/2;
+              if(riverAt(p[0]+p[2]*m2, p[1]+p[3]*m2)) lo=m2; else hi=m2; }
+            if(lo<0.5) continue;                                                // channel too tight here
+            const n=Math.max(1, Math.round(lo/1.05));                           // one band of plants per ~3 studs of width
+            for(let q=0;q<n;q++){
+              const ki=Math.floor(rng()*kits.length), K=kits[ki];
+              const u=lo*(q+rng())/n;                                           // centerline out to the bank, jittered
+              const x=p[0]+p[2]*u, z=p[1]+p[3]*u;
+              if(x>13.4 && x<27.0 && z>-15.6 && z<-9.2) continue;               // the bridge already has its own
+              if(x>69.4 || z<-42.8) continue;                                   // past the last studded water plate, deep in the fog
+              if(!wet(x,z) || !fits(x,z,K.r)) continue;
+              add(x,z,K.r); picks[ki].push([x,z,rng()*Math.PI*2]); } } }
         const mm=new THREE.Matrix4(), q=new THREE.Quaternion(), ax=new THREE.Vector3(0,1,0),
               pv=new THREE.Vector3(), one=new THREE.Vector3(1,1,1);
         kits.forEach((k,i)=>{ const L=picks[i]; if(!L.length) return;
           const im=new THREE.InstancedMesh(k.geo,k.mat,L.length); im.castShadow=im.receiveShadow=true;
           L.forEach((s,j)=>{ q.setFromAxisAngle(ax,s[2]); mm.compose(pv.set(s[0],-0.22,s[1]),q,one); im.setMatrixAt(j,mm); });
           im.instanceMatrix.needsUpdate=true; scene.add(im); });
-        window.__reeds=picks;                                                  // debug handle, strip with the rest
+        window.__reeds=picks;                                                   // debug handle, strip with the rest
       }
     }});
   // The river continues past the MOC's own 40-stud water run with cloned 8x16 water plates
@@ -1292,8 +2234,13 @@
       mainLabel:'Concept', extras:[{img:'./assets/RealEstate_MoskowiteCorner_Before.png', label:'Existing site'}]} ];
   const ABOUT=[
     {t:'Who I Am', c:'#38bdf8', img:'./assets/Shyon_About.png', desc:'I\'m a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. That range started in childhood with LEGO builds and stop motion films, and it became a working habit: learn the tools each project requires and use them properly.'},
-    {t:'Resume', c:'#f4c430', desc:'My full resume, with experience and skills.', links:[{label:'Open My Resume', href:'./My Resume.pdf'}]},
-    {t:'Contact', c:'#2ee078', desc:'Reach out for work, collaborations, or anything else.', links:[{label:'Email shyon2001@gmail.com', href:'mailto:shyon2001@gmail.com'},{label:'LinkedIn in/shyonshiri', href:'https://www.linkedin.com/in/shyonshiri/'}]} ];
+    // These two used to be the only imageless panels in any portal, so they showed as a bare
+    // coloured tile with a title. The resume preview is the PDF's own first page rendered out and
+    // padded to the panel's exact 2.15:2.70 so nothing is cropped; the contact card is drawn to
+    // match (dark ground, stud grid, the Realm's yellow). The resume keeps its link, so opening
+    // the viewer still gets you to the actual PDF.
+    {t:'Resume', c:'#f4c430', img:'./assets/resume_preview.jpg', desc:'My full resume, with experience and skills.', links:[{label:'Open My Resume', href:'./My Resume.pdf'}]},
+    {t:'Contact', c:'#2ee078', img:'./assets/contact_preview.jpg', desc:'Reach out for work, collaborations, or anything else.', links:[{label:'Email shyon2001@gmail.com', href:'mailto:shyon2001@gmail.com'},{label:'LinkedIn in/shyonshiri', href:'https://www.linkedin.com/in/shyonshiri/'}]} ];
   const NABU=[
     {t:'NABU Promotional Video', c:'#38bdf8', img:'./assets/Nabu_Poster_Banner.jpg', video:'./assets/Nabu_Poster_Banner.mp4', year:2023, desc:'Promotional video for NABU clothing, animated in Adobe After Effects.'},
     {t:'NABU 2026 Teaser', c:'#2ee078', img:'./assets/NABU_Puffer_AD.jpg', video:'./assets/NABU_PUFFER_AD.mp4', year:2025, desc:'Promotional video for NABU\'s puffer jacket collection.',
@@ -1302,6 +2249,24 @@
     {t:'NABU 2023 Spring Collection', c:'#ff7ac2', img:'./assets/Stevie_Pic.JPG', year:2022, desc:'Portrait photography for the NABU 2023 spring collection.'},
     {t:'NABU 2024 Rerelease Promotion', c:'#8b5cf6', img:'./assets/Digital_Media_Cover.jpg', year:2024, desc:'Promotional campaign for the 2024 rerelease of NABU\'s Persian rug pants.'} ];
   let mode='hub', fading=false, viewerOpen=false, nearPortal=null, activePortal=null, camAnim=null;
+  // ── THE CHEST behind the run-down house. Walk up to it and it offers an inspect; taking it
+  // sends you back to the spawn point. The arms themselves are not wired in yet, so for now this
+  // is the interaction end to end minus the transformation.
+  let nearChest=false, chestUsed=false;
+  const CHEST_R=2.4;
+  function chestAt(x,z){ const c=window.__props&&window.__props.chest; if(!c) return false;
+    return Math.hypot(x-c.position.x, z-c.position.z) < CHEST_R; }
+  function inspectChest(){
+    if(chestUsed) return; chestUsed=true;
+    if(typeof zap==='function') zap(0.22);            // it goes off in your hands
+    setTimeout(()=>{
+      player.position.set(snap(-2.61),0,snap(-2.65)); // back to the spawn junction
+      player.rotation.y=Math.PI; curYaw=Math.PI;
+      velX=velZ=0; velY=0; grounded=true;
+      camYaw=0; camPitch=0.24; camDist=8.45;
+      chestUsed=false;                                // usable again until the arms are wired in
+    }, 420);
+  }
   const camLook=new THREE.Vector3(0,0.95,0);
 
   function labelTex(text, bg, fg, wide){ const W=wide?900:512, H=wide?170:340; const c=document.createElement('canvas'); c.width=W; c.height=H;
@@ -1365,23 +2330,272 @@
         if(g.userData.frameMat) g.userData.frameMat.color.copy(strongColor(tx.image));   // frame matches the cover's strongest color
       }, undefined, e=>console.warn('panel image failed', p.img)); }); }
   const PORTALS={
-    professional:{ label:'Professional Services', projects:PROFESSIONAL, cells:shopCells,
+    professional:{ label:'Professional Services', projects:PROFESSIONAL, cells:shopCells, zone:(x,z)=>shopPad(x,z,0.2),   // the WHOLE grey pad prompts, patio included, not just arm's reach of a wall
       door:new THREE.Vector3(-19.95,0,-22.06), eye:new THREE.Vector3(-19.95,1.75,-21.86), look:new THREE.Vector3(-19.95,1.5,-26.56),
       exit:new THREE.Vector3(-19.95,0,-18.56), yaw:0 },          // step back out facing the world (+z)
-    creative:{ label:'Creative Projects', projects:CREATIVE, cells:null, doorR:2.6,   // front-door circle only: the house's wall cells would let you enter from the back
+    creative:{ label:'Personal Projects', projects:CREATIVE, cells:null, doorR:2.6,   // front-door circle only: the house's wall cells would let you enter from the back
       door:new THREE.Vector3(20.69,0,-21.40), eye:new THREE.Vector3(20.69,1.75,-22.53), look:new THREE.Vector3(20.69,1.5,-27.43),
       exit:new THREE.Vector3(20.69,0,-19.43), yaw:0 },           // step back out onto the path (north of the bridge), facing the walk (+z)
     about:{ label:'About', projects:ABOUT, cells:houseCells, doorR:4.0,   // wide radius: the doorway itself has no wall cells, so the door circle must cover the whole approach
       door:new THREE.Vector3(45.73,0,0), eye:new THREE.Vector3(49.23,1.8,0), look:new THREE.Vector3(55.23,1.4,0),
       exit:new THREE.Vector3(41.23,0,0), yaw:-Math.PI/2 },       // facing -x toward spawn/world
     nabu:{ label:'NABU', projects:NABU, cells:null,              // the blue crystal on the Tardis is the NABU portal (balcony only)
-      door:new THREE.Vector3(0.89,3.2,15.53), eye:new THREE.Vector3(0.89,4.75,13.88), look:new THREE.Vector3(0.89,5.12,15.53),
-      exit:new THREE.Vector3(-0.31,3.2,14.38), yaw:Math.PI } };  // zoom rises to the crystal itself; exit restores the user's own camera
+      // follows the crystal to the far corner. The eye now sits INSIDE the deck looking back at it
+      // (the old one stood outside the front railing), because that is the side you arrive from.
+      door:new THREE.Vector3(-5.17,3.2,24.38), eye:new THREE.Vector3(-5.17,4.75,22.20), look:new THREE.Vector3(-5.17,5.12,24.38),
+      exit:new THREE.Vector3(-5.17,3.2,22.40), yaw:Math.PI } };  // zoom rises to the crystal itself; exit restores the user's own camera
   Object.keys(PORTALS).forEach(k=>{ const mp=buildPanels(PORTALS[k].projects); PORTALS[k].group=mp.group; PORTALS[k].panels=mp.panels;
-    const n=PORTALS[k].projects.length; PORTALS[k].panMax = n>3 ? (n-1)/2*PGAP : 0; });   // rows wider than the view can be browsed
+    // panMax is exactly the travel that brings the FIRST or LAST panel to the middle, so every
+    // stop the carousel can reach has a project centred. Any row of 2 or more can be browsed:
+    // a short row (About) fits on screen, but dragging it still walks the centre along the row.
+    const n=PORTALS[k].projects.length; PORTALS[k].panMax = n>1 ? (n-1)/2*PGAP : 0; });
   let menuPan=0, menuPanCur=0;   // carousel pan target/current (menu mode only)
   function clampPan(v){ const P=activePortal?PORTALS[activePortal]:null; const mx=P?P.panMax:0; return Math.max(-mx,Math.min(mx,v)); }
+  // Where a menu opens. Panels sit at (i - (n-1)/2)*PGAP, so pan 0 lands BETWEEN two of them on
+  // every even-length row: the middle of the screen was empty. Centre a real panel instead, and
+  // pick a different one from last time so a structure does not always greet you with the same
+  // project.
+  function openPan(P){ const n=P.projects.length; if(n<1) return 0;
+    let i=0; if(n>1){ do { i=Math.floor(Math.random()*n); } while(i===P.lastOpen); }
+    P.lastOpen=i; return (i-(n-1)/2)*PGAP; }
 
+  // ══════════ TITLE BUBBLES — LEGO speech bubbles that build themselves as you walk up ══════════
+  // One per portal, plus a greeting at the spawn. From far off there is nothing there: come inside
+  // the entry's near radius and the bubble assembles course by course (a brick flies up to deliver
+  // each one), then the text prints on letter by letter. Step back past the far radius and it
+  // dismantles in reverse. The "Press E" prompt stays, but the NAME of the place lives on the bubble.
+  // Each spot: pos [x, bottom y, z], yaw = base facing, sw = how far it may swing off that facing.
+  // Heights are set by what the third-person camera can actually SEE: it looks slightly down, so the
+  // top of the frame at distance d sits at world height ~2.52 + 0.19*d. The low shop wears its bubble
+  // over the roof; the tall buildings wear theirs out FRONT of the entrance, where the tail points at
+  // the door. Front-mounted ones swing only +/-35 deg so their far edge (half width 2.73 * sin35 =
+  // 1.56) can never sweep into the wall behind them. Every bubble also PITCHES down toward the
+  // camera (up to BUB_TILT) so a high one still shows you its face instead of its edge.
+  const BUB_NEAR=28, BUB_FAR=33, BUB_BUILD=1.35, BUB_COURSES=6, BUB_SCALE=1.15, BUB_TILT=0.75;
+  // A structure's bubble triggers on its distance to the BUILDING'S FOOTPRINT (`rect`, the
+  // measured world bbox of its geometry above y 0.3, so ground plates and pads are excluded), not
+  // on the distance to some single point. A point trigger is only direction-independent about that
+  // point, and every sign hangs out at one end of its building: keyed to the sign (or, for the
+  // shop, to its street lamp) you got the tuned distance walking up the front and nothing at all
+  // coming round the side or the back, where the same radius lands you against the wall. Measuring
+  // to the rect (0 inside it) makes the build fire the same distance out from the walls whichever
+  // way you approach. Each near/far is set so the FRONT approach fires exactly where it used to,
+  // since those distances were tuned against what the camera can frame (see below); they differ
+  // per structure because the signs sit at different heights and their buildings are different
+  // depths, not because the trigger is direction-dependent.
+  const BUB_SPOTS={
+    // Over the coffee shop roof (3.47): low building, free to swing. near 10.7 from the shop's
+    // walls is where the old lamp-keyed radius of 9 fired on the sidewalk approach, and it is as
+    // late as it can be read: the camera looks down, so from the lamp itself a sign standing over
+    // that roof is already riding off the top of the frame (measured: NDC 0.93 at 9.6 from the
+    // lamp, 1.00 at 6.4, 1.17 at the lamp).
+    professional:{ pos:[-19.95, 3.70, -24.60], yaw:0,          sw:3.2,
+                   rect:[-23.41,-16.49,-30.08,-20.17], near:10.7, far:14.2 },
+    // Centred on the run-down house's door and set to appear as you step onto the bridge (its deck
+    // starts at z -8.864, which is 12.54 out from the house's front wall, hence near 12.6). It
+    // hangs in FRONT of the house rather than over the roof: the user picked the trigger, and a
+    // sign over that 6.2 roof needs about 24 units before the camera's downward look stops pushing
+    // it off the top of the frame. y 3.60 is the highest it can sit and still frame whole from the
+    // bridge's first step (top edge at NDC 0.98 there, 0.84 by the midpoint, where the deck lifts
+    // you 1.35 and the framing improves). It clears the porch roof (3.12 at z -21.5) and its
+    // +/-35 deg swing reaches z -21.61, just short of the gable face.
+    creative:    { pos:[ 20.69, 3.60, -20.25], yaw:0,          sw:0.62,
+                   rect:[16.28,25.09,-30.32,-21.40], near:12.6, far:16.1 },
+    // Pushed back toward the mansion (was 44.60) and centred on the doorway, which spans z -1..1
+    // (the walls either side start at x 47.72; the sign's +/-35 deg swing reaches 47.26, so it
+    // still cannot sweep into them). RAISED 3.00 -> 4.20 (user: it sat too low, its tail buried in
+    // the roofline); it now floats clear above the house. That costs standoff, because the camera
+    // pitches down: near 12.8 -> 18.0 is where the lifted top edge gets back the SAME margin it had
+    // before (NDC 0.953 at the peak of the idle bob, against 0.954 at the old height and distance).
+    // At 17 the top rides to 0.996, technically uncut but hugging the frame edge.
+    about:       { pos:[ 45.90, 4.20,   0.00], yaw:-Math.PI/2, sw:0.62,
+                   rect:[47.67,57.19,-6.76,7.16], near:18, far:21.5 },
+    // Centred over the ruins doorway (gap x -3.325..-1.415, so centre -2.37) and seated just above
+    // the balcony floor that overhangs it (top 3.0; nothing else stands at this x until z 24.11).
+    // Free to swing because it is read from the ground walk-up AND from the balcony itself.
+    // RAISED 3.05 -> 4.25 (user: it sat too low, its tail buried in the ruins' upper storey); the
+    // shell now spans 4.16..8.10 and reads as floating over the arch. The ruins is 10 wide and
+    // 12 deep and its balcony overhangs to z 13.9; near 9.5 from that footprint framed the sign at
+    // its OLD height, so the lift moves it out to 14.2, where the new top edge gets back the same
+    // margin it had before (NDC 0.973 at the peak of the idle bob, matching the old 0.973 at 9.5).
+    // Closer than that and the top rides off the frame.
+    // Raised again 4.25 -> 5.05 on request, and a lift always has to be paid for in standoff:
+    // the camera pitches down, so near went 14.2 -> 18.3, which is where the taller sign gets back
+    // the same framing margin it had before (top edge NDC 0.973 at the peak of the idle bob).
+    // maxY: the sign is a pointer to the doorway, so once the teleporter has taken you UP to the
+    // balcony it has done its job and only gets in the way. Above this height it breaks apart.
+    // The balcony floor is y 3.0 and the ground approach never leaves y ~0, so 1.6 separates them
+    // cleanly with room for a jump.
+    // TRIGGER: near 18.3 reached 1.8 units BEHIND the spawn point (spawn is only 16.49 from the
+    // ruins footprint), so the sign built and broke apart while you stood still at spawn just
+    // turning the camera. 12.0 starts it 4.5 units down the path instead, about a quarter of the
+    // way to the door. That costs height: at 12 out, a sign based at 5.05 has its top edge at NDC
+    // 1.13 and is cut off, so it comes down to 3.8, where it frames whole (0.988). Still well
+    // above the 3.05 it sat at before it was raised.
+    nabu:        { pos:[ -2.37, 3.80,  15.40], yaw:Math.PI,    sw:3.2, maxY:1.6,
+                   rect:[-7.20,2.76,13.90,26.00], near:12.0, far:15.5 },
+    // Greeting: straight down the spawn sightline, dead centre of the opening shot (camera yaw 0,
+    // dist 8.45, pitch 0.24, so the view runs due -z from the spawn at -2.59/-2.59). It keys off the
+    // SPAWN POINT, not off itself, so walking away dismantles it before you ever reach it, and it
+    // waits for the controls card so you watch it build.
+    spawn:       { pos:[ -2.59, 1.00, -14.59], yaw:0,          sw:3.2, scale:1.7, lines:4, gate:true, once:true,
+                   at:[-2.586,-2.586], near:6, far:10,
+                   text:'Hello! Walk up to any of the structures to learn more about me. Keep your eyes peeled, you never know what you may find.' } };
+  // Text canvas: word-wrapped to at most `lines`, then every character is laid out ONCE at its final
+  // spot and drawn n-at-a-time, so the message prints in place instead of sliding as it grows.
+  function bubbleTex(text, maxLines){
+    const W=760, H=275, LN=maxLines||1;
+    const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+    const F=s=>'700 '+s+'px "Fredoka",sans-serif'; let fs=104, lay=null;
+    function layout(){   // deferred until Fredoka is really loaded: fallback metrics would misplace every letter
+      if(document.fonts && document.fonts.check && !document.fonts.check(F(48))) return false;
+      fs=Math.min(104, Math.round((H-40)/(LN*1.22)));
+      for(;;){ x.font=F(fs);
+        const lines=[]; let cur='';
+        for(const wd of text.split(' ')){ const t=cur?cur+' '+wd:wd;
+          if(x.measureText(t).width>W-70 && cur){ lines.push(cur); cur=wd; } else cur=t; }
+        if(cur) lines.push(cur);
+        if(lines.length<=LN || fs<=18){
+          lay=[]; const lh=fs*1.22, y0=H/2-(lines.length-1)*lh/2+4;
+          lines.forEach((ln,li)=>{ let cx=(W-x.measureText(ln).width)/2;
+            for(const ch of ln){ lay.push([ch, cx, y0+li*lh]); cx+=x.measureText(ch).width; }
+            if(li<lines.length-1) lay.push([' ',0,0]); });   // the space the wrap ate still counts as a character
+          return true; }
+        fs-=4; }
+    }
+    const tx=new THREE.CanvasTexture(c); tx.anisotropy=8;
+    return { tex:tx, get n(){ return lay?lay.length:[...text].length },
+      draw(k){ if(!lay && !layout()) return false;
+        x.clearRect(0,0,W,H); x.font=F(fs); x.fillStyle='#000000'; x.textAlign='left'; x.textBaseline='middle';
+        for(let i=0;i<k && i<lay.length;i++) if(lay[i][0]!==' ') x.fillText(lay[i][0], lay[i][1], lay[i][2]);
+        tx.needsUpdate=true; return true; } };
+  }
+  const bubbles=[];
+  {
+    renderer.localClippingEnabled=true;                      // the course-by-course reveal is a moving clip plane
+    const bkGeo=new THREE.BoxGeometry(0.74,0.44,0.37), bkStud=new THREE.CylinderGeometry(0.108,0.108,0.09,10);
+    const bkMat=[plastic(0xf4f2ec,0.34), plastic(0x1a1c22,0.34)];
+    const deliveryBrick=(i)=>{ const g=new THREE.Group(), m=bkMat[i%2];
+      g.add(new THREE.Mesh(bkGeo,m));
+      [-0.185,0.185].forEach(sx=>{ const s=new THREE.Mesh(bkStud,m); s.position.set(sx,0.265,0); g.add(s); });
+      g.visible=false; return g; };
+    gltf.load('./assets/speech_bubble.glb', (g)=>{
+      const src=g.scene; src.updateMatrixWorld(true);
+      let bx=new THREE.Box3().setFromObject(src);            // recentre on x/z, tail tip to local y 0
+      src.position.x-=(bx.min.x+bx.max.x)/2; src.position.z-=(bx.min.z+bx.max.z)/2; src.position.y-=bx.min.y;
+      src.updateMatrixWorld(true); bx=new THREE.Box3().setFromObject(src);
+      const BH=bx.max.y-bx.min.y;                            // 3.16 native: tail tip to the top of the shell
+      for(const k in BUB_SPOTS){ const cfg=BUB_SPOTS[k]; const label=cfg.text||(PORTALS[k]&&PORTALS[k].label);
+        if(!label) continue;
+        const s=cfg.pos, SC=cfg.scale||BUB_SCALE, holder=new THREE.Group();
+        holder.rotation.order='YXZ';                         // yaw first, then the pitch tilts about the sign's OWN x axis
+        holder.position.set(s[0],s[1],s[2]); holder.rotation.y=cfg.yaw; holder.scale.setScalar(SC);
+        holder.visible=false; scene.add(holder);
+        const plane=new THREE.Plane(new THREE.Vector3(0,-1,0), s[1]);   // visible below the plane = built so far
+        const body=src.clone(true);
+        body.traverse(o=>{ if(o.isMesh){ o.castShadow=false; o.receiveShadow=false;
+          o.material=o.material.clone(); o.material.clippingPlanes=[plane]; polish(o); } });
+        holder.add(body);
+        const t=bubbleTex(label, cfg.lines);                 // printed tile: black ink on the white fill
+        const txt=new THREE.Mesh(new THREE.PlaneGeometry(3.6,1.3),
+          new THREE.MeshBasicMaterial({map:t.tex, transparent:true, depthWrite:false}));
+        txt.position.set(0.029,2.129,0.152); txt.renderOrder=2; txt.visible=false; holder.add(txt);
+        const bricks=[];                                     // one flying brick per course after the first
+        for(let i=0;i<BUB_COURSES-1;i++){ const br=deliveryBrick(i), sx=(i%2?1:-1);
+          const to=new THREE.Vector3(sx*0.9, (i+1.5)/BUB_COURSES*BH, 0);
+          br.userData.to=to; br.userData.from=new THREE.Vector3(to.x+sx*3.2, to.y-3.4, 0.9);
+          br.userData.spin=sx; holder.add(br); bricks.push(br); }
+        bubbles.push({ k, x:s[0], y:s[1], z:s[2], yaw:cfg.yaw, sw:cfg.sw, sc:SC, gate:!!cfg.gate,
+          at:cfg.at||null, rect:cfg.rect||null, near:cfg.near||BUB_NEAR, far:cfg.far||BUB_FAR, once:!!cfg.once,
+          maxY:(cfg.maxY==null?null:cfg.maxY),
+          door:(PORTALS[k]&&PORTALS[k].door)||null, used:false,   // used: arrived at it, so it stays down until you leave and come back
+          holder, plane, txt, tex:t, bricks, BH,
+          p:0, shown:-1, pop:0, step:0, bob:0, tilt:0, ph:Math.random()*6.283, built:false, done:false });
+      }
+      window.__bub=bubbles;
+    }, undefined, e=>console.warn('speech bubble load failed', e));
+  }
+  // a ONCE bubble is finished with you the moment you stop looking at it: this projects its face
+  // and asks whether that point is still on screen (a little past the edge, so a small nudge of
+  // the camera cannot dismantle a sign you are still reading)
+  const bubEye=new THREE.Vector3();
+  function bubInView(B){ bubEye.set(B.x, B.y+2.129*B.sc, B.z).project(camera);
+    return bubEye.z<1 && Math.abs(bubEye.x)<1.15 && Math.abs(bubEye.y)<1.15; }
+  // ARE YOU LOOKING AT IT? A sign only builds while it is actually in front of you, so standing
+  // inside its radius facing the other way leaves it down, and walking BACKWARDS into a structure
+  // never raises it. Tested low on the shell and horizontally only: a tall sign can ride near the
+  // top of the frame at close range and that must not count as looking away.
+  function bubFacing(B){ bubEye.set(B.x, B.y+1.0*B.sc, B.z).project(camera);
+    return bubEye.z<1 && Math.abs(bubEye.x)<1.0; }
+  const BUB_DOOR=3.2;                                  // reaching the door counts as arriving
+  function updateBubbles(dt){
+    if(!bubbles.length) return;
+    const now=performance.now()*0.001;
+    for(const B of bubbles){
+      // Distance to the STRUCTURE, so the build fires the same distance out from it in every
+      // direction: to the footprint rect (0 anywhere inside it) when the bubble has one, otherwise
+      // to a point (the spawn greeting keys off the spawn point, not off itself).
+      const px=player.position.x, pz=player.position.z; let d;
+      if(B.rect){ const R=B.rect;
+        d=Math.hypot(Math.max(R[0]-px, 0, px-R[1]), Math.max(R[2]-pz, 0, pz-R[3])); }
+      else { const rx=B.at?B.at[0]:B.x, rz=B.at?B.at[1]:B.z; d=Math.hypot(px-rx, pz-rz); }
+      // A portal sign is for the WALK UP to a structure, so it is gated on three things beyond
+      // distance: you must be outside the footprint, you must be looking at it, and once you have
+      // arrived (inside the walls, or at the door) it comes apart and STAYS down until you leave
+      // past the far radius and approach again.
+      let dir;
+      if(B.gate && !entered) dir=-1;
+      else if(B.rect){
+        const inside = d < 0.01;                                     // within the footprint itself
+        const atDoor = B.door && Math.hypot(px-B.door.x, pz-B.door.z) < BUB_DOOR;
+        if(d > B.far) B.used=false;                                  // walked back out: armed again
+        if(inside || atDoor){ dir=-1; B.used=true; }                 // arrived: come apart, stay down
+        else if(B.used || !bubFacing(B)) dir=-1;
+        else dir = d<B.near ? 1 : (d>B.far ? -1 : 0);                // hysteresis band: mid-band it holds
+      }
+      else dir = (d<B.near ? 1 : (d>B.far ? -1 : 0));                // the spawn greeting keeps the old rule
+      if(B.maxY!=null && player.position.y>B.maxY) dir=-1;    // you took the doorway up: the sign is done
+      if(B.once){                                            // the greeting is read once and then retired for the session
+        if(B.p>=1) B.built=true;                             // it got all the way up, so the message has been shown
+        if(B.done) dir=-1;
+        else if(B.built && (dir<0 || !bubInView(B))){ dir=-1; B.done=true; }   // walked away or looked away: break apart for good
+      }
+      B.p=Math.max(0,Math.min(1,B.p+dir*dt/BUB_BUILD));
+      const on = B.p>0.001 && mode==='hub';
+      B.holder.visible=on; if(!on) continue;
+      let ay=Math.atan2(camera.position.x-B.x, camera.position.z-B.z)-B.yaw;          // yaw-only billboard: the tail keeps pointing down
+      ay=Math.atan2(Math.sin(ay),Math.cos(ay));                                       // wrapped, then clamped so a wall-hugging sign cannot swing into the wall
+      B.holder.rotation.y=B.yaw+Math.max(-B.sw,Math.min(B.sw,ay));
+      const shell=Math.min(1,B.p/0.68), pt=Math.max(0,Math.min(1,(B.p-0.66)/0.30));
+      const step=Math.min(BUB_COURSES, Math.floor(shell*BUB_COURSES)+1);
+      if(step!==B.step){
+        if(B.step){ B.pop=1;                                 // every course lands with a squash
+          // and with a brick snapping on or off. Distance-scaled off the same falloff the rest of
+          // the audio uses, so a sign building across the map is not as loud as one at your feet.
+          const vd = 0.55 + 0.45*fall(d, 3, (B.far||BUB_FAR)+6);   // never drops out of earshot
+          brickSnap(0.20*vd, step>B.step); }
+        B.step=step; }
+      B.pop*=Math.exp(-dt*9);
+      B.bob += ((B.p>=1?1:0)-B.bob)*Math.min(1,dt*3);        // only the finished bubble idles/floats
+      const bob=Math.sin(now*1.15+B.ph)*0.09*B.bob;
+      B.holder.position.y=B.y+bob;
+      // pitch the face down toward the camera, eased, so a bubble sitting high above a roof or a
+      // balcony still reads instead of showing you its underside
+      const el=Math.atan2(B.y+bob+2.129*B.sc-camera.position.y, Math.hypot(camera.position.x-B.x, camera.position.z-B.z));
+      B.tilt += (Math.max(0,Math.min(BUB_TILT, el*0.9))-B.tilt)*Math.min(1,dt*4);
+      B.holder.rotation.x=B.tilt;
+      B.holder.scale.set(B.sc*(1+B.pop*0.05), B.sc*(1-B.pop*0.05), B.sc);
+      B.plane.constant = B.y+bob + (step/BUB_COURSES)*B.BH*B.sc + 0.002;
+      const n=Math.round(pt*B.tex.n);
+      if(n!==B.shown && B.tex.draw(n)) B.shown=n;   // draw refuses until the font is ready, so retry next frame
+      B.txt.visible = n>0;
+      for(let i=0;i<B.bricks.length;i++){ const br=B.bricks[i], a=shell*BUB_COURSES-i;
+        if(a<=0||a>=1){ br.visible=false; continue; }        // in flight only while its course is landing
+        br.visible=true; const e=a*a*(3-2*a), u=br.userData;
+        br.position.lerpVectors(u.from,u.to,e); br.position.y+=Math.sin(Math.PI*a)*0.8;
+        br.rotation.set((1-a)*5.5*u.spin, (1-a)*4.2, (1-a)*2.0*u.spin); }
+    }
+  }
   const fadeEl=document.getElementById('fade'), promptEl=document.getElementById('prompt'),
         viewerEl=document.getElementById('viewer'), shopbgEl=document.getElementById('shopbg');
   function tweenCam(p1,l1,dur,after){ camAnim={p0:camera.position.clone(), l0:camLook.clone(), p1:p1.clone(), l1:l1.clone(), t:0, dur, after}; }
@@ -1390,15 +2604,19 @@
       if(set.has(Math.floor((x+dx)/OCS)*100003+Math.floor((z+dz)/OCS))) return true; } return false; }
   function portalAt(px,pz,py){ for(const k in PORTALS){ const P=PORTALS[k];
     if(Math.abs((py||0)-P.door.y)>1.7) continue;                 // portals only trigger on their own floor (crystal = balcony, others = ground)
+    if(P.zone && P.zone(px,pz)) return k;                        // whole-pad zone (shop): the grey ground itself is the trigger
     if(cellsNear(P.cells,px,pz,2*PITCH+PRAD) || Math.hypot(px-P.door.x,pz-P.door.z)<(P.doorR||2.0)) return k; } return null; }
   let savedCam=null, savedPos=null;   // the user's own camera orbit + standing spot, restored when leaving the NABU crystal
   function enterPortal(k){ if(fading||mode!=='hub') return; if(document.exitPointerLock) document.exitPointerLock();
+    if(k==='professional') doorbell(0.17);       // the shop has a bell over the door
+    else if(k==='creative') doorOpen(0.135);      // the cottage has a wooden one that sticks
+
     savedCam={yaw:camYaw, pitch:camPitch, dist:camDist};
     savedPos={x:player.position.x, y:player.position.y, z:player.position.z, ry:player.rotation.y};
     const P=PORTALS[k]; activePortal=k; fading=true; figBody.visible=false;
-    texPanels(P); menuPan=menuPanCur=0;   // start images loading during the glide; carousel starts centered
+    texPanels(P); menuPan=menuPanCur=openPan(P);   // start images loading during the glide; carousel opens on a project, a different one each visit
     menuCam.aspect=innerWidth/innerHeight; menuCam.updateProjectionMatrix();   // window may have resized (or loaded hidden) since startup
-    tweenCam(P.eye, P.look, 1.15, ()=>{ renderer.render(scene,camera);
+    tweenCam(P.eye, P.look, 1.15, ()=>{ if(PIPE) PIPE.render(); else renderer.render(scene,camera);
       try{ shopbgEl.style.backgroundImage='url('+renderer.domElement.toDataURL('image/jpeg',0.9)+')'; }catch(e){}
       shopbgEl.classList.add('on'); for(const kk in PORTALS) PORTALS[kk].group.visible=(kk===k); mode='menu'; fading=false; }); }
   function exitPortal(){ if(fading||mode!=='menu') return; const P=PORTALS[activePortal]; mode='hub'; shopbgEl.classList.remove('on');
@@ -1421,7 +2639,12 @@
     camYaw=Math.PI; camPitch=0.25;
     camera.position.set(px, py+1.2, pz-3.6);        // snap the orbit in front of the figure
   }
+  // TELEPORTER OFF (user, 2026-08-28): the doorway used to lift you straight to the balcony.
+  // It is disabled so the stairs are the only way up and the climb can be judged on its own.
+  // Flip RUINS_TP back to true to restore it; nothing else about the zones or targets changed.
+  const RUINS_TP=false;
   function ruinsDoorTeleport(){
+    if(!RUINS_TP) return;
     if(mode!=='hub'||fading) return;
     const p=player.position;
     const lo = p.y<1.0 && p.x>-3.21 && p.x<-1.31 && p.z>15.78 && p.z<16.98;   // ground doorway
@@ -1484,32 +2707,299 @@
     _ndc.set((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1); _ray.setFromCamera(_ndc, menuCam);
     const hits=_ray.intersectObjects(PORTALS[activePortal].panels,true); if(hits.length){ let g=hits[0].object; while(g && (!g.userData||g.userData.i===undefined)) g=g.parent; if(g) openViewer(g.userData.i); } });
 
-  // ── audio: plastic tick footsteps + soft toy pad ──
-  let actx=null, master=null;
-  function initAudio(){ if(actx) return; try{ const AC=window.AudioContext||window.webkitAudioContext; actx=new AC();
-    master=actx.createGain(); master.gain.value=0.65; master.connect(actx.destination); }catch(e){} }
-  // plastic footstep: a hollow ABS "tock" + a short click — like a minifig foot on a brick
-  let noiseBuf=null;
-  function makeNoise(){ const n=Math.floor(actx.sampleRate*0.12); const b=actx.createBuffer(1,n,actx.sampleRate);
+  // ══════════ AUDIO ══════════════════════════════════════════════════════════════════════════
+  // Everything here is SYNTHESISED with the Web Audio API. No sound files ship with the page:
+  // nothing to license, nothing to download on top of an already asset heavy world, and a
+  // handful of oscillators and filtered noise is closer to the toy-plastic register anyway.
+  // Three layers:
+  //   · AMBIENCE   a wind bed through the trees plus birdsong, always on, birds fading out at
+  //                night with the day cycle
+  //   · FOOTSTEPS  one synth per SURFACE under the player: gravel/sidewalk crunch on the greys,
+  //                a soft swish on the grass, a hollow plank knock on the bridge deck
+  //   · EMITTERS   sounds that belong to a PLACE and fade with distance: the river's rush, and
+  //                the run-down house creaking its timbers every so often
+  // The context cannot start before a gesture (browser autoplay policy), so initAudio() is
+  // called from the Enter button and from the first key/pointer/touch, whichever comes first.
+  let actx=null, master=null, ambBus=null, sfxBus=null;
+  let sndOn=true; try{ sndOn = localStorage.getItem('realm.sound')!=='0'; }catch(e){}
+  const sndBtn=document.getElementById('snd');
+  function paintSnd(){ if(sndBtn) sndBtn.classList.toggle('off',!sndOn); }
+  paintSnd();
+  let noiseBuf=null, loopBuf=null;
+  function makeNoise(sec){ const n=Math.floor(actx.sampleRate*sec); const b=actx.createBuffer(1,n,actx.sampleRate);
     const d=b.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1; return b; }
-  function tick(v){ if(!actx) return; const t=actx.currentTime; const vol=0.15+Math.min(0.1,(v||0)*0.015);
-    if(!noiseBuf) noiseBuf=makeNoise();
-    // click: brief band-passed noise (plastic-on-plastic tap)
+  // a looping source of filtered noise: the building block for wind, leaves and water
+  function noiseLoop(type,freq,q,gain,dest){
+    const src=actx.createBufferSource(); src.buffer=loopBuf; src.loop=true;
+    const f=actx.createBiquadFilter(); f.type=type; f.frequency.value=freq; if(q!=null) f.Q.value=q;
+    const g=actx.createGain(); g.gain.value=gain;
+    src.connect(f).connect(g).connect(dest||ambBus); src.start();
+    return {src,filter:f,gain:g}; }
+  // a slow sine wandering between lo and hi, for gusts and swells (nothing here is random per
+  // frame: an LFO in the audio graph costs nothing and never stutters when the frame rate does)
+  function lfo(rate,lo,hi,target){ const o=actx.createOscillator(); o.frequency.value=rate;
+    const g=actx.createGain(); g.gain.value=(hi-lo)/2; target.value=(hi+lo)/2;
+    o.connect(g).connect(target); o.start(); return o; }
+
+  let birdTimer=0, creakTimer=6, river=null, wind=null, leaves=null;
+  function initAudio(){ if(actx) return; try{
+    const AC=window.AudioContext||window.webkitAudioContext; actx=new AC();
+    master=actx.createGain(); master.gain.value=sndOn?0.65:0; master.connect(actx.destination);
+    ambBus=actx.createGain(); ambBus.gain.value=1; ambBus.connect(master);
+    sfxBus=actx.createGain(); sfxBus.gain.value=1; sfxBus.connect(master);
+    noiseBuf=makeNoise(0.12); loopBuf=makeNoise(2.0);
+    // WIND: a low bed that swells and falls, plus a quieter hiss standing in for leaves
+    wind=noiseLoop('lowpass',420,0.7,0.055); lfo(0.043,0.07,0.22,wind.gain.gain);
+    lfo(0.031,260,620,wind.filter.frequency);
+    leaves=noiseLoop('bandpass',2400,0.9,0.012); lfo(0.067,0.014,0.05,leaves.gain.gain);
+    // RIVER. A GENTLE STREAM, which is mostly a question of what you take AWAY. The first
+    // version was a very wide bandpass (Q 0.55) plus a 2.1kHz highpass on top, and wide-band
+    // noise with energy up in the sibilance range is the definition of static: it read as harsh
+    // and spiky rather than as water. What makes moving water is a handful of NARROW bands low
+    // in the spectrum, each drifting on its own slow LFO so the sound rolls instead of hissing.
+    // So: the highpass shimmer layer is gone entirely, the bands are narrow (Q 2.4 to 3.2), the
+    // top band stops at ~1.4kHz, and a low rush sits underneath. Peak level is well down too.
+    // The swell has to be its own node: an LFO ADDS to whatever an AudioParam holds, so hanging
+    // one on a gain that the distance code also writes makes the two fight, and the LFO's own
+    // midpoint becomes a floor the fade can never get under. That is exactly the bug this had.
+    const rSwell=actx.createGain(); rSwell.gain.value=1; rSwell.connect(ambBus);
+    lfo(0.09,0.78,1.0,rSwell.gain);
+    river=noiseLoop('lowpass',300,0.8,0.0,rSwell);                 // the body of the flow
+    const rMid=noiseLoop('bandpass',520,2.6,0.0,rSwell);           // burble
+    const rTop=noiseLoop('bandpass',1050,3.1,0.0,rSwell);          // ripples over stones
+    lfo(0.074,215,360,river.filter.frequency);
+    lfo(0.096,430,640,rMid.filter.frequency);
+    lfo(0.137,880,1360,rTop.filter.frequency);
+    river.mid=rMid; river.top=rTop;
+    river.set=v=>{ const t=actx.currentTime;                       // max is a third of what it was
+      river.gain.gain.setTargetAtTime(v*0.075,t,0.3);
+      rMid.gain.gain.setTargetAtTime(v*0.055,t,0.3);
+      rTop.gain.gain.setTargetAtTime(v*0.030,t,0.3); };
+  }catch(e){ actx=null; } }
+  if(sndBtn) sndBtn.addEventListener('click',()=>{ sndOn=!sndOn; paintSnd();
+    try{ localStorage.setItem('realm.sound',sndOn?'1':'0'); }catch(e){}
+    if(!actx){ if(sndOn) initAudio(); return; }
+    if(actx.state==='suspended') actx.resume();
+    master.gain.setTargetAtTime(sndOn?0.65:0, actx.currentTime, 0.08); });
+  // give the browser back its audio thread when the tab is hidden
+  document.addEventListener('visibilitychange',()=>{ if(!actx) return;
+    if(document.hidden) actx.suspend(); else if(sndOn) actx.resume(); });
+
+  // ── FOOTSTEPS. Which one plays is decided by the ground under the player, not by where the
+  // player started: surfaceAt() is handed out by the ground loader so it reads the very same
+  // onPad/onWalk/riverAt outline the tiles are laid from.
+  function grain(t,vol,f,q,dur,dest){                 // one filtered noise burst = one bit of grit
     const src=actx.createBufferSource(); src.buffer=noiseBuf;
-    const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1900+Math.random()*500; bp.Q.value=1.1;
-    const gc=actx.createGain(); gc.gain.setValueAtTime(vol*0.95,t); gc.gain.exponentialRampToValueAtTime(0.0005,t+0.04);
-    src.connect(bp).connect(gc).connect(master); src.start(t); src.stop(t+0.05);
-    // body: low hollow knock
+    const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=f; bp.Q.value=q;
+    const g=actx.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0005,t+dur);
+    src.connect(bp).connect(g).connect(dest||sfxBus); src.start(t); src.stop(t+dur+0.02); }
+  function tick(v,surf){ if(!actx||!sndOn) return; const t=actx.currentTime;
+    const vol=0.15+Math.min(0.1,(v||0)*0.015);
+    if(surf==='green'){
+      // GRASS: no click at all, just a short broadband swish that dies fast
+      grain(t, vol*0.5, 1500+Math.random()*700, 0.7, 0.075);
+      grain(t+0.012, vol*0.28, 3400+Math.random()*1200, 0.5, 0.05);
+      const o=actx.createOscillator(); o.type='sine';
+      o.frequency.setValueAtTime(150+Math.random()*25,t); o.frequency.exponentialRampToValueAtTime(95,t+0.06);
+      const gb=actx.createGain(); gb.gain.setValueAtTime(vol*0.35,t); gb.gain.exponentialRampToValueAtTime(0.0004,t+0.07);
+      o.connect(gb).connect(sfxBus); o.start(t); o.stop(t+0.09);
+    } else if(surf==='water'){
+      // the bridge deck: the only place you can stand over water. Hollow plank knock.
+      const o=actx.createOscillator(); o.type='triangle';
+      o.frequency.setValueAtTime(180+Math.random()*30,t); o.frequency.exponentialRampToValueAtTime(105,t+0.07);
+      const gb=actx.createGain(); gb.gain.setValueAtTime(vol*1.1,t); gb.gain.exponentialRampToValueAtTime(0.0005,t+0.1);
+      o.connect(gb).connect(sfxBus); o.start(t); o.stop(t+0.12);
+      grain(t, vol*0.45, 900+Math.random()*400, 1.4, 0.05);
+    } else {
+      // GRAVEL / SIDEWALK: a hard tap and then three or four loose grains skittering after it,
+      // which is what separates a gravel crunch from a plain click
+      grain(t, vol*0.85, 2100+Math.random()*600, 1.2, 0.035);
+      const n=3+Math.floor(Math.random()*3);
+      for(let i=0;i<n;i++) grain(t+0.008+Math.random()*0.05, vol*(0.10+Math.random()*0.22),
+        2600+Math.random()*2600, 3+Math.random()*4, 0.018+Math.random()*0.022);
+      const o=actx.createOscillator(); o.type='triangle';       // the minifig's own hollow ABS foot
+      o.frequency.setValueAtTime(235+Math.random()*35,t); o.frequency.exponentialRampToValueAtTime(150,t+0.05);
+      const gb=actx.createGain(); gb.gain.setValueAtTime(vol*0.7,t); gb.gain.exponentialRampToValueAtTime(0.0005,t+0.075);
+      o.connect(gb).connect(sfxBus); o.start(t); o.stop(t+0.09);
+    } }
+
+  // ── BRICK SNAP. Two bricks meeting, the sound a LEGO game makes when a build assembles
+  // itself: a hard click of shell on shell, a chunky mid body, and the hollow knock of the stud
+  // seating in the tube under it. `up` is the assembling sound (the knock FALLS, the way a piece
+  // settles home); coming apart plays it in reverse, pitch rising, with a drier, shorter click.
+  // The first version of this was inaudible in play: it ran at 0.075 scaled by the full distance
+  // falloff, which put it five to seven times under a footstep by the time a sign was at its
+  // trigger distance. It is louder now and barely attenuated, because the thing making the noise
+  // is a house-sized sign, not a pebble.
+  function brickSnap(vol, up){ if(!actx||!sndOn) return; const t=actx.currentTime;
+    const f=2500+Math.random()*1100;
+    grain(t, vol*0.85, f, up?1.5:2.2, up?0.030:0.020);            // shell on shell
+    grain(t+0.004, vol*0.5, 1200+Math.random()*500, 2.0, 0.045);  // the chunky middle of the clack
     const o=actx.createOscillator(); o.type='triangle';
-    o.frequency.setValueAtTime(235+Math.random()*35,t); o.frequency.exponentialRampToValueAtTime(150,t+0.05);
-    const gb=actx.createGain(); gb.gain.setValueAtTime(vol*0.9,t); gb.gain.exponentialRampToValueAtTime(0.0005,t+0.075);
-    o.connect(gb).connect(master); o.start(t); o.stop(t+0.09); }
+    const a=300+Math.random()*60, b=a*(up?0.55:1.75);
+    o.frequency.setValueAtTime(up?a:b, t); o.frequency.exponentialRampToValueAtTime(up?b:a, t+0.06);
+    const g=actx.createGain(); g.gain.setValueAtTime(vol*(up?1.15:0.8), t);
+    g.gain.exponentialRampToValueAtTime(0.0004, t+(up?0.10:0.07));
+    o.connect(g).connect(sfxBus); o.start(t); o.stop(t+0.12);
+    const o2=actx.createOscillator(); o2.type='sine';             // the low seat of the stud
+    o2.frequency.setValueAtTime(up?150:250, t); o2.frequency.exponentialRampToValueAtTime(up?96:150, t+0.07);
+    const g2=actx.createGain(); g2.gain.setValueAtTime(vol*0.55, t);
+    g2.gain.exponentialRampToValueAtTime(0.0004, t+0.09);
+    o2.connect(g2).connect(sfxBus); o2.start(t); o2.stop(t+0.11); }
+
+  // ── DOORBELL, for the coffee shop. Two struck notes, each a sine with a bell partial over it
+  // (2.76x, the classic inharmonic bell ratio) and a long exponential tail.
+  function doorbell(vol){ if(!actx||!sndOn) return; const t0=actx.currentTime;
+    [[0,660],[0.30,524]].forEach(([off,f])=>{ const t=t0+off;
+      [[f,1.0,1.5],[f*2.76,0.30,1.0],[f*5.4,0.09,0.5]].forEach(([hz,amp,dur])=>{
+        const o=actx.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(hz,t);
+        const g=actx.createGain(); g.gain.setValueAtTime(0.0001,t);
+        g.gain.exponentialRampToValueAtTime(vol*amp,t+0.006);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+        o.connect(g).connect(sfxBus); o.start(t); o.stop(t+dur+0.05); }); }); }
+
+  // ── WOODEN DOOR, for the run-down house: the latch lets go, then the timber swings.
+  // NOTE ON LEVELS: a high-Q bandpass passes almost none of a noise source's energy, so the gains
+  // in here look enormous next to the rest of the file. Do not "fix" them by eye.
+  // HOW THESE WERE BALANCED, because peak sampling lies about short sounds: a ScriptProcessor on
+  // the sfx bus sums every sample, and each sound is compared by MEAN POWER (its energy over its
+  // own duration), which is what loudness actually tracks. A footstep measures 21.7. Every
+  // deliberate foreground event in here is tuned to about 3.5x that: brickSnap(0.20) is 77,
+  // doorbell(0.17) and doorOpen(0.135) land on the same figure. An earlier pass set the bell to
+  // 0.42 off a peak reading and it was 21x a footstep, which is a shout, not a doorbell.
+  function doorOpen(vol){ if(!actx||!sndOn) return; const t=actx.currentTime;
+    grain(t, vol*2.4, 1800+Math.random()*500, 0.9, 0.040);        // the latch letting go
+    grain(t+0.02, vol*1.6, 620, 0.7, 0.06);
+    const src=actx.createBufferSource(); src.buffer=loopBuf; src.loop=true;
+    const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=7+Math.random()*4;
+    const f0=250+Math.random()*90, dur=0.85;
+    bp.frequency.setValueAtTime(f0,t+0.06); bp.frequency.linearRampToValueAtTime(f0*0.5,t+0.06+dur);
+    const g=actx.createGain(); g.gain.setValueAtTime(0.0004,t+0.06);
+    g.gain.exponentialRampToValueAtTime(vol*14,t+0.14);
+    let tt=t+0.14; while(tt<t+dur){ const d=0.05+Math.random()*0.1;   // stick-slip of the hinge
+      g.gain.exponentialRampToValueAtTime(vol*14*(0.25+Math.random()*0.7), tt+d); tt+=d; }
+    g.gain.exponentialRampToValueAtTime(0.0004,t+0.06+dur);
+    src.connect(bp).connect(g).connect(sfxBus); src.start(t+0.06); src.stop(t+0.06+dur+0.05);
+    const o=actx.createOscillator(); o.type='sine';               // the weight of the door swinging
+    o.frequency.setValueAtTime(96,t+0.06); o.frequency.exponentialRampToValueAtTime(62,t+0.7);
+    const gb=actx.createGain(); gb.gain.setValueAtTime(0.0004,t+0.06);
+    gb.gain.exponentialRampToValueAtTime(vol*1.5,t+0.16); gb.gain.exponentialRampToValueAtTime(0.0004,t+0.8);
+    o.connect(gb).connect(sfxBus); o.start(t+0.06); o.stop(t+0.9); }
+
+  // ── BIRDSONG. One call is a run of 2 to 5 whistled notes, each a quick pitch sweep; the runs
+  // are spaced randomly and panned randomly so they read as different birds around the map.
+  function bird(vol){ if(!actx) return; const t0=actx.currentTime;
+    const pan=actx.createStereoPanner?actx.createStereoPanner():null;
+    const out=actx.createGain(); out.gain.value=vol;
+    if(pan){ pan.pan.value=Math.random()*1.6-0.8; out.connect(pan).connect(ambBus); } else out.connect(ambBus);
+    const n=2+Math.floor(Math.random()*4), base=2200+Math.random()*1700, up=Math.random()<0.5;
+    for(let i=0;i<n;i++){ const t=t0+i*(0.07+Math.random()*0.09), d=0.05+Math.random()*0.06;
+      const o=actx.createOscillator(); o.type='sine';
+      const f=base*(1+i*(up?0.06:-0.05))*(0.94+Math.random()*0.12);
+      o.frequency.setValueAtTime(f,t); o.frequency.exponentialRampToValueAtTime(f*(up?1.5:0.68),t+d);
+      const g=actx.createGain(); g.gain.setValueAtTime(0.0004,t);
+      g.gain.exponentialRampToValueAtTime(1,t+0.012); g.gain.exponentialRampToValueAtTime(0.0004,t+d);
+      o.connect(g).connect(out); o.start(t); o.stop(t+d+0.02); } }
+
+  // ── WOOD CREAK, for the run-down house. A creak is stick-slip: the timber grips, releases,
+  // grips again, so this is a high-Q band sweeping DOWN while its level stutters, over a low
+  // body thump. Volume comes from how close the player is to the house (see audioFrame).
+  function creak(vol){ if(!actx) return; const t=actx.currentTime, dur=0.45+Math.random()*0.65;
+    const src=actx.createBufferSource(); src.buffer=loopBuf; src.loop=true;
+    const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=13+Math.random()*9;
+    const f0=185+Math.random()*150;
+    bp.frequency.setValueAtTime(f0,t); bp.frequency.linearRampToValueAtTime(f0*(0.58+Math.random()*0.28),t+dur);
+    const g=actx.createGain(); g.gain.setValueAtTime(0.0004,t); g.gain.exponentialRampToValueAtTime(vol,t+0.05);
+    let tt=t+0.05; while(tt<t+dur-0.12){ const d=0.035+Math.random()*0.1;   // the stutter
+      g.gain.exponentialRampToValueAtTime(vol*(0.22+Math.random()*0.8),tt+d); tt+=d; }
+    g.gain.exponentialRampToValueAtTime(0.0004,t+dur);
+    src.connect(bp).connect(g).connect(ambBus); src.start(t); src.stop(t+dur+0.05);
+    const o=actx.createOscillator(); o.type='sine';                        // the beam taking the load
+    o.frequency.setValueAtTime(86+Math.random()*22,t); o.frequency.exponentialRampToValueAtTime(58,t+dur*0.8);
+    const gb=actx.createGain(); gb.gain.setValueAtTime(0.0004,t);
+    gb.gain.exponentialRampToValueAtTime(vol*0.55,t+0.09); gb.gain.exponentialRampToValueAtTime(0.0004,t+dur*0.9);
+    o.connect(gb).connect(ambBus); o.start(t); o.stop(t+dur); }
+
+  // ── ELECTRIC ARC. The Easter egg's only tell: something in the chest behind the run-down house
+  // is still live. Three or four crackling bursts over half a second, each a highpassed noise
+  // snap over a detuned square pair with the pitch jittering, under a low thrum. Deliberately
+  // short and dry so it reads as a spark, not a machine.
+  function zap(vol){ if(!actx||!sndOn) return; const t0=actx.currentTime;
+    const n=3+Math.floor(Math.random()*2);
+    for(let i=0;i<n;i++){ const t=t0+i*(0.07+Math.random()*0.11), d=0.05+Math.random()*0.07;
+      grain(t, vol*(0.7+Math.random()*0.6), 3200+Math.random()*2800, 1.0, d);
+      for(const det of [1,1.013]){                       // two detuned squares: the buzz of an arc
+        const o=actx.createOscillator(); o.type='square';
+        const f=(170+Math.random()*240)*det;
+        o.frequency.setValueAtTime(f,t);
+        o.frequency.linearRampToValueAtTime(f*(0.7+Math.random()*0.7), t+d);
+        const g=actx.createGain(); g.gain.setValueAtTime(0.0001,t);
+        g.gain.exponentialRampToValueAtTime(vol*0.5,t+0.006);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+        o.connect(g).connect(sfxBus); o.start(t); o.stop(t+d+0.02); } }
+    const o=actx.createOscillator(); o.type='sawtooth';  // the thrum underneath
+    o.frequency.setValueAtTime(58,t0); o.frequency.exponentialRampToValueAtTime(41,t0+0.55);
+    const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=220;
+    const g=actx.createGain(); g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(vol*0.45,t0+0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+0.6);
+    o.connect(lp).connect(g).connect(sfxBus); o.start(t0); o.stop(t0+0.65); }
+  // where you have to be standing to hear it: across the bridge (its deck ends at z -15.52),
+  // on the approach in front of the run-down house (its front wall is z -21.40)
+  const ZAP_ZONE=[16.6,25.4,-21.6,-15.2];
+  let zapTimer=25+Math.random()*20;
+
+  // ── PER FRAME. Distance fades and the two scheduled sounds. Everything is measured from the
+  // PLAYER, not the camera, so swinging the camera around does not change what you hear.
+  const RDH_RECT=[16.28,25.09,-30.32,-21.40];        // the run-down house's own footprint
+  function nearRect(r,x,z){ return Math.hypot(Math.max(r[0]-x,0,x-r[1]), Math.max(r[2]-z,0,z-r[3])); }
+  const fall=(d,near,far)=>d<=near?1:d>=far?0:(1-(d-near)/(far-near));
+  function audioFrame(dt){
+    if(!actx||!sndOn||actx.state!=='running') return;
+    const px=player.position.x, pz=player.position.z;
+    // RIVER: silent past 26 units, full (but never loud) with your feet in the shallows, and
+    // everything between is a straight ramp, so walking toward it swells and walking off fades.
+    if(river){ const d=riverProj(px,pz)[0];
+      river.set(mode==='hub' ? fall(d,2.2,26)*(0.55+0.45*fall(d,2.2,10)) : 0); }
+    // BIRDS: a call every 3.5 to 10 seconds. They hold at full through the day, START DYING DOWN
+    // AT SUNSET (the evening keyframe is dayT 0.5) and are gone well before the night keyframe at
+    // 0.75, then come back at first light. The old curve peaked at midday and was already down to
+    // 0.28 by sunset, so they faded through the afternoon instead of holding and then dropping.
+    const sm=(a,b,x)=>{ const u=Math.max(0,Math.min(1,(x-a)/(b-a))); return u*u*(3-2*u); };
+    const day = dayT<0.50 ? 1                                   // morning through sunset: full
+              : dayT<0.70 ? 1-sm(0.50,0.70,dayT)                // sunset into dusk: dying down
+              : dayT<0.93 ? 0                                   // night: silent
+              : sm(0.93,1.00,dayT);                             // first light: back
+    birdTimer-=dt;
+    if(birdTimer<=0){ birdTimer=3.5+Math.random()*6.5; if(day>0.12) bird(0.030*day); }
+    // THE RUN-DOWN HOUSE creaks every 7 to 17 seconds, and only when you are close enough to
+    // hear it: full at the walls, nothing past 24 units.
+    creakTimer-=dt;
+    if(creakTimer<=0){ creakTimer=7+Math.random()*10;
+      const v=fall(nearRect(RDH_RECT,px,pz),1.5,24);
+      if(v>0.05 && mode==='hub') creak(0.055*v); }
+    // THE CHEST'S ARC. The countdown runs all the time, but it only ever FIRES while you are
+    // standing on the approach in front of the run-down house, so the sound belongs to that spot
+    // and is never heard anywhere else. Miss the window and it comes back round in a few seconds
+    // rather than making you wait another two minutes.
+    zapTimer-=dt;
+    if(zapTimer<=0){
+      const inZone = px>ZAP_ZONE[0] && px<ZAP_ZONE[1] && pz>ZAP_ZONE[2] && pz<ZAP_ZONE[3];
+      if(inZone && mode==='hub'){ zap(0.185); zapTimer=105+Math.random()*30; }
+      else zapTimer=7;
+    }
+    // inside a portal menu the world is behind glass: duck the bed, keep it turning
+    ambBus.gain.setTargetAtTime(mode==='hub'?1:0.35, actx.currentTime, 0.3);
+  }
 
   // ── controls ──
-  const keys={}; let camYaw=0.62, camPitch=0.2, camDist=5.0;   // closer, lower third-person orbit
+  const keys={}; let camYaw=0, camPitch=0.24, camDist=8.45;   // opening shot: straight down the path from the spawn, figure small in frame
   addEventListener('keydown', e=>{ const k=e.key.toLowerCase();
-    if(k==='escape'){ if(viewerOpen) closeViewer(); else if(mode==='menu') exitPortal(); return; }
-    if(k==='e'){ if(mode==='hub' && nearPortal && !fading) enterPortal(nearPortal); return; }
+    if(k==='q'){ if(viewerOpen) closeViewer(); else if(mode==='menu') exitPortal(); return; }
+    if(k==='t'){ if(mode==='hub' && !fading && tentArms.length){ tentOn=!tentOn;
+      if(typeof brickSnap==='function') brickSnap(0.16, tentOn); } return; }
+    if(k==='e'){ if(mode==='hub' && nearPortal && !fading) enterPortal(nearPortal);
+      else if(mode==='hub' && nearChest && !fading) inspectChest(); return; }
     if(viewerOpen){ if(k==='arrowleft'){ stepShot(-1); return; } if(k==='arrowright'){ stepShot(1); return; } }
     if(mode==='menu' && !viewerOpen){ if(k==='arrowleft'||k==='a'){ menuPan=clampPan(menuPan-PGAP); return; }
       if(k==='arrowright'||k==='d'){ menuPan=clampPan(menuPan+PGAP); return; } }
@@ -1562,7 +3052,8 @@
     camDist=Math.max(3,Math.min(16,camDist+e.deltaY*0.01)); },{passive:true});
   // control panel shows first; Enter dismisses it
   const startBtn=document.getElementById('startBtn');
-  if(startBtn) startBtn.addEventListener('click',()=>{ document.getElementById('controls').classList.add('hide'); initAudio(); });
+  let entered=false;   // the spawn greeting bubble waits for this so you watch it build
+  if(startBtn) startBtn.addEventListener('click',()=>{ document.getElementById('controls').classList.add('hide'); initAudio(); entered=true; });
 
   // ── loop: LEGO waddle (fused-leg minifig) + hop ──
   const clock=new THREE.Clock();
@@ -1615,22 +3106,29 @@
       shL.rotation.x  = -sw*0.85*(1-jumpPose) - 0.6*jp; // opposite arm back
       shR.rotation.x  =  sw*0.85*(1-jumpPose) + 0.6*jp; // and the other arm up/forward
     }
-    if(grounded&&moving&&((prevSin<0&&si>=0)||(prevSin>0&&si<=0))) tick(speed);
+    if(grounded&&moving&&((prevSin<0&&si>=0)||(prevSin>0&&si<=0)))
+      tick(speed, surfaceAt(player.position.x, player.position.z));
     prevSin=si;
     // NABU crystal idles with a slow spin so it reads as alive/interactive
     if(window.__props && window.__props.crystal) window.__props.crystal.rotation.y += dt*0.8;
     // ── ruins door teleporter + portal proximity + contextual prompt ──
+    skyFollow(camera);        // the sky rides with the camera, so its horizon is the real one
     ruinsDoorTeleport();
+    updateBubbles(dt);        // proximity-built LEGO title bubbles over each structure
+    updateTentacles(dt);      // the four arms creeping out of the player's back
+    audioFrame(dt);           // wind/birds bed, river swell, the run-down house creaking
     if(!fading){
       nearPortal = (mode==='hub') ? portalAt(player.position.x, player.position.z, player.position.y) : null;
+      nearChest = (mode==='hub' && !nearPortal) ? chestAt(player.position.x, player.position.z) : false;
       let msg='';
       if(viewerOpen) msg='';
       else if(mode==='menu') msg=IS_TOUCH
         ? ((activePortal&&PORTALS[activePortal].panMax>0) ? 'Tap a project &nbsp;·&nbsp; Drag to browse' : 'Tap a project')
         : ((activePortal&&PORTALS[activePortal].panMax>0)
-          ? 'Click a project &nbsp;·&nbsp; Drag or scroll to browse &nbsp;·&nbsp; <b>Esc</b> to leave'
-          : 'Click a project &nbsp;·&nbsp; <b>Esc</b> to leave');
-      else if(nearPortal) msg=IS_TOUCH ? 'Enter '+PORTALS[nearPortal].label : 'Press <b>E</b> &nbsp;·&nbsp; Enter '+PORTALS[nearPortal].label;
+          ? 'Click a project &nbsp;·&nbsp; Drag or scroll to browse &nbsp;·&nbsp; <b>Q</b> to leave'
+          : 'Click a project &nbsp;·&nbsp; <b>Q</b> to leave');
+      else if(nearPortal) msg=IS_TOUCH ? 'Enter' : 'Press <b>E</b> &nbsp;·&nbsp; Enter';   // the place's NAME is on its title bubble now
+      else if(nearChest) msg=IS_TOUCH ? 'Inspect' : 'Press <b>E</b> &nbsp;·&nbsp; Inspect';
       if(msg){ promptEl.innerHTML=msg; promptEl.classList.add('on'); } else promptEl.classList.remove('on');
       if(IS_TOUCH){ btnAct.classList.toggle('on', mode==='hub'&&!!nearPortal);
         btnBack.classList.toggle('on', mode==='menu'&&!viewerOpen); }
@@ -1644,10 +3142,14 @@
         pp[i].position.x=rel; pp[i].position.z=-Math.min(3.0,Math.abs(rel)*0.43);
         pp[i].rotation.y=-Math.max(-0.5,Math.min(0.5,rel*0.10));
         pp[i].position.y=Math.sin(tt*1.1+i*0.7)*0.05; }
+      if(PIPE && renderer.toneMapping!==THREE.ACESFilmicToneMapping) renderer.toneMapping=THREE.ACESFilmicToneMapping;
+      renderer.setRenderTarget(null);
       renderer.setClearColor(0x000000,0); renderer.render(menuScene, menuCam);
     } else {
       key.position.set(player.position.x+SUN_OFF[0],SUN_OFF[1],player.position.z+SUN_OFF[2]); key.target.position.copy(player.position); key.target.updateMatrixWorld();
-      if(window.__FC){ const f=window.__FC; camera.position.set(f.eye[0],f.eye[1],f.eye[2]); camera.lookAt(f.look[0],f.look[1],f.look[2]); renderer.setClearColor(0x0c1120,1); renderer.render(scene,camera); return; }
+      if(PIPE && renderer.toneMapping!==THREE.NoToneMapping) renderer.toneMapping=THREE.NoToneMapping;
+      if(window.__FC){ const f=window.__FC; camera.position.set(f.eye[0],f.eye[1],f.eye[2]); camera.lookAt(f.look[0],f.look[1],f.look[2]);
+        if(PIPE){ PIPE.render(); return; } renderer.setClearColor(0x0c1120,1); renderer.render(scene,camera); return; }
       if(camAnim){ camAnim.t=Math.min(1,camAnim.t+dt/camAnim.dur);
         const e=camAnim.t<0.5?2*camAnim.t*camAnim.t:1-Math.pow(-2*camAnim.t+2,2)/2;
         camera.position.lerpVectors(camAnim.p0,camAnim.p1,e); camLook.lerpVectors(camAnim.l0,camAnim.l1,e); camera.lookAt(camLook);
@@ -1664,7 +3166,8 @@
         camera.position.lerp(_v.set(cx, player.position.y+0.6+vd, cz), 0.2);
         camLook.set(player.position.x, player.position.y+0.95, player.position.z); camera.lookAt(camLook);
       }
-      renderer.setClearColor(0x0c1120,1); renderer.render(scene, camera);
+      if(PIPE) PIPE.render();
+      else { renderer.setClearColor(0x0c1120,1); renderer.render(scene, camera); }
     }
   }
   // ── DEBUG (temporary — removed before finalize): drive camera/player from the console for placement
@@ -1674,11 +3177,17 @@
     get time(){return dayT}, set time(v){dayT=v; applyTOD();},
     tp(x,z){ player.position.x=x; player.position.z=z; velX=velZ=0; },
     step(dt){ frame(Math.min(dt||0.033,0.05)); },   // manual frame pump for headless verification (rAF pauses in hidden panes)
-    blocked: blockedAt };
+    blocked: blockedAt, portalAt, shopPad, pipe:PIPE,
+    get upCells(){ return ruinsUpCells.size; },
+    upAt:(x,z)=>ruinsUpCells.has(floorKey(x,z)),
+    surfaceAt:(x,z)=>surfaceAt(x,z),
+    get audio(){ return {ctx:actx, master, ambBus, sfxBus, river, on:sndOn, tick, creak, bird,
+      brickSnap, doorbell, doorOpen, zap}; } };
   function loop(){ requestAnimationFrame(loop); frame(Math.min(clock.getDelta(),0.05)); }
   loop();
   addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
-    menuCam.aspect=innerWidth/innerHeight; menuCam.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+    menuCam.aspect=innerWidth/innerHeight; menuCam.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight,false);
+    if(PIPE) PIPE.setSize(); });
   </script>
 </body>
 </html>

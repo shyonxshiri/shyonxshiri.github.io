@@ -204,6 +204,97 @@
         "--strictPort"
       ],
       "port": 4321
+    },
+    {
+      "name": "dev-fog2",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5441",
+        "--strictPort"
+      ],
+      "port": 5441
+    },
+    {
+      "name": "dev-path",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5461",
+        "--strictPort"
+      ],
+      "port": 5461
+    },
+    {
+      "name": "dev-water",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5481",
+        "--strictPort"
+      ],
+      "port": 5481
+    },
+    {
+      "name": "dev-brows",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5501",
+        "--strictPort"
+      ],
+      "port": 5501
+    },
+    {
+      "name": "dev-bubble",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5521",
+        "--strictPort"
+      ],
+      "port": 5521
+    },
+    {
+      "name": "dev-portal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5541",
+        "--strictPort"
+      ],
+      "port": 5541
+    },
+    {
+      "name": "dev-render",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5561",
+        "--strictPort"
+      ],
+      "port": 5561
     }
   ]
 }
