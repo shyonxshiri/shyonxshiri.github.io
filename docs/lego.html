@@ -5053,7 +5053,7 @@
   // Four states, because what the keys do changes: locked, unlocked but not worn, worn, flying.
   // Space is still just the hop throughout, it only goes higher in the suit.
   const HINT_SUITOFF='<b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; <b>T</b> for the suit &nbsp;·&nbsp; <b>R</b> leave';
-  const HINT_SUIT='<b>WASD</b> walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; <b>F</b> to fly &nbsp;·&nbsp; <b>T</b> to change &nbsp;·&nbsp; <b>R</b> leave';
+  const HINT_SUIT='<b>WASD</b> walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> jump to fly &nbsp;·&nbsp; <b>T</b> to change &nbsp;·&nbsp; <b>R</b> leave';
   const HINT_FLY ='<b>W</b> flies where you aim &nbsp;·&nbsp; drag to steer &nbsp;·&nbsp; <b>Space</b> up &nbsp;·&nbsp; <b>Shift</b> down &nbsp;·&nbsp; <b>F</b> to land &nbsp;·&nbsp; <b>R</b> leave';
   function syncPowerHUD(){
     const hintEl=document.querySelector('.hint');
@@ -5101,10 +5101,12 @@
     const len3=Math.sqrt(mV.x*mV.x+mV.z*mV.z+mvY*mvY);
     const mag=Math.min(1,len3), running=!flying && (!!keys['shift']||joyRun);   // in the air Shift is descend, not run
     // ── TOUCH TAKES OFF FROM THE JUMP PAD, because a phone has no F key and the FLY pill is gone.
-    // On a keyboard F flies and Space is the leap. This sits ABOVE the flight branch on purpose:
-    // `coiling` below reads takeT and setFly is what sets it, so done any later the launch would
-    // skip its own coil on the frame it fired.
-    if(IS_TOUCH && jumpQ && grounded && heroOn && !flying && mode==='hub' && !fading){ setFly(true); jumpQ=false; }
+    // ── SPACE TAKES OFF, on every device. In the suit a jump from the ground IS the launch: he
+    // coils and goes, no double tap and no separate leap. F still toggles flight and is how you
+    // land, and HERO_LEAP below is what is left for the cases where flight is not allowed.
+    // This sits ABOVE the flight branch on purpose: `coiling` below reads takeT and setFly is what
+    // sets it, so done any later the launch would skip its own coil on the frame it fired.
+    if(jumpQ && grounded && heroOn && !flying && mode==='hub' && !fading){ setFly(true); jumpQ=false; }
     const coiling = flying && takeT>TAKE_T-TAKE_COIL;   // planted, loading his legs: he goes nowhere yet
     const topSpd=coiling?0:(flying?FLY_SPD:(running?RUN:WALK));
     let dX=0,dZ=0,dY=0;
