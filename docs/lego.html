@@ -17,7 +17,12 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;overflow:hidden;background:#12151c;font-family:'Nunito',sans-serif;color:#f6f4ef;}
-  canvas{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none;}
+  /* user-select/user-drag: a drag on a bare canvas otherwise starts the BROWSER's own gesture
+     (a text selection across the HUD, or a native drag of the canvas as an image), and while
+     that gesture owns the pointer the page stops receiving mousemove, so the camera freezes
+     mid-pan. See the mousedown handler, which preventDefaults for the same reason. */
+  canvas{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none;
+    user-select:none;-webkit-user-select:none;-webkit-user-drag:none;}
   .hud{position:fixed;z-index:20;pointer-events:none;}
   .tl{top:20px;left:24px;}
   .tl .t{font-family:'Fredoka',sans-serif;font-weight:700;font-size:27px;letter-spacing:.5px;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.35);}
@@ -1048,7 +1053,23 @@
   // pavement. Dead straight, no wander, for the same reason the driveway is: it is a poured slab
   // butting a plate edge, not a gravel pad. It carries no scattered bits either, so it reads as
   // the same concrete the cars already stand on rather than as another gravel walk.
-  function carPad(x,z){ return x>43.15 && x<57.37 && z>7.03 && z<11.9745; }
+  // z0 is 6.30, NOT the 7.03 it started at. The plate layer does not end at 7.2845 all the way
+  // along: that is only true of the mask's row e, x 50.72..57.37. West of that, across rows a to
+  // d, the mask reads '.' at both gi 36 and 37, so the model's own plate stops at z 6.545 and
+  // leaves 0.74 of open ground, which the code ground then grassed. That was a green strip 7.4
+  // long lying against the driveway exactly where the Porsche parks. 6.30 covers it and keeps the
+  // documented quarter-stud overrun INTO the plate edge; east of 50.72 the overrun simply runs
+  // under a plate that is already there, and those cells are on the mask so the model still wins.
+  function carPad(x,z){ return x>43.15 && x<57.37 && z>6.30 && z<11.9745; }
+  // THE PLATE'S WEST EDGE. HP_X0 is 43.3286 and every pad along this stretch deliberately overruns
+  // west to 43.15 so the quarter-stud the two grids are out of phase by reads as pavement rather
+  // than a green hairline. Between the drive channel (which stops at z 3.11) and the car pad
+  // (which now starts at 6.30) nothing did, so a half-stud of grass ran down the plate edge for
+  // three units, right across the mouth of the driveway in front of the Porsche's nose. This is
+  // that same overrun and nothing more: it is deliberately NOT part of `gritty`, because the slab
+  // it butts carries no scattered bits and an edge that gravelled on its own would give the seam
+  // straight back.
+  function plateEdge(x,z){ return x>43.15 && x<43.34 && z>3.11 && z<6.30; }
 
   // What is under a given spot: 'grey' (gravel walk, pads, paths), 'green' (grass) or 'water'.
   // Filled in by the ground loader from the SAME predicates the tiles are laid from, so the
@@ -1147,6 +1168,7 @@
       if(mansionDrive(x,z)) return true;                                           // the channel the mansion's own plates leave open beside the Porsche
       if(gardenTrack(x,z)) return true;                                            // the dirt track behind the mansion (recoloured below, same plates)
       if(carPad(x,z)) return true;                                                 // the second parking slab on the cars' left
+      if(plateEdge(x,z)) return true;                                              // the half-stud seam down the plate's west edge
       return false; }                                                              // the garden itself lays no grey at all: it stands on the lawn
     // THE MANSION LAYS ITS OWN GROUND. modern_house.glb ships its plate layer with it
     // (door path, driveway, patio, interior floor) and deliberately leaves gaps open so the
@@ -4847,13 +4869,26 @@
   const pitchSens=()=>SENS*(flying?PITCH_FLY_SENS:1);
   const clampPitch=v=>Math.max(flying?PITCH_UP:0.06, Math.min(1.2, v));
   let drag=false,lx=0,ly=0,mdrag=false,mMoved=0; const pt=e=>{const t=(e.touches&&e.touches[0])||e;return{x:t.clientX,y:t.clientY};};
-  canvas.addEventListener('mousedown',e=>{ initAudio(); const p=pt(e); lx=p.x; ly=p.y;
+  // preventDefault stops the browser starting a selection or a native canvas drag, either of
+  // which swallows the mousemove stream and leaves the camera stuck part way through a pan.
+  canvas.addEventListener('mousedown',e=>{ e.preventDefault(); initAudio(); const p=pt(e); lx=p.x; ly=p.y;
     if(mode==='hub') drag=true; else if(mode==='menu'&&!viewerOpen){ mdrag=true; mMoved=0; } });
   addEventListener('mousemove',e=>{ const p=pt(e);
+    // A mouseup released outside the window never reaches us and `drag` stays latched, so the
+    // camera goes on following a mouse with no button held. e.buttons is the authoritative answer
+    // to "is one still down", so a latched drag clears itself on the very next move. Gated on
+    // lookId being null because a touch look-drag shares `drag` and synthesises mousemove with
+    // buttons 0, which would otherwise cancel every drag on a phone.
+    if(lookId===null && (drag||mdrag) && e.buttons===0){ drag=false; mdrag=false; lx=p.x; ly=p.y; return; }
     if(mdrag&&mode==='menu'){ mMoved+=Math.abs(p.x-lx); menuPan=clampPan(menuPan-(p.x-lx)*0.011); lx=p.x; ly=p.y; return; }
-    if(!drag||mode!=='hub'||fading||camAnim) return;
+    // The anchor is kept current even on the frames the camera is NOT being driven. Returning
+    // without it leaves lx/ly wherever the pointer was when a fade or a scripted camera move
+    // began, and the drag that resumes afterwards snaps by the whole distance travelled since.
+    if(!drag||mode!=='hub'||fading||camAnim){ lx=p.x; ly=p.y; return; }
     camYaw-=(p.x-lx)*SENS; camPitch=clampPitch(camPitch+(p.y-ly)*pitchSens()); lx=p.x; ly=p.y; });
   addEventListener('mouseup',()=>{ drag=false; mdrag=false; });
+  // alt-tabbing away mid-drag never delivers the mouseup either
+  addEventListener('blur',()=>{ drag=false; mdrag=false; });
   // touch look-drag tracks its own touch identifier so the joystick finger never steals the camera
   let lookId=null;
   canvas.addEventListener('touchstart',e=>{ initAudio(); if(lookId!==null) return; const t=e.changedTouches[0];

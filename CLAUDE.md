@@ -994,6 +994,27 @@ and 7 staged Blender frames showing the structures part-built.
   the bbox recentre cannot move them; Blender reads that frame as `(x, -z, y)`.
   `scratchpad/verify_tint.js` runs the shipped block against the real geometry in the real vendored
   three.js, on a rotated and scaled holder, and asserts the same 237,902 triangles.
+- **The camera froze mid-pan because the BROWSER was taking the drag.** `lego.html` drags on a bare
+  canvas, and the mousedown handler did not `preventDefault` nor did the canvas set `user-select`,
+  so a drag could start a text selection across the HUD or a native drag of the canvas as an image.
+  While that gesture owns the pointer the page stops receiving `mousemove` and the camera stops
+  dead until you release. Two more latches in the same handler: a `mouseup` released outside the
+  window never arrives, so `drag` stayed true and the camera followed an unpressed mouse (now
+  cleared off `e.buttons===0`, gated on `lookId===null` so a touch look-drag, which shares `drag`
+  and synthesises mousemove with buttons 0, is not cancelled on every move); and the early return
+  for `fading`/`camAnim` left `lx`/`ly` stale, so the drag that resumed afterwards snapped by the
+  whole distance travelled meanwhile. `blur` clears the drag too.
+- **The mansion's plate does NOT end at z 7.2845 all the way along.** That is true only of mask row
+  e, x 50.72..57.37. Across rows a to d the mask reads '.' at gi 36 AND 37, so the model's plate
+  stops at z 6.545 and leaves 0.74 of open ground that the code ground grassed: a green strip 7.4
+  long lying against the driveway exactly where the Porsche parks. `carPad`'s z0 went 7.03 -> 6.30
+  to cover it. A second seam ran down the plate's WEST edge: every pad along that stretch overruns
+  to x 43.15, but between the drive channel (z<3.11) and the car pad (z>6.30) nothing did, leaving
+  a half-stud of grass for three units across the driveway mouth. `plateEdge` is that same overrun,
+  and it is deliberately kept OUT of `gritty` so it does not gravel against the smooth slab.
+  Both were found by rasterizing the shipped predicates to an ASCII plan (`scratchpad/plan.js`,
+  which pulls `onHousePlate` / `mansionDrive` / `carPad` / `plateEdge` / `onWalk` straight out of
+  the file by content, not by line number), never by eye.
 - **Both cars are recoloured at load, and `tintByBoxes()` (above `loadProp`) is the shared machine
   for the parts of it that are not whole-material.** Both builds are joined by material, so an
   interior piece is not its own mesh: the helper picks triangles by centroid against MEASURED boxes
