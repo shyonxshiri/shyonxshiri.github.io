@@ -309,9 +309,18 @@ const GLOBAL_CSS = `
     0%, 100% { transform: translateY(0); opacity: .9; }
     55% { transform: translateY(7px); opacity: .45; }
   }
+  /* The chapter heading, in Bebas Neue: the same display face the Contact and About
+     headlines use, so the storyboard reads as part of the site rather than a fourth
+     voice. Bebas is condensed and caps only, so it carries a much larger size than the
+     mono it replaced, on a tight 0.95 line and em tracking that scales with it.
+     Deliberately still the question ("What it is"), never an answer, so the body below
+     is what actually tells you anything. */
   .ss-story-kicker {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    /* !important is required: the APPLE-STYLE PASS below sets font-family on * with
+       !important, which otherwise beats this rule and every other face on the site. */
+    font-family: 'Bebas Neue', sans-serif !important;
+    font-size: clamp(40px, 5.4vw, 76px);
+    line-height: 0.95; letter-spacing: 0.04em; text-transform: uppercase;
     color: var(--sky);
   }
   .ss-frame {
@@ -592,7 +601,7 @@ const GLOBAL_CSS = `
     }
     /* the storyboard's entrances are inline transforms from framer-motion, which the rules
        above cannot reach: pin every part at its finished state instead */
-    .ss-story, .ss-story * { opacity: 1 !important; transform: none !important; }
+    .ss-story, .ss-story * { opacity: 1 !important; transform: none !important; clip-path: none !important; }
   }
 `;
 
@@ -1013,12 +1022,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {/* Chapter 01 · WHAT */}
           <StoryChapter
             kicker="01 · What it is"
-            title="The portfolio as a 3D environment."
             first
-            hero
-            heroLabel={["Overview", "In engine"]}
-            img="/assets/story/story_aerial_town.jpg"
-            imgAlt="Aerial view of the LEGO town at dusk: the coffee shop, the run down cottage, the river and bridge, and the modern house"
             body="The environment is a small town on a single LEGO baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after myself. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Personal Projects, About, and NABU."
           />
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
@@ -1037,46 +1041,43 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {/* Chapter 02 · WHY */}
           <StoryChapter
             kicker="02 · Why I made it"
-            title="It doubles as a work sample."
             body="The environment is a work sample in its own right. Building it required the same disciplines the portfolio presents: 3D modeling, engineering, and web development. It also traces back to where my work began, stop motion films built from LEGO, and to the technologies I have taken on since."
           />
-          <StoryFrame num="FR 05" scene="Lighting" src="/assets/story/story_sunset.jpg"
+          <StoryFrame anim="slideL" num="FR 05" scene="Lighting" src="/assets/story/story_sunset.jpg"
             caption="The run down cottage and the river crossing at dusk. Sky, fog, sun color, exposure, and lamp intensity are interpolated continuously across the cycle rather than switched between presets." />
 
           {/* Chapter 03 · HOW */}
           <StoryChapter
             kicker="03 · How I made it"
-            title="From modeled bricks to a running engine."
             body="Every structure was assembled from individual bricks in Blender, using my own builds. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
           />
-          <StoryFrame num="FR 06" scene="UV and texturing" src="/assets/story/story_blender_skull_uv.jpg"
+          <StoryFrame anim="courses" num="FR 06" scene="UV and texturing" src="/assets/story/story_blender_skull_uv.jpg"
             caption="The skull prop in the UV Editing workspace. On the left the mesh is unwrapped flat over its painted texture, on the right the same texture is shown mapped onto the model. Every printed detail in the world is applied this way." />
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 07" scene="Assembly" src="/assets/story/story_blender_shop_assembly.jpg"
+            <StoryFrame anim="courses" num="FR 07" scene="Assembly" src="/assets/story/story_blender_shop_assembly.jpg"
               caption="The coffee shop part way up: walls built to the halfway course, the roof and awning not yet placed, the umbrella pole still bare. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." />
-            <StoryFrame num="FR 08" scene="Sculpting" src="/assets/story/story_blender_hair_sculpt.jpg"
+            <StoryFrame anim="courses" num="FR 08" scene="Sculpting" src="/assets/story/story_blender_hair_sculpt.jpg"
               caption="The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 09" scene="Figure assembly" src="/assets/story/story_blender_figure_exploded.jpg"
+            <StoryFrame anim="courses" num="FR 09" scene="Figure assembly" src="/assets/story/story_blender_figure_exploded.jpg"
               caption="The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." />
-            <StoryFrame num="FR 10" scene="Mesh editing" src="/assets/story/story_blender_ruins_edit.jpg"
+            <StoryFrame anim="courses" num="FR 10" scene="Mesh editing" src="/assets/story/story_blender_ruins_edit.jpg"
               caption="The ruins in Edit Mode, built up to the doorway arch with the upper storey still to come. The highlighted course is the one going on next. This export was later edited at the mesh level to remove extra columns and flower petals." />
           </div>
           <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 11" scene="Materials" src="/assets/story/story_blender_house_nodes.jpg"
+            <StoryFrame anim="courses" num="FR 11" scene="Materials" src="/assets/story/story_blender_house_nodes.jpg"
               caption="The modern house with the ground floor closed and the upper storey just started. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." />
-            <StoryFrame num="FR 12" scene="Render preview" src="/assets/story/story_blender_cottage_render.jpg"
+            <StoryFrame anim="courses" num="FR 12" scene="Render preview" src="/assets/story/story_blender_cottage_render.jpg"
               caption="The run down cottage with its walls finished and the roof not yet on, in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." />
           </div>
 
           {/* Closing CTA */}
           <StoryChapter
             kicker="04 · Try it"
-            title="The live build."
             body="The full version runs on this site, with the day cycle and all four portals active."
           />
-          <StoryFrame num="FR 13" scene="Live build" src="/assets/story/story_aerial_sunset.jpg"
+          <StoryFrame anim="push" num="FR 13" scene="Live build" src="/assets/story/story_aerial_sunset.jpg"
             caption="The current build, running in-engine: the town from above at sunset, lampposts coming on. The entry button is below." />
           <motion.div
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
@@ -1148,7 +1149,42 @@ const sbShot: Variants = {                        // stills: fade, easing out of
   show: { opacity: 1, scale: 1, transition: { duration: 0.95, ease: SB_EASE } },
 };
 
-function StoryFrame({ num, scene, src, caption }: { num: string; scene: string; src: string; caption: string }) {
+/* ── PER-CHAPTER PHOTO SIGNATURES ───────────────────────────────────────────────────
+   Each chapter brings its stills in its own way, so scrolling the storyboard reads as
+   four passages rather than one effect repeated thirteen times. Only the PHOTOS differ:
+   head strips and captions keep the shared slide/rise above, and that common rhythm is
+   what holds the chapters together while the images behave differently.
+   The frame panel is overflow:hidden, so a still that slides or is clipped moves inside
+   its own window rather than spilling over the border. */
+// Quantizes a tween into n held intervals stepping 0 -> 1. Dividing by n-1 (not n) is
+// load bearing: with /n the value only reaches 1 at exactly t === 1, a single instant that
+// keyframe sampling skips, which left every still clipped a fifth short of the top forever.
+const stepEase = (n: number) => (t: number) => Math.min(1, Math.floor(t * n) / (n - 1));
+
+const shotEstablish: Variants = {                 // 01 What it is: rises and settles. The calm opening read.
+  hidden: { opacity: 0, y: 42, scale: 1.04 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 1.0, ease: SB_EASE } },
+};
+const shotSlideL: Variants = {                    // 02 Why I made it: drives in from the left across its window
+  hidden: { opacity: 0, x: "-26%" },
+  show: { opacity: 1, x: 0, transition: { duration: 0.85, ease: SB_EASE } },
+};
+const shotSlideR: Variants = {                    // the mirrored half, for any future paired row in that chapter
+  hidden: { opacity: 0, x: "26%" },
+  show: { opacity: 1, x: 0, transition: { duration: 0.85, ease: SB_EASE } },
+};
+const shotCourses: Variants = {                   // 03 How I made it: uncovered bottom to top in five held
+  hidden: { clipPath: "inset(100% 0% 0% 0%)" },   // courses, the way a build goes on course by course
+  show: { clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 1.05, ease: stepEase(6) } },
+};
+const shotPush: Variants = {                      // 04 Try it: a slow push in on the closing shot
+  hidden: { opacity: 0, scale: 1.11 },
+  show: { opacity: 1, scale: 1, transition: { duration: 1.2, ease: SB_EASE } },
+};
+const SHOTS = { establish: shotEstablish, slideL: shotSlideL, slideR: shotSlideR, courses: shotCourses, push: shotPush };
+type ShotAnim = keyof typeof SHOTS;
+
+function StoryFrame({ num, scene, src, caption, anim = "establish" }: { num: string; scene: string; src: string; caption: string; anim?: ShotAnim }) {
   return (
     <motion.figure
       className="ss-frame"
@@ -1158,7 +1194,7 @@ function StoryFrame({ num, scene, src, caption }: { num: string; scene: string; 
       viewport={{ once: true, amount: 0.25 }}
     >
       <motion.div className="ss-frame-head" variants={sbSlide}><span>{num}</span><span>{scene}</span></motion.div>
-      <motion.div className="ss-frame-shot" variants={sbShot}>
+      <motion.div className="ss-frame-shot" variants={SHOTS[anim]}>
         <img className="ss-frame-img" src={src} alt={scene} loading="lazy" decoding="async" />
       </motion.div>
       <motion.figcaption variants={sbRise}>{caption}</motion.figcaption>
@@ -1167,7 +1203,7 @@ function StoryFrame({ num, scene, src, caption }: { num: string; scene: string; 
 }
 
 /* Storyboard chapter header: mono kicker, display title, serif body */
-function StoryChapter({ kicker, title, body, first, img, imgAlt, hero, heroLabel }: { kicker: string; title: string; body: string; first?: boolean; img?: string; imgAlt?: string; hero?: boolean; heroLabel?: [string, string] }) {
+function StoryChapter({ kicker, body, first, img, imgAlt, hero, heroLabel, anim = "establish" }: { kicker: string; body: string; first?: boolean; img?: string; imgAlt?: string; hero?: boolean; heroLabel?: [string, string]; anim?: ShotAnim }) {
   // hero: the still runs FULL WIDTH under the text, in the same panel treatment as the numbered
   // frames below, instead of sitting in a column beside it. Nothing else on the page competes
   // with it, which is what makes it read as the opening shot.
@@ -1183,21 +1219,13 @@ function StoryChapter({ kicker, title, body, first, img, imgAlt, hero, heroLabel
       <div className={split ? "ss-chapter-split" : undefined}>
         <div>
           <motion.div className="ss-story-kicker" variants={sbSlide}>{kicker}</motion.div>
-          <motion.h2 variants={sbRise} style={{
-            marginTop: 14,
-            fontSize: split ? "clamp(32px, 3.5vw, 50px)" : "clamp(34px, 4.6vw, 62px)",
-            lineHeight: 1.04, letterSpacing: "-0.015em", fontWeight: 700,
-            color: "var(--white)", maxWidth: split ? "none" : 820,
-          }}>
-            {title}
-          </motion.h2>
-          <motion.p variants={sbRise} style={{ marginTop: 20, maxWidth: split ? "none" : 720, fontSize: 18, lineHeight: 1.65, color: "rgba(245,242,237,.78)" }}>
+          <motion.p variants={sbRise} style={{ marginTop: 24, maxWidth: split ? "none" : 720, fontSize: 18, lineHeight: 1.65, color: "rgba(245,242,237,.78)" }}>
             {body}
           </motion.p>
         </div>
         {split && (
           <motion.figure className="ss-chapter-shot" variants={sbShot}>
-            <img src={img} alt={imgAlt || title} loading="lazy" decoding="async" />
+            <img src={img} alt={imgAlt || ""} loading="lazy" decoding="async" />
           </motion.figure>
         )}
       </div>
@@ -1207,8 +1235,8 @@ function StoryChapter({ kicker, title, body, first, img, imgAlt, hero, heroLabel
             <span>{heroLabel ? heroLabel[0] : "Overview"}</span>
             <span>{heroLabel ? heroLabel[1] : "In engine"}</span>
           </motion.div>
-          <motion.div className="ss-frame-shot" variants={sbShot}>
-            <img className="ss-frame-img" src={img} alt={imgAlt || title} decoding="async" />
+          <motion.div className="ss-frame-shot" variants={SHOTS[anim]}>
+            <img className="ss-frame-img" src={img} alt={imgAlt || ""} decoding="async" />
           </motion.div>
         </motion.figure>
       )}

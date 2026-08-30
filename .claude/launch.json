@@ -295,6 +295,32 @@
         "--strictPort"
       ],
       "port": 5561
+    },
+    {
+      "name": "dev-hero",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5581",
+        "--strictPort"
+      ],
+      "port": 5581
+    },
+    {
+      "name": "dev-landing",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5601",
+        "--strictPort"
+      ],
+      "port": 5601
     }
   ]
 }
