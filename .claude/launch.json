@@ -321,6 +321,21 @@
         "--strictPort"
       ],
       "port": 5601
+    },
+    {
+      "name": "dev-lambo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5621",
+        "--strictPort"
+      ],
+      "port": 5621
     }
   ]
 }

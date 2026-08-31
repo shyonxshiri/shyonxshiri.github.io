@@ -194,6 +194,50 @@ precisely what made it wrong: 6.564 x 2.595 x 2.065 against the Porsche's 5.600 
 27% bigger everywhere. It is now `targetLen` 5.1653 (0.29018 / 0.326147 = 0.88971), landing
 5.165 x 2.042 x 1.625, so the two roofs line up and it reads as the shorter build it is (17.8
 stud-pitches to the Porsche's 19.3). Re-measure BOTH pitches after any re-export.
+**The third car is a BLACK Countach with gold rims**, `lamborghini.glb`, on the second car pad at
+`pos [46.92,9.04]`, `rotY` 0, `targetLen` 5.6197, nose down -x like the other two. Its pitch is
+0.342724, and unlike the other two MOCs this build NAMES its parts, so the lattice is fitted rather
+than inferred: dim = N*p over every Plate / Flat Tile / Brick carrying its own stud count gives
+0.342724 across N = 1,2,3,4,6 with 88 inliers. The WHEELS were the independent check and not the
+source: the wheelbase is 3.7675, which is 11 stud pitches to 0.07%. Matching the Porsche's rendered
+0.29018 stud gives 0.846689, so 6.63729 x 0.846689 is `targetLen` 5.6197, landing 5.620 x 2.658 x
+1.707. It is the wider, lower car and that 1.707 is its REAR WING; the glasshouse tops out at 1.594,
+just under the Porsche's roofline. Noses are aligned: x 44.110..49.730 against the Porsche's
+44.11..49.73, z 7.538..10.196, 1.95 clear of the Porsche's flank.
+`scratchpad/lambo/export_lambo.py` axis-aligns and centres it (the nose is DERIVED from the light
+lenses, clear at one end and red at the other, not hardcoded), splits the four wheel-rim tiles onto
+their own material clone `Texture_Rim`, and joins the 254 named parts into one mesh per material:
+14 draw calls, 2.4MB Draco. The colours are done in the LOADER so they stay tunable, and three of
+them are not what they look like.
+· **The model's own `Lego_Black` is NOT black.** It ships as linear 0.00857 / 0.00030 / 0.01600,
+  i.e. sRGB (23, 1, 34), a dark PURPLE with more blue than red and no green. Painting the white
+  with it, which is the read-it-from-the-model rule the Corvette uses, gave a violet car, so
+  `Lego_White`, `346001_-_Plate_1x8_01__0` and `Lego_Black` itself all take real LEGO Black
+  #05131D. `Lego_Black__Wheels` is left alone: a genuinely neutral near-black, correct for tyres.
+· **A third of the white bodywork is a TEXTURE, not a colour.** 13 parts (nose, front fenders,
+  sills, a rear quarter) draw off a shared 2048 atlas of decals printed on white, and no material
+  colour can black those out without multiplying the prints away with them. The atlas is rebuilt by
+  `recolour_atlas.py` as the same decals printed on a BLACK brick, in one line of compositing:
+  `p' = p - (1-a)*(W-B)` with `a = 1 - min(R,G,B)`. Exact at both ends (pure white goes to B, a
+  black print does not move) and continuous between, so every print's antialiased border rolls onto
+  the new black instead of leaving the halo a threshold or a nearest-key snap would. The gold
+  Lamborghini shield and the red flag survive; black-on-white grille prints do not, which is also
+  what a real black printed brick does. THAT SCRIPT'S BLACK AND `lego.html`'S ARE THE SAME #05131D
+  AND MUST MOVE TOGETHER. The rim and the windscreen keep the ORIGINAL atlas, which is the whole
+  reason the rim needed its own material.
+· **The windscreen's transparency was a TRANSMISSION MAP.** Its base alpha is 1.0 across every one
+  of its UVs, and three r128 has no `KHR_materials_transmission`, so exported untouched it is an
+  opaque white slab. The export gives it alphaMode BLEND at 0.25, the alpha this model's own trans
+  bricks carry, and `polish()` then catches it on `m.transparent` and puts it on the ordinary LEGO
+  glass path with every other window in the Realm.
+The rims take gold's REFLECTANCE, not a gold swatch. Above metalness 0.9 the colour stops being a
+diffuse tint and becomes F0, so the value is gold's measured linear 1.00 / 0.71 / 0.29 (`0xFFB54A`
+set RAW, as the Porsche's rim silver is), metalness 0.90, roughness 0.15, envBase 1.15. `#D4AF37`
+read as linear is 0.83 / 0.69 / 0.22, only 1.21 red over green against gold's 1.41, and rendered a
+pale khaki. The gold multiplies the rim's own map, so the printed spokes stay dark rather than being
+painted flat. Verified without a GPU: all 14 primitives are wound WITH their normals (0.00000
+reversed over 474.55 units of area, so no `fixWinding`, the opposite of the Corvette) and the
+baseColorFactors are already LINEAR (so no sRGB conversion, also the opposite of the Corvette).
 The mansion's own materials name its parts: `Wood_ish_thing` #795500 is the wood floor,
 `Dark_grey` the pavement, and `phong11` #65491A the one piece of furniture, an 8x4 stud brown
 table on the ground floor (x 49.86..52.82, z -6.01..-4.52, plate top y 0.6336, stud tops y 0.7276).
@@ -231,7 +275,9 @@ fence's inner face `GDI` `[66.437, 71.740, -1.786, 3.657]`, archway opening z -0
 dirt stops dead in the gate.
 **The second car pad.** `carPad` duplicates the driveway's concrete on the cars' LEFT, which is the
 side on your RIGHT standing in front of them: both cars point their noses down -x, so the car's own
-left and your right are the same side, +z, away from the house. x 43.15..57.37, z 7.03..11.9745.
+left and your right are the same side, +z, away from the house. x 43.15..57.37, z 6.10..11.9745,
+and the Lamborghini parks on it. z0 has moved twice, 7.03 to 6.30 to 6.10; the code comment on
+`carPad` carries the measurement for each move.
 The mansion's plate ends at z 7.2845, so the 0.25 overrun INTO it is the same trick `mansionDrive`
 uses, turning the quarter-stud the two grids are out of phase by from a green hairline into
 pavement. Dead straight and carrying no gravel bits, so it reads as the concrete the cars already
@@ -761,7 +807,7 @@ hairpiece without a reload, which is the only way to tune a piece the pane canno
 
 ---
 
-## 6. Current state (2026-08-29)
+## 6. Current state (2026-08-30)
 
 `docs/` is the build output and is NOT current: the super hero, the tentacle removal and the
 walled garden live in `public/` + `src/` only. Build and deploy when Shyon asks (§4).
@@ -773,7 +819,8 @@ handed out per tree, times three per-piece leaf-colour variants), 804 flower pla
 interior + outer band (`PETAL_HUES` gives each head one flat colour from 5 shades of
 red/blue/yellow, `PETAL_N` decides how many of a plant's 4 stems flower, and the stalk takes one
 green of its own), organic gravel paths, props (wine-red Porsche with silver rims and a peanut-butter interior, the white Corvette C7 Z06
-parked behind it on the mansion driveway, skull, rat, Tardis + NABU crystal, pirate chest + money
+parked behind it on the mansion driveway, a black Lamborghini Countach with gold rims on the second
+car pad beside them, skull, rat, Tardis + NABU crystal, pirate chest + money
 bricks), the day cycle, the render pipeline, the sound layer, the
 title bubbles, mobile touch controls (joystick + jump + contextual pills), and My Lego Super Hero
 behind the pirate chest (suit swap + flight). Flight collision is now per-geometry in three
@@ -861,6 +908,12 @@ and 7 staged Blender frames showing the structures part-built.
   left a hole.
 - Clearing a parent KEEPS the local matrix. Stamp `matrix_world` back after clearing, or the export
   comes out at the parent's scale (once by 136x).
+- **Setting a PARENT's rotation can silently do nothing in a headless open.** `root.rotation_euler`
+  plus `view_layer.update()` never reached the Lamborghini's children: their `matrix_world` stayed
+  at the original orientation, so the car exported at its old 69.96 degree angle and the only tell
+  was an axis-aligned bbox that did not match the measured length. Multiply each mesh's OWN
+  `matrix_world` by the rotation instead. It needs no depsgraph and cannot go stale. Then assert
+  the result off the flattened geometry rather than trusting the operation.
 - Do not Draco-compress skinned meshes; it can mangle joint indices.
 - **A Sketchfab or Mecabricks glb ships UNWELDED, and that silently defeats smooth shading.**
   Every triangle is its own island, so there are no shared edges for a normal to be averaged
@@ -1008,7 +1061,7 @@ and 7 staged Blender frames showing the structures part-built.
   e, x 50.72..57.37. Across rows a to d the mask reads '.' at gi 36 AND 37, so the model's plate
   stops at z 6.545 and leaves 0.74 of open ground that the code ground grassed: a green strip 7.4
   long lying against the driveway exactly where the Porsche parks. `carPad`'s z0 went 7.03 -> 6.30
-  to cover it. A second seam ran down the plate's WEST edge: every pad along that stretch overruns
+  -> 6.10 to cover it and then the stud-centre seam behind it (see the code comment). A second seam ran down the plate's WEST edge: every pad along that stretch overruns
   to x 43.15, but between the drive channel (z<3.11) and the car pad (z>6.30) nothing did, leaving
   a half-stud of grass for three units across the driveway mouth. `plateEdge` is that same overrun,
   and it is deliberately kept OUT of `gritty` so it does not gravel against the smooth slab.

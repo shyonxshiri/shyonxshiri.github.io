@@ -1053,23 +1053,32 @@
   // pavement. Dead straight, no wander, for the same reason the driveway is: it is a poured slab
   // butting a plate edge, not a gravel pad. It carries no scattered bits either, so it reads as
   // the same concrete the cars already stand on rather than as another gravel walk.
-  // z0 is 6.30, NOT the 7.03 it started at. The plate layer does not end at 7.2845 all the way
-  // along: that is only true of the mask's row e, x 50.72..57.37. West of that, across rows a to
-  // d, the mask reads '.' at both gi 36 and 37, so the model's own plate stops at z 6.545 and
-  // leaves 0.74 of open ground, which the code ground then grassed. That was a green strip 7.4
-  // long lying against the driveway exactly where the Porsche parks. 6.30 covers it and keeps the
-  // documented quarter-stud overrun INTO the plate edge; east of 50.72 the overrun simply runs
-  // under a plate that is already there, and those cells are on the mask so the model still wins.
-  function carPad(x,z){ return x>43.15 && x<57.37 && z>6.30 && z<11.9745; }
+  // z0 is 6.10, and it has moved twice: 7.03 to 6.30 to here. The plate layer does not end at
+  // 7.2845 all the way along: that is only true of the mask's row e, x 50.72..57.37. West of
+  // that, across rows a to d, the mask reads '.' at both gi 36 and 37, so the model's own plate
+  // stops at z 6.545 and leaves 0.74 of open ground, which the code ground then grassed. That was
+  // a green strip 7.4 long lying against the driveway exactly where the Porsche parks, and 6.30
+  // covered it. What 6.30 did NOT cover is the SEAM, because a cell counts as pavement only if
+  // its CENTRE passes this test and the stud cells along here are centred at 5.913, 6.283, 6.653.
+  // 6.30 missed the 6.283 row by 0.017. That row is on the mansion's plate, so it takes the
+  // recessed filler below, and a cell on the plate that is NOT grey takes the GREEN one: measured
+  // against the real geometry, the model's own Dark_grey plate ends at z 6.405 and the code's
+  // first grey tile starts at 6.468, and every ray between them came back green at y -0.0793.
+  // That 0.063 was a green hairline running the length of the driveway, stopping dead at 50.72
+  // where row e carries the plate out to 7.2845 and the filler is grey there anyway. 6.10 is the
+  // midpoint of the 5.913..6.283 gap, so it takes that one row and cannot drift onto the next.
+  // The quarter-stud overrun INTO the plate edge is kept; east of 50.72 it simply runs under a
+  // plate that is already there, and those cells are on the mask so the model still wins.
+  function carPad(x,z){ return x>43.15 && x<57.37 && z>6.10 && z<11.9745; }
   // THE PLATE'S WEST EDGE. HP_X0 is 43.3286 and every pad along this stretch deliberately overruns
   // west to 43.15 so the quarter-stud the two grids are out of phase by reads as pavement rather
   // than a green hairline. Between the drive channel (which stops at z 3.11) and the car pad
-  // (which now starts at 6.30) nothing did, so a half-stud of grass ran down the plate edge for
+  // (which now starts at 6.10) nothing did, so a half-stud of grass ran down the plate edge for
   // three units, right across the mouth of the driveway in front of the Porsche's nose. This is
   // that same overrun and nothing more: it is deliberately NOT part of `gritty`, because the slab
   // it butts carries no scattered bits and an edge that gravelled on its own would give the seam
   // straight back.
-  function plateEdge(x,z){ return x>43.15 && x<43.34 && z>3.11 && z<6.30; }
+  function plateEdge(x,z){ return x>43.15 && x<43.34 && z>3.11 && z<6.10; }
 
   // What is under a given spot: 'grey' (gravel walk, pads, paths), 'green' (grass) or 'water'.
   // Filled in by the ground loader from the SAME predicates the tiles are laid from, so the
@@ -3684,6 +3693,102 @@
         CABIN_TINT.forEach(q=>q.color=red.color);
         tintByBoxes(m, CABIN_TINT);
       })();
+    }});
+  // Lamborghini Countach on the SECOND CAR PAD, the concrete slab already laid on the cars' LEFT
+  // (+z, away from the house) and empty until now: carPad, x 43.15..57.37 / z 6.10..11.9745.
+  // Nose down -x like the other two, so all three park facing the same way.
+  //
+  // SIZE IS THE PORSCHE'S BRICK SCALE, the same rule the Corvette is matched by, because these
+  // three are the only things in the Realm at this scale and they are always seen together.
+  // This build is a named-part MOC, so its lattice is MEASURED off the parts rather than guessed:
+  // fitting dim = N*p over every Plate / Flat Tile / Brick whose name carries its own stud count
+  // gives p = 0.342724 across N = 1,2,3,4,6 with 88 inliers (per-N medians 0.34227 / 0.342315 /
+  // 0.34268 / 0.342357 / 0.343905). The WHEELS were the independent check on that, not the source:
+  // the wheelbase measures 3.7675, which is 10.99 stud pitches, i.e. 11 exactly.
+  // The Porsche renders its own 0.349795 stud at 0.29018 (targetLen 5.6 over its 6.750582 length),
+  // so this car wants 0.29018 / 0.342724 = 0.846689, and 6.63729 x 0.846689 gives targetLen 5.6197.
+  // It lands 5.620 long, 2.658 wide, 1.707 tall against the Porsche's 5.600 x 2.303 x 1.617. A
+  // Countach IS the wider, lower car, and that 1.707 is its REAR WING (the Flat Tile 1x8 sitting at
+  // the top of the model); its glasshouse tops out at 1.594, just under the Porsche's roofline, so
+  // the three roofs line up and only the wing stands proud of them, which is correct.
+  // Do not retune targetLen by eye: re-measure the pitch off any re-export (bridge/water_plate trap).
+  //
+  // The export is axis-aligned and centred by scratchpad/lambo/export_lambo.py, which also joins
+  // the 254 named parts into one mesh per material (14 draw calls, 2.06MB Draco). The nose is
+  // carried onto -X in that script and DERIVED there, from the light lenses (clear headlights at
+  // one end, red tail cones at the other) rather than hardcoded, so rotY is 0 here.
+  // Two things were verified against the shipped geometry rather than assumed, and both came out
+  // the opposite way to the Corvette: every one of its 14 primitives is wound WITH its normals
+  // (reversed area fraction 0.00000 over 474.55 units of area), so it needs no fixWinding; and its
+  // baseColorFactors are already LINEAR (Medium Stone Grey 0.30499 against #A0A5A9's linear 0.351,
+  // Dark Stone Grey 0.12744 against 0.150, neither anywhere near their sRGB 0.627 / 0.424), so it
+  // needs no colour-space conversion.
+  //
+  // Parked nose-aligned with the Porsche: x 44.110..49.730 against the Porsche's 44.11..49.73, and
+  // z 7.538..10.196, leaving 1.95 of clear pavement between the two flanks and 1.44 / 1.78 to the
+  // pad's near and far edges. The bay was already clear: treeOK refuses the whole of carPad, and
+  // none of the 407 flower sites falls anywhere near it.
+  loadProp('./assets/lamborghini.glb', {name:'lambo', pos:[46.92,9.04], y:0, rotY:0,
+    targetLen:5.6197, solid:true,
+    onload:(holder,m)=>{
+      // WHITE GOES BLACK, AND SO DOES THE MODEL'S OWN "BLACK", because it is not black. This is
+      // the one place the read-it-from-the-model rule the Corvette uses had to be broken, and the
+      // measurement is why: Lego_Black ships as linear 0.00857 / 0.00030 / 0.01600, which is sRGB
+      // (23, 1, 34), a dark PURPLE with more blue than red and no green at all. Real LEGO Black is
+      // #05131D, i.e. (5, 19, 29), a blue-black. Painting the white with the model's own value
+      // gave a violet car under any strong light, and it was already what the existing trim
+      // rendered as, so all three materials take the real colour and the car comes out one honest
+      // black. Lego_Black__Wheels is left alone: it is a separate, genuinely neutral near-black
+      // (0.00182 / 0.00243 / 0.00273) and tyres are meant to read flatter than bodywork.
+      // THREE materials are white here and missing any of them shows. Lego_White is 92 of the 254
+      // parts; the lone "Plate 1x8" carries a material of its own, 346001_-_Plate_1x8_01__0, which
+      // ships NO baseColorFactor and so renders at the glTF default of pure white; and the 13
+      // PRINTED parts (nose, front fenders, sills, a rear quarter) draw off the shared texture
+      // atlas, which no material colour can black out without multiplying the prints away with it.
+      // Those are handled at export instead, by rebuilding the atlas as the same decals printed on
+      // a black brick (scratchpad/lambo/recolour_atlas.py). THE BLACK BELOW AND THE BLACK BAKED
+      // INTO THAT ATLAS ARE THE SAME #05131D AND MUST BE CHANGED TOGETHER.
+      // Deliberately NOT recoloured: Lego_Transparent_White is the clear headlight LENSES, which
+      // are glass rather than white bricks, and Lego_Medium_Stone_Grey is a light grey that stays
+      // grey. The four white wheel ARCHES are bodywork above the wheels rather than part of the
+      // wheel, so they go black with the rest of the body.
+      const LEGO_BLACK=new THREE.Color(0x05131D).convertSRGBToLinear();
+      m.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)
+        &&/^(Lego_White|Lego_Black$|346001)/.test(o.material.name||''))
+        o.material.color.copy(LEGO_BLACK); });
+      // THE RIMS GO GOLD, AND REFLECTIVE. The four wheel-rim tiles are 90.8% pure white in the
+      // shared 2048 atlas (2658 of their 2928 UVs sample to exactly 1,1,1) with a dark spoke print
+      // over the rest, and they were split onto their own material clone, Texture_Rim, at export
+      // time, because the 13 OTHER parts drawing off that same atlas must not turn gold with them.
+      // The gold is applied as the material COLOUR, which multiplies the map: the white face of the
+      // rim becomes gold and the dark spoke print stays dark, so the printed detail survives
+      // instead of being painted flat, which is what a plain colour without the map would do.
+      // polish() has already given this material LEGO ABS (metalness 0, a 0.38 roughness ceiling,
+      // envBase 0.5), which is right for a brick and wrong for a metal rim, so it is overridden
+      // here exactly as the Porsche's silver rims are, one notch more mirror-like because these are
+      // meant to catch the sky. NOT metalness 1.0: at full metal the diffuse term is gone entirely
+      // and the dark spoke print reads as a hole rather than as shadowed gold, the same call the
+      // hero's armour plate makes at 0.90.
+      // THE VALUE IS GOLD'S REFLECTANCE, not a gold paint swatch, and on a metal that distinction
+      // is the whole difference. Above metalness 0.9 the colour stops being a diffuse tint and
+      // becomes F0, the colour the surface reflects, so what belongs here is the measured linear
+      // reflectance of gold, 1.00 / 0.71 / 0.29. A "gold" hex like #D4AF37 is a sRGB swatch, and
+      // read raw as linear it flattens to 0.83 / 0.69 / 0.22, only 1.21 red over green against
+      // gold's real 1.41: rendered it came out a pale khaki rather than gold. The hex is set RAW,
+      // i.e. treated as linear, which is how the Porsche's rim silver is set, so 0xFFB54A here IS
+      // (1.00, 0.710, 0.290). envBase is written straight onto userData because polish() has
+      // already registered the material, so regMat would return early (see the river's wet sheen
+      // for the same pattern).
+      m.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)
+        &&o.material.name==='Texture_Rim'){ const g=o.material;
+          g.color.set(0xFFB54A); g.metalness=0.90; g.roughness=0.15; g.userData.envBase=1.15; } });
+      // The WINDSCREEN needs nothing here, and that is the point. Its see-through came from a
+      // TRANSMISSION map in the blend (base alpha is 1.0 across every one of its UVs), which glTF
+      // hands to KHR_materials_transmission and three r128 cannot read, so exported untouched it
+      // would have rendered as an opaque white slab. The export writes it as a real alphaMode BLEND
+      // at 0.25 instead, the alpha this model's own trans bricks carry, so polish() catches it on
+      // its m.transparent test and it goes down the ordinary LEGO glass path (roughness 0.08,
+      // FrontSide, envBase 0.85) with every other window in the Realm.
     }});
   // THE WALLED GARDEN, standing out in the woods behind the mansion. The ground under it (plain
   // lawn, and the dirt track in) is laid by gardenTrack up with the other ground predicates;
