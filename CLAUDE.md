@@ -581,6 +581,19 @@ far / maxY / once / arrive`. Portal signs trigger on distance to the structure's
 distance is the same from every direction), and only when you are OUTSIDE the footprint, LOOKING at
 the sign (`bubFacing`), and haven't already arrived once (`used`, re-arms past `far`). The spawn
 greeting is a one-time point-triggered sign on the opening sightline.
+**The greeting's COPY is Shyon's own and its odd spacing is deliberate.** It reads "Welcome to my
+Lego Realm ! Walk up to any of the structures to learn more about me and what I do. Feel free to
+browse around as you'd like, you never know what you may find." **The space before the exclamation
+mark is his**: it was "corrected" once as a typo and asked straight back, so leave it alone. The
+line also carries the only nudge anywhere on screen toward the things that are not structures, the
+chest and the crystal.
+**`lines` is 5 and that is a MEASUREMENT.** `bubbleTex` starts at `(H-40)/(lines*1.22)` px and
+shrinks by 4 until the text fits, so more lines does not mean smaller type, it means a lower
+starting point the copy no longer has to be shrunk away from. Replayed against the real Fredoka
+metrics this text draws at 24px on 3 lines, 32px on 4, **39px on 5**, and back down to 32 and 28 on
+6 and 7, so 5 is the largest it can be drawn and its block is 238px of the canvas's 275, filling
+the panel instead of leaving it half empty. Re-run `scratchpad/bub_fit.cjs` if the copy changes:
+the optimum is not monotonic and cannot be guessed.
 **Arriving is a RING round the footprint, not just the door.** `BUB_DOOR` 3.2 about the portal's
 door point is the right test for a building you walk straight up to and the wrong one for a building
 with a forecourt. Standing among the three parked cars you are a car's length from the mansion's
@@ -943,9 +956,18 @@ take-off line and the chest's unlock line used to do it. Everything the suit add
 the permanent line instead, which has four states because what the keys do changes: `HINT_WALK`
 (locked), `HINT_SUITOFF` (unlocked, adds `T` for the suit), `HINT_SUIT` (worn, adds `F` to fly and
 `T` to change) and `HINT_FLY`. `syncPowerHUD` picks between them on the state transitions rather
-than per frame, off `flying` / `heroOn` / `heroUnlocked`. All four now end in `R` leave, which
-took the measured widths at 12.5px from 460 / 481 / 481 / 547 to 536 / 556 / 557 / 622, so
-`white-space:nowrap` clips below a 622px window against the 547 that shipped before. `say()` is for STATUS now
+than per frame, off `flying` / `heroOn` / `heroUnlocked`.
+**`HINT_SUIT` NAMES `F`, AND FOR A WHILE IT DID NOT** (user, 2026-09-01). It read "`Space` jump to
+fly", which named the wrong key twice over: `Space` on its own is the hop, it takes a DOUBLE tap of
+it to launch, and `F` is the actual toggle. So the one permanent controls line advertised no
+working way to LEAVE the ground while advertising "`F` to land" the moment you were up, which is
+the one asymmetry a controls bar must not have. It now reads `Space` hop / `F` to fly and mirrors
+`HINT_FLY`: the same key leaves the ground and returns to it.
+All four end in `R` leave, and the measured widths at 12.5px are **534 / 554 / 555 / 620**, so
+`white-space:nowrap` clips below a 620px window. `HINT_FLY` is the binding one and naming `F` on
+the ground did not move it (`HINT_SUIT` went 557 to 555, it got no wider). Re-measure in the page
+rather than counting characters if a line is ever edited: `scratchpad/verify_final.cjs` sets each
+one on the real element and reads `scrollWidth`. `say()` is for STATUS now
 ("Suit unlocked", "Suit on"), never for controls. The one exception is TOUCH, where `.hint` is
 `display:none` and those lines are the only guidance a phone gets. Touch also has no `T` key and no
 pill any more, so on a phone the suit is changed back at the CHEST, which already offers it.
@@ -984,11 +1006,22 @@ is ever explained: run on the ground, descend only once flying.
 **The pointer, and the two keys that replaced the buttons.** `#c` is `cursor:none`: the mouse only
 ever DRAGS out in the world, so the arrow is noise. `enterPortal` puts it back (`'default'`) and
 `exitPortal` takes it away again, because the portal panels are really clicked.
-**The cursor is the MAIN SITE'S OWN CIRCLE DOT** (`#cur`, mirroring `#ss-cursor-dot` in
-`src/App.tsx`): 9px, round, white, riding the pointer with no easing. This REVERSES an earlier
-decision (user, 2026-08-31). Two stand-ins, a four-tick cross and then a LEGO stud, were built and
-removed at Shyon's request with the note "don't rebuild it"; he has since asked for the main site's
-dot specifically, which is a different thing from either.
+**The cursor is a LITTLE GLASS BUBBLE** (`#cur`), 9px and round, riding the pointer with no easing.
+It began as the main site's own circle dot (`#ss-cursor-dot` in `src/App.tsx`), which itself
+REVERSED an earlier decision (user, 2026-08-31): two stand-ins, a four-tick cross and then a LEGO
+stud, were built and removed with the note "don't rebuild it". The solid white fill then went to
+glass at Shyon's request (2026-09-01), and it is three things rather than one. The middle is EMPTY,
+so the world really shows through it. A thin lit WALL is drawn just inside the rim by a second
+radial gradient, which is the glass having thickness. And one small hard SPECULAR sits up and to
+the left, which is the only thing that says "sphere" rather than "ring" at nine pixels.
+**The 1px rim is load bearing, not decoration.** The contrast argument below says the dot's own
+contrast is `|255-B|` and fails only at the bright end, so an empty middle has to be paid for at
+the edge. A BORDERLESS version, with the wall drawn entirely by gradient, was built and rejected
+for exactly that: it read softer magnified and at actual size all but vanished on the concrete and
+on a black car, two of the five surfaces the pointer crosses most. Candidates were rendered at 16x
+and at 9px over sky, grass, concrete, black car and a pale cover before one was picked
+(`scratchpad/cursor/bubble.html`). `box-sizing` comes from the `*` reset, which is what lets the
+rim be a real border without growing the dot past 9px or pulling it off the pointer.
 **One property of it had to change, and the reason is measured.** The main site paints the dot with
 `mix-blend-mode:difference`, which over a backdrop B composites to `B + a*(255-2B)` and so CANCELS
 EXACTLY at B=127.5. Over the Realm that value is the driveway and the car pads, which is the surface
@@ -1336,16 +1369,42 @@ and 7 staged Blender frames showing the structures part-built.
   the middle of a 1512-wide window there is only about **280 degrees** of turn in a single drag
   before the cursor is pinned against the bezel, `clientX` stops changing, and the camera stops
   while the hand keeps moving. Let go, re-grab, and it works again, which is exactly what it looks
-  like: an intermittent lock-up. **POINTER LOCK is the fix and the only one.** It is taken on
-  `pointerdown` for the duration of the drag and handed straight back on release, and the deltas
-  then arrive as `movementX`/`movementY`, the same CSS pixels with the same OS acceleration, so the
-  feel is unchanged. **Hub mode only**: the portal panels are really CLICKED, so the menu keeps a
-  real visible pointer and stays on `clientX`. Every step can fail (no support, denied, a
-  rate-limited re-lock) and every failure falls back to the `clientX` path, so a refusal costs the
-  unbounded pan and never the pan itself. Measured in real Chrome over WebGL with dispatched input
-  (`scratchpad/probe5.cjs` style): a drag turned **894 degrees** where the window edge alone allowed
-  238, and three drags back to back with no pause were all granted, so the re-lock rate limit is
-  not in play.
+  like: an intermittent lock-up.
+  **POINTER LOCK WAS THE FIX AND IT HAS BEEN REMOVED. DO NOT PUT IT BACK.** It shipped, taken on
+  every `pointerdown`, and it cost more than it bought (user, 2026-09-01). A pointer lock is the one
+  thing that makes a browser announce that the pointer is hidden, so that banner appeared on the
+  press and went away on the release of EVERY CLICK. Worse, on Chrome the announcement CHANGES
+  `innerHeight`, which fires `resize`, which reallocates the whole render pipeline: that is where
+  the **BLACK LINES** came from, a stack of them across the middle of the frame and a few above the
+  controls, appearing the moment you clicked and never while you only hovered. Removing the lock
+  removed them, confirmed by Shyon on the live site. Note what that means: the trigger is gone, the
+  underlying fragility on `resize` is a separate thing (see the next entry).
+  **Deferring the lock to the moment a drag nears the edge was built and REJECTED**, so do not
+  reach for that either. A lock needs transient user activation; a `mousedown` grants about five
+  seconds of it and a `mousemove` does NOT renew it, so a slow deliberate pan is refused and
+  silently falls back to the bounded pan. Measured in real Chrome with dispatched input
+  (`scratchpad/lock_why.cjs`): the request fires, `pointerlockerror` comes back, and the pan stops
+  dead at **237.6 degrees**, which is exactly the screen-edge bound.
+  **`EDGE_PAN` is what solves the range now**, and it asks the browser for nothing. While a drag is
+  live and the pointer is inside `EDGE_W` (34px) of a side, the yaw keeps turning that way at up to
+  `EDGE_RATE` (2.6 rad/s), ramped by how far into the margin it has pushed. It is spent in the
+  **FRAME LOOP**, not in `pointermove`, and that is the whole trick: a cursor pinned against the
+  bezel stops firing move events at all, so the frames that need this are exactly the frames with no
+  pointer input in them. Measured: **624.6 degrees** against the old 238, the extra turn happening
+  on frames with nothing dispatched, and it stops the moment the button comes up
+  (`scratchpad/verify_final.cjs`).
+  `looking()` and the `movementX` branch are still in the file and are now unreachable, kept only so
+  a lock arriving from anywhere else would still behave. Nothing calls `requestPointerLock`.
+- **THE BLACK LINES WERE THE POINTER LOCK, and they are gone.** A stack of 7-8 of them across the
+  middle of the frame and a few just above the controls, appearing the instant you CLICKED and
+  never while you only hovered. The chain is: a lock makes Chrome announce the hidden pointer, the
+  announcement changes `innerHeight`, `resize` fires, and `PIPE.setSize()` reallocates every buffer
+  in the pipeline mid-frame. Removing the lock removed them, confirmed by Shyon on the live site.
+  **A plain window resize does NOT reproduce them**, which was checked afterwards on a real GPU by
+  dragging the window repeatedly: no lines. So `PIPE.setSize` is sound and there is nothing left to
+  fix here. Two theories were killed on the way and should not be re-run: it is not the AO border
+  band (that is the top and bottom EDGE rows, the wrong place), and it is not a stale
+  `depthTexture` (r128 re-syncs it in `setupDepthTexture`, read out of the vendored build).
   **The second half of it is the gesture being taken away from the page**, which is a different
   failure with four independent guards, none subsuming another. `preventDefault` on `mousedown` and
   on `dragstart`, plus `user-select`/`user-drag:none` in the CSS, stop the BROWSER starting a text
@@ -1356,11 +1415,12 @@ and 7 staged Blender frames showing the structures part-built.
   when a lock is refused, since **without a capture the gesture belongs to whatever the pointer is
   over**; and `pointercancel` / `lostpointercapture` plus `e.buttons===0` on a move are the releases
   for a gesture that ends with no `pointerup`.
-  **Two traps a rewrite will hit.** Entering a lock can fire `lostpointercapture`, and clearing the
-  drag there kills the pan at the instant the lock takes over, so that handler stands down while a
-  lock is held or pending. And `clientX` is FROZEN throughout a lock, so the frame a lock ENDS on
-  carries a client position that may be half a screen from `lx`: `reanchor` re-seats the anchor on
-  the first unlocked move instead of applying that jump as a pan.
+  **Two traps that would bite if a lock ever came back** (both guards are still in the file, both
+  are now unreachable). Entering a lock fires `lostpointercapture`, and clearing the drag there
+  kills the pan at the instant the lock takes over, so that handler stands down while a lock is held
+  or pending. And `clientX` is FROZEN throughout a lock, so the frame a lock ENDS on carries a
+  client position that may be half a screen from `lx`: `reanchor` re-seats the anchor on the first
+  unlocked move instead of applying that jump as a pan.
   **`blur` is deliberately not a release** while a capture is held: a window can lose focus for
   reasons other than the user letting go, and killing the drag there froze pans still under the
   hand. The `pointerup` or the `pointercancel` is still coming.

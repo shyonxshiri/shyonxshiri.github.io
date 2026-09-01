@@ -1,0 +1,40 @@
+<!doctype html><meta charset=utf-8><title>glass bubble cursor</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#14181f;color:#cfd6e0;font:12px/1.5 -apple-system,sans-serif;padding:16px;}
+h2{font-size:11px;letter-spacing:.09em;text-transform:uppercase;opacity:.5;margin:14px 0 8px;}
+.strip{display:flex;} .sw{width:96px;height:46px;position:relative;}
+.lbl{font-size:9px;opacity:.45;text-align:center;width:96px;}
+.row{display:flex;align-items:flex-start;} .name{width:26px;font-size:11px;opacity:.8;padding-top:16px;}
+.zrow{display:flex;gap:14px;align-items:center;margin:0 0 12px 26px;}
+.zwrap{width:150px;height:150px;position:relative;border-radius:5px;overflow:hidden;background:#6b7280;}
+.zwrap.d{background:#14181f;} .zwrap.l{background:#e6e2db;} .zwrap.g{background:#4b8b3b;}
+.zoom{transform:scale(16);transform-origin:top left;left:3px;top:3px;}
+.dot{position:absolute;width:9px;height:9px;border-radius:50%;pointer-events:none;
+     filter:drop-shadow(0 0 1.4px rgba(0,0,0,.85));}
+/* A — shipped now: flat 22% fill + hard rim */
+.A{background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.92);}
+/* E — bubble: empty middle, thin lit wall just inside the rim, one small specular */
+.E{border:1px solid rgba(255,255,255,.85);
+   background:radial-gradient(circle at 31% 27%,rgba(255,255,255,.95) 0 10%,rgba(255,255,255,0) 34%),
+              radial-gradient(circle at 50% 52%,rgba(255,255,255,0) 50%,rgba(255,255,255,.34) 80%,rgba(255,255,255,.10) 100%);}
+/* F — E with a softer rim and a brighter bounce along the bottom wall */
+.F{border:1px solid rgba(255,255,255,.62);
+   background:radial-gradient(circle at 31% 26%,rgba(255,255,255,1) 0 11%,rgba(255,255,255,0) 32%),
+              radial-gradient(circle at 50% 62%,rgba(255,255,255,0) 46%,rgba(255,255,255,.52) 82%,rgba(255,255,255,.14) 100%);}
+/* G — no border at all, the wall drawn entirely by gradient */
+.G{background:radial-gradient(circle at 31% 27%,rgba(255,255,255,.95) 0 10%,rgba(255,255,255,0) 32%),
+              radial-gradient(circle at 50% 50%,rgba(255,255,255,.04) 0 58%,rgba(255,255,255,.62) 84%,rgba(255,255,255,.88) 96%,rgba(255,255,255,0) 100%);}
+</style>
+<body>
+<h2>9px actual size</h2><div id=rows></div>
+<h2>magnified 16x</h2><div id=zooms></div>
+<script>
+const BG=[['sky','#b9c6d4'],['grass','#4b8b3b'],['concrete','#7f7f7f'],['black car','#12151a'],['pale cover','#eae6df']];
+const C=['E','G'];
+rows.innerHTML='<div class=row><div class=name></div>'+BG.map(b=>'<div class=lbl>'+b[0]+'</div>').join('')+'</div>'+
+ C.map(c=>'<div class=row><div class=name>'+c+'</div><div class=strip>'+BG.map(b=>
+  '<div class=sw style="background:'+b[1]+'"><div class="dot '+c+'" style="left:43px;top:18px"></div></div>').join('')+'</div></div>').join('');
+zooms.innerHTML=C.map(c=>'<div class=zrow><div class=name>'+c+'</div>'+
+ ['','d','l','g'].map(k=>'<div class="zwrap '+k+'"><div class="dot '+c+' zoom"></div></div>').join('')+'</div>').join('');
+</script>
