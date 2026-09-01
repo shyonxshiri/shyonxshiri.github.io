@@ -687,14 +687,26 @@ beat, which is where a repeatable foreground event belongs.
 **Levels are balanced by MEAN POWER** (a ScriptProcessor summing every sample over the sound's own
 duration), never by polling an AnalyserNode's peak, which misses short transients: a footstep is
 21.2, and every deliberate foreground event sits at 3.5-4.4x that.
-The two AMBIENCE beds were balanced the same way but offline, by modelling the Web Audio biquads
-in Node (`scratchpad/chain.js`, the spec's own RBJ coefficients, and note Q is in dB for LP/HP and
-a plain Q for bandpass). That is what showed the wind bed was the loudest thing in the world by 2x
-and the river the quietest: standing IN the water was 0.47x the wind, six units off 0.30x. The wind
-is now 9.2 against the river's 19.6 at the bank, it is highpassed at 150 (the sub-bass hum is what
-read as "low static"), and it is gusted by TWO LFOs at unrelated rates so the trough reaches near
-silence instead of sitting on a floor. The river's distance curve is ONE fall bent by a 0.75 power
-out to 30 units; the old one multiplied two linear falls and so halved the sound by 8 units out.
+The two AMBIENCE beds were first balanced offline by MODELLING the Web Audio biquads in Node
+(`scratchpad/chain.js`, the spec's own RBJ coefficients, and note Q is in dB for LP/HP and a plain
+Q for bandpass). The wind is highpassed at 150 (the sub-bass hum is what read as "low static") and
+gusted by TWO LFOs at unrelated rates so the trough reaches near silence instead of sitting on a
+floor, and the river's distance curve is ONE fall bent by a 0.75 power out to 30 units (the old one
+multiplied two linear falls and so halved the sound by 8 units out). All of that still stands.
+**THE LEVELS THAT MODEL PRODUCED DID NOT, AND THE MIX WAS RE-DONE AGAINST THE REAL RENDERER**
+(2026-09-01). `scratchpad/audio_levels.cjs` renders the SHIPPED graph in an
+`OfflineAudioContext` and compares mean power at the destination, and it disagreed with the Node
+model outright: a grass footstep came out at 1.08x the wind bed, and the river AT THE BANK at
+0.94x, so the loudest thing in the Realm was the one sound that never stops and standing in the
+water was quieter than the air. An older note here claimed the river ran 2.0x the wind; it did not,
+and that figure was the model's, not the renderer's. **Model the chain to get the SHAPE, render it
+to get the LEVEL.** `MASTER_VOL` 0.75 and `SFX_VOL` 1.35 lift everything, every wind gain is the
+old one x0.62 (both LFO depths scaled by the same factor, so the gust shape and its near-silent
+trough are untouched), and the river's three bands are x1.30. Net: the wind is about 3dB quieter in
+absolute terms and everything else 4dB louder, the stream now runs about 4x the wind at the bank
+and still over 2x from ten units away. Live on `__D.audio.mix(master, sfx, windMul)`, where the
+wind argument is a MULTIPLIER because the bed is a midpoint plus two gust depths and all three have
+to move together. Re-run `audio_levels.cjs` after touching any level.
 
 **The face print.** The printed eyes, mouth and brows (`SOLID-BLACK-FACE`, `SOLID-DARK_BROWN-BROWS`)
 are moved DOWN the head by `FACE_DROP` 0.025 in `shrinkFacePrint()`, so the hairpiece stops

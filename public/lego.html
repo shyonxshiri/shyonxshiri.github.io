@@ -4975,6 +4975,18 @@
   //                the run-down house creaking its timbers every so often
   // The context cannot start before a gesture (browser autoplay policy), so initAudio() is
   // called from the Enter button and from the first key/pointer/touch, whichever comes first.
+  // ── THE MIX, three numbers, measured rather than judged (2026-09-01). Rendering the SHIPPED
+  // graph in a real OfflineAudioContext and comparing MEAN POWER at the destination said the
+  // balance was not what this file claimed: a grass footstep was 1.08x the wind bed and the
+  // river AT THE BANK was 0.94x it, i.e. the loudest thing in the world was the one sound that
+  // never stops, and standing in the water was quieter than the air. (An older comment in here
+  // claimed the river ran 2.0x the wind. It did not. That figure came from a Node model of the
+  // biquads; the real renderer disagrees and the real renderer is what ships.)
+  // So: the sfx bus is lifted, master with it, and the wind is pulled DOWN, which moves the
+  // wind about 3dB quieter in absolute terms while everything else gets 4dB louder. Nothing in
+  // the world got quieter except the wind. Live on __D.audio.mix(). scratchpad/audio_levels.cjs
+  // re-renders the whole thing and prints the table; run it after touching any level in here.
+  const MASTER_VOL=0.75, SFX_VOL=1.35;
   let actx=null, master=null, ambBus=null, sfxBus=null;
   let sndOn=true; try{ sndOn = localStorage.getItem('realm.sound')!=='0'; }catch(e){}
   const sndBtn=document.getElementById('snd');
@@ -5000,15 +5012,17 @@
   // lfoAdd only ADDS a swing, so a param can carry several at different rates without the
   // last call stamping over the midpoint the first one set.
   function lfoAdd(rate,depth,target){ const o=actx.createOscillator(); o.frequency.value=rate;
-    const g=actx.createGain(); g.gain.value=depth; o.connect(g).connect(target); o.start(); return o; }
+    const g=actx.createGain(); g.gain.value=depth; o.connect(g).connect(target); o.start();
+    o.gDepth=g; return o; }
   function lfo(rate,lo,hi,target){ target.value=(hi+lo)/2; return lfoAdd(rate,(hi-lo)/2,target); }
 
   let birdTimer=0, creakTimer=6, river=null, wind=null, leaves=null;
+  let windLfoA=null, windLfoB=null;          // the two gust LFOs' depth gains, for __D.audio.mix
   function initAudio(){ if(actx) return; try{
     const AC=window.AudioContext||window.webkitAudioContext; actx=new AC();
-    master=actx.createGain(); master.gain.value=sndOn?0.65:0; master.connect(actx.destination);
+    master=actx.createGain(); master.gain.value=sndOn?MASTER_VOL:0; master.connect(actx.destination);
     ambBus=actx.createGain(); ambBus.gain.value=1; ambBus.connect(master);
-    sfxBus=actx.createGain(); sfxBus.gain.value=1; sfxBus.connect(master);
+    sfxBus=actx.createGain(); sfxBus.gain.value=SFX_VOL; sfxBus.connect(master);
     noiseBuf=makeNoise(0.12); loopBuf=makeNoise(2.0);
     // WIND. The bed used to read as LOW STATIC rather than as air, for two measurable reasons.
     // It was the loudest thing in the world by a factor of two (mean power, the Node model in
@@ -5017,8 +5031,13 @@
     // floor of broadband noise under everything. It is now quieter (9.2), highpassed at 150 so
     // the sub-bass hum goes, and gusted by TWO LFOs at unrelated rates, which takes the trough
     // down to near silence and stops the swell reading as a repeating cycle.
-    wind=noiseLoop('lowpass',420,0.7,0.055,null,150);
-    lfo(0.043,0.030,0.140,wind.gain.gain); lfoAdd(0.017,0.028,wind.gain.gain);
+    // 2026-09-01: every gain in here is the old one x0.62, which is 0.38 of the power. Measured
+    // against a grass footstep the bed was 1:1 with it and it plays CONTINUOUSLY, so it sat on
+    // top of every foreground sound in the Realm. The gust SHAPE is untouched: both LFO depths
+    // are scaled by the same factor, so the trough still reaches near silence.
+    wind=noiseLoop('lowpass',420,0.7,0.034,null,150);
+    windLfoA=lfo(0.043,0.019,0.087,wind.gain.gain).gDepth;
+    windLfoB=lfoAdd(0.017,0.017,wind.gain.gain).gDepth;
     lfo(0.031,260,620,wind.filter.frequency);
     // and the leaf hiss is narrower (Q 0.9 passed most of the sibilance band on its own)
     leaves=noiseLoop('bandpass',2400,1.6,0.012); lfo(0.067,0.008,0.024,leaves.gain.gain);
@@ -5046,10 +5065,14 @@
     // against the wind bed, standing IN the water used to be 0.47x the wind and six units away
     // 0.30x, i.e. the stream was always the quietest thing you could hear. It now runs 2.0x the
     // wind at the bank and is still 1.6x ten units off (see scratchpad/chain.js).
+    // 2026-09-01: x1.30 on all three bands. Rendered offline, the stream at the bank was 0.94x
+    // the wind bed, so the water never came forward however close you stood to it; with the bed
+    // pulled down as well it now runs about 4x the wind at the bank and is still over 2x from ten
+    // units away, which is across the lawn.
     river.set=v=>{ const t=actx.currentTime;
-      river.gain.gain.setTargetAtTime(v*0.185,t,0.3);
-      rMid.gain.gain.setTargetAtTime(v*0.130,t,0.3);
-      rTop.gain.gain.setTargetAtTime(v*0.072,t,0.3); };
+      river.gain.gain.setTargetAtTime(v*0.240,t,0.3);
+      rMid.gain.gain.setTargetAtTime(v*0.169,t,0.3);
+      rTop.gain.gain.setTargetAtTime(v*0.094,t,0.3); };
   }catch(e){ actx=null; } }
   // One toggle, two ways in: the touch button and the M key. On a keyboard the button is not
   // on screen at all, so the state is reported through say() instead of through the icon.
@@ -5057,7 +5080,7 @@
     try{ localStorage.setItem('realm.sound',sndOn?'1':'0'); }catch(e){}
     if(!actx){ if(sndOn) initAudio(); return; }
     if(actx.state==='suspended') actx.resume();
-    master.gain.setTargetAtTime(sndOn?0.65:0, actx.currentTime, 0.08); }
+    master.gain.setTargetAtTime(sndOn?MASTER_VOL:0, actx.currentTime, 0.08); }
   if(sndBtn) sndBtn.addEventListener('click',toggleSnd);
   // give the browser back its audio thread when the tab is hidden
   document.addEventListener('visibilitychange',()=>{ if(!actx) return;
@@ -6212,7 +6235,22 @@
     surf:(x,z,maxY)=>surfaceBelow(x,z,maxY==null?99:maxY),
     surfaceAt:(x,z)=>surfaceAt(x,z),
     get audio(){ return {ctx:actx, master, ambBus, sfxBus, river, on:sndOn, tick, creak, bird,
-      brickSnap, doorbell, doorOpen, zap}; } };
+      brickSnap, doorbell, doorOpen, zap,
+      // live mix, so the balance can be dialled in the running Realm rather than by a redeploy.
+      // master and sfx are absolute; WIND IS A MULTIPLIER on the shipped bed (1 = as shipped),
+      // because the bed's level is a midpoint plus two gust depths and all three have to move
+      // together or the gust stops reaching silence at its trough.
+      mix(m,sfx,windMul){ if(!actx) return 'no audio yet';
+        const t=actx.currentTime;
+        if(m!=null) master.gain.setTargetAtTime(m,t,0.08);
+        if(sfx!=null) sfxBus.gain.setTargetAtTime(sfx,t,0.08);
+        if(windMul!=null && wind){ wind.gain.gain.value=0.053*windMul;
+          windLfoA.gain.value=0.034*windMul; windLfoB.gain.value=0.017*windMul; }
+        // the two bus levels are reported as the TARGETS asked for, not as .value: they are
+        // eased with setTargetAtTime, so reading .value back in the same tick returns the level
+        // the fade started from and looks like the call did nothing.
+        return {master:m!=null?m:master.gain.value, sfx:sfx!=null?sfx:sfxBus.gain.value,
+                windMid:wind?wind.gain.gain.value:null}; } }; } };
   function loop(){ requestAnimationFrame(loop); frame(Math.min(clock.getDelta(),0.05)); }
   loop();
   addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();

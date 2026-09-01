@@ -349,6 +349,19 @@
         "--strictPort"
       ],
       "port": 5641
+    },
+    {
+      "name": "dev-audio",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5661",
+        "--strictPort"
+      ],
+      "port": 5661
     }
   ]
 }
