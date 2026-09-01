@@ -136,3 +136,15 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# iCloud / Finder conflict duplicates.
+# The Desktop syncs through iCloud and docs/ is rewritten on every build, which makes it
+# duplicate files as "name 2.ext". Two of them ("docs/lego 2.html", "docs/studio_classic 2.html")
+# were committed and served publicly before anyone noticed, and the lego one was a STALE build of
+# the Realm, still calling requestPointerLock. They are never wanted, so they are never staged.
+# The pattern is a space then digits, at the end of the name or before the extension. Checked
+# against every tracked path at the time it was added: it matches none of them.
+* [0-9]
+* [0-9].*
+* [0-9] [0-9]
+* [0-9] [0-9].*
