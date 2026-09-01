@@ -19,8 +19,9 @@
   html,body{height:100%;overflow:hidden;background:#12151c;font-family:'Nunito',sans-serif;color:#f6f4ef;}
   /* user-select/user-drag: a drag on a bare canvas otherwise starts the BROWSER's own gesture
      (a text selection across the HUD, or a native drag of the canvas as an image), and while
-     that gesture owns the pointer the page stops receiving mousemove, so the camera freezes
-     mid-pan. See the mousedown handler, which preventDefaults for the same reason. */
+     that gesture owns the pointer the page stops receiving moves, so the camera freezes mid-pan.
+     This is only the first guard on that: see THE LOOK DRAG in the script, which also
+     preventDefaults mousedown / dragstart / contextmenu and takes a real pointer capture. */
   canvas{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none;
     user-select:none;-webkit-user-select:none;-webkit-user-drag:none;}
   .hud{position:fixed;z-index:20;pointer-events:none;}
@@ -1578,8 +1579,23 @@
     //    away from the camera, on the GEOMETRIC normal (not the bump-perturbed one, which is the
     //    macro angle we want), which lands it back on the tiles at every angle.
     const FAR_TINT=0.94;
+    // THE SHEET IS PUSHED BACK IN DEPTH, and that is not cosmetic. It sits 0.018 below the plate
+    // top while the mansion's recessed plate-edge cells sit at plateTop-0.012, so the filler is
+    // 0.006 ABOVE the sheet and should always win. It did not. Measured against the real frame:
+    // along the driveway the sheet drew OVER the filler and left a green hairline on the
+    // concrete, in the 0.063 between where the model's own plate ends (z 6.405) and where the
+    // code's first grey tile starts (6.468). Proved by recolouring THIS material magenta, which
+    // turned the hairline magenta while every other dark line in the frame stayed exactly as it
+    // was. 0.006 is not enough margin for a 1600-unit plane drawn as two triangles: at the
+    // grazing angle the driveway is seen from, interpolated depth across a triangle that big
+    // cannot hold a margin that small. Dropping the sheet 0.05 cleared both hairlines and so
+    // does this, and this is the better of the two because it moves NOTHING: the 0.018 height,
+    // the stud bump phase locked to the real grid, and the ledge at the apron edge all stay
+    // exactly as they were tuned. The sheet is the bottom-most ground in the world, so biasing
+    // it backward can only ever lose it a fight it was already meant to lose.
     const farMat=new THREE.MeshStandardMaterial({ roughness:matGreen.roughness, metalness:0,
-      bumpMap:studTex, bumpScale:0.05 }); regMat(farMat,0.35);
+      bumpMap:studTex, bumpScale:0.05,
+      polygonOffset:true, polygonOffsetFactor:1, polygonOffsetUnits:1 }); regMat(farMat,0.35);
     farMat.color=matGreen.color.clone().multiplyScalar(FAR_TINT);
     farMat.onBeforeCompile=(sh)=>{
       sh.uniforms.uGraze={value:0.68}; sh.uniforms.uGrazeK={value:8.0};
@@ -3698,20 +3714,48 @@
   // (+z, away from the house) and empty until now: carPad, x 43.15..57.37 / z 6.10..11.9745.
   // Nose down -x like the other two, so all three park facing the same way.
   //
-  // SIZE IS THE PORSCHE'S BRICK SCALE, the same rule the Corvette is matched by, because these
-  // three are the only things in the Realm at this scale and they are always seen together.
-  // This build is a named-part MOC, so its lattice is MEASURED off the parts rather than guessed:
-  // fitting dim = N*p over every Plate / Flat Tile / Brick whose name carries its own stud count
-  // gives p = 0.342724 across N = 1,2,3,4,6 with 88 inliers (per-N medians 0.34227 / 0.342315 /
-  // 0.34268 / 0.342357 / 0.343905). The WHEELS were the independent check on that, not the source:
-  // the wheelbase measures 3.7675, which is 10.99 stud pitches, i.e. 11 exactly.
-  // The Porsche renders its own 0.349795 stud at 0.29018 (targetLen 5.6 over its 6.750582 length),
-  // so this car wants 0.29018 / 0.342724 = 0.846689, and 6.63729 x 0.846689 gives targetLen 5.6197.
-  // It lands 5.620 long, 2.658 wide, 1.707 tall against the Porsche's 5.600 x 2.303 x 1.617. A
-  // Countach IS the wider, lower car, and that 1.707 is its REAR WING (the Flat Tile 1x8 sitting at
-  // the top of the model); its glasshouse tops out at 1.594, just under the Porsche's roofline, so
-  // the three roofs line up and only the wing stands proud of them, which is correct.
-  // Do not retune targetLen by eye: re-measure the pitch off any re-export (bridge/water_plate trap).
+  // SIZE IS MATCHED ON THE WHEEL, not on the stud pitch, and the two are NOT the same answer.
+  // The car this one parks beside is the Porsche, and a wheel is the part of a car the eye compares
+  // hardest: it is a circle, it sits on the ground, and both cars put four of them in a row.
+  //
+  // TYRES ARE MEASURED IN THE LIVE SCENE, not off a part name and not off a Blender import, because
+  // world units are the only frame in which two cars can be compared at all. A tyre is a solid of
+  // revolution tangent to the ground at its contact patch, so every point on the tread satisfies
+  // R = (dx*dx + h*h) / (2h) about that patch; the mode of that over the wheel is the radius. It is
+  // decisive and it agrees across all four wheels of a car to four decimals. In world units:
+  //   Porsche  0.83292   = 2.902 of its own rendered studs, about 23.2 mm of real LEGO
+  //   Corvette 1.11762   = 3.852,  about 30.8 mm
+  //   Countach 0.87823 before this change = 3.027, about 24.2 mm
+  // The Corvette lands on the real 30.4 mm LEGO wheel to 1.3%, which is what proves the method and
+  // its own pitch: it genuinely IS built on a bigger tyre, so it is left exactly as it is. Shrinking
+  // it to the Porsche's wheel would take a quarter off a car that is already the smallest of three.
+  //
+  // TWO SEPARATE ERRORS put this car 5.4% over the Porsche's wheel, and they compound.
+  //  · The Porsche's scale is NOT 5.6/6.750582 = 0.829556. loadProp takes its box AFTER the holder
+  //    rotation is applied, and the Porsche carries rotY -0.015, so targetLen divides by the ROTATED
+  //    box, 6.82461, and the live scale is 0.820558. Its rendered stud is therefore 0.287027, not
+  //    the 0.29018 the old comment here claimed, so the stud rule was already sizing this car to a
+  //    Porsche stud 1.1% bigger than the one actually on the driveway. Anything that solves a scale
+  //    off another prop's targetLen has to read that prop's LIVE holder.scale, never re-derive it.
+  //  · The other 4.3% is real and cannot be dialled away: THE TWO BUILDS ARE ON DIFFERENT TYRES,
+  //    23.2 mm against 24.2 mm. Matching the stud and matching the wheel are then two different
+  //    answers and only one of them can be had.
+  //
+  // The WHEEL wins, and the reason is about where the eye looks. A stud is read against the studs
+  // beside it on the SAME car, where nothing disagrees; a wheel is read against the wheel of the car
+  // parked a body's width away. So the scale is solved on the tyre: 0.83292 / 1.037251 raw =
+  // 0.803008, and 6.637295 x 0.803008 gives targetLen 5.3298. The studs come out 0.275210 against
+  // the Porsche's 0.287027, 4.1% small, and that is the price, paid knowingly.
+  //
+  // It lands 5.330 long, 2.521 wide, 1.619 tall against the Porsche's live 5.539 x 2.278 x 1.600
+  // (the Porsche's own Box3 reads 5.600 x 2.330 only because of that yaw; these are the bodies).
+  // So it is now the SHORTER car, which is right, a real Countach is about 3% shorter than a 911,
+  // and still the wider one. Its glasshouse tops out at 1.512, well under the Porsche's roofline,
+  // and only the REAR WING reaches 1.619, standing 0.019 proud of it.
+  // Do not retune targetLen by eye and do not re-derive it from the pitch. Re-measure BOTH TYRES in
+  // the live scene off any re-export. The pitch is still 0.342724 by the named-part fit and the
+  // wheelbase still checks it (3.7675, i.e. 11 pitches to 0.07%); it is simply not what the scale
+  // is solved on any more.
   //
   // The export is axis-aligned and centred by scratchpad/lambo/export_lambo.py, which also joins
   // the 254 named parts into one mesh per material (14 draw calls, 2.06MB Draco). The nose is
@@ -3724,12 +3768,15 @@
   // Dark Stone Grey 0.12744 against 0.150, neither anywhere near their sRGB 0.627 / 0.424), so it
   // needs no colour-space conversion.
   //
-  // Parked nose-aligned with the Porsche: x 44.110..49.730 against the Porsche's 44.11..49.73, and
-  // z 7.538..10.196, leaving 1.95 of clear pavement between the two flanks and 1.44 / 1.78 to the
-  // pad's near and far edges. The bay was already clear: treeOK refuses the whole of carPad, and
-  // none of the 407 flower sites falls anywhere near it.
+  // Parked in the Porsche's bay at x 44.255..49.585 against the Porsche's own 44.120..49.720, and
+  // z 7.606..10.127, leaving 2.01 of clear pavement between the two flanks and 1.51 / 1.85 to the
+  // pad's near and far edges. The nose sits 0.135 behind the Porsche's rather than dead level with
+  // it, and it stays there: holder.position runs through snap(), so pos x can only move in whole
+  // stud pitches and 46.92 is already the nearest one. A shorter car sitting a little further into
+  // its own bay is what parking looks like anyway. The bay was already clear: treeOK refuses the
+  // whole of carPad, and none of the 407 flower sites falls anywhere near it.
   loadProp('./assets/lamborghini.glb', {name:'lambo', pos:[46.92,9.04], y:0, rotY:0,
-    targetLen:5.6197, solid:true,
+    targetLen:5.3298, solid:true,
     onload:(holder,m)=>{
       // WHITE GOES BLACK, AND SO DOES THE MODEL'S OWN "BLACK", because it is not black. This is
       // the one place the read-it-from-the-model rule the Corvette uses had to be broken, and the
@@ -3782,6 +3829,60 @@
       m.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)
         &&o.material.name==='Texture_Rim'){ const g=o.material;
           g.color.set(0xFFB54A); g.metalness=0.90; g.roughness=0.15; g.userData.envBase=1.15; } });
+      // THE LIGHT LENSES WERE 25% THERE AND READ AS NOTHING. Every transmissive material in this
+      // export was flattened to the same alpha 0.25, and 0.25 is a WINDSCREEN number: it is right
+      // for a sheet you look THROUGH into a lit cabin, and wrong for a solid lens brick sitting
+      // against black bodywork, where three quarters of what reaches you is the black behind the
+      // lens and the lens itself all but disappears. A LEGO trans brick is a solid coloured piece,
+      // not a window. The Porsche is the reference here because it came from the same source, it is
+      // already approved, and it parks a car's width away, and it does NOT run one flat number:
+      // its trans red MB41 is 0.7 and its clear headlight MB40 is 0.4. Those are the two values
+      // taken here, so all three cars agree on what a lens looks like.
+      // Lego_Transparent_Brown is deliberately NOT touched: measured, it spans x 0.354..1.975 and
+      // reaches y 1.633, which is the side and rear GLASS, not a lamp, and 0.25 is what glass is
+      // for. The windscreen is left alone for the same reason (see below).
+      // THE OPACITY WAS NEVER THE REASON YOU COULD NOT SEE THEM, AND RAISING IT ALONE DOES
+      // NOTHING. Measured in engine (headless Chrome on SwiftShader, screenshots of the parked car):
+      // over the pixels the headlight actually covers, taking the clear lens from 0.40 all the way
+      // to 1.00 moves its mean from sRGB (55,48,52) to (62,55,58). A fully opaque light grey brick
+      // that renders at 62 is not being blended away, it is not being DRAWN. What draws with
+      // polish()'s FrontSide glass rule is a thin rim: switch the same material to DoubleSide and
+      // the drawn area TRIPLES, 7,345 pixels to 21,669, and the lamp appears as a lens.
+      // So these six pieces are the one exception to the FrontSide rule in §5. That rule exists
+      // because a WINDOW is a solid brick whose front and back faces both alpha-blend and compound
+      // toward white, which is what made every pane in the Realm a milky slab. A 1x1 lens brick
+      // sunk into black bodywork is the opposite case: it is small, there is nothing to look
+      // through it INTO, and the second layer is exactly what gives it any body at all.
+      // The Porsche needs none of this, and the reason is worth writing down because it is why
+      // copying its numbers failed. Ray-cast through its MB40 lens and 78.8% of the outward area
+      // lands on MB309, a 0.617 light grey REFLECTOR plate sitting right behind the lens. The
+      // Countach has no reflector: 100% of the clear lens's outward area lands on the printed nose
+      // panel, which this build's own black repaint took to #05131D. Same lens, same alpha, one
+      // sitting on a bright disc and the other on black, so the two can never match on alpha alone.
+      // THE TAIL ALSO HAD TO COME OFF THE MIRROR. polish() gives glass roughness 0.08 and envBase
+      // 0.85, which on the Porsche's flat recessed lens is right and on a trans-red CONE standing
+      // out in the open is not: at that roughness the cone reflects the sky over most of its
+      // curve and reads white, which is the "too clear" of it. 0.30 roughness and envBase 0.32
+      // keep a sheen and let the red through. The clear lens keeps the full 0.08 gloss, because
+      // looking like the Porsche's headlight is the whole brief.
+      const LENS={ Lego_Transparent_Red  :{op:0.90, rough:0.30, env:0.32},   // tail, red glass
+                   Lego_Transparent_White:{op:0.85, rough:0.08, env:0.85} }; // headlight, clear
+      m.traverse(o=>{ if(!o.isMesh||!o.material||Array.isArray(o.material)) return;
+        const L=LENS[o.material.name||'']; if(!L) return;
+        const g=o.material;
+        g.opacity=L.op; g.roughness=L.rough; g.side=THREE.DoubleSide;
+        g.userData.envBase=L.env; });   // straight onto userData: polish() already registered it
+      // Live, because a lens is the one thing on this car that can only be judged with eyes on it:
+      // __lambo.lens(tail, head) for the two alphas, __lambo.tail(rough, env) for how glassy the
+      // cones read. Strip with the other hooks.
+      const eachLens=(name,fn)=>m.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)
+        &&o.material.name===name) fn(o.material); });
+      window.__lambo={
+        lens:(t,h)=>{ eachLens('Lego_Transparent_Red',   g=>g.opacity=t);
+                      eachLens('Lego_Transparent_White', g=>g.opacity=h); },
+        tail:(r,e)=>{ eachLens('Lego_Transparent_Red', g=>{ g.roughness=r; g.userData.envBase=e; }); } };
+        // envBase alone is enough: applyTOD() rescales every registered material's envMapIntensity
+        // from it on the next frame, so writing envMapIntensity here would only be overwritten.
       // The WINDSCREEN needs nothing here, and that is the point. Its see-through came from a
       // TRANSMISSION map in the blend (base alpha is 1.0 across every one of its UVs), which glTF
       // hands to KHR_materials_transmission and three r128 cannot read, so exported untouched it
@@ -3789,6 +3890,111 @@
       // at 0.25 instead, the alpha this model's own trans bricks carry, so polish() catches it on
       // its m.transparent test and it goes down the ordinary LEGO glass path (roughness 0.08,
       // FrontSide, envBase 0.85) with every other window in the Realm.
+    }});
+  // ── 1969 ASTON MARTIN DBS, third car in the pad's lane, nose on to the Countach's tail ──────
+  // SIZED ON ITS WHEEL, exactly as the Countach is, and for the same reason: a stud is read
+  // against the studs on the same car, a wheel is read against the car parked beside it. Tyre
+  // radii come from the tangent circle a tread must satisfy about its contact patch,
+  // R = (dx^2+h^2)/2h, taking the mode, run over BOTH cars with the same code in the same frame
+  // so the ratio cannot inherit either one's fitting choices: Countach 0.516, Aston 0.548, each
+  // agreeing across all four of its own wheels. That code was validated first on the Countach,
+  // whose wheelbase it recovers as 3.768 against the 3.7675 measured for it before, and whose
+  // radius it puts at 24.1mm of real LEGO against the 24.2 already written down for that tyre.
+  //   scale     = 0.803008 * 0.516/0.548 = 0.756126   (the Countach's live scale, wheel-corrected)
+  //   targetLen = 7.763952 * 0.756126    = 5.8703     (its raw length, which is its x extent)
+  // Cross-checked against the real cars, which is the point of matching on the wheel: this lands
+  // the DBS 6.0% longer than the Porsche's live body, and a real DBS is 6.8% longer than a real
+  // 911. Live it is 5.870 x 2.574 x 1.665, so it is the longest car in the Realm and its roofline
+  // sits within 0.05 of the other three.
+  // NOTHING NEEDED ROTATING. Unlike the Countach, this build came out of Blender already axis
+  // aligned with its nose down -x (front lamp panel at min x, tail lights at max x, wheels
+  // symmetric in y to 0.0002), so rotY is 0 and targetLen divides by the honest x extent rather
+  // than by a yawed box. Its winding is clean, 0.00000 reversed over 664.71 units of area across
+  // all 11 primitives, so no fixWinding; and its baseColorFactors come from Blender's own
+  // exporter, which writes linear, so no sRGB conversion. Both checked against the shipped file.
+  // PARKED at x 51.005..56.875, z 7.580..10.154: 1.42 of clear pavement between its nose and the
+  // Countach's tail, which is a car's own bumper gap and change (the Porsche and Corvette leave
+  // 1.26), and 0.50 to the car pad's east edge. holder.position runs through snap(), so pos only
+  // ever lands on a whole stud pitch and 53.94 is the one that leaves both those margins.
+  loadProp('./assets/aston.glb', {name:'aston', pos:[53.94,9.04], y:0, rotY:0,
+    targetLen:5.8703, solid:true,
+    onload:(holder,m)=>{
+      // NOTHING IN THIS EXPORT IS TRANSPARENT AND FOUR OF ITS MATERIALS HAVE TO BE. Read out of
+      // the source node trees rather than guessed at: every Principled alpha is 1.0, no material
+      // carries a transmission weight, and the see-through is only Blender's HASHED blend mode,
+      // which glTF has no way to express. So all four ship as alphaMode OPAQUE and would render
+      // as solid slabs. polish() already catches them, because its glassy test reads the material
+      // NAME and all four say trans or glass, so they arrive with the mirror-clear finish; what
+      // they do not arrive with is an alpha, since polish only flips `transparent` when opacity
+      // is already under 1. That is what this sets, and it uses the numbers the Countach's lenses
+      // were just tuned to in engine rather than a fresh guess.
+      //  · The two LAMP materials go DoubleSide. A small solid lens brick drawn FrontSide barely
+      //    draws at all (measured on the Countach: taking the clear lens from 0.40 to 1.00 moved
+      //    its lamp by seven levels of sRGB, while DoubleSide tripled the drawn area), and the
+      //    second layer is what gives a lens any body against dark paint.
+      //  · The WINDSCREEN stays FrontSide at 0.25, which is the Realm's window number, for the
+      //    opposite reason: a pane you look THROUGH into a cabin compounds toward white if both
+      //    of its faces blend, and that is what made every window here a milky slab.
+      //  · The tail lights come off the mirror the same way the Countach's cones did, roughness
+      //    0.30 and envBase 0.32, or a curved trans brick reflects the sky and reads white.
+      const GLASS={ 'TRANS-RED'        :{op:0.90, rough:0.30, env:0.32, dbl:true},   // tail lamps
+                    'TRANS-ORANGE'     :{op:0.90, rough:0.30, env:0.32, dbl:true},   // indicators
+                    'Glass.001'        :{op:0.85, rough:0.08, env:0.85, dbl:true},   // front lamps
+                    'Transparent_Glass':{op:0.25, rough:0.08, env:0.85, dbl:false} };// the glasshouse
+      m.traverse(o=>{ if(!o.isMesh||!o.material||Array.isArray(o.material)) return;
+        const G=GLASS[o.material.name||'']; if(!G) return;
+        const g=o.material;
+        g.transparent=true; g.opacity=G.op; g.depthWrite=false;
+        g.roughness=G.rough; g.side=G.dbl?THREE.DoubleSide:THREE.FrontSide;
+        g.userData.envBase=G.env; g.needsUpdate=true; });
+      // ── GUNMETAL BODY (user, 2026-08-31). SOLID-DARK_RED is the ONLY red bodywork material on
+      // this car, checked rather than assumed: of the eleven, exactly three are red-dominant and
+      // the other two are TRANS-RED, which is the tail lamp lens and has to stay red, and
+      // Transparent_Glass, which is the glasshouse. So one assignment covers every red exterior
+      // piece, the same way MB106 covers the Porsche's whole body.
+      // The hex is CONVERTED, because this model's baseColorFactors come from Blender's own
+      // exporter and are already linear, so a sRGB swatch dropped in raw would render pale and
+      // washed (which is exactly what the Corvette's untreated factors did in reverse).
+      // #4E565C was picked by rendering four candidates in engine rather than by eye: #2C3539 and
+      // #3A4247 both read as near-black and lose the car against the Countach parked in front of
+      // it, and #646C73 reads as plain LEGO Light Bluish Gray and sinks into the pad's concrete.
+      // #4E565C is the one that holds a blue cast against both.
+      m.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)
+        &&o.material.name==='SOLID-DARK_RED') o.material.color.set(0x4E565C).convertSRGBToLinear(); });
+      // ── BLACK WHEELS, and the wheel is TWO materials, not one. METAL-SILVER is the four wire
+      // spoke centres (four objects, one at each axle end) and PEARL-FLAT_SILVER is the four rim
+      // faces that read as a white ring around them. Both go to real LEGO Black #05131D, and the
+      // Porsche's rim metal comes OFF: 0.85 metalness is right for chrome and wrong here, because
+      // above 0.9 the colour stops being a tint and becomes reflectance, so a black metal wheel is
+      // a dark mirror rather than a black wheel. Plain ABS at 0.30 roughness keeps the spokes
+      // reading as spokes.
+      const WHEEL_BLACK=new THREE.Color(0x05131D).convertSRGBToLinear();
+      m.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)
+        &&o.material.name==='METAL-SILVER.001'){ const g=o.material;
+          g.color.copy(WHEEL_BLACK); g.metalness=0; g.roughness=0.30;
+          g.userData.envBase=0.55; g.needsUpdate=true; } });
+      // PEARL-FLAT_SILVER cannot go whole, because a FIFTH object shares it: a 1,152-triangle trim
+      // piece up on the body centreline (model x 25.01..25.15, y 1.18..1.54, z -0.36..0.01) that is
+      // not part of any wheel and stays silver. The export joined all five into one mesh, so the
+      // four rim faces are picked out by tintByBoxes against boxes measured off the source: they
+      // are the only PEARL geometry outboard of |z| 1.0, and they sit low, y 0.145..0.948, while
+      // the trim sits high and dead centre. Boxes are in the MODEL's local frame, which Blender
+      // reads as (x, -z, y), so the two axles' rings become one box per side. This must tint
+      // exactly 24,384 of the material's 25,536 triangles, 4 x 6,096, and that count is asserted
+      // in engine rather than trusted.
+      const nWheel=tintByBoxes(m, [{ re:/^PEARL-FLAT_SILVER/, color:WHEEL_BLACK, plastic:true,
+        boxes:[[22.60, 27.65, 0.08, 1.02,  1.03,  1.75],
+               [22.60, 27.65, 0.08, 1.02, -1.75, -1.03]] }]);
+      if(nWheel!==24384) console.warn('aston wheel tint hit '+nWheel+' triangles, expected 24384');
+      // Live, same shape as __lambo: lens(tail, head) for the two alphas, tail(rough, env) for
+      // how glassy the rear lamps read. Strip with the other hooks.
+      const each=(name,fn)=>m.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)
+        &&o.material.name===name) fn(o.material); });
+      window.__aston={
+        lens:(t,h)=>{ each('TRANS-RED', g=>g.opacity=t); each('TRANS-ORANGE', g=>g.opacity=t);
+                      each('Glass.001', g=>g.opacity=h); },
+        tail:(r,e)=>{ ['TRANS-RED','TRANS-ORANGE'].forEach(n=>each(n,
+                      g=>{ g.roughness=r; g.userData.envBase=e; })); } };
     }});
   // THE WALLED GARDEN, standing out in the woods behind the mansion. The ground under it (plain
   // lawn, and the dirt track in) is laid by gardenTrack up with the other ground predicates;
@@ -4219,7 +4425,15 @@
     // pitches down: near 12.8 -> 18.0 is where the lifted top edge gets back the SAME margin it had
     // before (NDC 0.953 at the peak of the idle bob, against 0.954 at the old height and distance).
     // At 17 the top rides to 0.996, technically uncut but hugging the frame edge.
-    about:       { pos:[ 45.90, 4.20,   0.00], yaw:-Math.PI/2, sw:0.62,
+    // ARRIVE: the mansion is the one structure whose "at the building" area is not its walls. Its
+    // forecourt is paving that reaches well out from the footprint and all three cars park on it,
+    // so the door test (3.2 of the door point at 45.73,0) never fired out there and the sign stayed
+    // ARMED the whole time you were standing among the cars: every swing of the camera off it broke
+    // the sign apart, every swing back built it again. Measured off the shipped ground predicates,
+    // the driveway lane's west end is 4.34 from the rect and the car pad's far corner 6.60, so 7.0
+    // covers every inch of that concrete plus a step onto the grass beside it. Anywhere inside it
+    // counts as having arrived, exactly as the doorway does.
+    about:       { pos:[ 45.90, 4.20,   0.00], yaw:-Math.PI/2, sw:0.62, arrive:7.0,
                    rect:[47.67,57.19,-6.76,7.16], near:18, far:21.5 },
     // Centred over the ruins doorway (gap x -3.325..-1.415, so centre -2.37) and seated just above
     // the balcony floor that overhangs it (top 3.0; nothing else stands at this x until z 24.11).
@@ -4251,7 +4465,7 @@
     // waits for the controls card so you watch it build.
     spawn:       { pos:[ -2.59, 1.00, -14.59], yaw:0,          sw:3.2, scale:1.7, lines:4, gate:true, once:true,
                    at:[-2.586,-2.586], near:6, far:10,
-                   text:'Hello! Walk up to any of the structures to learn more about me. Keep your eyes peeled, you never know what you may find.' } };
+                   text:'Hello! Walk up to any of the structures to learn more about me. They are not the only thing you can open.' } };
   // Text canvas: word-wrapped to at most `lines`, then every character is laid out ONCE at its final
   // spot and drawn n-at-a-time, so the message prints in place instead of sliding as it grows.
   function bubbleTex(text, maxLines){
@@ -4319,7 +4533,7 @@
         bubbles.push({ k, x:s[0], y:s[1], z:s[2], yaw:cfg.yaw, sw:cfg.sw, sc:SC, gate:!!cfg.gate,
           at:cfg.at||null, rect:cfg.rect||null, near:cfg.near||BUB_NEAR, far:cfg.far||BUB_FAR, once:!!cfg.once,
           maxY:(cfg.maxY==null?null:cfg.maxY),
-          door:(PORTALS[k]&&PORTALS[k].door)||null, used:false,   // used: arrived at it, so it stays down until you leave and come back
+          door:(PORTALS[k]&&PORTALS[k].door)||null, arrive:cfg.arrive||0, used:false,   // used: arrived at it, so it stays down until you leave and come back
           holder, plane, txt, tex:t, bricks, BH,
           p:0, shown:-1, pop:0, step:0, bob:0, tilt:0, ph:Math.random()*6.283, built:false, done:false });
       }
@@ -4359,8 +4573,13 @@
       else if(B.rect){
         const inside = d < 0.01;                                     // within the footprint itself
         const atDoor = B.door && Math.hypot(px-B.door.x, pz-B.door.z) < BUB_DOOR;
+        // ARRIVAL RADIUS. A door point is a good test for a building you walk straight up to and a
+        // bad one for a building with a forecourt: you can be standing against the mansion's north
+        // flank, a car's length from its wall, and still be 7.6 from its door. `arrive` is a ring
+        // round the FOOTPRINT, so any spot that close counts as arriving whichever face you are on.
+        const atSite = d < B.arrive;
         if(d > B.far) B.used=false;                                  // walked back out: armed again
-        if(inside || atDoor){ dir=-1; B.used=true; }                 // arrived: come apart, stay down
+        if(inside || atDoor || atSite){ dir=-1; B.used=true; }       // arrived: come apart, stay down
         else if(B.used || !bubFacing(B)) dir=-1;
         else dir = d<B.near ? 1 : (d>B.far ? -1 : 0);                // hysteresis band: mid-band it holds
       }
@@ -4973,27 +5192,85 @@
   let PITCH_FLY_SENS=1.8;
   const pitchSens=()=>SENS*(flying?PITCH_FLY_SENS:1);
   const clampPitch=v=>Math.max(flying?PITCH_UP:0.06, Math.min(1.2, v));
-  let drag=false,lx=0,ly=0,mdrag=false,mMoved=0; const pt=e=>{const t=(e.touches&&e.touches[0])||e;return{x:t.clientX,y:t.clientY};};
-  // preventDefault stops the browser starting a selection or a native canvas drag, either of
-  // which swallows the mousemove stream and leaves the camera stuck part way through a pan.
-  canvas.addEventListener('mousedown',e=>{ e.preventDefault(); initAudio(); const p=pt(e); lx=p.x; ly=p.y;
-    if(mode==='hub') drag=true; else if(mode==='menu'&&!viewerOpen){ mdrag=true; mMoved=0; } });
-  addEventListener('mousemove',e=>{ const p=pt(e);
-    // A mouseup released outside the window never reaches us and `drag` stays latched, so the
-    // camera goes on following a mouse with no button held. e.buttons is the authoritative answer
-    // to "is one still down", so a latched drag clears itself on the very next move. Gated on
-    // lookId being null because a touch look-drag shares `drag` and synthesises mousemove with
-    // buttons 0, which would otherwise cancel every drag on a phone.
-    if(lookId===null && (drag||mdrag) && e.buttons===0){ drag=false; mdrag=false; lx=p.x; ly=p.y; return; }
-    if(mdrag&&mode==='menu'){ mMoved+=Math.abs(p.x-lx); menuPan=clampPan(menuPan-(p.x-lx)*0.011); lx=p.x; ly=p.y; return; }
+  // ══ THE LOOK DRAG ═════════════════════════════════════════════════════════════════════════
+  // A pan that stops dead while the button is still down has TWO causes and they are unrelated.
+  //
+  // 1. THE PAN RAN OUT OF SCREEN. This is the one you actually hit. Steering on clientX means the
+  //    yaw is bounded by the physical edge of the display: at SENS a full turn is 2*PI/0.0065 =
+  //    967 pixels of cursor travel, so from the middle of a 1512-wide window there is only about
+  //    280 degrees of turn available before the cursor is pinned against the bezel, clientX stops
+  //    changing, and the camera stops while the hand keeps moving. POINTER LOCK is the fix and the
+  //    only one: locked, the cursor has no position to run out of, and the deltas arrive as
+  //    movementX/movementY, which are the same CSS pixels with the same OS acceleration, so the
+  //    feel does not change. It is taken for the duration of a drag and handed straight back.
+  //    Only in hub mode: the portal panels are really CLICKED, so the menu keeps a real pointer.
+  //    Every step of it can fail (no support, denied, Chrome rate-limiting a re-lock), and every
+  //    failure falls back to the clientX path, which is what shipped before, so a refusal costs
+  //    the bounded pan and never the pan itself.
+  //
+  // 2. SOMETHING TOOK THE GESTURE AWAY from the page. Four independent guards, none of which
+  //    subsumes another:
+  //    · preventDefault on mousedown (and on dragstart) stops the BROWSER starting its own
+  //      gesture: a text selection across the HUD, or a native drag of the canvas as an image.
+  //    · contextmenu is suppressed. A right-click, or a ctrl-click on a Mac, part way through a
+  //      pan otherwise opens the OS menu, which holds the pointer until it is dismissed, and
+  //      preventDefault on mousedown does NOT cover it, being its own event.
+  //    · setPointerCapture covers the gap before a lock engages, and the whole drag when the lock
+  //      is refused: without a capture the gesture belongs to whatever the pointer is over, so
+  //      crossing onto a HUD element or leaving the window can end the move stream outright.
+  //    · pointercancel / lostpointercapture, and e.buttons===0 on a move, are the releases for a
+  //      gesture that ends without a pointerup ever reaching us.
+  //
+  // TWO THINGS THAT WILL BITE A REWRITE. Entering a lock can fire lostpointercapture, and clearing
+  // the drag there would kill the pan at the exact instant the lock took over, so that handler
+  // stands down while a lock is held or pending. And clientX is FROZEN throughout a lock, so the
+  // frame the lock ends on has a client position that may be half a screen from lx: `reanchor`
+  // re-seats the anchor on the first unlocked move instead of applying that jump as a pan.
+  // BLUR IS DELIBERATELY NOT A RELEASE while a capture is held, either: a window can lose focus
+  // for reasons other than the user letting go, and killing the drag there froze pans that were
+  // still under the hand. The pointerup or the pointercancel is still coming.
+  let drag=false,lx=0,ly=0,mdrag=false,mMoved=0,dragPid=null,lockPending=false,reanchor=false;
+  const pt=e=>{const t=(e.touches&&e.touches[0])||e;return{x:t.clientX,y:t.clientY};};
+  const looking=()=>document.pointerLockElement===canvas;
+  const grabLock=()=>{ if(!canvas.requestPointerLock||looking()) return; lockPending=true;
+    try{ const r=canvas.requestPointerLock(); if(r&&r.catch) r.catch(()=>{lockPending=false;}); }
+    catch(_){ lockPending=false; } };
+  const startLook=e=>{ const p=pt(e); lx=p.x; ly=p.y; reanchor=false;
+    if(mode==='hub') drag=true; else if(mode==='menu'&&!viewerOpen){ mdrag=true; mMoved=0; } };
+  const endLook=()=>{ drag=false; mdrag=false; lockPending=false;
+    if(dragPid!==null){ const id=dragPid; dragPid=null; try{ canvas.releasePointerCapture(id); }catch(_){} }
+    if(looking()&&document.exitPointerLock) document.exitPointerLock(); };
+  document.addEventListener('pointerlockchange',()=>{ lockPending=false; reanchor=true; });
+  document.addEventListener('pointerlockerror',()=>{ lockPending=false; });
+  // Pointer events drive the drag. mousedown is kept for its preventDefault, and arms the drag
+  // only on a browser too old to have them (nothing that can run this Realm is, but a camera that
+  // never moves at all is the worst possible failure, so the fallback costs one flag).
+  const HAS_PE = !!window.PointerEvent;
+  canvas.addEventListener('mousedown',e=>{ e.preventDefault(); if(!HAS_PE){ startLook(e); initAudio(); } });
+  canvas.addEventListener('dragstart',e=>e.preventDefault());
+  canvas.addEventListener('contextmenu',e=>e.preventDefault());
+  canvas.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') return;   // touch runs its own look-drag below, keyed on lookId
+    startLook(e);
+    try{ canvas.setPointerCapture(e.pointerId); dragPid=e.pointerId; }catch(_){}
+    if(drag) grabLock();   // hub only, and pointerdown is the user gesture a lock has to be asked for on
+    initAudio(); });       // last, so nothing about starting the audio context can stop a drag arming
+  addEventListener('pointermove',e=>{ if(e.pointerType==='touch') return; const p=pt(e); const lk=looking();
+    if(!lk && reanchor){ lx=p.x; ly=p.y; reanchor=false; return; }   // first move after a lock ends: re-seat, never pan
+    if(!lk && (drag||mdrag) && e.buttons===0){ endLook(); lx=p.x; ly=p.y; return; }
+    const dx = lk ? (e.movementX||0) : (p.x-lx), dy = lk ? (e.movementY||0) : (p.y-ly);
+    if(mdrag&&mode==='menu'){ mMoved+=Math.abs(dx); menuPan=clampPan(menuPan-dx*0.011); lx=p.x; ly=p.y; return; }
     // The anchor is kept current even on the frames the camera is NOT being driven. Returning
     // without it leaves lx/ly wherever the pointer was when a fade or a scripted camera move
     // began, and the drag that resumes afterwards snaps by the whole distance travelled since.
     if(!drag||mode!=='hub'||fading||camAnim){ lx=p.x; ly=p.y; return; }
-    camYaw-=(p.x-lx)*SENS; camPitch=clampPitch(camPitch+(p.y-ly)*pitchSens()); lx=p.x; ly=p.y; });
-  addEventListener('mouseup',()=>{ drag=false; mdrag=false; });
-  // alt-tabbing away mid-drag never delivers the mouseup either
-  addEventListener('blur',()=>{ drag=false; mdrag=false; });
+    camYaw-=dx*SENS; camPitch=clampPitch(camPitch+dy*pitchSens()); lx=p.x; ly=p.y; });
+  addEventListener('pointerup',e=>{ if(e.pointerType!=='touch') endLook(); });
+  addEventListener('pointercancel',e=>{ if(e.pointerType!=='touch') endLook(); });
+  canvas.addEventListener('lostpointercapture',e=>{ if(dragPid!==e.pointerId) return; dragPid=null;
+    if(looking()||lockPending) return;   // the lock took the gesture over; the drag lives on
+    drag=false; mdrag=false; });
+  addEventListener('mouseup',()=>{ if(!HAS_PE) endLook(); });
+  addEventListener('blur',()=>{ if(dragPid===null){ drag=false; mdrag=false; } });
   // touch look-drag tracks its own touch identifier so the joystick finger never steals the camera
   let lookId=null;
   canvas.addEventListener('touchstart',e=>{ initAudio(); if(lookId!==null) return; const t=e.changedTouches[0];
@@ -5595,7 +5872,10 @@
   // ── DEBUG (temporary — removed before finalize): drive camera/player from the console for placement
   window.__D={ THREE, scene, renderer,
     get camera(){return camera}, player,
-    set yaw(v){camYaw=v}, set pitch(v){camPitch=v}, set dist(v){camDist=v},
+    get yaw(){return camYaw}, set yaw(v){camYaw=v},
+    get pitch(){return camPitch}, set pitch(v){camPitch=v},
+    get lookLocked(){return document.pointerLockElement===canvas},
+    set dist(v){camDist=v},
     get time(){return dayT}, set time(v){dayT=v; applyTOD();},
     tp(x,z){ player.position.x=x; player.position.z=z; velX=velZ=0; },
     step(dt){ frame(Math.min(dt||0.033,0.05)); },   // manual frame pump for headless verification (rAF pauses in hidden panes)

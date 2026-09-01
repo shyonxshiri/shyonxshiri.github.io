@@ -195,15 +195,56 @@ precisely what made it wrong: 6.564 x 2.595 x 2.065 against the Porsche's 5.600 
 5.165 x 2.042 x 1.625, so the two roofs line up and it reads as the shorter build it is (17.8
 stud-pitches to the Porsche's 19.3). Re-measure BOTH pitches after any re-export.
 **The third car is a BLACK Countach with gold rims**, `lamborghini.glb`, on the second car pad at
-`pos [46.92,9.04]`, `rotY` 0, `targetLen` 5.6197, nose down -x like the other two. Its pitch is
-0.342724, and unlike the other two MOCs this build NAMES its parts, so the lattice is fitted rather
-than inferred: dim = N*p over every Plate / Flat Tile / Brick carrying its own stud count gives
-0.342724 across N = 1,2,3,4,6 with 88 inliers. The WHEELS were the independent check and not the
-source: the wheelbase is 3.7675, which is 11 stud pitches to 0.07%. Matching the Porsche's rendered
-0.29018 stud gives 0.846689, so 6.63729 x 0.846689 is `targetLen` 5.6197, landing 5.620 x 2.658 x
-1.707. It is the wider, lower car and that 1.707 is its REAR WING; the glasshouse tops out at 1.594,
-just under the Porsche's roofline. Noses are aligned: x 44.110..49.730 against the Porsche's
-44.11..49.73, z 7.538..10.196, 1.95 clear of the Porsche's flank.
+`pos [46.92,9.04]`, `rotY` 0, `targetLen` **5.3298**, nose down -x like the other two.
+**It is sized on its WHEEL, not on its stud pitch**, and the two are different answers. Tyres are
+measured IN THE LIVE SCENE (world units are the only frame two cars compare in) by the tangent
+circle a tread must satisfy about its contact patch, `R = (dx^2+h^2)/2h`, taking the mode: it agrees
+across all four wheels of a car to four decimals. Porsche **0.83292**, Corvette **1.11762**,
+Countach 0.87823 before this pass. In each car's own rendered studs that is 2.902 / 3.852 / 3.027,
+i.e. about 23.2, 30.8 and 24.2mm of real LEGO, and the Corvette landing on the real 30.4mm LEGO
+wheel to 1.3% is what proves the method. The Corvette is left alone: it IS built on a bigger tyre.
+Two errors had put the Countach 5.4% over the Porsche's wheel and they compounded.
+· **The Porsche's live scale is 0.820558, not 5.6/6.750582 = 0.829556.** `loadProp` takes its box
+  AFTER the holder rotation, and the Porsche carries `rotY` -0.015, so `targetLen` divides by the
+  ROTATED box (6.82461). Its rendered stud is 0.287027, not the 0.29018 the file used to claim.
+  **Anything solving a scale off another prop must read that prop's LIVE `holder.scale`.**
+· The other 4.3% is real: **the two builds are on different tyres**, 23.2mm against 24.2mm, so
+  matching the stud and matching the wheel cannot both be had.
+The wheel wins, because a stud is read against the studs on the SAME car while a wheel is read
+against the car parked a body's width away. 0.83292 / 1.037251 raw = 0.803008, so
+6.637295 x 0.803008 is `targetLen` 5.3298, landing 5.330 x 2.521 x 1.619 against the Porsche's live
+body 5.539 x 2.278 x 1.600 (the Porsche's own Box3 reads 5.600 x 2.330 only because of that yaw).
+Measured back in engine: all four Countach tyres 0.83256..0.83303 against the Porsche's 0.832920,
+0.016% apart. It is now the SHORTER car, which is right, and still the wider; its glasshouse tops
+out at 1.512 and only the REAR WING reaches 1.619, 0.019 proud of the Porsche's roofline.
+Its pitch is still 0.342724 (this build NAMES its parts, so the lattice is fitted rather than
+inferred: dim = N*p over every Plate / Flat Tile / Brick carrying its own stud count, across
+N = 1,2,3,4,6 with 88 inliers, and the 3.7675 wheelbase checks it at 11 pitches to 0.07%), it is
+simply no longer what the scale is solved on. Rendered it is 0.275210, 4.1% under the Porsche's.
+Parked x 44.255..49.585 against the Porsche's 44.120..49.720, z 7.606..10.127, 2.01 clear of the
+Porsche's flank. The nose sits 0.135 behind the Porsche's and stays there: `holder.position` runs
+through `snap()`, so `pos` x moves only in whole stud pitches and 46.92 is already the nearest.
+**The light LENSES are the one exception to the FrontSide glass rule, and OPACITY WAS NEVER THE
+PROBLEM.** Six pieces: four `Lego_Transparent_White` at the nose (`6220959` Brick 1x1 outboard plus
+`6252041` Plate 1x1 inboard, per lamp, laid flush into the nose deck as closed pop-up covers) and two
+`Lego_Transparent_Red` `6337596` Cone 1x1 at the tail. Copying the Porsche's `MB41` 0.7 / `MB40` 0.4
+did nothing, and measuring in engine says why: over the pixels the headlight covers, taking the clear
+lens from 0.40 to 1.00 moves its mean only from sRGB (55,48,52) to (62,55,58). A fully opaque light
+grey brick rendering at 62 is not being blended away, it is not being DRAWN. Switch the material to
+`DoubleSide` and the drawn area TRIPLES, 7,345 pixels to 21,669. Winding, normals and the world
+matrix determinant were all checked first and all three are clean (reversed fraction 0.00000,
+outward normals on all 254 parts, determinant +0.518), so this is the FrontSide rule itself: it
+exists because a WINDOW compounds toward white when both faces blend, and a small lens brick sunk
+into black paint is the opposite case, where the second layer is the only thing giving it body.
+Shipped: clear `DoubleSide` 0.85 at the glass gloss, red `DoubleSide` 0.90 at roughness 0.30 and
+envBase 0.32. The tail needed coming off the mirror as well as opening up: at polish()'s 0.08 / 0.85
+a trans-red CONE standing out in the open reflects the sky over most of its curve and reads white.
+**And the Porsche cannot be matched on alpha, because it has a REFLECTOR and this car does not.**
+Ray-cast through `MB40` and 78.8% of its outward area lands on `MB309`, a 0.617 light grey plate
+right behind the lens. 100% of the Countach's clear lens lands on the printed nose panel, which this
+build's own black repaint took to #05131D. Live on `__lambo.lens(tail, head)` and `__lambo.tail(rough, env)`. `Lego_Transparent_Brown` is NOT touched: measured, it spans x
+0.354..1.975 and reaches y 1.633, so it is the side and rear GLASS, and 0.25 is what glass is for;
+the windscreen is left alone for the same reason. Live on `__lambo.lens(tail, head)`.
 `scratchpad/lambo/export_lambo.py` axis-aligns and centres it (the nose is DERIVED from the light
 lenses, clear at one end and red at the other, not hardcoded), splits the four wheel-rim tiles onto
 their own material clone `Texture_Rim`, and joins the 254 named parts into one mesh per material:
@@ -241,6 +282,66 @@ baseColorFactors are already LINEAR (so no sRGB conversion, also the opposite of
 The mansion's own materials name its parts: `Wood_ish_thing` #795500 is the wood floor,
 `Dark_grey` the pavement, and `phong11` #65491A the one piece of furniture, an 8x4 stud brown
 table on the ground floor (x 49.86..52.82, z -6.01..-4.52, plate top y 0.6336, stud tops y 0.7276).
+
+**The fourth car is a 1969 ASTON MARTIN DBS**, `aston.glb`, third in the car pad's lane, parked
+nose on to the Countach's tail. `pos [53.94,9.04]`, `rotY` 0, `targetLen` **5.8703**.
+**Sized on its WHEEL like the Countach**, and the ratio is taken with ONE piece of code run over
+both cars in the same frame so it cannot inherit either one's fitting choices: tyre radius from the
+tangent circle a tread must satisfy about its contact patch, `R = (dx^2+h^2)/2h`, mode over the
+tread. Countach **0.516**, Aston **0.548**, each agreeing across all four of its own wheels. That
+code was validated on the Countach before it was trusted: it recovers the 3.768 wheelbase already
+measured for that car, and puts its tyre at 24.1mm of real LEGO against the 24.2 already written
+down. So `scale = 0.803008 * 0.516/0.548 = 0.756126` and `targetLen = 7.763952 * 0.756126 = 5.8703`,
+landing 5.870 x 2.574 x 1.665 (live scale 0.756097). Cross-checked against the real cars, which is
+the point of matching on the wheel: this makes the DBS 6.0% longer than the Porsche's live body,
+and a real DBS is 6.8% longer than a real 911. It is the longest car in the Realm and its roofline
+sits within 0.05 of the other three.
+Nothing needed rotating: it came out of Blender already axis aligned with its nose down -x (front
+lamp panel at min x, tail lights at max x, wheels symmetric in y to 0.0002), so `targetLen` divides
+by an honest x extent rather than a yawed box. Winding is clean (0.00000 reversed over 664.71 units
+of area across all 11 primitives) and its baseColorFactors come from Blender's own exporter, which
+writes linear, so it needs neither `fixWinding` nor an sRGB conversion.
+Parked x 51.005..56.875, z 7.580..10.154: 1.42 of clear pavement to the Countach's tail (the
+Porsche and Corvette leave 1.26) and 0.50 to the car pad's east edge.
+**NOTHING IN THE EXPORT IS TRANSPARENT AND FOUR OF ITS MATERIALS HAVE TO BE.** Read out of the
+source node trees, not guessed: every Principled alpha is 1.0 and no material carries a transmission
+weight, so the see-through is only Blender's HASHED blend mode, which glTF cannot express, and all
+four ship alphaMode OPAQUE. `polish()` does catch them, because its glassy test reads the material
+NAME and all four say trans or glass, but it only flips `transparent` when opacity is already under
+1, so they arrive with the finish and no alpha. The loader writes them: `TRANS-RED` and
+`TRANS-ORANGE` 0.90 / roughness 0.30 / envBase 0.32 DoubleSide, `Glass.001` (the front lamp panel)
+0.85 / 0.08 / 0.85 DoubleSide, `Transparent_Glass` (the glasshouse) 0.25 FrontSide, which is the
+Realm's window number and the window rule. Live on `__aston.lens(tail, head)` / `__aston.tail(rough, env)`.
+**GUNMETAL BODY AND BLACK WHEELS** (user, 2026-08-31). `SOLID-DARK_RED` is the ONLY red bodywork
+material, checked rather than assumed: of the eleven, exactly three are red-dominant and the other
+two are `TRANS-RED`, the tail lamp lens, which has to stay red, and `Transparent_Glass`, the
+glasshouse. So one assignment covers every red exterior piece, the way `MB106` does on the Porsche.
+**#4E565C**, converted, because this model's factors are already linear. It was picked by rendering
+four candidates in engine, not by eye: `#2C3539` and `#3A4247` read as near-black and lose the car
+against the Countach parked in front of it, `#646C73` reads as plain Light Bluish Gray and sinks
+into the pad's concrete.
+**The wheel is TWO materials.** `METAL-SILVER` is the four wire spoke centres and
+`PEARL-FLAT_SILVER` is the four rim faces, which read as a white ring around them. Both go to real
+LEGO Black #05131D and the Porsche's rim metal comes OFF: 0.85 metalness is right for chrome and
+wrong here, because above 0.9 the colour stops being a tint and becomes reflectance, so a black
+metal wheel is a dark mirror rather than a black wheel. Plain ABS at 0.30 roughness keeps the
+spokes reading as spokes. `PEARL-FLAT_SILVER` cannot go whole, because a FIFTH object shares it: a
+1,152-triangle trim piece on the body centreline that stays silver. The export joined all five into
+one mesh, so `tintByBoxes` picks the four rim faces out against boxes measured off the source (they
+are the only PEARL geometry outboard of |z| 1.0, and they sit low while the trim sits high and dead
+centre). **It must hit exactly 24,384 of that material's 25,536 triangles, 4 x 6,096**, and that is
+asserted in the loader and confirmed twice: by replaying the box test against the real geometry in
+Node (`scratchpad/aston/verify_tint.cjs`) and by the guard staying silent in engine.
+`SOLID-BLACK` also ships metalness 1 and is deliberately left to `polish()`, because it is tyres and
+black bricks and a metal tyre is a Mecabricks artefact rather than a decision.
+**Three colours are still import defects, shipped as they are.** `TRANS-ORANGE` has baseColorFactor
+`[0.840, 1.000, 0.000]`, a chartreuse, so the outer tail lamps render YELLOW rather than amber;
+`Transparent_Glass` is `[1.000, 0.525, 0.602]`, a pink; and `SOLID-TAN` plus
+`SOLID-DARK_BLUISH_GRAY` sit at Blender's default 0.800 grey, i.e. never authored.
+The export (`scratchpad/aston/export_aston.py`) joins 36 objects into one mesh per material, 11
+draw calls and 338,552 triangles, and STRIPS the two orphan 2048 maps `Glass.001` carried: a normal
+map and a metallicRoughness map on a 4,608-triangle lens, 3.65MB of a 6.70MB file, with the
+metallicRoughness one dead on arrival since `polish()` overrides both channels. 3.04MB shipped.
 
 **The mansion's upstairs.** Reached by FLYING onto the balcony (parapet top 4.520, so the body
 band clears it from feet 4.41) and walking in through its door, which is the gap in the wall at
@@ -388,10 +489,20 @@ swipe. Q leaves.
 **Title bubbles.** LEGO speech bubbles (`speech_bubble.glb`) that build themselves course by
 course as you approach, print their label letter by letter, and dismantle when you leave, with
 brick snap sounds. `BUB_SPOTS` entries take `pos / yaw / sw / scale / lines / text / rect / near /
-far / maxY / once`. Portal signs trigger on distance to the structure's `rect` (so the distance is
-the same from every direction), and only when you are OUTSIDE the footprint, LOOKING at the sign
-(`bubFacing`), and haven't already arrived once (`used`, re-arms past `far`). The spawn greeting
-is a one-time point-triggered sign on the opening sightline.
+far / maxY / once / arrive`. Portal signs trigger on distance to the structure's `rect` (so the
+distance is the same from every direction), and only when you are OUTSIDE the footprint, LOOKING at
+the sign (`bubFacing`), and haven't already arrived once (`used`, re-arms past `far`). The spawn
+greeting is a one-time point-triggered sign on the opening sightline.
+**Arriving is a RING round the footprint, not just the door.** `BUB_DOOR` 3.2 about the portal's
+door point is the right test for a building you walk straight up to and the wrong one for a building
+with a forecourt. Standing among the three parked cars you are a car's length from the mansion's
+north flank and still 7.6 from its door, so `used` never got set: the sign stayed ARMED, and every
+swing of the camera off it broke it apart while every swing back built it again. `arrive` is that
+missing ring, and only `about` carries one, 7.0, measured off the shipped ground predicates (the
+driveway lane's west end is 4.34 out from the rect and the car pad's far corner 6.60, the worst
+point on either slab). Replayed against the real coordinates, 6.7 seconds of loitering by the
+Lamborghini with the camera swinging went from 12 rebuilds to 0, and every one of 5043 sampled
+points on the driveway, the car pad and the Lamborghini's own footprint now reads as arrived.
 
 **The cape.** A LEGO cape is one rigid moulded piece, so the cloth is done on the VERTICES, in
 `buildCape` / `capeFrame`. The sheet swings about the hinge where it meets the collar by an angle
@@ -783,8 +894,17 @@ tunes the lean, `__hero.armAmt(kick, travel)` the two caps. The bottom hint line
 is ever explained: run on the ground, descend only once flying.
 
 **The pointer, and the two keys that replaced the buttons.** `#c` is `cursor:none`: the mouse only
-ever DRAGS out in the world, so the pointer is noise. `enterPortal` puts it back (`'default'`) and
-`exitPortal` takes it away again, because the portal panels are really clicked. Only the CANVAS
+ever DRAGS out in the world, so the arrow is noise. `enterPortal` puts it back (`'default'`) and
+`exitPortal` takes it away again, because the portal panels are really clicked.
+**There is deliberately NO custom cursor over the canvas.** A stand-in was built (a four-tick cross,
+then a LEGO stud picked from six options rendered over the Realm's own surfaces) and REMOVED at
+Shyon's request: over the world there is simply nothing there. Don't rebuild it. Two findings from
+that pass are worth keeping if it is ever wanted again. `mix-blend-mode:difference`, which is what
+the main site's cursor uses, CANCELS EXACTLY at backdrop 127.5 (it composites to `B + a*(255-2B)`):
+measured over the Realm it is superb on the sky (dLum 136), the fog (146) and a black car (146) and
+VANISHES on mid grey (dLum 1.0), which is the driveway and the car pads. An off-white hairline under
+a 1.2px dark `drop-shadow` has no such hole. And any bordered ring needs `box-sizing:border-box`, or
+the 1px border makes a 15px ring 17px on screen and a -7.5 margin misses the pointer by a pixel. Only the CANVAS
 carries the rule, so every HUD element keeps its own cursor. The top-right cluster (`Leave the
 Realm`, the sound button) is then `body:not(.touch) #topright{display:none}` at Shyon's request:
 aiming a hidden pointer at a button is the wrong shape. On a keyboard **`R` leaves** (same `/` the
@@ -797,9 +917,9 @@ costs the suit.
 **Debug hooks**, all temporary, strip before a final polish deploy. URL hashes (no console needed,
 which is what makes them usable in Safari): `#nopipe` forces the old direct path, `#noao` / `#nobloom`
 / `#nosmaa` switch off one pipeline stage each, `#noshade` skips the suit's colour remap. Objects: `window.__D` (`time`, `tp(x,z)`,
-`step(dt)`, `blocked`, `portalAt`, `shopPad`, `surfaceAt`, `audio`, `pipe`, `scene`, `camera`),
-`__FC` free-cam, `__R`, `__props`, `__bub`, `__petals`, `__stems`, `__gravel`, `__reeds`,
-`__money`, `__houseLights`, `__matGreen`, and `__hero` (`wear`, `fly`, `drop`, `trim`, `spin`,
+`step(dt)`, `blocked`, `portalAt`, `shopPad`, `surfaceAt`, `audio`, `pipe`, `scene`, `camera`, and
+`yaw`/`pitch`/`lookLocked`, which READ back as well as set), `__FC` free-cam, `__R`, `__props`, `__bub`, `__petals`, `__stems`, `__gravel`, `__reeds`,
+`__money`, `__houseLights`, `__matGreen`, `__lambo` (`lens`), and `__hero` (`wear`, `fly`, `drop`, `trim`, `spin`,
 `nudge`, `lock`, `roofs`, `fit`, `hair`, `flare`, `ease`, `land`, `take`, `speed`, `cape`,
 `sockets`, `head`, `leap`, `colours`, `metal`, `skin`, `hover`, `sway`, `palette`).
 The hero's dials are LIVE: `drop/trim/spin` re-seat the
@@ -820,8 +940,8 @@ interior + outer band (`PETAL_HUES` gives each head one flat colour from 5 shade
 red/blue/yellow, `PETAL_N` decides how many of a plant's 4 stems flower, and the stalk takes one
 green of its own), organic gravel paths, props (wine-red Porsche with silver rims and a peanut-butter interior, the white Corvette C7 Z06
 parked behind it on the mansion driveway, a black Lamborghini Countach with gold rims on the second
-car pad beside them, skull, rat, Tardis + NABU crystal, pirate chest + money
-bricks), the day cycle, the render pipeline, the sound layer, the
+car pad beside them and a red 1969 Aston Martin DBS parked nose on to its tail, skull, rat,
+Tardis + NABU crystal, pirate chest + money bricks), the day cycle, the render pipeline, the sound layer, the
 title bubbles, mobile touch controls (joystick + jump + contextual pills), and My Lego Super Hero
 behind the pirate chest (suit swap + flight). Flight collision is now per-geometry in three
 dimensions (§5), and the mansion's upstairs is a real room you can fly into and walk around.
@@ -941,6 +1061,18 @@ and 7 staged Blender frames showing the structures part-built.
   local view EXCLUDES lights; switching workspace only takes effect on the NEXT call.
 
 **Geometry and placement**
+- **`targetLen` is NOT `len/rawLen` when the prop is rotated.** `loadProp` takes its `Box3` AFTER
+  the holder's `rotation.y` is applied, so a yawed prop divides by the ROTATED, larger box and its
+  live scale is smaller than the arithmetic suggests. The Porsche's `rotY` -0.015 makes its real
+  scale 0.820558 against a computed 0.829556, its body 5.539 long against the 5.600 `targetLen`
+  reads, and its rendered stud 0.287027 against a claimed 0.29018. Anything that sizes one prop
+  against another must read the other's LIVE `holder.scale` from the running scene, never re-derive
+  it from the config. This silently mis-sized the Countach by 1.1% before anyone looked at it.
+- **Compare two props in WORLD units, in the live scene, not in either model's own frame.** A
+  measurement taken off a Blender import is in raw model units and has to survive `targetLen`, the
+  bbox recentre and the holder to mean anything. The Corvette's tyre measured 1.2418 in Blender and
+  1.2562 in engine, 1.2% apart, purely from how the fit was bounded; the engine number is the one
+  that is on screen.
 - Never derive a centre from a scan whose bounds you chose before measuring the object.
 - **A pivot that is only slightly wrong is invisible until the rotation gets big.** Borrowing one
   limb's pivot for another limb's piece hides inside a walk cycle and falls apart at a flight pose:
@@ -970,6 +1102,13 @@ and 7 staged Blender frames showing the structures part-built.
   only the selection, which was restored). So `public/assets/garden.glb` is currently the ONLY
   copy outside that session. If the blend is re-saved it should pick the object up; until then,
   do not assume a headless open of the saved file can see it.
+- **`aston.glb` is NOT in the saved blend.** `Lego car (1969 Aston Martin DBS)` was added to the
+  LIVE Blender session and the session was still dirty when it was exported, exactly as `garden.glb`
+  was. The export was taken selection-only out of the running session with the user's selection
+  saved and restored and nothing else touched (`is_dirty` was true before and after), so
+  `public/assets/aston.glb` is currently the only copy outside that session. It will be picked up
+  by the next save of the blend; until then a headless open of the saved file cannot see it.
+  Two of its material colours are import defects, shipped as-is on request (see §5).
 - **The garden has never been SEEN in engine.** Placement, orientation, scale, the ground and the
   collision were all verified by measurement and by headless renders (§5), because the pane has no
   WebGL. It has now been pushed out once already (front 60.089 -> 61.937, `BX1` 66 -> 67.7) after
@@ -1047,16 +1186,52 @@ and 7 staged Blender frames showing the structures part-built.
   the bbox recentre cannot move them; Blender reads that frame as `(x, -z, y)`.
   `scratchpad/verify_tint.js` runs the shipped block against the real geometry in the real vendored
   three.js, on a rotated and scaled holder, and asserts the same 237,902 triangles.
-- **The camera froze mid-pan because the BROWSER was taking the drag.** `lego.html` drags on a bare
-  canvas, and the mousedown handler did not `preventDefault` nor did the canvas set `user-select`,
-  so a drag could start a text selection across the HUD or a native drag of the canvas as an image.
-  While that gesture owns the pointer the page stops receiving `mousemove` and the camera stops
-  dead until you release. Two more latches in the same handler: a `mouseup` released outside the
-  window never arrives, so `drag` stayed true and the camera followed an unpressed mouse (now
-  cleared off `e.buttons===0`, gated on `lookId===null` so a touch look-drag, which shares `drag`
-  and synthesises mousemove with buttons 0, is not cancelled on every move); and the early return
-  for `fading`/`camAnim` left `lx`/`ly` stale, so the drag that resumed afterwards snapped by the
-  whole distance travelled meanwhile. `blur` clears the drag too.
+- **A CAMERA THAT FREEZES MID-PAN IS USUALLY THE PAN RUNNING OUT OF SCREEN**, and that was the one
+  actually being hit. Steering on `clientX` means the yaw is bounded by the physical edge of the
+  display: at `SENS` 0.0065 a full turn is `2*PI/0.0065` = **967 pixels of cursor travel**, so from
+  the middle of a 1512-wide window there is only about **280 degrees** of turn in a single drag
+  before the cursor is pinned against the bezel, `clientX` stops changing, and the camera stops
+  while the hand keeps moving. Let go, re-grab, and it works again, which is exactly what it looks
+  like: an intermittent lock-up. **POINTER LOCK is the fix and the only one.** It is taken on
+  `pointerdown` for the duration of the drag and handed straight back on release, and the deltas
+  then arrive as `movementX`/`movementY`, the same CSS pixels with the same OS acceleration, so the
+  feel is unchanged. **Hub mode only**: the portal panels are really CLICKED, so the menu keeps a
+  real visible pointer and stays on `clientX`. Every step can fail (no support, denied, a
+  rate-limited re-lock) and every failure falls back to the `clientX` path, so a refusal costs the
+  unbounded pan and never the pan itself. Measured in real Chrome over WebGL with dispatched input
+  (`scratchpad/probe5.cjs` style): a drag turned **894 degrees** where the window edge alone allowed
+  238, and three drags back to back with no pause were all granted, so the re-lock rate limit is
+  not in play.
+  **The second half of it is the gesture being taken away from the page**, which is a different
+  failure with four independent guards, none subsuming another. `preventDefault` on `mousedown` and
+  on `dragstart`, plus `user-select`/`user-drag:none` in the CSS, stop the BROWSER starting a text
+  selection across the HUD or a native drag of the canvas as an image; `contextmenu` is suppressed
+  on the canvas, because a right-click or a ctrl-click part way through a pan opens the OS menu,
+  which holds the pointer until dismissed and which `preventDefault` on `mousedown` does NOT cover,
+  being its own event; `setPointerCapture` covers the gap before a lock engages and the whole drag
+  when a lock is refused, since **without a capture the gesture belongs to whatever the pointer is
+  over**; and `pointercancel` / `lostpointercapture` plus `e.buttons===0` on a move are the releases
+  for a gesture that ends with no `pointerup`.
+  **Two traps a rewrite will hit.** Entering a lock can fire `lostpointercapture`, and clearing the
+  drag there kills the pan at the instant the lock takes over, so that handler stands down while a
+  lock is held or pending. And `clientX` is FROZEN throughout a lock, so the frame a lock ENDS on
+  carries a client position that may be half a screen from `lx`: `reanchor` re-seats the anchor on
+  the first unlocked move instead of applying that jump as a pan.
+  **`blur` is deliberately not a release** while a capture is held: a window can lose focus for
+  reasons other than the user letting go, and killing the drag there froze pans still under the
+  hand. The `pointerup` or the `pointercancel` is still coming.
+  One older latch is unchanged and still load bearing: the early return for `fading`/`camAnim` keeps
+  `lx`/`ly` current, or the drag that resumes afterwards snaps by the whole distance travelled
+  meanwhile. Verified two ways, both without a GPU for the logic and with one for the lock: the
+  SHIPPED block extracted by content and replayed in a real shared `vm` context over nine gesture
+  families (`scratchpad/verify_lookdrag.cjs`), including the screen-edge pan, which reproduces the
+  bug at 281 degrees against 894 with the lock; and in headless Chrome over SwiftShader with real
+  dispatched input for the lock itself.
+  **Two things that were measured and are NOT the cause**, so they need not be re-investigated:
+  lazy shader compilation (`renderer.compile()` at spawn adds only 5 programs to the 44 already
+  linked, against 228 distinct materials) and an exception killing the render loop (`loop()`
+  schedules its `requestAnimationFrame` BEFORE calling `frame()`, so a throw costs one frame, not
+  the loop).
 - **The mansion's plate does NOT end at z 7.2845 all the way along.** That is true only of mask row
   e, x 50.72..57.37. Across rows a to d the mask reads '.' at gi 36 AND 37, so the model's plate
   stops at z 6.545 and leaves 0.74 of open ground that the code ground grassed: a green strip 7.4
