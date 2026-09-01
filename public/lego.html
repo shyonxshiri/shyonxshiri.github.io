@@ -118,9 +118,24 @@
      end, and the dark halo under it carries precisely that end, so the worst case is the
      crossover at B=127.5 where BOTH read 127.5 and neither is anywhere near zero.
      box-sizing is inherited from the * reset, so 9px is the size ON SCREEN and -4.5 really does
-     centre it. __D.cursorBlend() switches to the pure main-site version if it is ever wanted. */
+     centre it, and it is what lets the rim below be a real border without growing the dot.
+     A LITTLE GLASS BUBBLE (user, 2026-09-01), and it is three things, not one. The middle is
+     EMPTY, so the world really shows through it. A thin lit WALL is drawn just inside the rim by
+     the second gradient, which is the glass having thickness. And one small hard SPECULAR sits up
+     and to the left, which is the only thing that says "sphere" rather than "ring" at nine pixels.
+     The 1px rim stays at 0.85 and is load bearing, not decoration: the measurement above says the
+     dot's contrast is |255-B| and fails only at the bright end, so an empty middle has to be paid
+     for at the edge. A borderless version was built and rejected for exactly that, it read softer
+     but at actual size it all but vanished on the concrete and on a black car, which are two of
+     the five surfaces the pointer crosses most. The dark halo still carries the bright end.
+     Candidates were rendered at 16x and at 9px over sky, grass, concrete, black car and a pale
+     cover before this one was picked (scratchpad/cursor/bubble.html).
+     __D.cursorBlend() switches to the pure main-site version if it is ever wanted. */
   #cur{position:fixed;left:0;top:0;z-index:70;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;
-    border-radius:50%;background:#fff;pointer-events:none;opacity:0;transition:opacity .18s ease;
+    border-radius:50%;border:1px solid rgba(255,255,255,.85);
+    background:radial-gradient(circle at 31% 27%,rgba(255,255,255,.95) 0 10%,rgba(255,255,255,0) 34%),
+               radial-gradient(circle at 50% 52%,rgba(255,255,255,0) 50%,rgba(255,255,255,.34) 80%,rgba(255,255,255,.10) 100%);
+    pointer-events:none;opacity:0;transition:opacity .18s ease;
     filter:drop-shadow(0 0 1.4px rgba(0,0,0,.85));}
   #cur.on{opacity:1;}
   body.curdiff #cur{mix-blend-mode:difference;filter:none;}
@@ -4662,9 +4677,18 @@
     // dist 8.45, pitch 0.24, so the view runs due -z from the spawn at -2.59/-2.59). It keys off the
     // SPAWN POINT, not off itself, so walking away dismantles it before you ever reach it, and it
     // waits for the controls card so you watch it build.
-    spawn:       { pos:[ -2.59, 1.00, -14.59], yaw:0,          sw:3.2, scale:1.7, lines:4, gate:true, once:true,
+    // lines 4 -> 5 with the longer greeting (user, 2026-09-01), and it is a MEASUREMENT, not a
+    // preference: bubbleTex starts at (H-40)/(lines*1.22) px and shrinks by 4 until the text fits,
+    // so more lines does not mean smaller type here, it means a lower starting point that the copy
+    // no longer has to be shrunk away from. Replayed against the real Fredoka metrics this text
+    // renders at 24px on 3, 32px on 4, 39px on 5, and back to 32 and 28 on 6 and 7. 5 is the
+    // largest it can be drawn, and its block is 238px of the canvas's 275, so the panel is full
+    // rather than half empty. Re-measure with scratchpad/bub_fit.cjs if the copy ever changes.
+    spawn:       { pos:[ -2.59, 1.00, -14.59], yaw:0,          sw:3.2, scale:1.7, lines:5, gate:true, once:true,
                    at:[-2.586,-2.586], near:6, far:10,
-                   text:'Hello! Walk up to any of the structures to learn more about me. They are not the only thing you can open.' } };
+                   // THE SPACE BEFORE THE EXCLAMATION MARK IS DELIBERATE and is Shyon's own
+                   // (user, 2026-09-01). It was "corrected" once as a typo and asked back. Leave it.
+                   text:"Welcome to my Lego Realm ! Walk up to any of the structures to learn more about me and what I do. Feel free to browse around as you'd like, you never know what you may find." } };
   // Text canvas: word-wrapped to at most `lines`, then every character is laid out ONCE at its final
   // spot and drawn n-at-a-time, so the message prints in place instead of sliding as it grows.
   function bubbleTex(text, maxLines){
@@ -5404,11 +5428,20 @@
   //    changing, and the camera stops while the hand keeps moving. POINTER LOCK is the fix and the
   //    only one: locked, the cursor has no position to run out of, and the deltas arrive as
   //    movementX/movementY, which are the same CSS pixels with the same OS acceleration, so the
-  //    feel does not change. It is taken for the duration of a drag and handed straight back.
-  //    Only in hub mode: the portal panels are really CLICKED, so the menu keeps a real pointer.
-  //    Every step of it can fail (no support, denied, Chrome rate-limiting a re-lock), and every
-  //    failure falls back to the clientX path, which is what shipped before, so a refusal costs
-  //    the bounded pan and never the pan itself.
+  //    feel does not change.
+  //    THAT IS NO LONGER HOW IT IS DONE, and the reason is measured (user, 2026-09-01). A pointer
+  //    lock is the one thing that makes a browser announce that the pointer is hidden, and the
+  //    lock was taken on every pointerdown, so that banner appeared on the press and went away on
+  //    the release of EVERY CLICK, and the frame moved with it. Deferring the request to the
+  //    moment a drag nears the edge was tried and REJECTED: a lock needs transient user
+  //    activation, a mousedown grants about five seconds of it and a mousemove does not renew it,
+  //    so a slow deliberate pan is refused the lock and silently goes back to being bounded. That
+  //    was confirmed rather than reasoned about, in real Chrome with dispatched input: the
+  //    request fires and pointerlockerror comes back (scratchpad/lock_why.cjs, err 1, and the pan
+  //    stopped dead at 237.6 degrees, which is the screen-edge bound).
+  //    So there is NO LOCK AT ALL now, and the pan is unbounded a different way: see EDGE_PAN
+  //    below. Nothing asks for a lock, nothing announces a hidden pointer, and the range problem
+  //    is solved where it actually lives, at the edge of the screen.
   //
   // 2. SOMETHING TOOK THE GESTURE AWAY from the page. Four independent guards, none of which
   //    subsumes another:
@@ -5432,14 +5465,28 @@
   // for reasons other than the user letting go, and killing the drag there froze pans that were
   // still under the hand. The pointerup or the pointercancel is still coming.
   let drag=false,lx=0,ly=0,mdrag=false,mMoved=0,dragPid=null,lockPending=false,reanchor=false;
+  // ── EDGE_PAN. What replaces the pointer lock, and it fixes the same bug without asking the
+  // browser for anything. Steering on clientX is bounded by the physical display: at SENS a full
+  // turn is 967px of travel, so a drag that starts mid-window has about 280 degrees before the
+  // cursor pins against the bezel, clientX stops changing and the camera stops while the hand
+  // keeps moving. That dead stop is the whole complaint. Now, while a drag is live and the
+  // pointer is inside EDGE_W of a side, the yaw KEEPS TURNING that way on its own, at a rate
+  // that ramps with how far into the margin the pointer has pushed. Hold at the bezel and the
+  // world keeps coming round; pull back off it and it stops immediately.
+  // The turn has to be applied in the FRAME LOOP, not here: a pinned cursor stops generating
+  // move events at all, which is precisely why the old code went quiet. pointermove only records
+  // which way, and how hard.
+  const EDGE_W=34, EDGE_RATE=2.6;   // px of margin, and rad/sec of yaw at the very edge
+  let edgePan=0;                    // -1..1, signed and ramped; 0 whenever a drag is not pinned
   const pt=e=>{const t=(e.touches&&e.touches[0])||e;return{x:t.clientX,y:t.clientY};};
+  // NOTHING REQUESTS A POINTER LOCK ANY MORE (see the section head). looking() stays because the
+  // reading paths are still worth keeping honest: if a lock ever arrives from anywhere else the
+  // move handler already switches to movementX, reanchor already re-seats on the way out, and the
+  // cursor dot already stands down. All of it is simply never entered now.
   const looking=()=>document.pointerLockElement===canvas;
-  const grabLock=()=>{ if(!canvas.requestPointerLock||looking()) return; lockPending=true;
-    try{ const r=canvas.requestPointerLock(); if(r&&r.catch) r.catch(()=>{lockPending=false;}); }
-    catch(_){ lockPending=false; } };
-  const startLook=e=>{ const p=pt(e); lx=p.x; ly=p.y; reanchor=false;
+  const startLook=e=>{ const p=pt(e); lx=p.x; ly=p.y; reanchor=false; edgePan=0;
     if(mode==='hub') drag=true; else if(mode==='menu'&&!viewerOpen){ mdrag=true; mMoved=0; } };
-  const endLook=()=>{ drag=false; mdrag=false; lockPending=false;
+  const endLook=()=>{ drag=false; mdrag=false; lockPending=false; edgePan=0;
     if(dragPid!==null){ const id=dragPid; dragPid=null; try{ canvas.releasePointerCapture(id); }catch(_){} }
     if(looking()&&document.exitPointerLock) document.exitPointerLock(); };
   document.addEventListener('pointerlockchange',()=>{ lockPending=false; reanchor=true; });
@@ -5454,12 +5501,19 @@
   canvas.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') return;   // touch runs its own look-drag below, keyed on lookId
     startLook(e);
     try{ canvas.setPointerCapture(e.pointerId); dragPid=e.pointerId; }catch(_){}
-    if(drag) grabLock();   // hub only, and pointerdown is the user gesture a lock has to be asked for on
     initAudio(); });       // last, so nothing about starting the audio context can stop a drag arming
   addEventListener('pointermove',e=>{ if(e.pointerType==='touch') return; const p=pt(e); const lk=looking();
     if(!lk && reanchor){ lx=p.x; ly=p.y; reanchor=false; return; }   // first move after a lock ends: re-seat, never pan
     if(!lk && (drag||mdrag) && e.buttons===0){ endLook(); lx=p.x; ly=p.y; return; }
     const dx = lk ? (e.movementX||0) : (p.x-lx), dy = lk ? (e.movementY||0) : (p.y-ly);
+    // How hard the pointer is pushing into a side, recorded here and SPENT in the frame loop.
+    // Signed the same way the drag is: pushing right turns the camera right. It is deliberately
+    // not gated on the direction of travel, because the whole point is the frames where there is
+    // no travel left to read.
+    if(drag && mode==='hub'){
+      const dR=innerWidth-1-p.x, dL=p.x;
+      edgePan = dR<EDGE_W ? (1-dR/EDGE_W) : dL<EDGE_W ? -(1-dL/EDGE_W) : 0;
+    } else edgePan=0;
     if(mdrag&&mode==='menu'){ mMoved+=Math.abs(dx); menuPan=clampPan(menuPan-dx*0.011); lx=p.x; ly=p.y; return; }
     // The anchor is kept current even on the frames the camera is NOT being driven. Returning
     // without it leaves lx/ly wherever the pointer was when a fade or a scripted camera move
@@ -5660,8 +5714,14 @@
   // up, rather than in a `say()` that flashes a second panel over the top of it for a few seconds.
   // Four states, because what the keys do changes: locked, unlocked but not worn, worn, flying.
   // Space is still just the hop throughout, it only goes higher in the suit.
+  // F IS NAMED ON THE GROUND, not only in the air (user, 2026-09-01). The worn line used to read
+  // "Space jump to fly", which named the wrong key twice over: Space on its own is the hop, it is
+  // a DOUBLE tap of it that launches, and F is the actual toggle. So the bar advertised no way to
+  // take off while advertising "F to land" the moment you were up, which is the one asymmetry a
+  // controls line must not have. Space is now called what it is and F carries the take-off, which
+  // also makes this line the mirror of HINT_FLY: the same key leaves the ground and returns to it.
   const HINT_SUITOFF='<b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; <b>T</b> for the suit &nbsp;·&nbsp; <b>R</b> leave';
-  const HINT_SUIT='<b>WASD</b> walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> jump to fly &nbsp;·&nbsp; <b>T</b> to change &nbsp;·&nbsp; <b>R</b> leave';
+  const HINT_SUIT='<b>WASD</b> walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; <b>F</b> to fly &nbsp;·&nbsp; <b>T</b> to change &nbsp;·&nbsp; <b>R</b> leave';
   const HINT_FLY ='<b>W</b> flies where you aim &nbsp;·&nbsp; drag to steer &nbsp;·&nbsp; <b>Space</b> up &nbsp;·&nbsp; <b>Shift</b> down &nbsp;·&nbsp; <b>F</b> to land &nbsp;·&nbsp; <b>R</b> leave';
   function syncPowerHUD(){
     const hintEl=document.querySelector('.hint');
@@ -5675,6 +5735,11 @@
   }
   function frame(dt){
     dayT=(dayT+dt/CYCLE_SECS)%1; applyTOD();   // day/night keeps turning; all lights fade smoothly
+    // EDGE_PAN is spent here rather than in pointermove, because a cursor pinned against the
+    // bezel stops firing move events entirely: the frames that need this are exactly the frames
+    // with no pointer input in them. Same guards the drag itself uses, so a fade or a scripted
+    // camera move is never fought.
+    if(edgePan && drag && mode==='hub' && !fading && !camAnim) camYaw -= edgePan*EDGE_RATE*dt;
     if(flying && mode!=='hub') setFly(false);   // a portal is entered on foot
     // ── FIRST PERSON. Step through the grey archway off the mansion's balcony and the camera
     // moves into his head. The trigger is THE ROOM, not the doorway: houseRoomCells is every
