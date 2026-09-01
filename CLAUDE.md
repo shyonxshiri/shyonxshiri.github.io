@@ -566,6 +566,13 @@ interior is snapshotted and blurred as a backdrop, and LEGO-framed panels float 
 RANDOM real panel on entry, never repeating the last one. Panels carry the real project media
 mirrored from `PROJECTS` in `src/App.tsx`, with `extras` shot sets stepped by ‹ ›, arrow keys or
 swipe. Q leaves.
+**Each panel wears its project's NAME on a caption under the frame**, and that is a REVERSAL: the
+captions shipped, were dropped in `cc38584`, and were asked for back (user, 2026-08-31). They have
+to be their own plane, because the media plane is FULL BLEED (`texPanels` swaps the whole cover
+image onto it, so a title drawn there would be painted over on load) and the frame either side of
+it is bare plastic. `labelTex` with no `bg` paints the text TWICE through a soft drop shadow, which
+is what lets white read over a pale cover and over the blurred interior behind the row. The row's
+`group.position.y` of 0.8 exists for these: it lifts the captions clear of `#prompt` and `.hint`.
 
 **Title bubbles.** LEGO speech bubbles (`speech_bubble.glb`) that build themselves course by
 course as you approach, print their label letter by letter, and dismantle when you leave, with
