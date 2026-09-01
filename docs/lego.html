@@ -106,6 +106,25 @@
      canvas by default (hub mode) and put back by enterPortal, where panels are really clicked.
      Only the canvas, so every HUD control keeps its own cursor. */
   #c{z-index:1;cursor:none;}
+  /* ...and THIS is what stands in for it: the main site's own circle dot (src/App.tsx,
+     #ss-cursor-dot), 9px and round, riding the pointer with no easing at all.
+     ONE THING ABOUT IT HAD TO CHANGE, and the reason is measured, not aesthetic. The main site
+     paints the dot with mix-blend-mode:difference, which over a backdrop B composites to
+     B + a*(255-2B) and therefore CANCELS EXACTLY at B=127.5. Over the Realm that value is the
+     driveway and the car pads, which is the surface the pointer spends the most time over: an
+     earlier pass measured the difference dot at dLum 136 on the sky, 146 in the fog, 146 on a
+     black car and 1.0 on mid grey, i.e. it disappears completely exactly where the cars are
+     parked. Painted normally the dot's own contrast is |255-B|, which fails only at the bright
+     end, and the dark halo under it carries precisely that end, so the worst case is the
+     crossover at B=127.5 where BOTH read 127.5 and neither is anywhere near zero.
+     box-sizing is inherited from the * reset, so 9px is the size ON SCREEN and -4.5 really does
+     centre it. __D.cursorBlend() switches to the pure main-site version if it is ever wanted. */
+  #cur{position:fixed;left:0;top:0;z-index:70;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;
+    border-radius:50%;background:#fff;pointer-events:none;opacity:0;transition:opacity .18s ease;
+    filter:drop-shadow(0 0 1.4px rgba(0,0,0,.85));}
+  #cur.on{opacity:1;}
+  body.curdiff #cur{mix-blend-mode:difference;filter:none;}
+  body.touch #cur{display:none;}
   #shopbg{position:fixed;inset:0;z-index:0;background:#0c1120 center/cover no-repeat;filter:blur(20px) brightness(.68) saturate(1.15);opacity:0;transition:opacity .55s ease;pointer-events:none;transform:scale(1.09);}
   #shopbg.on{opacity:1;}
   /* touch controls: only rendered on coarse-pointer devices (body.touch, set in JS) */
@@ -140,6 +159,7 @@
     <a id="leave" href="/">Leave the Realm</a>
   </div>
   <div class="hint"><b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; drag to look &nbsp;·&nbsp; <b>R</b> leave</div>
+  <div id="cur"></div>
   <div id="loader"><div class="wrap"><div class="m">BUILDING…</div><div class="bar"><i></i></div><div class="pct">0%</div></div></div>
   <div id="controls"><div class="card">
     <h2>CONTROLS</h2>
@@ -704,6 +724,16 @@
   // HU_FROM is 3.30, the top of the ground-floor ceiling: it has to sit ABOVE a hero leap from
   // the ground floor, which clears 2.82, or the upstairs walls would block a jump downstairs.
   const houseUpCells=new Set(), HU_Y0=4.02, HU_Y1=5.25, HU_FROM=3.30;
+  // ── AND WHICH OF THOSE UPPER CELLS ARE THE ROOM, which is what first person triggers on.
+  // Deliberately NOT a hardcoded rectangle: the room is every upper-floor cell with a ROOF over
+  // it, which is exactly what tells it apart from the balcony it opens onto, and it re-derives
+  // itself if the model is ever re-exported or the placement moves. Filled by the mansion loader.
+  // FP_EYE is MEASURED off the figure rather than guessed: the printed face (SOLID-BLACK-FACE)
+  // spans y 1.3184..1.4593 above the player root and the brows sit 1.4501..1.4936 over it, so the
+  // eyes are at 1.43, which is also dead centre of the head brick (1.193..1.653).
+  const houseRoomCells=new Set(), FP_EYE=1.43, FP_RATE=5.0;
+  let fpAmt=0;                       // 0 third person, 1 inside his own head; eased, never cut
+  const fpOn=()=>fpAmt>0.5;
   // FLIGHT COLLISION IN THREE DIMENSIONS. solidCells is rasterized at ground body height alone,
   // so above 1.5 a wall stops being a wall and the grid says nothing useful the moment the hero
   // leaves the ground. That used to be patched with ONE number per building, its bbox top, and
@@ -879,6 +909,10 @@
   // some loader rasterized and the open tile plate is not one of them.
   const CAM_CLEAR=0.5;
   function camFloorY(x,z,y){ const g=surfaceBelow(x,z,y+0.3); return (g===null?0:g)+CAM_CLEAR; }
+  // Standing in the mansion's upstairs ROOM, as against out on its balcony. The height gate is
+  // what keeps the ground floor in third person: the room's floor is 3.714 and HU_FROM is 3.30,
+  // while downstairs the player stands at 0.
+  function inRoom(){ return player.position.y>HU_FROM && houseRoomCells.has(floorKey(player.position.x, player.position.z)); }
   function surfaceBelow(x,z,maxY){ const cx=Math.floor(x/OCS), cz=Math.floor(z/OCS); let best=null;
     for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++){ const a=floorH.get((cx+dx)*100003+(cz+dz)); if(!a) continue;
       for(let i=0;i<a.length;i++){ const s=a[i]; if(s<=maxY+0.02 && (best===null||s>best)) best=s; } }
@@ -2697,6 +2731,15 @@
     // and the barriers up there, at upstairs body height, exactly as the ruins' balcony railing
     // is done. This is what makes the upstairs a room: its walls, the glass, and the parapet.
     rasterizeSolid(houseHolder, houseUpCells, HU_Y0, HU_Y1, true);
+    // ── and the ROOM, for first person. A cell counts if it carries upper floor AND has a roof
+    // over it. ceilUnder() is the flight column's top, already built by the ground rasterize's
+    // vox pass above: under the mansion's roof it reads 6.7 and over the open balcony it reads
+    // the parapet at 4.5, so 6.0 separates them with room to spare. Measured over the loaded
+    // model's own box, so nothing here is a coordinate anybody has to maintain.
+    { const rb=new THREE.Box3().setFromObject(houseHolder);
+      for(let x=rb.min.x; x<=rb.max.x+1e-6; x+=OCS) for(let z=rb.min.z; z<=rb.max.z+1e-6; z+=OCS){
+        const sf=surfaceBelow(x,z,5.0); if(sf===null||sf<3.5||sf>4.0) continue;
+        const tp=ceilUnder(x,z); if(tp!==null && tp>6.0) houseRoomCells.add(floorKey(x,z)); } }
     // If the glb ever carries grass of its own again, the ground takes its exact LegoGreen so
     // the two match seamlessly. The current model has no green: its yard plates were pulled out
     // to leave room for the world's greenery, so the grass keeps its own LegoGreen constant.
@@ -3431,8 +3474,12 @@
       let tint=cache.get(key);
       if(!tint){ tint=mat.clone(); tint.name=(mat.name||'mat')+'-cabin';
         tint.color.copy(grp.color);
-        if(grp.plastic){ tint.metalness=0; tint.roughness=Math.max(tint.roughness, 0.38); }
-        regMat(tint, mat.userData.envBase!=null?mat.userData.envBase:0.5);
+        // `plastic` puts the clone back on the CAR standard. It is needed because the source may
+        // already BE a metallic rim clone by the time this runs (the Porsche's cabin floor is MB309,
+        // which the rim override turns to chrome), and a cabin floor is not chrome. The environment
+        // strength has to come back with the roughness, or the clone keeps the rim's 0.9.
+        if(grp.plastic){ tint.metalness=0; tint.roughness=CAR_ABS.rough; }
+        regMat(tint, grp.plastic?CAR_ABS.env:(mat.userData.envBase!=null?mat.userData.envBase:0.5));
         cache.set(key,tint); }
       g.clearGroups();
       g.addGroup(0, pick.length*3, 0);
@@ -3442,6 +3489,114 @@
     });
     return n;
   }
+  // ── ONE MATERIAL STANDARD FOR ALL FOUR CARS ────────────────────────────────────────────────
+  // The cars come from three different export paths and arrived on three different finishes, which
+  // is most of why they read as different toys parked in one driveway. Measured off the shipped
+  // files, before this:
+  //     Porsche   every material roughnessFactor 0.600  -> polish()'s 0.38 brick ceiling
+  //     Corvette  every material 0.664                  -> 0.38
+  //     Countach  bodywork 0.100, kept; its own dark grey and its tyres 0.600 -> 0.38
+  //     Aston     bodywork 0.0734, kept; EVERYTHING ELSE on the car 0.400/0.500 -> 0.38
+  // Only the last two lines are a bug and the Aston's is the bad one: a near-mirror shell with dull
+  // sills, dull trim and dull wheels around it, which is exactly the "flat" of it. polish() cannot
+  // fix this, because it only ever pulls roughness DOWN to a ceiling and these files disagree below
+  // it. So the cars are pinned rather than capped, here, in one place.
+  //
+  // CAR_ABS is deliberately glossier than the Realm's 0.38 brick and calmer than the Countach's
+  // 0.10. A car is the thing in this world you stand closest to, and a fresh ABS brick genuinely
+  // has a sheen; 0.10 puts a hard mirror streak down a whole flank and reads wet rather than moulded.
+  // env is lifted with it for the same reason: on the two BLACK cars the environment IS the shading,
+  // since a black diffuse term returns almost nothing on its own.
+  //
+  // TYRES ARE NOT A SEPARATE TIER, and that is a constraint rather than a choice. Only the Countach
+  // ships a tyre-only material (Lego_Black__Wheels); on the other three the tyre shares its material
+  // with the bumpers and every black trim brick (Porsche MB26.001, Aston SOLID-BLACK.005, Corvette
+  // SOLID-BLACK.001), so a rubber tier would be reachable on one car in four, which is the opposite
+  // of a standard. They all take CAR_ABS.
+  const CAR_ABS={ rough:0.22, env:0.62 };
+  // ── THE LENSES. Four tiers, and they exist because a LENS AND A WINDOW ARE OPPOSITE CASES.
+  //  · A lamp is a small solid trans brick sunk into paint. It is DoubleSide: measured on the
+  //    Countach, taking the clear lens from 0.40 to 1.00 alpha moved its rendered lamp by seven
+  //    levels of sRGB, while switching the same material to DoubleSide TRIPLED the drawn area
+  //    (7,345 pixels to 21,669). At FrontSide a lens draws a rim and nothing else.
+  //  · A window is a pane you look THROUGH into a cabin. It stays FrontSide, because both faces
+  //    blending compound toward white, which is what made every pane in the Realm a milky slab.
+  //    Its opacity is left exactly as moulded (Porsche smoke 0.70, Corvette 0.50, Countach and
+  //    Aston 0.25): that is the piece's own density and it is not a finish.
+  //  · The tail cones and studs come OFF THE MIRROR, roughness 0.30 and env 0.32. At polish()'s
+  //    0.08/0.85 a curved trans-red piece standing out in the open reflects the sky over most of
+  //    its curve and reads white. The clear lens keeps the full gloss: a headlight is meant to.
+  //  · COLOUR IS PART OF THE TIER, and it has to be, because the three builds disagree wildly on
+  //    what trans-red is: Aston 1.000/0.000/0.000 linear, Countach 0.479/0.020/0.000, Porsche
+  //    0.333/0.000/0.005. Same brick, three colours, and MEASURED AS RENDERED from behind each
+  //    parked car the difference is not subtle: the Aston's tail read sRGB (201,68,47), the
+  //    Porsche's (138,28,31) and the Countach's (50,32,38), which is not a red lamp at all, it is
+  //    a dark grey one. All three now take real LEGO Trans-Red.
+  //  · AND THE RED TIER GLOWS A LITTLE, which is the one addition here rather than a repair.
+  //    Real LEGO Trans-Red is 0.578 linear in red against the Aston's clipped 1.000, so putting
+  //    the three cars on the honest colour DIMS the one car whose tail already read correctly:
+  //    measured, the Aston fell from (201,68,47) to (173,53,41). `em` adds an emissive of the
+  //    lens's OWN hue at that fraction, which puts it back, (189,63,45) at 0.45, and carries the
+  //    other two up with it rather than special-casing one car. 0.45 of 0.578 is 0.26 linear,
+  //    well under the pipeline's 1.7 bloom threshold, so a lamp lifts but never blooms. Being
+  //    emissive it does not dim with the day cycle, so the tail lamps stay lit at night, which is
+  //    what a parked car's tail lamps look like and is deliberate. Live on __cars.glow().
+  const CAR_LENS={
+    red  :{ tier:'red',   color:0xC91A09, op:0.90, rough:0.30, env:0.32, dbl:true, em:0.45 },  // LEGO Trans-Red
+    amber:{ tier:'amber', color:0xF08F1C, op:0.90, rough:0.30, env:0.32, dbl:true, em:0.45 },  // LEGO Trans-Orange
+    clear:{ tier:'clear', color:0xFCFCFC, op:0.85, rough:0.08, env:0.85, dbl:true, em:0    },  // LEGO Trans-Clear
+    glass:{ tier:'glass', op:null,        rough:0.08, env:0.85, dbl:false, em:0   }            // op null = keep as moulded
+  };
+  // Apply the standard to one car. `lens` maps a MATERIAL NAME to a CAR_LENS tier; everything the
+  // map does not name is bodywork and takes CAR_ABS. Call it FIRST in a car's onload, before the
+  // rims, the tyres or any tint clone, all of which are deliberate departures from the standard and
+  // have to land on top of it. Materials are visited once each, not once per mesh, because these
+  // exports join by material and three keys its compiled program per material.
+  function carStandard(model, lens){
+    const seen=new Set();
+    model.traverse(o=>{ if(!o.isMesh||!o.material) return;
+      (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{
+        if(!m||m.roughness==null||seen.has(m)) return; seen.add(m);
+        const t=(lens||{})[m.name||''];
+        if(!t){ m.metalness=0; m.roughness=CAR_ABS.rough; m.userData.envBase=CAR_ABS.env;
+          m.userData.carTier='abs'; return; }
+        m.userData.carTier=t.tier||'lens';
+        m.metalness=0; m.transparent=true; m.depthWrite=false;
+        if(t.op!=null) m.opacity=t.op;
+        if(t.color!=null&&m.color&&!m.map) m.color.set(t.color).convertSRGBToLinear();
+        m.roughness=t.rough; m.userData.envBase=t.env;
+        m.side=t.dbl?THREE.DoubleSide:THREE.FrontSide;
+        // The glow is taken off the lens's OWN colour, after it is set, so a retuned lens hue
+        // carries its glow with it and the two can never drift into different reds.
+        if(m.emissive){ m.userData.carGlow=t.em||0; m.emissive.copy(m.color).multiplyScalar(t.em||0); }
+        m.needsUpdate=true; });
+    });
+  }
+
+  // Live dial for the standard, because a finish is the one thing on these cars that can only be
+  // judged with eyes on it and the preview pane has no WebGL at all. Every material carries the
+  // tier it was put on (userData.carTier), so one tier can be re-pinned across all four cars
+  // without disturbing the others: __cars.abs(rough, env) for the bodywork, __cars.lens('red',
+  // op, rough, env) for a lamp tier, __cars.report() to read back what is actually set. The rims
+  // tag themselves 'rim' where they are overridden, so abs() leaves the chrome and the gold alone.
+  // Temporary, like __hero and __lambo. Strip before a final polish deploy.
+  window.__cars={
+    each(fn){ ['porsche','corvette','lambo','aston'].forEach(n=>{
+      const h=window.__props[n]; if(!h||!h.userData.model) return;
+      const seen=new Set();
+      h.userData.model.traverse(o=>{ if(!o.isMesh||!o.material) return;
+        (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{
+          if(m&&m.roughness!=null&&!seen.has(m)){ seen.add(m); fn(m,n); } }); }); }); },
+    abs(r,e){ this.each(m=>{ if(m.userData.carTier!=='abs') return;
+      if(r!=null) m.roughness=r; if(e!=null) m.userData.envBase=e; }); },
+    lens(tier,op,r,e){ this.each(m=>{ if(m.userData.carTier!==tier) return;
+      if(op!=null) m.opacity=op; if(r!=null) m.roughness=r; if(e!=null) m.userData.envBase=e; }); },
+    glow(g,tier){ this.each(m=>{ const t=m.userData.carTier;
+      if(t!=='red'&&t!=='amber') return; if(tier&&t!==tier) return;
+      if(m.emissive){ m.userData.carGlow=g; m.emissive.copy(m.color).multiplyScalar(g); } }); },
+    report(){ const out=[]; this.each((m,n)=>out.push([n, m.name, m.userData.carTier,
+      +m.opacity.toFixed(2), +m.roughness.toFixed(3), +m.metalness.toFixed(2),
+      m.userData.envBase, m.side===THREE.DoubleSide?'double':'front'].join('  '))); return out; } };
   function loadProp(url, cfg){
     const holder=new THREE.Group();
     holder.position.set(snap(cfg.pos[0]), cfg.y||0, snap(cfg.pos[1]));
@@ -3473,14 +3628,22 @@
   // Sized to the orange garage car's measured footprint (~2.2 wide, nose at x 25.75): same width class.
   // rotY 0.085 counters a slight baked-in tilt in the export so it parks straight on the stud rows.
   loadProp('./assets/porsche.glb', {name:'porsche', pos:[46.83,4.4], y:0, rotY:-0.015, targetLen:5.6, solid:true,
-    onload:(holder,m)=>{ // wheel rims: metallic silver instead of the baked flat white, a touch more reflective than the plastic.
+    onload:(holder,m)=>{
+      // THE CAR STANDARD FIRST, then this car's deliberate departures from it, which have to land
+      // on top. MB40 is the clear headlight (672 triangles, right at the nose x 44.58..44.80),
+      // MB41 the trans-red tail and repeater lenses, MB111 the smoked windscreen, whose own 0.70
+      // density is its moulding and is kept. Its trans-red shipped 0.333/0.000/0.005 linear, the
+      // darkest of the three trans-reds in the Realm, which is why its tail read as painted-on.
+      carStandard(m, { MB40:CAR_LENS.clear, MB41:CAR_LENS.red, MB111:CAR_LENS.glass });
+      // wheel rims: metallic silver instead of the baked flat white, a touch more reflective than the plastic.
       // MB309 also paints the rear lower trim (world x > 48.63 at this parking spot); only the wheel meshes go silver.
       holder.updateWorldMatrix(true,true);
       let rim=null;
       m.traverse(o=>{ if(o.isMesh&&o.material&&o.material.name==='MB309'){
         const cx=new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3()).x;
         if(cx<48.63){ if(!rim){ rim=o.material.clone(); rim.name='MB309-silver';
-          rim.color.set(0x969ba3); rim.metalness=0.85; rim.roughness=0.2; regMat(rim,0.9); }
+          rim.color.set(0x969ba3); rim.metalness=0.85; rim.roughness=0.2; regMat(rim,0.9);
+          rim.userData.carTier='rim'; }                     // opts out of __cars.abs()
           o.material=rim; } } });
       // ── BODY COLOUR: the MOC's LEGO Orange goes to LEGO Dark Red. MB106 is the whole body and
       // nothing else, 35.4% of the model's surface and every visible orange panel, so this is one
@@ -3616,6 +3779,11 @@
       m.traverse(o=>{ if(o.isMesh&&o.material)
         (Array.isArray(o.material)?o.material:[o.material]).forEach(mt=>{
           if(!mt||!mt.color||done.has(mt)) return; done.add(mt); mt.color.convertSRGBToLinear(); }); });
+      // THE CAR STANDARD, run AFTER the conversion above so it cannot be double-converted. This is
+      // the one car with no lamp lens at all: its only transmissive materials are the two
+      // TRANS-BROWN windows, and its tail lights are opaque red bricks, so there is nothing here
+      // for the red tier to catch. Both windows keep their moulded 0.50.
+      carStandard(m, { 'TRANS-BROWN':CAR_LENS.glass, 'TRANS-BROWN_0':CAR_LENS.glass });
       // BODY COLOUR. The MOC is a yellow car and the Realm wants a white one, so every
       // SOLID-YELLOW material takes the model's OWN SOLID-WHITE, exactly as the cabin trim takes
       // its own SOLID-RED: read from the loaded materials rather than typed in, so it is the real
@@ -3778,6 +3946,18 @@
   loadProp('./assets/lamborghini.glb', {name:'lambo', pos:[46.92,9.04], y:0, rotY:0,
     targetLen:5.3298, solid:true,
     onload:(holder,m)=>{
+      // THE CAR STANDARD FIRST. Every transmissive material in this export was flattened to one
+      // alpha, 0.25, and 0.25 is a WINDSCREEN number: right for a sheet you look THROUGH into a
+      // lit cabin, wrong for a solid lens brick sunk into black paint, where three quarters of
+      // what reaches you is the black behind the lens. Lego_Transparent_Brown is the side and rear
+      // GLASS, measured (it spans x 0.354..1.975 and reaches y 1.633), not a lamp, so it keeps the
+      // 0.25 along with the windscreen. Its trans-red shipped 0.479/0.020/0.000 linear, a dull
+      // brick orange-red rather than a tail lamp; the red tier is what fixes that.
+      // The rims below depend on this running first, since it would otherwise flatten their metal.
+      carStandard(m, { Lego_Transparent_Red  : CAR_LENS.red,
+                       Lego_Transparent_White: CAR_LENS.clear,
+                       Lego_Transparent_Brown: CAR_LENS.glass,
+                       Lego_Windshield       : CAR_LENS.glass });
       // WHITE GOES BLACK, AND SO DOES THE MODEL'S OWN "BLACK", because it is not black. This is
       // the one place the read-it-from-the-model rule the Corvette uses had to be broken, and the
       // measurement is why: Lego_Black ships as linear 0.00857 / 0.00030 / 0.01600, which is sRGB
@@ -3828,50 +4008,8 @@
       // for the same pattern).
       m.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)
         &&o.material.name==='Texture_Rim'){ const g=o.material;
-          g.color.set(0xFFB54A); g.metalness=0.90; g.roughness=0.15; g.userData.envBase=1.15; } });
-      // THE LIGHT LENSES WERE 25% THERE AND READ AS NOTHING. Every transmissive material in this
-      // export was flattened to the same alpha 0.25, and 0.25 is a WINDSCREEN number: it is right
-      // for a sheet you look THROUGH into a lit cabin, and wrong for a solid lens brick sitting
-      // against black bodywork, where three quarters of what reaches you is the black behind the
-      // lens and the lens itself all but disappears. A LEGO trans brick is a solid coloured piece,
-      // not a window. The Porsche is the reference here because it came from the same source, it is
-      // already approved, and it parks a car's width away, and it does NOT run one flat number:
-      // its trans red MB41 is 0.7 and its clear headlight MB40 is 0.4. Those are the two values
-      // taken here, so all three cars agree on what a lens looks like.
-      // Lego_Transparent_Brown is deliberately NOT touched: measured, it spans x 0.354..1.975 and
-      // reaches y 1.633, which is the side and rear GLASS, not a lamp, and 0.25 is what glass is
-      // for. The windscreen is left alone for the same reason (see below).
-      // THE OPACITY WAS NEVER THE REASON YOU COULD NOT SEE THEM, AND RAISING IT ALONE DOES
-      // NOTHING. Measured in engine (headless Chrome on SwiftShader, screenshots of the parked car):
-      // over the pixels the headlight actually covers, taking the clear lens from 0.40 all the way
-      // to 1.00 moves its mean from sRGB (55,48,52) to (62,55,58). A fully opaque light grey brick
-      // that renders at 62 is not being blended away, it is not being DRAWN. What draws with
-      // polish()'s FrontSide glass rule is a thin rim: switch the same material to DoubleSide and
-      // the drawn area TRIPLES, 7,345 pixels to 21,669, and the lamp appears as a lens.
-      // So these six pieces are the one exception to the FrontSide rule in §5. That rule exists
-      // because a WINDOW is a solid brick whose front and back faces both alpha-blend and compound
-      // toward white, which is what made every pane in the Realm a milky slab. A 1x1 lens brick
-      // sunk into black bodywork is the opposite case: it is small, there is nothing to look
-      // through it INTO, and the second layer is exactly what gives it any body at all.
-      // The Porsche needs none of this, and the reason is worth writing down because it is why
-      // copying its numbers failed. Ray-cast through its MB40 lens and 78.8% of the outward area
-      // lands on MB309, a 0.617 light grey REFLECTOR plate sitting right behind the lens. The
-      // Countach has no reflector: 100% of the clear lens's outward area lands on the printed nose
-      // panel, which this build's own black repaint took to #05131D. Same lens, same alpha, one
-      // sitting on a bright disc and the other on black, so the two can never match on alpha alone.
-      // THE TAIL ALSO HAD TO COME OFF THE MIRROR. polish() gives glass roughness 0.08 and envBase
-      // 0.85, which on the Porsche's flat recessed lens is right and on a trans-red CONE standing
-      // out in the open is not: at that roughness the cone reflects the sky over most of its
-      // curve and reads white, which is the "too clear" of it. 0.30 roughness and envBase 0.32
-      // keep a sheen and let the red through. The clear lens keeps the full 0.08 gloss, because
-      // looking like the Porsche's headlight is the whole brief.
-      const LENS={ Lego_Transparent_Red  :{op:0.90, rough:0.30, env:0.32},   // tail, red glass
-                   Lego_Transparent_White:{op:0.85, rough:0.08, env:0.85} }; // headlight, clear
-      m.traverse(o=>{ if(!o.isMesh||!o.material||Array.isArray(o.material)) return;
-        const L=LENS[o.material.name||'']; if(!L) return;
-        const g=o.material;
-        g.opacity=L.op; g.roughness=L.rough; g.side=THREE.DoubleSide;
-        g.userData.envBase=L.env; });   // straight onto userData: polish() already registered it
+          g.color.set(0xFFB54A); g.metalness=0.90; g.roughness=0.15; g.userData.envBase=1.15;
+          g.userData.carTier='rim'; } });                    // opts out of __cars.abs()
       // Live, because a lens is the one thing on this car that can only be judged with eyes on it:
       // __lambo.lens(tail, head) for the two alphas, __lambo.tail(rough, env) for how glassy the
       // cones read. Strip with the other hooks.
@@ -3919,34 +4057,46 @@
   loadProp('./assets/aston.glb', {name:'aston', pos:[53.94,9.04], y:0, rotY:0,
     targetLen:5.8703, solid:true,
     onload:(holder,m)=>{
-      // NOTHING IN THIS EXPORT IS TRANSPARENT AND FOUR OF ITS MATERIALS HAVE TO BE. Read out of
-      // the source node trees rather than guessed at: every Principled alpha is 1.0, no material
-      // carries a transmission weight, and the see-through is only Blender's HASHED blend mode,
-      // which glTF has no way to express. So all four ship as alphaMode OPAQUE and would render
-      // as solid slabs. polish() already catches them, because its glassy test reads the material
-      // NAME and all four say trans or glass, so they arrive with the mirror-clear finish; what
-      // they do not arrive with is an alpha, since polish only flips `transparent` when opacity
-      // is already under 1. That is what this sets, and it uses the numbers the Countach's lenses
-      // were just tuned to in engine rather than a fresh guess.
-      //  · The two LAMP materials go DoubleSide. A small solid lens brick drawn FrontSide barely
-      //    draws at all (measured on the Countach: taking the clear lens from 0.40 to 1.00 moved
-      //    its lamp by seven levels of sRGB, while DoubleSide tripled the drawn area), and the
-      //    second layer is what gives a lens any body against dark paint.
-      //  · The WINDSCREEN stays FrontSide at 0.25, which is the Realm's window number, for the
-      //    opposite reason: a pane you look THROUGH into a cabin compounds toward white if both
-      //    of its faces blend, and that is what made every window here a milky slab.
-      //  · The tail lights come off the mirror the same way the Countach's cones did, roughness
-      //    0.30 and envBase 0.32, or a curved trans brick reflects the sky and reads white.
-      const GLASS={ 'TRANS-RED'        :{op:0.90, rough:0.30, env:0.32, dbl:true},   // tail lamps
-                    'TRANS-ORANGE'     :{op:0.90, rough:0.30, env:0.32, dbl:true},   // indicators
-                    'Glass.001'        :{op:0.85, rough:0.08, env:0.85, dbl:true},   // front lamps
-                    'Transparent_Glass':{op:0.25, rough:0.08, env:0.85, dbl:false} };// the glasshouse
+      // THE CAR STANDARD FIRST, and this car needs it more than the other three. NOTHING IN THIS
+      // EXPORT IS TRANSPARENT AND FOUR OF ITS MATERIALS HAVE TO BE: read out of the source node
+      // trees rather than guessed at, every Principled alpha is 1.0 and no material carries a
+      // transmission weight, so the see-through is only Blender's HASHED blend mode, which glTF
+      // cannot express, and all four ship alphaMode OPAQUE. polish() does catch them, because its
+      // glassy test reads the material NAME and all four say trans or glass, but it only flips
+      // `transparent` when the opacity is ALREADY under 1, so they arrive with the finish and no
+      // alpha at all. Every one of the four therefore needs an explicit opacity here, which is why
+      // the glasshouse cannot use the glass tier's "keep what was moulded": there is no moulding to
+      // keep. 0.25 is the Realm's window number.
+      // The glasshouse also ships baseColorFactor 1.000/0.525/0.602, a PINK, so it rendered as a
+      // pink windscreen. That is an unauthored import defect rather than a decision, so the neutral
+      // trans-clear goes on with the alpha.
+      carStandard(m, { 'TRANS-RED'        : CAR_LENS.red,
+                       'TRANS-ORANGE'     : CAR_LENS.amber,
+                       'Glass.001'        : CAR_LENS.clear,
+                       'Transparent_Glass': Object.assign({}, CAR_LENS.glass, {op:0.25, color:0xFCFCFC}) });
+      // ── THE FLAT PIECES, and every one of them is an unauthored or defaulted colour rather than
+      // a finish. Read straight off the shipped file:
+      //   SOLID-BLACK.005              0.000/0.000/0.000  PURE black, and the biggest material on
+      //                                the car at 180,304 triangles (tyres, bumpers, every black
+      //                                trim brick). A pure black diffuse term returns NOTHING, so
+      //                                the piece is lit by its specular alone: that is as flat as
+      //                                a surface can be made, and it is most of the "flat" here.
+      //   SOLID-DARK_BLUISH_GRAY.002   0.800/0.800/0.800  Blender's default grey, never authored,
+      //   SOLID-TAN.002                0.800/0.800/0.800  and all three render as a near-white
+      //   PEARL-FLAT_SILVER            0.800/0.800/0.800  #E7E7E7 slab with no colour in it.
+      //   SOLID-LIGHT_BLUISH_GRAY.004  0.2159 flat        a dead neutral #808080, well off the
+      //                                real LEGO Light Bluish Gray it is named for.
+      // All five take the real LEGO colour, converted (this model's factors are already linear).
+      // PEARL-FLAT_SILVER is set on the BASE material, which is the centreline trim piece; the four
+      // rim faces are cut out of it by tintByBoxes below and go black, and that clone is taken
+      // after this, so it starts from a real silver rather than from the default grey.
+      const ASTON_COLOUR={ 'SOLID-BLACK.005'            : 0x05131D,   // LEGO Black
+                           'SOLID-LIGHT_BLUISH_GRAY.004': 0xA0A5A9,   // LEGO Light Bluish Gray
+                           'SOLID-DARK_BLUISH_GRAY.002' : 0x6C6E68,   // LEGO Dark Bluish Gray
+                           'SOLID-TAN.002'              : 0xE4CD9E,   // LEGO Tan
+                           'PEARL-FLAT_SILVER'          : 0x898788 }; // LEGO Flat Silver
       m.traverse(o=>{ if(!o.isMesh||!o.material||Array.isArray(o.material)) return;
-        const G=GLASS[o.material.name||'']; if(!G) return;
-        const g=o.material;
-        g.transparent=true; g.opacity=G.op; g.depthWrite=false;
-        g.roughness=G.rough; g.side=G.dbl?THREE.DoubleSide:THREE.FrontSide;
-        g.userData.envBase=G.env; g.needsUpdate=true; });
+        const c=ASTON_COLOUR[o.material.name||'']; if(c!=null) o.material.color.set(c).convertSRGBToLinear(); });
       // ── GUNMETAL BODY (user, 2026-08-31). SOLID-DARK_RED is the ONLY red bodywork material on
       // this car, checked rather than assumed: of the eleven, exactly three are red-dominant and
       // the other two are TRANS-RED, which is the tail lamp lens and has to stay red, and
@@ -3972,7 +4122,7 @@
       m.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)
         &&o.material.name==='METAL-SILVER.001'){ const g=o.material;
           g.color.copy(WHEEL_BLACK); g.metalness=0; g.roughness=0.30;
-          g.userData.envBase=0.55; g.needsUpdate=true; } });
+          g.userData.envBase=0.55; g.userData.carTier='rim'; g.needsUpdate=true; } });
       // PEARL-FLAT_SILVER cannot go whole, because a FIFTH object shares it: a 1,152-triangle trim
       // piece up on the body centreline (model x 25.01..25.15, y 1.18..1.54, z -0.36..0.01) that is
       // not part of any wheel and stays silver. The export joined all five into one mesh, so the
@@ -4023,6 +4173,49 @@
   // fixWinding either. Both were checked against the shipped file, not assumed.
   loadProp('./assets/garden.glb',  {name:'garden',  pos:[69.08715,0.7389], y:-0.1354,
     rotY:Math.PI/2, scale:PITCH/0.38245, solid:true});
+  // ── THE ELECTRIC PIANO, standing in the mansion's LIVING ROOM with its back against the wall
+  // the entrance porch is on the other side of, i.e. the one under the black canopy roof where
+  // the door and the walkway are. That wall runs x 47.678..51.374 along the north edge of the
+  // room and its living-room face is at z -2.35569, measured off the loaded model; the big west
+  // window (z -6.011..-2.344, y 0.737..2.511) dies straight into it, so the piano stands just
+  // past the glass. Between the west wall's inner face (x 48.4585) and the wall's own east end
+  // there are 2.916 units of wall to stand against, and past that end the room opens north.
+  //
+  // SIZE. It is NOT shipped at its own stud pitch, and both measurements that decide that were
+  // taken rather than eyeballed. Its lattice is 0.1855, the nearest-neighbour distance over the
+  // stud centres on four separate horizontal layers of the build (55, 49, 72 and 40 of them, all
+  // four returning the same number), which makes it a 12x6 stud table carrying a 10x4 keyboard,
+  // 22 plates tall. Scaled to PITCH that is 4.433 wide against 2.916 of wall, so it does not fit
+  // the wall it was asked to stand on, and 2.742 tall with its playing surface at y 2.00 against
+  // a figure whose head tops out at 1.770: the keys would sit above the minifig's head. At
+  // 1.0800247 it is 2.402 x 1.487 x 1.200, the keys land at y 1.188, chest height on the figure,
+  // and 0.22 of wall is left clear at one end and 0.30 at the other. Its rendered stud is then
+  // 0.2003, 0.54 of PITCH; the cars already render theirs at 0.78, so a prop carrying its own
+  // brick scale is the rule in the Realm rather than an exception to it.
+  //
+  // WHY THAT EXACT NUMBER. loadProp snaps the holder to the world stud grid, which quantises z
+  // by a whole PITCH, and the mansion's own brick grid is a fraction of a stud out of phase with
+  // that grid, so "back flush against the wall" is not a position that can be typed in. It is
+  // solved backwards instead: at pos z -8*PITCH = -2.9556 the back face lands on the wall face
+  // exactly when the depth is 2*(2.9556-2.35569) = 1.19982, which on a model 1.110919 deep is a
+  // scale of 1.0800247. The scale is the free variable and the flush back is the constraint.
+  // x is 135*PITCH = 49.87575, the grid stud nearest the middle of the wall run.
+  // y is the floor's PLATE TOP, -0.0931, and not its stud tips at 0.0032: the mansion's wooden
+  // floor is studded plates, and a LEGO piece rests its underside on the plate and swallows the
+  // studs, which is the same reason the garden's fence is seated on plateTop.
+  // rotY PI turns the keys, which face the model's own +Z, round to -Z and into the room.
+  // solid rasterizes it from its real triangles, so you walk into the table rather than through
+  // it; it stays out of camCell, being furniture and not a building.
+  //
+  // The export (scratchpad/piano/export_piano.py) DROPS the floating headphones the build ships
+  // with: four MB_26 islands standing in mid air 0.47 beside the table at y 0.285..0.595, with
+  // nowhere to be rested, since the keyboard covers the table top to within a stud on every side.
+  // The rest is joined into one mesh per material: 9 draw calls, 59,712 triangles, 168KB Draco.
+  // It needs neither fixWinding (all 9 meshes score 0.00000 reversed) nor an sRGB conversion
+  // (MB_1 is 0.9047, which read as LINEAR is sRGB 245, i.e. LEGO White; read as sRGB it is 231,
+  // which is nothing). Both were checked against the shipped file.
+  loadProp('./assets/piano.glb',   {name:'piano',   pos:[49.87575,-2.9556], y:-0.0931,
+    rotY:Math.PI, scale:1.0800247, solid:true});
   // Skull on the ground left of the ruins doorway, against the wall, face out. Same size as the figure's head, stamped in.
   loadProp('./assets/skull.glb',   {name:'skull',   pos:[-3.81,15.08], y:-0.03, rotY:Math.PI, targetH:0.46});
   // LEGO rat along the ruins' left side wall (east flank, wall face x 1.62), heading toward the back:
@@ -5190,8 +5383,11 @@
   // is doing the steering. 1.8 is the ratio of the two ranges (2.05 over 1.14), so a drag across
   // the whole sky costs the same as it does on the ground. Pitch only: yaw's range never changed.
   let PITCH_FLY_SENS=1.8;
-  const pitchSens=()=>SENS*(flying?PITCH_FLY_SENS:1);
-  const clampPitch=v=>Math.max(flying?PITCH_UP:0.06, Math.min(1.2, v));
+  // FIRST PERSON opens the same upward range flight does, and for the same reason: indoors you
+  // have to be able to look up, and a range that has nearly doubled needs the matching
+  // sensitivity or a sweep of the ceiling costs twice the drag the same sweep costs outside.
+  const pitchSens=()=>SENS*((flying||fpOn())?PITCH_FLY_SENS:1);
+  const clampPitch=v=>Math.max((flying||fpOn())?PITCH_UP:0.06, Math.min(1.2, v));
   // ══ THE LOOK DRAG ═════════════════════════════════════════════════════════════════════════
   // A pan that stops dead while the button is still down has TWO causes and they are unrelated.
   //
@@ -5271,6 +5467,30 @@
     drag=false; mdrag=false; });
   addEventListener('mouseup',()=>{ if(!HAS_PE) endLook(); });
   addEventListener('blur',()=>{ if(dragPid===null){ drag=false; mdrag=false; } });
+  // ══ THE CURSOR ════════════════════════════════════════════════════════════════════════════
+  // The canvas hides the real pointer (#c is cursor:none), so this dot is the only thing on
+  // screen telling you where the mouse is. Kept deliberately dumb: one transform per move, no
+  // easing on it, no rAF, no state beyond the one class.
+  //   · e.target===canvas is the whole visibility test, and it is one line because the canvas
+  //     sits UNDER everything: the moment the pointer is over the intro card or any HUD control
+  //     the topmost element is not the canvas, the dot stands down on its own, and the real arrow
+  //     is never doubled. No list of elements to keep in sync.
+  //   · mode==='hub' is the other half, and it is needed because the portal PANELS are drawn on
+  //     the canvas rather than in the DOM, so e.target cannot see them. enterPortal hands the
+  //     real arrow back for those; this is what takes the dot away at the same moment.
+  //   · and it hides for the whole of a POINTER LOCK, which is what the look drag now takes:
+  //     clientX is frozen throughout a lock, so left alone the dot would sit stranded wherever
+  //     the pan began until the button came up.
+  // It appears on the first real move rather than at load, so a page nobody has touched does not
+  // show a dot parked in the top-left corner.
+  const curEl=document.getElementById('cur');
+  addEventListener('mousemove',e=>{ curEl.style.transform='translate3d('+e.clientX+'px,'+e.clientY+'px,0)';
+    curEl.classList.toggle('on', e.target===canvas && mode==='hub' && !looking()); },{passive:true});
+  // Leaving the window delivers no further moves, so the class has to be cleared here or the dot
+  // is left frozen at the edge of the frame. relatedTarget null is the window boundary.
+  addEventListener('mouseout',e=>{ if(!e.relatedTarget) curEl.classList.remove('on'); });
+  document.addEventListener('pointerlockchange',()=>{ if(looking()) curEl.classList.remove('on'); });
+
   // touch look-drag tracks its own touch identifier so the joystick finger never steals the camera
   let lookId=null;
   canvas.addEventListener('touchstart',e=>{ initAudio(); if(lookId!==null) return; const t=e.changedTouches[0];
@@ -5450,7 +5670,19 @@
   function frame(dt){
     dayT=(dayT+dt/CYCLE_SECS)%1; applyTOD();   // day/night keeps turning; all lights fade smoothly
     if(flying && mode!=='hub') setFly(false);   // a portal is entered on foot
-    if(!flying && camPitch<0.06) camPitch+=(0.06-camPitch)*Math.min(1,dt*5);   // ease the aim back down after landing
+    // ── FIRST PERSON. Step through the grey archway off the mansion's balcony and the camera
+    // moves into his head. The trigger is THE ROOM, not the doorway: houseRoomCells is every
+    // upper-floor cell with a roof over it, so crossing the arch is itself the trigger and there
+    // is no threshold to get caught straddling, from any direction and at any angle.
+    const fpWant=(mode==='hub' && !fading && inRoom())?1:0;
+    fpAmt += (fpWant-fpAmt)*Math.min(1, dt*FP_RATE);
+    if(fpAmt<0.002) fpAmt=0; else if(fpAmt>0.998) fpAmt=1;
+    // he is inside his own head now, so the body comes off. Hub mode only: entering and leaving a
+    // portal owns this flag either side of that, and must not be fought for it.
+    if(mode==='hub' && !fading) figBody.visible = fpAmt<0.6;
+    // ...and the aim is NOT eased back down while first person holds the wider range open, or the
+    // camera would sag to the floor every time you stopped dragging indoors.
+    if(!flying && !fpOn() && camPitch<0.06) camPitch+=(0.06-camPitch)*Math.min(1,dt*5);   // ease the aim back down after landing
     // ── AND THE TAKE-OFF LEVELS IT. On foot the camera may only ever look DOWN, so it is resting
     // somewhere around 0.24 the moment he leaves the ground, and "W flies where you look" then
     // means W flies into the plate: measured, 2.09 units a second of sink, which from a launch
@@ -5848,7 +6080,7 @@
         if(player.position.y<1.5)
           for(let d=0.6; d<hd; d+=OCS){ if(camCell(player.position.x+dxc*d, player.position.z+dzc*d)){ hd=Math.max(1.0, d-0.4); break; } }
         const vd=hd*Math.tan(camPitch);
-        const cx=player.position.x+dxc*hd, cz=player.position.z+dzc*hd;
+        let cx=player.position.x+dxc*hd, cz=player.position.z+dzc*hd;
         let cy=player.position.y+0.6+vd;
         // Looking UP puts the camera BELOW the player (vd is negative), and in flight that is most
         // of the time, so it has to be held off the ground exactly the way the figure is.
@@ -5857,13 +6089,30 @@
         // not in the heightmap at all. That is why the walk falls back to 0 for its own floor
         // (see gy), and the camera now falls back the same way instead of dropping through.
         cy=Math.max(cy, camFloorY(cx,cz,cy));
-        camera.position.lerp(_v.set(cx, cy, cz), 0.2);
+        // ── FIRST PERSON blends the WHOLE solution, position and aim together, rather than
+        // winding camDist down to zero: at zero the orbit collapses onto the player and camLook
+        // would sit on top of the camera's own position, which is not a direction at all.
+        // The aim runs OPPOSITE the orbit arm, because that is exactly where the third-person
+        // camera was already looking, from behind him and through him, down his own facing. The
+        // floor clamp above is left on the ORBIT solution alone: an eye belongs at the head,
+        // not pushed up off the ground the way a trailing camera has to be.
+        let lkx=player.position.x, lky=player.position.y+0.95, lkz=player.position.z;
+        if(fpAmt>0){
+          const ex=player.position.x, ey=player.position.y+FP_EYE, ez=player.position.z;
+          const cp=Math.cos(camPitch), sp=Math.sin(camPitch);
+          cx+=(ex-cx)*fpAmt; cy+=(ey-cy)*fpAmt; cz+=(ez-cz)*fpAmt;
+          lkx+=((ex-dxc*cp)-lkx)*fpAmt; lky+=((ey-sp)-lky)*fpAmt; lkz+=((ez-dzc*cp)-lkz)*fpAmt;
+        }
+        // and the FOLLOW EASE goes rigid along with it. Closing a fifth of the gap each frame is
+        // what gives the third-person camera its weight, and is precisely what makes a
+        // first-person view swim, since the head would be lagging the body it is bolted to.
+        camera.position.lerp(_v.set(cx, cy, cz), 0.2+0.8*fpAmt);
         // and again on the EASED position. The line above fixes the TARGET, but the camera only
         // closes a fifth of the gap each frame, so on a fast low pass it lags behind the clamp and
         // spends a beat under the plate on its own account.
         const cf=camFloorY(camera.position.x, camera.position.z, camera.position.y);
         if(camera.position.y<cf) camera.position.y=cf;
-        camLook.set(player.position.x, player.position.y+0.95, player.position.z); camera.lookAt(camLook);
+        camLook.set(lkx, lky, lkz); camera.lookAt(camLook);
       }
       if(PIPE) PIPE.render();
       else { renderer.setClearColor(0x0c1120,1); renderer.render(scene, camera); }
@@ -5875,6 +6124,9 @@
     get yaw(){return camYaw}, set yaw(v){camYaw=v},
     get pitch(){return camPitch}, set pitch(v){camPitch=v},
     get lookLocked(){return document.pointerLockElement===canvas},
+    get fp(){ return {amt:+fpAmt.toFixed(3), inRoom:inRoom(), cells:houseRoomCells.size, eye:FP_EYE}; },
+    cursorBlend(on){ const d=(on!==false); document.body.classList.toggle('curdiff', d);
+      return d ? "difference, the main site's own (vanishes on mid grey)" : "painted, with a dark halo"; },
     set dist(v){camDist=v},
     get time(){return dayT}, set time(v){dayT=v; applyTOD();},
     tp(x,z){ player.position.x=x; player.position.z=z; velX=velZ=0; },

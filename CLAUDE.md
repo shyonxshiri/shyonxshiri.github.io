@@ -185,6 +185,45 @@ it was already a finished exterior wall, unbroken ground to roofline across the 
 pavement runs unbroken under where the wall stood, so nothing had to be filled in.
 `MH_BOX` now pins the centring for the same reason `RU_BOX` does on the ruins: that outer wall WAS
 the model's z max, so on the live box this cut would have walked the whole mansion 0.003 north.
+**ALL FOUR CARS RUN ONE MATERIAL STANDARD** (`CAR_ABS` / `CAR_LENS` / `carStandard()`, above
+`loadProp`), because they came from three export paths on three different finishes and read as
+different toys in one driveway. Measured off the shipped files: Porsche 0.600 and Corvette 0.664
+roughness, both capped by `polish()` to 0.38; Countach bodywork 0.100 KEPT while its own dark grey
+and its tyres cap to 0.38; Aston bodywork 0.0734 KEPT while everything else on that car caps to
+0.38. `polish()` cannot fix this because it only pulls roughness DOWN to a ceiling and these files
+disagree below it, so the cars are PINNED here instead: bodywork, trim and tyres all take
+**roughness 0.22, metalness 0, envBase 0.62**. The Aston's split is what actually read as flat, a
+near-mirror shell with dull sills and dull wheels around it.
+`carStandard(model, lensMap)` is called FIRST in each car's `onload`; the rims, the tyre tints and
+every `tintByBoxes` clone are deliberate departures and land on top of it (rims tag themselves
+`userData.carTier='rim'` so the live dial leaves them alone). **A TYRE TIER IS NOT REACHABLE**: only
+the Countach ships a tyre-only material, the other three share it with the bumpers and every black
+trim brick, so a rubber tier would exist on one car in four.
+The LENS tiers are red / amber / clear / glass. A lamp is DoubleSide (a small trans brick drawn
+FrontSide barely draws at all: on the Countach, taking the clear lens 0.40 to 1.00 moved it seven
+levels of sRGB while DoubleSide TRIPLED the drawn area, 7,345 px to 21,669); a WINDOW stays
+FrontSide, because both faces blending compound toward white, and keeps its own moulded opacity
+(Porsche smoke 0.70, Corvette 0.50, Countach 0.25). Lamps come off the mirror at roughness 0.30 /
+envBase 0.32, or a curved trans-red piece reflects the sky and reads white; the clear lens keeps
+the full 0.08 gloss.
+**COLOUR IS PART OF THE TIER**, and it had to be. The three builds disagreed wildly on trans-red:
+Aston 1.000/0.000/0.000 linear, Countach 0.479/0.020/0.000, Porsche 0.333/0.000/0.005, and measured
+AS RENDERED from behind each parked car that was Aston sRGB (201,68,47), Porsche (138,28,31) and
+Countach (50,32,38), which is not a red lamp, it is a dark grey one. All three now take real LEGO
+Trans-Red #C91A09 (amber #F08F1C, clear #FCFCFC).
+**AND THE RED AND AMBER TIERS GLOW A LITTLE**, `em` 0.45, which is the one addition rather than a
+repair. Trans-Red is 0.578 linear against the Aston's clipped 1.000, so putting all three on the
+honest colour DIMMED the one car whose tail already read right, (201,68,47) to (173,53,41). The
+glow is an emissive of the lens's own hue, taken off the colour AFTER it is set so the two cannot
+drift; it puts the Aston back to (189,63,45) and carries the Porsche to (185,41,16) rather than
+special-casing one car. 0.45 x 0.578 = 0.26 linear, well under the pipeline's 1.7 bloom threshold,
+so a lamp lifts and never blooms, and `applyTOD` touches only `envMapIntensity` and the crystal's
+`emissiveIntensity`, so **the tail lamps stay lit at night**. That is deliberate. Live on
+`__cars.abs(rough, env)`, `__cars.lens(tier, op, rough, env)`, `__cars.glow(amount)` and
+`__cars.report()`.
+The Countach's two tail lamps are 1x1 CONES and stay the dimmest of the three whatever the material
+says, (61,36,42): that is how few pixels two cones cover on a black car, not a finish.
+
 **The two cars are matched by BRICK SCALE, not by the world grid.** Both are Mecabricks MOCs with a
 measurable lattice: the Porsche's is 0.349795 (parts at 0.34662 / 0.69640 / 1.04781 / 1.39605 /
 1.74594 / 2.09582 for 1..6 studs), the Corvette's 0.326147 (0.64828 / 0.97441 / 1.30057 for 2..4).
@@ -224,27 +263,18 @@ simply no longer what the scale is solved on. Rendered it is 0.275210, 4.1% unde
 Parked x 44.255..49.585 against the Porsche's 44.120..49.720, z 7.606..10.127, 2.01 clear of the
 Porsche's flank. The nose sits 0.135 behind the Porsche's and stays there: `holder.position` runs
 through `snap()`, so `pos` x moves only in whole stud pitches and 46.92 is already the nearest.
-**The light LENSES are the one exception to the FrontSide glass rule, and OPACITY WAS NEVER THE
-PROBLEM.** Six pieces: four `Lego_Transparent_White` at the nose (`6220959` Brick 1x1 outboard plus
-`6252041` Plate 1x1 inboard, per lamp, laid flush into the nose deck as closed pop-up covers) and two
-`Lego_Transparent_Red` `6337596` Cone 1x1 at the tail. Copying the Porsche's `MB41` 0.7 / `MB40` 0.4
-did nothing, and measuring in engine says why: over the pixels the headlight covers, taking the clear
-lens from 0.40 to 1.00 moves its mean only from sRGB (55,48,52) to (62,55,58). A fully opaque light
-grey brick rendering at 62 is not being blended away, it is not being DRAWN. Switch the material to
-`DoubleSide` and the drawn area TRIPLES, 7,345 pixels to 21,669. Winding, normals and the world
-matrix determinant were all checked first and all three are clean (reversed fraction 0.00000,
-outward normals on all 254 parts, determinant +0.518), so this is the FrontSide rule itself: it
-exists because a WINDOW compounds toward white when both faces blend, and a small lens brick sunk
-into black paint is the opposite case, where the second layer is the only thing giving it body.
-Shipped: clear `DoubleSide` 0.85 at the glass gloss, red `DoubleSide` 0.90 at roughness 0.30 and
-envBase 0.32. The tail needed coming off the mirror as well as opening up: at polish()'s 0.08 / 0.85
-a trans-red CONE standing out in the open reflects the sky over most of its curve and reads white.
-**And the Porsche cannot be matched on alpha, because it has a REFLECTOR and this car does not.**
+**Its light lenses are on the shared standard above**, six pieces: four `Lego_Transparent_White` at
+the nose (`6220959` Brick 1x1 outboard plus `6252041` Plate 1x1 inboard per lamp, laid flush into
+the nose deck as closed pop-up covers) and two `Lego_Transparent_Red` `6337596` Cone 1x1 at the
+tail. `Lego_Transparent_Brown` is the side and rear GLASS, measured (x 0.354..1.975, reaching
+y 1.633), so it takes the window tier and keeps 0.25, and so does the windscreen.
+**The Porsche could never be matched on alpha, because it has a REFLECTOR and this car does not.**
 Ray-cast through `MB40` and 78.8% of its outward area lands on `MB309`, a 0.617 light grey plate
-right behind the lens. 100% of the Countach's clear lens lands on the printed nose panel, which this
-build's own black repaint took to #05131D. Live on `__lambo.lens(tail, head)` and `__lambo.tail(rough, env)`. `Lego_Transparent_Brown` is NOT touched: measured, it spans x
-0.354..1.975 and reaches y 1.633, so it is the side and rear GLASS, and 0.25 is what glass is for;
-the windscreen is left alone for the same reason. Live on `__lambo.lens(tail, head)`.
+right behind the lens; 100% of the Countach's clear lens lands on the printed nose panel, which
+this build's own black repaint took to #05131D. That is why copying the Porsche's numbers failed
+and why the tier had to be built out of DoubleSide and colour rather than alpha. Winding, normals
+and the world matrix determinant were all checked first and all three are clean (reversed fraction
+0.00000, outward normals on all 254 parts, determinant +0.518).
 `scratchpad/lambo/export_lambo.py` axis-aligns and centres it (the nose is DERIVED from the light
 lenses, clear at one end and red at the other, not hardcoded), splits the four wheel-rim tiles onto
 their own material clone `Texture_Rim`, and joins the 254 named parts into one mesh per material:
@@ -308,10 +338,12 @@ source node trees, not guessed: every Principled alpha is 1.0 and no material ca
 weight, so the see-through is only Blender's HASHED blend mode, which glTF cannot express, and all
 four ship alphaMode OPAQUE. `polish()` does catch them, because its glassy test reads the material
 NAME and all four say trans or glass, but it only flips `transparent` when opacity is already under
-1, so they arrive with the finish and no alpha. The loader writes them: `TRANS-RED` and
-`TRANS-ORANGE` 0.90 / roughness 0.30 / envBase 0.32 DoubleSide, `Glass.001` (the front lamp panel)
-0.85 / 0.08 / 0.85 DoubleSide, `Transparent_Glass` (the glasshouse) 0.25 FrontSide, which is the
-Realm's window number and the window rule. Live on `__aston.lens(tail, head)` / `__aston.tail(rough, env)`.
+1, so they arrive with the finish and no alpha. All four therefore need an EXPLICIT opacity from the
+shared standard, which is why this is the one car whose glasshouse cannot use the window tier's
+"keep what was moulded": there is no moulding to keep, so `Transparent_Glass` is given 0.25 by hand.
+`TRANS-RED` and `TRANS-ORANGE` take the red and amber lamp tiers, `Glass.001` (the front lamp panel)
+the clear tier. Live on `__aston.lens(tail, head)` / `__aston.tail(rough, env)`, or across all four
+cars on `__cars`.
 **GUNMETAL BODY AND BLACK WHEELS** (user, 2026-08-31). `SOLID-DARK_RED` is the ONLY red bodywork
 material, checked rather than assumed: of the eleven, exactly three are red-dominant and the other
 two are `TRANS-RED`, the tail lamp lens, which has to stay red, and `Transparent_Glass`, the
@@ -332,12 +364,23 @@ are the only PEARL geometry outboard of |z| 1.0, and they sit low while the trim
 centre). **It must hit exactly 24,384 of that material's 25,536 triangles, 4 x 6,096**, and that is
 asserted in the loader and confirmed twice: by replaying the box test against the real geometry in
 Node (`scratchpad/aston/verify_tint.cjs`) and by the guard staying silent in engine.
-`SOLID-BLACK` also ships metalness 1 and is deliberately left to `polish()`, because it is tyres and
-black bricks and a metal tyre is a Mecabricks artefact rather than a decision.
-**Three colours are still import defects, shipped as they are.** `TRANS-ORANGE` has baseColorFactor
-`[0.840, 1.000, 0.000]`, a chartreuse, so the outer tail lamps render YELLOW rather than amber;
-`Transparent_Glass` is `[1.000, 0.525, 0.602]`, a pink; and `SOLID-TAN` plus
-`SOLID-DARK_BLUISH_GRAY` sit at Blender's default 0.800 grey, i.e. never authored.
+`SOLID-BLACK` also ships metalness 1; the shared standard zeroes it with everything else, because it
+is tyres and black bricks and a metal tyre is a Mecabricks artefact rather than a decision.
+**SIX OF ITS COLOURS WERE UNAUTHORED OR DEFAULTED, AND THAT, NOT THE FINISH, IS WHAT READ AS FLAT**
+(user, 2026-08-31). Read off the shipped file and now all corrected in the loader:
+`SOLID-BLACK.005` was `[0,0,0]`, PURE black, and it is the biggest material on the car at 180,304
+triangles (tyres, bumpers, every black trim brick); a pure black diffuse term returns nothing at
+all, so the piece was lit by its specular alone, which is as flat as a surface can be made.
+`SOLID-TAN.002`, `SOLID-DARK_BLUISH_GRAY.002` and `PEARL-FLAT_SILVER` all sat at Blender's default
+`[0.800, 0.800, 0.800]`, never authored, rendering as a near-white #E7E7E7 slab with no colour in
+it. `SOLID-LIGHT_BLUISH_GRAY.004` was a dead neutral #808080, well off the LEGO colour it is named
+for. `Transparent_Glass` was `[1.000, 0.525, 0.602]`, a PINK windscreen, and `TRANS-ORANGE`
+`[0.840, 1.000, 0.000]`, a chartreuse that rendered the outer tail lamps YELLOW rather than amber.
+They now take real LEGO Black #05131D, Tan #E4CD9E, Dark Bluish Gray #6C6E68, Flat Silver #898788,
+Light Bluish Gray #A0A5A9, trans-clear #FCFCFC and Trans-Orange #F08F1C, all converted (this
+model's factors are already linear). `PEARL-FLAT_SILVER` is set on the BASE material, which is the
+centreline trim piece; the four rim faces are cut out of it by `tintByBoxes` afterwards and go
+black, so that clone starts from a real silver rather than from the default grey.
 The export (`scratchpad/aston/export_aston.py`) joins 36 objects into one mesh per material, 11
 draw calls and 338,552 triangles, and STRIPS the two orphan 2048 maps `Glass.001` carried: a normal
 map and a metallicRoughness map on a 4,608-triangle lens, 3.65MB of a 6.70MB file, with the
@@ -353,6 +396,44 @@ Shyon is going to put something. Nothing else about the mansion moved: the groun
 driveway and both parked cars walk exactly as they did, which is why the heightmap slice is
 3.70..3.90 and not the default band (the model's own plate tops sit at -0.06, a tenth below the
 ground everything currently stands on).
+
+**The electric piano in the living room.** `piano.glb`, a LEGO keyboard on a brown stand, back
+against the wall the entrance porch is on the other side of, the one under the black canopy roof
+where the door and the walkway are. That wall runs x 47.678..51.374 along the north edge of the
+room and its living-room face is `z -2.35569`; the big west window (z -6.011..-2.344, y
+0.737..2.511) dies straight into it, so the piano stands just past the glass. Between the west
+wall's inner face (x 48.4585) and the wall's own east end there are 2.916 units to stand against.
+**It is deliberately NOT at its own stud pitch, and both measurements that decide that were taken.**
+Its lattice is **0.1855**, the nearest-neighbour distance over the stud centres on four separate
+horizontal layers of the build (55, 49, 72 and 40 studs, all four returning the same number), which
+makes it a 12x6 stud table carrying a 10x4 keyboard, 22 plates tall. Scaled to `PITCH` that is 4.433
+wide against 2.916 of wall, so it does not fit the wall it was asked to stand on, and 2.742 tall
+with its playing surface at y 2.00 against a figure whose head tops out at 1.770: the keys would sit
+above the minifig's head. At **1.0800247** it is 2.402 x 1.487 x 1.200, the keys land at y 1.188,
+chest height on the figure, and 0.22 of wall is clear at one end and 0.30 at the other. Rendered its
+stud is 0.2003, 0.54 of `PITCH`; the cars already render theirs at 0.78, so a prop carrying its own
+brick scale is the rule here rather than an exception.
+**That exact scale is SOLVED, not chosen.** `loadProp` snaps the holder to the world stud grid,
+which quantises z by a whole `PITCH`, and the mansion's own brick grid is a fraction of a stud out
+of phase with it, so "back flush against the wall" is not a position that can be typed in. At
+`pos` z `-8*PITCH` = -2.9556 the back face lands on the wall face exactly when the depth is
+2*(2.9556-2.35569) = 1.19982, which on a model 1.110919 deep is 1.0800247. The scale is the free
+variable and the flush back is the constraint. x is `135*PITCH` = 49.87575, the grid stud nearest
+the middle of the wall run. `y` is the floor's PLATE TOP, **-0.0931**, not its stud tips at 0.0032,
+for the same reason the garden's fence is seated on `plateTop`: a LEGO piece rests its underside on
+the plate and swallows the studs. `rotY` PI turns the keys, which face the model's own +Z, round to
+-Z and into the room. `solid` rasterizes it from its real triangles so you walk into the table
+rather than through it; it stays out of `camCell`, being furniture and not a building.
+Verified by replaying the SHIPPED config against the real geometry (`scratchpad/piano/verify.py`,
+which pulls the config out of `lego.html` by content): back face gap 0.00000, all 81 mansion wall
+vertices inside the piano's box sitting exactly on the wall plane and nothing intruding, base
+exactly on the floor plate top, 1.252 of headroom under the 2.6456 ceiling, keys facing the room.
+**The export DROPS the floating headphones the build ships with**: four `MB_26` islands standing in
+mid air 0.47 beside the table at y 0.285..0.595, with nowhere to be rested, since the keyboard
+covers the table top to within a stud on every side. The rest is joined into one mesh per material:
+9 draw calls, 59,712 triangles, 168KB Draco. It needs neither `fixWinding` (all 9 meshes score
+0.00000 reversed) nor an sRGB conversion (`MB_1` is 0.9047, which read as LINEAR is sRGB 245, i.e.
+LEGO White; read as sRGB it is 231, which is nothing). `scratchpad/piano/export_piano.py`.
 
 **The walled garden.** `garden.glb`, a fenced LEGO garden standing out in the woods behind the
 mansion, entered through its brick archway. No portal, no interior: it is scenery you can walk
@@ -896,14 +977,24 @@ is ever explained: run on the ground, descend only once flying.
 **The pointer, and the two keys that replaced the buttons.** `#c` is `cursor:none`: the mouse only
 ever DRAGS out in the world, so the arrow is noise. `enterPortal` puts it back (`'default'`) and
 `exitPortal` takes it away again, because the portal panels are really clicked.
-**There is deliberately NO custom cursor over the canvas.** A stand-in was built (a four-tick cross,
-then a LEGO stud picked from six options rendered over the Realm's own surfaces) and REMOVED at
-Shyon's request: over the world there is simply nothing there. Don't rebuild it. Two findings from
-that pass are worth keeping if it is ever wanted again. `mix-blend-mode:difference`, which is what
-the main site's cursor uses, CANCELS EXACTLY at backdrop 127.5 (it composites to `B + a*(255-2B)`):
-measured over the Realm it is superb on the sky (dLum 136), the fog (146) and a black car (146) and
-VANISHES on mid grey (dLum 1.0), which is the driveway and the car pads. An off-white hairline under
-a 1.2px dark `drop-shadow` has no such hole. And any bordered ring needs `box-sizing:border-box`, or
+**The cursor is the MAIN SITE'S OWN CIRCLE DOT** (`#cur`, mirroring `#ss-cursor-dot` in
+`src/App.tsx`): 9px, round, white, riding the pointer with no easing. This REVERSES an earlier
+decision (user, 2026-08-31). Two stand-ins, a four-tick cross and then a LEGO stud, were built and
+removed at Shyon's request with the note "don't rebuild it"; he has since asked for the main site's
+dot specifically, which is a different thing from either.
+**One property of it had to change, and the reason is measured.** The main site paints the dot with
+`mix-blend-mode:difference`, which over a backdrop B composites to `B + a*(255-2B)` and so CANCELS
+EXACTLY at B=127.5. Over the Realm that value is the driveway and the car pads, which is the surface
+the pointer spends the most time over: measured, the difference dot reads dLum 136 on the sky, 146
+in the fog, 146 on a black car and **1.0 on mid grey**, i.e. it disappears completely exactly where
+the four cars are parked. Painted normally its own contrast is `|255-B|`, which fails only at the
+bright end, and a 1.4px dark `drop-shadow` carries precisely that end, so the worst case is the
+crossover at B=127.5 where BOTH read 127.5. `__D.cursorBlend(true)` switches to the pure main-site
+version for comparison. It is shown only over the CANVAS and only in hub mode (`e.target===canvas`
+is the whole test, because the canvas sits under everything, so no list of HUD elements has to be
+kept in sync), and it hides for the whole of a POINTER LOCK, since `clientX` is frozen throughout
+one and the dot would otherwise sit stranded where the pan began.
+Any bordered ring, if one is ever tried again, needs `box-sizing:border-box`, or
 the 1px border makes a 15px ring 17px on screen and a -7.5 margin misses the pointer by a pixel. Only the CANVAS
 carries the rule, so every HUD element keeps its own cursor. The top-right cluster (`Leave the
 Realm`, the sound button) is then `body:not(.touch) #topright{display:none}` at Shyon's request:
@@ -914,11 +1005,51 @@ buttons, and `touchRows` names them in the CONTROLS card, which gained a row for
 Note `R` sits a finger away from `WASD` and the hero unlock is not persisted, so a stray press
 costs the suit.
 
+**First person in the mansion's upstairs.** Step through the grey archway off the balcony and the
+camera moves into his head (user, 2026-08-31). The archway is identified rather than assumed: the
+geometry bordering the opening is the mansion's own `Dark_grey` `#4d4d4d`, and it is the ONLY way
+between the balcony and the room.
+**The trigger is THE ROOM, not the doorway.** `houseRoomCells` is every upper-floor cell with a ROOF
+over it, which is exactly what tells the room apart from the open balcony it opens onto, so crossing
+the arch IS the trigger, from any direction and at any angle, and there is no threshold to get
+caught straddling. It is built at load off the loaded model's own box (`surfaceBelow` in 3.5..4.0
+for the upper floor, `ceilUnder` over 6.0 for a roof: under the mansion's roof the flight column
+tops out at 6.7 and over the balcony at the 4.5 parapet), so no coordinate needs maintaining and it
+re-derives itself if the model ever moves. 2296 cells, against the 1444 the ASCII plan reports,
+because the plan skips WALL cells before testing for a roof and the build does not, which is
+harmless: a cell under a wall has a floor and a roof like any other and you can never stand in one.
+The height gate `player.y > HU_FROM` (3.30) is what keeps the GROUND floor in third person, since
+the room's floor is 3.714 and downstairs he stands at 0.
+`FP_EYE` is 1.43 and is MEASURED, not guessed: the printed face (`SOLID-BLACK-FACE`) spans y
+1.3184..1.4593 above the player root with the brows at 1.4501..1.4936 over it, and 1.43 is also dead
+centre of the head brick (1.193..1.653).
+**The blend is of the WHOLE solution, position and aim together, and not `camDist` wound down to
+zero**: at zero the orbit collapses onto the player and `camLook` sits on top of the camera's own
+position, which is not a direction at all. The aim runs OPPOSITE the orbit arm, because that is
+where the third-person camera was already looking, from behind him and through him. The floor clamp
+stays on the ORBIT solution alone, since an eye belongs at the head rather than pushed up off the
+ground the way a trailing camera has to be. And **the follow ease goes rigid with it**
+(`0.2 + 0.8*fpAmt`): closing a fifth of the gap per frame is what gives the third-person camera its
+weight and is precisely what makes a first-person view swim, the head lagging the body it is bolted
+to. The body is hidden over `fpAmt > 0.6`, in hub mode only, because `enterPortal`/`exitPortal` own
+that flag either side of it.
+**The pitch range opens exactly as flight's does**, and needs flight's sensitivity with it: indoors
+you have to be able to look up, and a range that has nearly doubled would otherwise cost twice the
+drag for the same sweep. The ease-back that pulls the aim down to 0.06 on foot is gated off while
+first person holds that range open, or the camera sags to the floor every time you stop dragging.
+Measured in engine: `fpAmt` 0 on the balcony and 1 in the room, the camera exactly at the player in
+x/z and at `player.y + 1.43`, the ground floor still third person, the arch crossing at x 50.6, a
+ramp that is monotonic and reaches 90% in 0.45s, and the view direction really pointing up at
+`camPitch` -0.7 (`scratchpad/verify_fp.cjs`, 26 assertions). The transition does sweep the camera
+through the wall on the way in, which reads as a push-in and is ~0.45s; note there is no camera
+collision upstairs at all (`camCell` only runs below y 1.5), so the third-person camera up there was
+already outside the building looking through its walls, and this removes that rather than adding it.
+
 **Debug hooks**, all temporary, strip before a final polish deploy. URL hashes (no console needed,
 which is what makes them usable in Safari): `#nopipe` forces the old direct path, `#noao` / `#nobloom`
 / `#nosmaa` switch off one pipeline stage each, `#noshade` skips the suit's colour remap. Objects: `window.__D` (`time`, `tp(x,z)`,
 `step(dt)`, `blocked`, `portalAt`, `shopPad`, `surfaceAt`, `audio`, `pipe`, `scene`, `camera`, and
-`yaw`/`pitch`/`lookLocked`, which READ back as well as set), `__FC` free-cam, `__R`, `__props`, `__bub`, `__petals`, `__stems`, `__gravel`, `__reeds`,
+`yaw`/`pitch`/`lookLocked`/`fp`, which READ back as well as set, and `cursorBlend`), `__FC` free-cam, `__R`, `__props`, `__bub`, `__petals`, `__stems`, `__gravel`, `__reeds`,
 `__money`, `__houseLights`, `__matGreen`, `__lambo` (`lens`), and `__hero` (`wear`, `fly`, `drop`, `trim`, `spin`,
 `nudge`, `lock`, `roofs`, `fit`, `hair`, `flare`, `ease`, `land`, `take`, `speed`, `cape`,
 `sockets`, `head`, `leap`, `colours`, `metal`, `skin`, `hover`, `sway`, `palette`).
@@ -940,7 +1071,8 @@ interior + outer band (`PETAL_HUES` gives each head one flat colour from 5 shade
 red/blue/yellow, `PETAL_N` decides how many of a plant's 4 stems flower, and the stalk takes one
 green of its own), organic gravel paths, props (wine-red Porsche with silver rims and a peanut-butter interior, the white Corvette C7 Z06
 parked behind it on the mansion driveway, a black Lamborghini Countach with gold rims on the second
-car pad beside them and a red 1969 Aston Martin DBS parked nose on to its tail, skull, rat,
+car pad beside them and a red 1969 Aston Martin DBS parked nose on to its tail, an electric
+piano against the living room's north wall, skull, rat,
 Tardis + NABU crystal, pirate chest + money bricks), the day cycle, the render pipeline, the sound layer, the
 title bubbles, mobile touch controls (joystick + jump + contextual pills), and My Lego Super Hero
 behind the pirate chest (suit swap + flight). Flight collision is now per-geometry in three
@@ -1120,6 +1252,11 @@ and 7 staged Blender frames showing the structures part-built.
   parser in a session scratchpad), because the pane has no WebGL. Shyon's eyes are the only
   check left. `__hero.drop/.trim/.spin/.nudge/.arm/.grow` exist so both fits and the flight arm
   pose can be dialled live.
+- **The piano has never been SEEN in engine.** Its size, placement, facing and clearances were all
+  verified by measurement and by headless Blender renders (§5), because the pane has no WebGL. The
+  scale in particular is a judgement made against the figure's own height and the wall's own length:
+  at true stud pitch the build does not fit either. `Lego Electric Piano` IS in the saved blend
+  (unlike `garden.glb` and `aston.glb`), and its FLOATING HEADPHONES are cut from the shipped glb.
 - **The mansion's upstairs is empty**, and deliberately so: Shyon asked for it to be solid and
   enterable because he wants to put something in there. It is one room plus the balcony, floor
   3.714 to 3.782, walls to about 5.9, entered through the balcony door (§5).

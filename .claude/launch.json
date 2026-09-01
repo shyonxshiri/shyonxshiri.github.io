@@ -336,6 +336,19 @@
         "--strictPort"
       ],
       "port": 5621
+    },
+    {
+      "name": "dev-piano",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5641",
+        "--strictPort"
+      ],
+      "port": 5641
     }
   ]
 }
