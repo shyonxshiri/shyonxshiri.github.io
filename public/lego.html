@@ -399,7 +399,14 @@
         // covered ~63% of the screen height, so the samples landed on unrelated geometry and
         // the result was grain no blur could reach. The floor keeps far AO above a texel.
         rUV*=clamp(rUV.y,minR,maxR)/max(rUV.y,1e-6);
-        float rnd=ign(gl_FragCoord.xy);
+        // AND THE NOISE IS WRAPPED, for the same class of reason. ign() is fract(52.98*fract(dot))
+        // and its input here reaches ~101 at the bottom of a 2880x1540 buffer, where a float's
+        // ulp has grown enough that the fractional part quantises and the per-pixel rotation
+        // stops varying between neighbouring rows. Wrapping the coordinate keeps the dot product
+        // small; the pattern then tiles every 64px, which is invisible in a value that only
+        // rotates a sample spiral and is blurred afterwards. Measured in Safari on top of the
+        // texel fix: the AO buffer's stripe power drops 3.14 -> 1.89 and the frame 0.07 -> 0.04.
+        float rnd=ign(mod(gl_FragCoord.xy,64.0));
         float r2=radius*radius, occ=0.0;
         for(int i=0;i<SAMPLES;i++){
           float a=(float(i)+0.5)/float(SAMPLES);
@@ -578,7 +585,20 @@
         bloom.setSize(w/2,h/2); smaa.setSize(w,h);
       }
       W=w; H=h;
-      aoMat.uniforms.texel.value.set(1/w,1/h);
+      // ── THE AO'S TEXEL IS THE AO BUFFER'S, NOT THE SCREEN'S (user, 2026-09-02: black lines,
+      // in Safari). This was 1/w,1/h, the FULL-res texel, on a pass that renders at HALF res,
+      // and `texel` is what normalAt steps by to take its depth neighbours. So the gradient was
+      // sampled half an AO texel either side: with the depth texture nearest-filtered, that
+      // offset lands back on the SAME depth texel for some rows and on the next one for others,
+      // the delta collapses to zero, axis() flips to the other side, and the derived normal
+      // alternates row by row. That is a scanline, and it is drawn straight into the occlusion.
+      // Chrome's sampling phase happens to hide it; Safari's does not, which is why this read as
+      // a browser bug and was once put down to the pointer lock.
+      // Measured in Safari 26 by shooting the shipped pass and this one from the same camera and
+      // scoring the vertical autocorrelation at the stripe period: the AO buffer goes from 18.79
+      // to 1.87 and the finished frame from 0.37 to 0.03. The occlusion also gets BETTER, not
+      // just cleaner, because the normals are finally right: studs and contact shadows read.
+      aoMat.uniforms.texel.value.set(1/hw,1/hh);
     }
 
     // sized off the renderer's own drawing buffer, never innerWidth: a page that loads in a
@@ -754,8 +774,11 @@
   // height, so putting them in it hung an invisible barrier 0.46 wide (the overhang plus PRAD)
   // along open grass either side of the hole. This is the same shape as ruinsUpCells and
   // houseUpCells, one storey the other way: the rock is a wall only while you are down in it.
-  // CV_FROM is under the first step (-0.709) and clear of the lawn.
-  const caveCells=new Set(), CV_FROM=-0.35;
+  // CV_FROM has to sit UNDER the lawn and OVER the shallowest terrace, and the terraces are now
+  // 0.2835 rather than 0.709, so -0.35 would have been below the first one and the rock would
+  // not have blocked anyone standing on it. -0.14 is half a terrace down: clear of the lawn's own
+  // 0, true everywhere inside the hollow.
+  const caveCells=new Set(), CV_FROM=-0.14;
   let fpAmt=0;                       // 0 third person, 1 inside his own head; eased, never cut
   const fpOn=()=>fpAmt>0.5;
   // FLIGHT COLLISION IN THREE DIMENSIONS. solidCells is rasterized at ground body height alone,
@@ -896,12 +919,10 @@
   const floorH=new Map(), MAXSTEP=1.55, LOWSTEP=0.35;   // MAXSTEP only on the real staircases; LOWSTEP is under one brick (0.44) so walls/rubble can't be walked up
   // the ruins' actual staircases [x0,x1,z0,z1] (ground -> balcony winding run, balcony -> top),
   // translated with the ruins' 2x move, plus the bridge deck + ramps over the river
-  // ...plus the CAVE PIT's trench. Its four risers are 5 plate courses each (0.709), over
-  // LOWSTEP 0.35, so without this you could walk down into the hole and never climb back out.
-  // It reaches south to 12.6 on purpose: inStair tests the TARGET cell, and the last climb out
-  // of the trench targets the LAWN row at z 12.756..13.496.
-  const STAIR_ZONES=[[-3.11,-0.51,19.18,22.88],[-3.71,0.49,23.68,25.78],[18.6,22.8,-16.6,-7.8],
-                     [47.9,51.1,12.6,18.8]];
+  // The cave hollow used to need one of these and no longer does: its terraces are 2 courses
+  // (0.2835), under LOWSTEP 0.35, so the ramp is walkable in both directions on the ordinary
+  // rule and from any angle. That is the whole point of terracing it finely.
+  const STAIR_ZONES=[[-3.11,-0.51,19.18,22.88],[-3.71,0.49,23.68,25.78],[18.6,22.8,-16.6,-7.8]];
   function inStair(x,z){ for(let i=0;i<STAIR_ZONES.length;i++){ const s=STAIR_ZONES[i];
     if(x>=s[0]&&x<=s[1]&&z>=s[2]&&z<=s[3]) return true; } return false; }
   const _e1=new THREE.Vector3(),_e2=new THREE.Vector3(),_nrm=new THREE.Vector3();
@@ -947,6 +968,13 @@
       for(let i=0;i<a.length;i++){ const s=a[i]; if(s<=maxY+0.02 && (best===null||s>best)) best=s; } }
     return best; }
   function stepOne(px,pz){
+    // A GHOST PASSES THROUGH EVERYTHING BUT THE GROUND (user, 2026-09-01). This returns early
+    // rather than being folded into the tests below, because that is the whole rule: walls,
+    // railings, rock, props, the cave, the bones, every barrier in the Realm is nothing to it.
+    // What still holds it is the FLOOR, and that is not decided here at all: the walk takes its
+    // height from surfaceBelow/groundY further down, so gravity and the terrain are untouched.
+    // The world bounds also still apply, since those are clamped on the player directly.
+    if(ghostStep) return false;
     // up on the ruins' balcony the railing is the barrier, and it is a barrier outright: its top
     // is 0.8 above the deck, well over LOWSTEP, so there is nothing to step onto
     if(player.position.y>UP_FROM && ruinsUpCells.has(floorKey(px,pz))) return true;
@@ -963,9 +991,13 @@
     // below 0, so this can only ever fire down in the hole. It is also what makes the four steps
     // climbable ONLY through the trench's stair zone: 5 courses is 0.71, over LOWSTEP and well
     // under MAXSTEP.
-    if(groundY(px,pz) > player.position.y + (inStair(px,pz)?MAXSTEP:LOWSTEP)) return true;
+    if(!ghostStep && groundY(px,pz) > player.position.y + (inStair(px,pz)?MAXSTEP:LOWSTEP)) return true;
     if(!cell(px,pz)) return false;                                             // no body-height geometry → free
-    return surfaceBelow(px,pz, player.position.y+(inStair(px,pz)?MAXSTEP:LOWSTEP))===null; }  // solid with no reachable surface → wall
+    return surfaceBelow(px,pz, player.position.y+(ghostStep?1e9:(inStair(px,pz)?MAXSTEP:LOWSTEP)))===null; }  // solid with no reachable surface → wall
+  // GHOST_STEP is set by the ghost body: while it is worn the height half of stepOne stands
+  // down, so a terrace or a kerb never blocks it. WALLS still do. This is the difference between
+  // hovering over the ground and passing through the world, and only the first was asked for.
+  let ghostStep=false;
   function stepBlocked(x,z){ return stepOne(x,z)||stepOne(x+PRAD,z)||stepOne(x-PRAD,z)||stepOne(x,z+PRAD)||stepOne(x,z-PRAD); }
   // prompt shows only within ~2 studs of the shop's actual barrier
   function nearShopBarrier(x,z){ const R=2*PITCH+PRAD;
@@ -1171,17 +1203,97 @@
   // so it would find the floor of the open cell next door) and the rock would stop being solid.
   // So the pit floor is a FUNCTION of position, exactly as the lawn's own y already is: groundY
   // replaces the walk's flat `gy=0` fallback and nothing else changes.
-  const PIT_I=[101,104], PIT_J=[60,66], CAV_I=[99,106], CAV_J=[67,70];
-  let PIT=null;   // {tr:[x0,x1,z0,z1], ch:[...], step:[[zEnd,y],...], floor:y, courses, course}
-  // The ground under (x,z): the pit's own step or floor inside the hole, 0 (the lawn's stud tips,
-  // which is where the figure stands) everywhere else.
-  function groundY(x,z){
-    if(PIT){ const t=PIT.tr, c=PIT.ch;
-      if(x>t[0]&&x<t[1]&&z>t[2]&&z<t[3]){ const st=PIT.step;
-        for(let i=0;i<st.length;i++) if(z<st[i][0]) return st[i][1];
-        return PIT.floor; }
-      if(x>c[0]&&x<c[1]&&z>c[2]&&z<c[3]) return PIT.floor; }
-    return 0; }
+  // ── THE CAVE HOLLOW. It was a trench rectangle plus a chamber rectangle, laid on straight
+  // tile indices on the theory that a dig has straight sides. On the ground that theory was
+  // wrong (user, 2026-09-01: "it looks like someone made a t shape and cut into the ground"):
+  // NOTHING else in this world has a straight edge, so the one thing that did read as machined,
+  // and a T is exactly what two axis-aligned rectangles meeting at right angles looks like from
+  // above. It is now a signed distance FIELD, blended from the same tools every grey pad and
+  // river bank in the Realm already uses: a rounded chamber, a ramp whose centreline wanders and
+  // whose width breathes as it drops, and wob() over the whole outline so the lip steps stud by
+  // stud rather than ruling a line.
+  //
+  // The descent is 12 terraces of TWO courses (0.2835) rather than four steps of six (0.850).
+  // That is the other half of the note: the steps were too steep. Two courses is UNDER LOWSTEP
+  // (0.35), which is the important consequence, because it means the hollow needs no stair zone
+  // at all any more. You walk down into it and back out from any direction, the way you would
+  // walk down a bank.
+  // SIX courses, not 24. A 3.4 deep hole with sheer sides read as a swimming pool with a rock
+  // in it however organic its outline was; the cave belongs in a clearing that DIPS, with its
+  // own rock standing proud of the ground around it. Three terraces of two, 0.850 in total.
+  const PIT_N=6, PIT_RISE=2;                     // total courses, and courses per terrace
+  const CV_X=49.6;                               // the hollow's axis, where the cave stands
+  // ── THE BOWL. Terraced from the rim INWARD, on every side, rather than only along a ramp
+  // (user, 2026-09-01). It was a flat floor with a sheer 0.85 wall wherever the ramp was not,
+  // because the whole drop happened over one tile, and a wall that height around an otherwise
+  // organic outline still reads as cut. The ground now steps down into the clearing from any
+  // direction: rim, two terraces, then the floor the cave stands on.
+  // THE RAMP IS GONE and nothing replaced it. Once every side is walkable there is no reason to
+  // carve one way in, and a single graded approach was itself part of what made this read as
+  // excavated. You walk in wherever you reach it.
+  // TSTEP is a WALKABILITY constraint, not a look. The terrace index is floor(d/TSTEP), so the
+  // most it may change between neighbouring tiles is one, or the step doubles to 0.567 and goes
+  // over LOWSTEP 0.35 exactly as the first cut of this did. |grad| of the field is at most the
+  // ellipse's 1.35 plus about 0.39 from the two wob terms, so a tile crossing changes d by at
+  // most 0.7389*1.74 = 1.29, and TSTEP 1.40 keeps that under one terrace with room to spare.
+  // scratchpad/verify_hollow.cjs measures the worst real pair rather than trusting the bound.
+  const BOWL_X=49.6, BOWL_Z=29.6, BOWL_R=6.9, BOWL_ZS=1.35, TSTEP=1.40;
+  function hollow(x,z){
+    return Math.hypot(x-BOWL_X, (z-BOWL_Z)*BOWL_ZS)
+         - (BOWL_R + 1.15*wob(x*0.34-4.2, z*0.34+2.8) + 0.55*wob(x*0.87+1.9, z*0.87-6.1)); }
+  // ── THE BACK POCKET. The cave is 3.2 tall and the clearing is 0.85 deep, so standing it on the
+  // floor left it sitting on the ground like an ornament rather than being a way INTO it (user,
+  // 2026-09-01). The ground therefore drops again at the BACK of the bowl, in a pocket the cave
+  // is sunk into, and its arch then opens at the top of that drop.
+  // It is GRADED ALONG Z, one terrace per tile row, so the way in stays walkable end to end: down
+  // the bowl's three terraces to -0.85, then four more to the cave's own floor at -1.984. What
+  // is NOT graded is the pocket's two long sides, which fall the whole 1.98 at once. That cliff
+  // is taken deliberately and on request: it is exactly where the cave's own rock walls stand, so
+  // there is no ground to walk on there in the first place.
+  const POCK_X=49.6, POCK_HW=2.6, POCK_Z0=27.9, POCK_DZ=2*PITCH, POCK_N=14, POCK_IN=0.9;
+  function pocketCourses(x,z){
+    const hw=POCK_HW + 0.42*wob(x*0.80+2.2, z*0.80-3.3);
+    if(Math.abs(x-POCK_X)>hw || z<POCK_Z0) return 0;
+    // POCK_IN keeps the pocket INSIDE the bowl's rim. Without it the pocket ran straight out
+    // to the north edge and the ground fell the whole 2.835 from open lawn in one tile, which is
+    // the cliff-against-grass this design was supposed to stop having. Held back this far, every
+    // wall it does make stands against the bowl's own terraces instead.
+    if(hollow(x,z) > -POCK_IN) return 0;
+    return Math.min(POCK_N, PIT_N + PIT_RISE*(Math.floor((z-POCK_Z0)/POCK_DZ)+1)); }
+  // How many courses down a point is: the deeper of the bowl's own terrace and the pocket's.
+  // Outside the bowl's rim it is zero and the lawn is untouched, pocket included, so the pocket
+  // can never cut a slot through the grass beyond the clearing.
+  function pitCourses(x,z){
+    const d=-hollow(x,z);
+    if(d<=0) return 0;
+    const bowl=PIT_RISE*Math.min(PIT_N/PIT_RISE, Math.floor(d/TSTEP)+1);
+    return Math.max(bowl, pocketCourses(x,z)); }
+
+  // ── THE ROCKY CLEARING. The ground here is built FROM the cave rather than the cave being
+  // dropped into the ground (user, 2026-09-01: "we arent basing the caves look off the ground,
+  // we are basing the grounds look off the cave"). cave.glb is a single material, linear
+  // 0.0673/0.0655/0.0655, which is sRGB #494848: a dark neutral charcoal. So the lawn gives way
+  // to STONE around it, over an organic area far wider than the hollow itself, and the hollow
+  // then reads as that stone dishing rather than as a hole cut in grass. The old shape was a
+  // rectangle of grass removed and a rock model set in the bottom, which is exactly what it
+  // looked like.
+  // IT IS A BAND ROUND THE BOWL'S OWN RIM, not a disc of its own (user, 2026-09-01: the radius
+  // wanted shrinking). It used to be a separate wobbled circle on a different centre and a
+  // different z scale from the bowl, so the apron it left was six units wide on one side and
+  // almost nothing on another, and shrinking a radius that was never concentric would only have
+  // moved the problem. hollow() is a distance, so this is literally "stone for APRON_W past the
+  // lip", which follows every wobble of the rim and is the same width all the way round.
+  const APRON_W=2.2;
+  function caveGround(x,z){ const d=hollow(x,z); return d>=0 && d<APRON_W; }
+  let PIT=null;   // {course, snap:(x,z)=>courses, bbox:[x0,x1,z0,z1], floors, walls}
+  // The ground under (x,z): the hollow's own terrace inside it, 0 (the lawn's stud tips, which
+  // is where the figure stands) everywhere else.
+  // IT SNAPS TO THE TILE, and that is not a detail. The plates are laid one per 2x2 tile at the
+  // depth of that tile's CENTRE, so a per-point depth would put the player at a height the plate
+  // under his feet does not have, and he would sink into a terrace or stand a plate above it
+  // wherever a wobbled edge crosses a tile. PIT.snap re-evaluates at the tile centre, so the
+  // walk and the geometry can never disagree.
+  function groundY(x,z){ return PIT ? -PIT.snap(x,z)*PIT.course : 0; }
 
   // What is under a given spot: 'grey' (gravel walk, pads, paths), 'green' (grass) or 'water'.
   // Filled in by the ground loader from the SAME predicates the tiles are laid from, so the
@@ -1235,18 +1347,27 @@
     // CONSTRUCTION LAYOUT (2x): every structure sits at twice its old stud-snapped distance
     // from the world center, so the plate roughly doubles per axis (asymmetric: the mansion
     // pushes the east side out further than the shop pushes the west).
-    const X0=-26.6, X1=60.6, Z0=-31.0, Z1=28.4;
+    // THE NORTH EDGE WAS PUSHED OUT 10 TILES for the cave (user, 2026-09-01: the hollow was
+    // still too close to the driveway, and the ask was to push the base back on THAT SIDE rather
+    // than grow the whole baseplate). Z1 28.4 -> 35.789, and nothing else moves: tcz(j) is
+    // (j-(NZ-1)/2)*sz+OZ, so adding k tiles moves (NZ-1)/2 by k/2 and OZ by k*sz/2, which cancel
+    // exactly. Every existing tile keeps its world position and only new indices appear.
+    // THE COUNT MUST BE EVEN, and that is not arbitrary. The far land's stud bump is phase locked
+    // through OZ (see studTex.offset below, which takes fr((OZ+FAR_H-c0z)/sz)); OZ moves by k/2
+    // tiles, so an odd k slips that texture half a stud against the real grid everywhere on the
+    // map. 10 is even; 9 would have been wrong in a way nothing here would have caught.
+    const X0=-26.6, X1=60.6, Z0=-31.0, Z1=35.789;
     const NX=Math.round((X1-X0)/sx), NZ=Math.round((Z1-Z0)/sz), OX=(X0+X1)/2, OZ=(Z0+Z1)/2;
     const tcx=i=>(i-(NX-1)/2)*sx+OX, tcz=j=>(j-(NZ-1)/2)*sz+OZ;   // a tile's centre from its index
-    // THE CAVE PIT, in courses below the lawn. 0 is the lawn itself. The trench drops five
-    // courses every TWO rows, which is the tread: four long steps of 5 courses (0.709) each,
-    // then the chamber the cave stands in, all of it at the bottom. Rows and columns rather than
-    // a rect because a dug edge is straight and a tile that is half hole hangs over nothing.
-    function pitLvl(i,j){
-      if(i>=PIT_I[0]&&i<=PIT_I[1]&&j>=PIT_J[0]&&j<=PIT_J[1])
-        return Math.min(20, 5*(1+Math.floor((j-PIT_J[0])/2)));
-      if(i>=CAV_I[0]&&i<=CAV_I[1]&&j>=CAV_J[0]&&j<=CAV_J[1]) return 20;
-      return 0; }
+    // THE CAVE HOLLOW, in courses below the lawn, resolved PER TILE. The shape itself is the
+    // field defined above; all this does is ask it at the tile's centre, which is what makes a
+    // tile wholly in or wholly out and never half over nothing.
+    const pitLvl=(i,j)=>pitCourses(tcx(i), tcz(j));
+    // The index window the hollow can possibly touch, derived from its own bbox rather than
+    // written down, so moving the hollow needs no second edit here.
+    const PIT_BB=[41.6,57.6,23.4,35.8];
+    const bi=v=>Math.round((v-OX)/sx+(NX-1)/2), bj=v=>Math.round((v-OZ)/sz+(NZ-1)/2);
+    const PIT_I=[bi(PIT_BB[0])-1, bi(PIT_BB[1])+1], PIT_J=[bj(PIT_BB[2])-1, bj(PIT_BB[3])+1];
     // ── ORGANIC GREYS — the gravel is shaped the way the river is: nothing is left as a bare
     // rectangle. wob() is a fixed sum of sines (deterministic, identical every load) that
     // wanders every grey boundary, and rrect() is a rounded-rectangle distance, so the pads
@@ -1358,7 +1479,12 @@
         const an=Math.atan2(az,ax);
         if(d < CR+0.34*Math.sin(an*3+i*2.1)+0.20*Math.sin(an*2-i*1.3)) return true; }
       return false; }
-    surfaceAt=(x,z)=> riverAt(x,z) ? 'water' : (onPad(x,z)||onWalk(x,z)) ? 'grey' : 'green';
+    // caveGround is sampled on the TILE the way the classifier does it, not on the raw point, or
+    // a footstep on one of those whole-laid apron tiles would report grass.
+    const caveTile=(x,z)=>{ const cx=Math.round((x-OX)/sx)*sx+OX, cz=Math.round((z-OZ)/sz)*sz+OZ;
+      for(const ox of[-1,1])for(const oz of[-1,1]) if(caveGround(cx+ox*sx/4, cz+oz*sz/4)) return true;
+      return false; };
+    surfaceAt=(x,z)=> riverAt(x,z) ? 'water' : (onPad(x,z)||onWalk(x,z)||caveTile(x,z)) ? 'grey' : 'green';
     const grey=[], green=[], edge=[], gCells=[];   // edge = tiles a grey boundary (or the mansion's plate edge) crosses, relaid in 1x1 pieces · gCells = their grey stud cells (gravel scatters on them too)
     // APRON: extra rings of green tiles past the rim, so the land continues under the fog
     // instead of cutting off at a plate edge with a drop to nothing. Raised from 18 rings to 28
@@ -1378,10 +1504,22 @@
       // the edge can step stud by stud. The house test HAS to be per cell: this grid and the
       // model's are a quarter stud out of phase, so a center-only test left whole tiles (and
       // their studs) standing on top of the mansion's own plates.
-      let ng=0, nh=0; const cells=[];
+      // ── THE CAVE'S APRON DOES NOT GO TO THE MOSAIC. Everywhere else a tile that a grey
+      // boundary runs through is split into four 1x1 pieces so the edge can step stud by stud,
+      // and that is right for a gravel path meeting a lawn: the two are close in tone and the
+      // raggedness reads as wear. Against the cave's stone it does not. Those greys are the
+      // cave's own #494848 family, so every 1x1 that stayed green in a straddling tile read as a
+      // bright chip of grass dropped on dark rock, scattered right through the clearing (user,
+      // 2026-09-01, and it is visible from the air).
+      // So a tile the apron touches AT ALL is laid whole, in stone. The boundary then steps by a
+      // 2x2 tile rather than by a stud, which on a rock apron is not raggedness lost: it reads as
+      // slabs. Everything else, the paths and the pads, keeps the mosaic exactly as before.
+      let ng=0, nh=0; const cells=[]; let anyCave=false;
+      for(const ox of[-1,1])for(const oz of[-1,1])
+        if(caveGround(x+ox*sx/4, z+oz*sz/4)) anyCave=true;
       for(const ox of[-1,1])for(const oz of[-1,1]){ const cx=x+ox*sx/4, cz=z+oz*sz/4;
         const h=onHousePlate(cx,cz); if(h) nh++;
-        const g=onPad(cx,cz)||onWalk(cx,cz); if(g) ng++; cells.push([cx,cz,g,h]); }
+        const g=anyCave||onPad(cx,cz)||onWalk(cx,cz); if(g) ng++; cells.push([cx,cz,g,h]); }
       if(nh) edge.push(cells);                          // any cell the mansion floors: split, so only that cell gives way
       else if(ng===0) green.push([x,z]); else if(ng===4) grey.push([x,z]); else edge.push(cells); }
     // GRAVEL PROTOTYPE part 1 — the grey walk is no longer one flat color: each 2x2 tile
@@ -1478,8 +1616,20 @@
     // EVERY grey tile still draws its own greyscale tone from rngT whether it ends up dirt or
     // not: skipping that draw on a track cell would advance the stream differently from there on
     // and reshuffle the tone of every grey tile laid after it, right across the map.
+    // THE CLEARING'S STONE, divided out of matGrey like every other tone on this mesh. The
+    // middle of the family IS the cave's own #494848; the rest is that colour opened up and
+    // closed down so the floor reads as one rock with light and shade in it rather than a flat
+    // slab. wear() drifts the pick so the darks gather in patches, as the lawn's greens do.
+    const rock=h=>{ const c=new THREE.Color(h).convertSRGBToLinear();
+      return new THREE.Color(c.r/matGrey.color.r, c.g/matGrey.color.g, c.b/matGrey.color.b); };
+    const ROCK=[rock('#6a6968'),rock('#5b5a59'),rock('#494848'),rock('#3d3c3c'),rock('#333232'),rock('#55504a')];
+    const rngR=(s2=>()=>(s2=(Math.imul(48271,s2)>>>0)%2147483647)/2147483647)(41213);
+    const rockTone=(x,z)=>{ const b=rngR()*0.58 + 0.42*(0.5+0.5*wear(x,z));
+      return ROCK[b<0.14?0:b<0.33?1:b<0.56?2:b<0.77?3:b<0.94?4:5]; };
+    // EVERY grey tile still draws from rngT first, cave ground included: skipping that draw
+    // would advance the stream differently and reshuffle every grey tile laid after it.
     const walkTone=(x,z)=>{ const t=TILE_TONES[Math.floor(rngT()*TILE_TONES.length)];
-      return gardenTrack(x,z) ? dirtTone(x,z) : t; };
+      return caveGround(x,z) ? rockTone(x,z) : gardenTrack(x,z) ? dirtTone(x,z) : t; };
     field(grey, matGrey, walkTone);   // the greens are laid by the GRASS DETAIL pass below: it needs plateTop
     // (the cells the mansion's plates floor are laid by the mosaic below, studless and recessed)
     // FAR LAND: a huge matching-green sheet continuing past the apron to well beyond the fog's
@@ -1661,7 +1811,15 @@
     // The course is the plate's BODY (plateTop - TILE_BOT = 0.14175), not its full 0.20902
     // height, because a stacked plate seats its underside on the one below and swallows its
     // studs. Measured off this very tile, like STUD_H above it.
-    const COURSE=plateTop-TILE_BOT, PIT_N=20, PIT_RISE=5;
+    // DEEPER on request: 20 courses to 24, so the floor drops 2.835 to 3.402 and each of the four
+    // steps is 6 courses (0.850) rather than 5 (0.709). Still one step, comfortably: LOWSTEP is
+    // 0.35 so the trench keeps needing its stair zone, and MAXSTEP is 1.55 so 0.850 clears.
+    // ONE PIT_N AND ONE PIT_RISE, up at the field. There used to be a second pair declared right
+    // here, and it SHADOWED the module's: the depth field read 6 courses while the builder, the
+    // cave's seating and the tread split all read 24, so the floor was laid at 0.85 and the cave
+    // was seated 3.402 down, buried 2.55 under its own ground. Nothing threw. Keep them in one
+    // place; COURSE has to be local because it is raycast off the ground tile a few lines above.
+    const COURSE=plateTop-TILE_BOT;
     (function(){
       // the strata. Real earth is dark at the surface and pales under it, then goes to stone, so
       // the top two-to-four courses take the garden track's own DIRT tones (dark first) and
@@ -1672,6 +1830,20 @@
         return new THREE.Color(c.r/matGrey.color.r, c.g/matGrey.color.g, c.b/matGrey.color.b); };
       const STONE=[stone('#8d9296'),stone('#7a7f83'),stone('#686d71'),
                    stone('#585c60'),stone('#494d51'),stone('#6f6a60')];   // pale rock down to charcoal, plus a rare warm seam
+      // ── THE TREADS ARE GRAVEL, DARKER THAN THE WORLD'S (user, 2026-09-01). The floor you walk
+      // on down the trench used to take the same strata as the walls, so the steps read as bare
+      // cut earth and the hole had no path in it. They now take the GREY WALK's own palette,
+      // pulled down: the world's gravel runs #878d92 at the top and #45494e at the bottom, and
+      // these are that family darkened by roughly a third and cooled, so the steps read as the
+      // same material laid in shadow rather than as a different one. Divided out of matGrey like
+      // every other tone on this mesh, since an instance colour multiplies.
+      // The floors keep a strata roll ONLY for the chamber, which is the cave's own ground and
+      // should look quarried rather than swept; the four treads are gravel end to end.
+      const GRAVEL=[stone('#5b6165'),stone('#4e5459'),stone('#43484d'),
+                    stone('#393d42'),stone('#2f3338'),stone('#4a463e')];   // the walk's greys, a third down, plus the same rare warm pebble
+      const rngG=(s2=>()=>(s2=(Math.imul(48271,s2)>>>0)%2147483647)/2147483647)(90163);
+      function tread(x,z){ const b=rngG()*0.62 + 0.38*(0.5+0.5*wear(x,z));
+        return GRAVEL[b<0.15?0:b<0.34?1:b<0.55?2:b<0.76?3:b<0.94?4:5]; }
       const rngP=(s2=>()=>(s2=(Math.imul(48271,s2)>>>0)%2147483647)/2147483647)(52711);
       function strat(x,z,k){
         const soil=2+Math.round(2*wear(x,z));                       // 2..4 courses of topsoil, drifting
@@ -1679,8 +1851,7 @@
           return DIRT[b<0.12?0:b<0.30?1:b<0.48?2:b<0.66?3:b<0.84?4:5]; }
         const b=rngP()*0.46 + Math.min(1,(k-soil)/(PIT_N-soil))*0.52;
         return STONE[b<0.11?0:b<0.28?1:b<0.48?2:b<0.70?3:b<0.94?4:5]; }
-      const i0=Math.min(PIT_I[0],CAV_I[0])-1, i1=Math.max(PIT_I[1],CAV_I[1])+1;
-      const j0=Math.min(PIT_J[0],CAV_J[0])-1, j1=Math.max(PIT_J[1],CAV_J[1])+1;
+      const i0=PIT_I[0], i1=PIT_I[1], j0=PIT_J[0], j1=PIT_J[1];
       const NB=[[1,0],[-1,0],[0,1],[0,-1]], floors=[], walls=[];
       for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){
         const L=pitLvl(i,j), x=tcx(i), z=tcz(j);
@@ -1688,21 +1859,62 @@
         let deep=L;
         for(let n=0;n<4;n++){ const d=pitLvl(i+NB[n][0], j+NB[n][1]); if(d>deep) deep=d; }
         for(let k=L+1;k<=deep;k++) walls.push([x,z,k]); }
-      function lay(list){
+      function lay(list, tone){
         const im=new THREE.InstancedMesh(blockGeo(geo,list), matGrey, list.length);
         im.castShadow=im.receiveShadow=true; im.frustumCulled=true;
         const mm=new THREE.Matrix4();
         list.forEach((p,k)=>{ mm.setPosition(p[0],-p[2]*COURSE,p[1]); im.setMatrixAt(k,mm);
-          im.setColorAt(k, strat(p[0],p[1],p[2])); });
+          im.setColorAt(k, tone(p[0],p[1],p[2])); });
         im.instanceMatrix.needsUpdate=true; im.instanceColor.needsUpdate=true;
         scene.add(im); return im; }
-      lay(floors); lay(walls);
-      PIT={ tr:[tcx(PIT_I[0])-sx/2, tcx(PIT_I[1])+sx/2, tcz(PIT_J[0])-sz/2, tcz(PIT_J[1])+sz/2],
-            ch:[tcx(CAV_I[0])-sx/2, tcx(CAV_I[1])+sx/2, tcz(CAV_J[0])-sz/2, tcz(CAV_J[1])+sz/2],
-            step:[[tcz(PIT_J[0]+2)-sz/2, -PIT_RISE*COURSE],
-                  [tcz(PIT_J[0]+4)-sz/2, -2*PIT_RISE*COURSE],
-                  [tcz(PIT_J[0]+6)-sz/2, -3*PIT_RISE*COURSE]],
-            floor:-PIT_N*COURSE, course:COURSE, courses:PIT_N,
+      // The RAMP's terraces are gravel, the chamber floor and every wall course stay strata.
+      // The split is by depth, not by a z line any more: anything shallower than the floor is
+      // still on the way down, so a wobbled edge that reaches deep into the chamber's mouth
+      // still gets the gravel it should.
+      lay(floors, (x,z,k)=>(k<PIT_N ? tread(x,z) : strat(x,z,k)));
+      lay(walls, strat);
+      // ── THE CAVE'S BACK WALL. cave.glb is open at BOTH ends, so its rear archway looked
+      // straight out of the back of the hill (user, 2026-09-01: "its back area is still not
+      // filled all the way"). The opening was measured off the model in world space rather than
+      // eyeballed (scratchpad/cave/backwall.py renders an elevation of everything within 0.95 of
+      // its back face): the two rock side walls stand at x 47.2..48.4 and 50.6..52.0, leaving a
+      // clear gap of x 48.35..50.66 running from the pocket floor up to about y 0.6, where the
+      // arch closes over it.
+      // It is filled with the world's OWN 2x2 plates in the cave's own colour family, stud
+      // aligned like everything else in the Realm, so it reads as the back of the cave having
+      // been BUILT rather than as a slab dropped in behind it. Four tile columns (i 101..104,
+      // x 48.034..50.989, which tucks the outer two a little way into the rock either side so no
+      // seam shows) in the one tile row that lands on the model's own back face (j 87, z
+      // 33.428..34.167). Nineteen courses from the pocket floor to y 0.709, which is just under
+      // the arch's own crown at 1.02: it fills the hole without standing proud of the rock.
+      // This is also the wall the seated skeleton is meant to sit against.
+      // The top courses are TAPERED to the arch's own silhouette, because the rock narrows as it
+      // closes over and a full-width wall carried straight up would stand out past it either
+      // side. Read off the same elevation: at y 0.85 the outermost ribs are at x 48.08 and 50.94,
+      // so all four columns can reach that; above it the rock pulls in to about x 48.9..49.8, so
+      // only the middle two carry on up to 1.134, just under the crown at 1.20.
+      const BW=[], BWY=-POCK_N*COURSE;
+      for(let i=101;i<=104;i++){ const top=(i===102||i===103)?22:20;
+        for(let k=1;k<=top;k++) BW.push([tcx(i), tcz(87), BWY+k*COURSE]); }
+      (function(){
+        const im=new THREE.InstancedMesh(blockGeo(geo,BW.map(b=>[b[0],b[1]])), matGrey, BW.length);
+        im.castShadow=im.receiveShadow=true; im.frustumCulled=true;
+        const mm=new THREE.Matrix4();
+        BW.forEach((b,k)=>{ mm.setPosition(b[0], b[2], b[1]); im.setMatrixAt(k,mm);
+          im.setColorAt(k, rockTone(b[0], b[1]+b[2]*3.1)); });   // +course in the tone's z so the courses do not band
+        im.instanceMatrix.needsUpdate=true; im.instanceColor.needsUpdate=true;
+        scene.add(im);
+        // it is a wall, so it blocks: same body band the rest of the ground uses, offset to the
+        // pocket's own floor rather than the lawn's
+        rasterizeSolid(im, caveCells, BWY+OY_LO, BWY+OY_HI, true);
+        window.__backwall={plates:BW.length, x:[tcx(101)-PITCH, tcx(104)+PITCH],
+          z:[tcz(87)-PITCH, tcz(87)+PITCH], y:[BWY, BWY+22*COURSE]};
+      })();
+      // snap: the tile-centre depth, which is what the plates were actually laid at. Rounding
+      // to the same indices the loop above used is the whole contract between the geometry and
+      // the walk (see groundY).
+      PIT={ course:COURSE, courses:PIT_N, bbox:PIT_BB,
+            snap:(x,z)=>pitCourses(tcx(Math.round((x-OX)/sx+(NX-1)/2)), tcz(Math.round((z-OZ)/sz+(NZ-1)/2))),
             floors:floors.length, walls:walls.length };
       window.__pit=PIT;   // debug handle, strip with the rest
     })();
@@ -1721,7 +1933,7 @@
     // geometry: its underside is y 0.0727 and its stud tops y 0.2696).
     // It is loaded from HERE rather than with the other props because the depth it is seated at
     // is COURSE, which is raycast off the ground tile a few lines above.
-    loadProp('./assets/cave.glb', {name:'cave', pos:[134*PITCH,55*PITCH], y:-PIT_N*COURSE-0.197,
+    loadProp('./assets/cave.glb', {name:'cave', pos:[134*PITCH,88*PITCH], y:-POCK_N*COURSE-0.197,
       rotY:-Math.PI/2, scale:1,
       onload:(holder)=>{
         // Collision at the PIT's body height rather than the ground's. solidCells is a single 2D
@@ -1730,11 +1942,130 @@
         // the pit, surfaceBelow comes back null on a rock cell and stepOne reads it as a wall,
         // which is exactly how the mansion's walls work standing on plain lawn.
         holder.updateWorldMatrix(true,true);
-        rasterizeSolid(holder, caveCells, PIT.floor+OY_LO, PIT.floor+OY_HI, true);
+        const CVF=-POCK_N*COURSE;  // the POCKET's floor, which is what the cave stands on
+        rasterizeSolid(holder, caveCells, CVF+OY_LO, CVF+OY_HI, true);
         const b=new THREE.Box3().setFromObject(holder);
-        window.__cave={holder:holder, box:b, floor:PIT.floor, depth:PIT_N*COURSE,
+        window.__cave={holder:holder, box:b, floor:CVF, depth:POCK_N*COURSE,
           cells:caveCells.size, proud:b.max.y};   // proud = how far its rock brow stands over the lawn's stud tips
       }});
+    // ── THE BONES ─────────────────────────────────────────────────────────────────────────
+    // skeleton.glb is ONE file doing two jobs, which is why its seven parts keep their own names
+    // through the export: cloned whole it is the complete figure seated against the cave's back
+    // wall, and cloned a node at a time it is the loose bones scattered round the clearing.
+    // Measured off the SHIPPED file, not off the blend: 7.8247 tall, arms spread 4.796 on x,
+    // hips at y 2.48, and it FACES +Z. That last one is worth writing down because it is the
+    // opposite of what the export's own rotation suggests: the -90 degree yaw that turned the
+    // face print off +X lands it on Blender -Y, and the Y-up export writes Blender -Y as glTF
+    // +Z. Reasoning it out from the rotation gives -Z and puts the skeleton in backwards; the
+    // face print's own bbox (z 0.623..0.877) is the thing that settles it.
+    // SKEL_S is the Realm figure's own height over the skeleton's, so a skeleton stands exactly
+    // as tall as every other minifig in the world rather than at some size picked by eye.
+    const SKEL_S=1.770/7.8247, CAVE_FLOOR=-POCK_N*COURSE, BW_FACE=tcz(87)-PITCH;
+    gltf.load('./assets/skeleton.glb',(g)=>{
+      const src=g.scene; src.updateMatrixWorld(true);
+      const part={};
+      src.traverse(o=>{ if(o.isMesh){ polish(o); o.castShadow=true; o.receiveShadow=true; part[o.name]=o; } });
+      const bones=new THREE.Group(); scene.add(bones); window.__bones=bones;
+
+      // ── THE COMPLETE ONE, sitting against the back wall. There is no rig and no seated pose in
+      // the file, so the sit is made the way a real minifig makes one: the LEGS SWING FORWARD AT
+      // THE HIP and nothing else moves. Rotating the whole figure instead reads as a body that
+      // has fallen over, which is a different thing entirely.
+      // The pivot is measured: the legs span y 0..2.502 and the body starts at 1.577, so the hip
+      // is the top of the leg at 2.48. Swung a quarter turn the legs lie along +Z (its facing)
+      // and their undersides come to rest at y 1.575, so the whole figure drops by that much to
+      // put them on the floor and the pelvis lands on it too.
+      const sit=new THREE.Group();
+      const HIP_Y=2.48, HIP_Z=0.24, DROP=1.575;
+      for(const nm in part){
+        const m=part[nm].clone();
+        if(nm.indexOf('lag_')===0){                        // "lag" is the file's own spelling
+          const pivot=new THREE.Group();
+          pivot.position.set(0,HIP_Y,HIP_Z);
+          m.position.set(0,-HIP_Y,-HIP_Z);
+          pivot.rotation.x=-Math.PI/2;                     // down -> forward, about the hip
+          pivot.add(m); sit.add(pivot);
+        } else sit.add(m);
+      }
+      sit.position.y=-DROP;
+      const seated=new THREE.Group();
+      seated.add(sit);
+      seated.scale.setScalar(SKEL_S);
+      // back to the wall, facing out of the cave. rotY PI turns its +Z round to world -Z, which
+      // also swings the legs out toward the mouth.
+      seated.rotation.y=Math.PI;
+      seated.position.set(snap(49.51), CAVE_FLOOR, BW_FACE-0.30);
+      bones.add(seated);
+      window.__skeleton=seated;
+
+      // ── THE LOOSE ONES. Deliberately INCOMPLETE sets: an arm on its own, a torso with one leg
+      // and no head, a skull by itself. Each entry is [x, z, yaw, tilt, ...parts], laid on the
+      // clearing floor and the terraces around it, and every position is checked against the
+      // hollow's own field so nothing floats over a terrace edge.
+      // ── THE LOOSE ONES. Deliberately INCOMPLETE sets: a torso with a leg and no head, a skull
+      // on its own, single arms. 22 of them, and NONE is on the walk in (user, 2026-09-01).
+      // The corridor is the middle of the approach, |x - 49.6| < 1.35 for everything past z 25,
+      // and it is kept clear on purpose: a bone is SOLID (below), so one dropped dead centre is
+      // a thing you have to walk round on the one line everybody walks. Off to either side it is
+      // scenery; in the middle it is an obstacle course. Every position is also checked to sit
+      // inside the bowl by at least 0.7, so nothing perches on the lip or floats over a terrace
+      // edge, and to be 1.9 clear of the seated one. Generated and checked by
+      // scratchpad/gen_bones.py rather than placed by hand.
+      const LOOSE=[
+        [46.70,24.95, 2.59, 0.00, 'body_white_0','lag_left_white_0'],
+        [52.36,25.42, 1.89, 0.00, 'head_white_0','face_black_0'],
+        [51.05,25.43, 0.71, 0.00, 'hand_right_white_0'],
+        [45.36,25.60, 4.82, 0.00, 'lag_right_white_0'],
+        [45.43,27.06, 4.38, 0.25, 'hand_left_white_0'],
+        [52.95,27.23, 2.33, -0.20, 'body_white_0'],
+        [55.38,27.47, 0.66, -0.20, 'lag_left_white_0'],
+        [47.37,27.77, 3.46, -0.20, 'body_white_0','lag_right_white_0','lag_left_white_0'],
+        [51.98,28.53, 2.80, 0.00, 'head_white_0','face_black_0'],
+        [45.16,28.96, 4.10, 0.00, 'hand_left_white_0','hand_right_white_0'],
+        [54.39,29.10, 0.48, 0.00, 'body_white_0','lag_left_white_0'],
+        [52.75,29.53, 3.77, 0.00, 'head_white_0','face_black_0'],
+        [45.76,30.16, 1.80, 0.00, 'hand_right_white_0'],
+        [51.10,30.19, 4.26, 0.00, 'lag_right_white_0'],
+        [54.78,30.58, 1.89, 0.00, 'hand_left_white_0'],
+        [47.56,31.10, 1.58, 0.00, 'body_white_0'],
+        [53.28,31.11, 4.71, -0.20, 'lag_left_white_0'],
+        [44.49,31.42, 2.76, 0.00, 'body_white_0','lag_right_white_0','lag_left_white_0'],
+        [51.07,31.69, 4.09, 0.25, 'head_white_0','face_black_0'],
+        [46.28,31.95, 5.27, 0.00, 'hand_left_white_0','hand_right_white_0'],
+        [54.32,32.07, 4.20, 0.00, 'body_white_0','lag_left_white_0'],
+        [52.98,32.52, 2.10, 0.00, 'head_white_0','face_black_0'],
+      ];
+      LOOSE.forEach(e=>{
+        const gp=new THREE.Group();
+        for(let i=4;i<e.length;i++) if(part[e[i]]) gp.add(part[e[i]].clone());
+        // a loose bone lies DOWN: tipped onto its side, then spun, so it reads as dropped
+        const lay=new THREE.Group(); lay.rotation.x=-Math.PI/2+e[3]; lay.add(gp);
+        const inner=new THREE.Group(); inner.add(lay);
+        // ── SEAT EACH PIECE ON ITS OWN BOX. Every part is cloned STILL CARRYING THE PLACE IT
+        // OCCUPIED IN THE ASSEMBLED SKELETON: a hand's own geometry sits at y 2.30..5.44 and
+        // x -2.40..-1.31, a skull at y 5.54..7.83. Dropped on the floor without re-centring, a
+        // skull hangs a body's height in the air and a leg is buried to the knee, which is
+        // exactly what was happening (user, 2026-09-01). The measurement has to be taken AFTER
+        // the lay rotation, because tipping the piece is what decides which of its faces is
+        // underneath and therefore where its lowest point is.
+        inner.updateMatrixWorld(true);
+        const bb=new THREE.Box3().setFromObject(inner);
+        lay.position.set(-(bb.min.x+bb.max.x)/2, -bb.min.y, -(bb.min.z+bb.max.z)/2);
+        const holder=new THREE.Group(); holder.add(inner);
+        holder.scale.setScalar(SKEL_S); holder.rotation.y=e[2];
+        const by=groundY(e[0],e[1]);
+        holder.position.set(e[0], by, e[1]);
+        bones.add(holder);
+        // EVERY BONE IS SOLID (user, 2026-09-01). The band is the bone's OWN height, not the
+        // walk's 0.30..1.5: these lie on a floor 0.85 to 1.98 below the lawn, so the body band
+        // measured from y=0 misses them entirely and they would rasterize to nothing.
+        holder.updateWorldMatrix(true,true);
+        rasterizeSolid(holder, null, by-0.02, by+0.72);
+      });
+      window.__bonesInfo={parts:Object.keys(part), loose:LOOSE.length, scale:SKEL_S,
+        seated:[seated.position.x, seated.position.y, seated.position.z]};
+    }, undefined, e=>console.warn('skeleton load failed', e));
+
     const cv=document.createElement('canvas'); cv.width=cv.height=128; const cc=cv.getContext('2d');
     cc.fillStyle='#808080'; cc.fillRect(0,0,128,128);                        // flat plate = neutral bump height
     cc.strokeStyle='#6e6e6e'; cc.lineWidth=2; cc.strokeRect(1,1,126,126);    // faint seam matching the real 2x2 tile gaps
@@ -1797,24 +2128,38 @@
     farMat.onBeforeCompile=(sh)=>{
       sh.uniforms.uGraze={value:0.68}; sh.uniforms.uGrazeK={value:8.0};
       // THE HOLE IN THE FAR LAND. This sheet is ONE 1600-unit plane at plateTop-0.018, so it
-      // runs straight across the cave pit and would floor the hole in green a fifth of a stud
-      // under the lawn. It is punched by DISCARD and not by cutting the geometry, and that is
-      // deliberate: the sheet's size, its height, its depth bias and the stud bump map's phase
-      // lock to the real tile grid are all tuned numbers, and a ShapeGeometry with a hole in it
-      // would have to reproduce PlaneGeometry's UV convention by hand to keep them. A discard
-      // touches none of that, writes no depth (so the AO pass sees through the hole as well),
-      // and costs one rect test on a two-triangle mesh. The two rects are the hole EXACTLY, not
-      // its bounding box, so no lawn anywhere loses its backing.
-      sh.uniforms.uPitA={value:new THREE.Vector4(PIT.tr[0],PIT.tr[1],PIT.tr[2],PIT.tr[3])};
-      sh.uniforms.uPitB={value:new THREE.Vector4(PIT.ch[0],PIT.ch[1],PIT.ch[2],PIT.ch[3])};
+      // runs straight across the cave hollow and would floor it in green a fifth of a stud under
+      // the lawn. It is punched by DISCARD and not by cutting geometry: the sheet's size, its
+      // height, its depth bias and the stud bump map's phase lock to the real tile grid are all
+      // tuned numbers a ShapeGeometry with a hole in it would have to reproduce by hand. A
+      // discard touches none of that, writes no depth (so the AO pass sees through the hole too),
+      // and costs a handful of sines on a two-triangle mesh.
+      // IT PUNCHES THE HOLLOW'S OWN FIELD, and it SNAPS TO THE TILE first. Both matter. The
+      // field, because the hollow wanders and two rectangles could only be a bounding box (which
+      // would punch the sheet out from under real lawn) or an inscribed one (which would leave
+      // green showing in every wobble). The snap, because the plates are laid one per tile at the
+      // tile centre's depth: testing per pixel would discard under the outer sliver of any lawn
+      // tile whose centre sits outside but whose corner reaches in, and that reads as a hairline
+      // of void along the lip.
+      // THIS IS A TRANSLITERATION OF hollow() AND pitCourses() AND THE TWO MUST MOVE TOGETHER.
+      // Every constant below is the same constant by name; scratchpad/verify_hollow.cjs samples
+      // both and asserts they agree.
+      sh.uniforms.uSnap={value:new THREE.Vector4(OX,sx,OZ,sz)};
+      sh.uniforms.uHalf={value:new THREE.Vector2((NX-1)/2,(NZ-1)/2)};
       sh.vertexShader='varying vec3 vWPos;\n'+sh.vertexShader;
       sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>',
         '#include <begin_vertex>\n\tvWPos = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
-      sh.fragmentShader='uniform float uGraze; uniform float uGrazeK;\nuniform vec4 uPitA;\nuniform vec4 uPitB;\nvarying vec3 vWPos;\n'+sh.fragmentShader;
+      sh.fragmentShader=
+        'uniform float uGraze;\nuniform float uGrazeK;\nuniform vec4 uSnap;\nuniform vec2 uHalf;\nvarying vec3 vWPos;\n'+
+        'float pWob(float x,float z){ return 0.55*sin(x*0.42+z*0.17+1.7)+0.30*sin(z*0.51-x*0.23+4.1)+0.15*sin((x+z)*0.88+2.3); }\n'+
+        'float pHollow(float x,float z){\n'+
+        '  float d=length(vec2(x-49.6,(z-29.6)*1.35));\n'+
+        '  return d-(6.9+1.15*pWob(x*0.34-4.2,z*0.34+2.8)+0.55*pWob(x*0.87+1.9,z*0.87-6.1)); }\n'+
+        'float pSnap(float v,float o,float st,float h){ return o+(floor((v-o)/st+h+0.5)-h)*st; }\n'+
+        sh.fragmentShader;
       sh.fragmentShader=sh.fragmentShader.replace('#include <clipping_planes_fragment>',
         '#include <clipping_planes_fragment>\n'+
-        '\tif( ( vWPos.x > uPitA.x && vWPos.x < uPitA.y && vWPos.z > uPitA.z && vWPos.z < uPitA.w )\n'+
-        '\t || ( vWPos.x > uPitB.x && vWPos.x < uPitB.y && vWPos.z > uPitB.z && vWPos.z < uPitB.w ) ) discard;');
+        '\tif( pHollow( pSnap(vWPos.x,uSnap.x,uSnap.y,uHalf.x), pSnap(vWPos.z,uSnap.z,uSnap.w,uHalf.y) ) < 0.0 ) discard;');
       sh.fragmentShader=sh.fragmentShader.replace('#include <color_fragment>',
         '#include <color_fragment>\n\t{ float nv = clamp( dot( normalize( vNormal ), normalize( vViewPosition ) ), 0.0, 1.0 );\n'+
         '\t  diffuseColor.rgb *= mix( uGraze, 1.0, pow( nv, uGrazeK ) ); }');
@@ -1892,19 +2237,25 @@
         // far cell is a free gravel stud (so it also can no longer hang off the path onto the
         // grass, or reach onto the mansion's own plates).
         const CK=(x,z)=>Math.round(x/PITCH)+'|'+Math.round(z/PITCH);
+        // A list entry may carry its own Y as a third element. Everything on the lawn leaves it
+        // out and lands on plateTop; the pit's treads are each a different depth, so they bring
+        // one. `yAt` is what lets a 1x2 refuse to span a step: laid across a riser it would be
+        // half buried at one end and floating at the other.
         function lay(list, rnd, pk){
           const free=new Set(list.map(([x,z])=>CK(x,z))), taken=new Set();
-          list.forEach(([x,z])=>{
+          const yAt=new Map(list.map(([x,z,y])=>[CK(x,z), y==null?plateTop:y]));
+          list.forEach(([x,z,y0])=>{
+            const y=y0==null?plateTop:y0;
             const k=CK(x,z); if(taken.has(k)) return;
               if(rnd()>0.28) return;
               const r=rnd();
               // the curved slope used to take 0.70..0.82 here; its share was folded back into the
               // other three in proportion, so pulling it out thins nothing out
-              if(r<0.545) spots[0].push([x,z,Math.floor(rnd()*4)*Math.PI/2,pk()]);        // round-stud plate (square body: keep 90° steps)
-              else if(r<0.795) spots[1].push([x,z,Math.floor(rnd()*4)*Math.PI/2,pk()]);   // flat 1x1 tile
+              if(r<0.545) spots[0].push([x,z,Math.floor(rnd()*4)*Math.PI/2,pk(),y]);        // round-stud plate (square body: keep 90° steps)
+              else if(r<0.795) spots[1].push([x,z,Math.floor(rnd()*4)*Math.PI/2,pk(),y]);   // flat 1x1 tile
               else { const ax=rnd()<0.5, fx=x+(ax?PITCH:0), fz=z+(ax?0:PITCH), fk=CK(fx,fz);   // 1x2 tile over two studs
-                if(!free.has(fk) || taken.has(fk)) spots[1].push([x,z,0,pk()]);           // no room for the far stud: lay a 1x1 instead
-                else { spots[2].push([x+(ax?PITCH/2:0), z+(ax?0:PITCH/2), ax?0:Math.PI/2, pk()]); taken.add(fk); } }
+                if(!free.has(fk) || taken.has(fk) || yAt.get(fk)!==y) spots[1].push([x,z,0,pk(),y]);   // no room, or the far stud is a step down: lay a 1x1 instead
+                else { spots[2].push([x+(ax?PITCH/2:0), z+(ax?0:PITCH/2), ax?0:Math.PI/2, pk(), y]); taken.add(fk); } }
               taken.add(k); }); }
         lay(studPos, rng, pick);
         // THE GARDEN'S DIRT TRACK gets the same bits in creams and browns, from its OWN rng
@@ -1918,13 +2269,51 @@
           const gx=cx+ox*PITCH/2, gz=cz+oz*PITCH/2; if(gardenTrack(gx,gz)) tPos.push([gx,gz]); } });
         gCells.forEach(([cx,cz])=>{ if(gardenTrack(cx,cz)) tPos.push([cx,cz]); });
         lay(tPos, rngX, dpick);
+        // ── THE PIT'S TREADS carry loose bits like any other walk, in the same darkened greys
+        // the treads themselves are laid in, so the steps read as gravel in shadow rather than
+        // as cut earth. Its own rng stream and its own pass, for the reason the garden track has
+        // one: studPos is walked in ground order with a draw taken per stud, so folding these in
+        // would re-roll every gravel bit already laid across the map.
+        // These are the only bits in the Realm not sitting at plateTop, since each tread is a
+        // different depth; lay() carries the y per entry.
+        const pcols=['#5b6165','#4e5459','#43484d','#393d42','#2f3338','#4a463e']
+          .map(h=>new THREE.Color(h).convertSRGBToLinear());
+        const pwts=[0.15,0.22,0.24,0.20,0.13,0.06];
+        const rngPit=(s2=>()=>(s2=(Math.imul(48271,s2)>>>0)%2147483647)/2147483647)(77191);
+        const ppick=()=>roll(pcols,pwts,rngPit);
+        const pPos=[];
+        for(let i=PIT_I[0];i<=PIT_I[1];i++) for(let j=PIT_J[0];j<=PIT_J[1];j++){
+          const L=pitLvl(i,j); if(!L || L>=PIT_N) continue;      // the ramp only: the chamber floor is quarried rock
+          const cx=tcx(i), cz=tcz(j), yy=plateTop-L*COURSE;
+          for(const ox of[-1,1]) for(const oz of[-1,1]) pPos.push([cx+ox*PITCH/2, cz+oz*PITCH/2, yy]); }
+        lay(pPos, rngPit, ppick);
+        // ── THE RIM. Rock broken out onto the GRASS around the mouth, in the cave's own stone
+        // greys rather than the walk's, so the hole reads as an outcrop the lawn has given way
+        // over instead of a rectangle cut cleanly into it. Green tiles only, inside RIMW of the
+        // pit's own edge, and thinned to about a third of the density a path carries: this is
+        // spill, not a surface. Same reason as above for the separate stream.
+        const rcols=['#8d9296','#7a7f83','#686d71','#585c60','#494d51','#6f6a60']
+          .map(h=>new THREE.Color(h).convertSRGBToLinear());
+        const rwts=[0.14,0.22,0.25,0.20,0.13,0.06];
+        const rngRim=(s2=>()=>(s2=(Math.imul(48271,s2)>>>0)%2147483647)/2147483647)(31489);
+        const rpick=()=>roll(rcols,rwts,rngRim);
+        // RIMW is read straight off the hollow's own field, so the spill follows every wobble
+        // of the lip instead of ringing a rectangle. hollow() is a distance, so this is just a
+        // band around the zero crossing, and it thins with distance on its own.
+        const RIMW=2.0, rPos=[];
+        { const near=(x,z)=>{ const d=hollow(x,z); return d>0 && d<RIMW; };
+          green.forEach(([cx,cz])=>{ if(!near(cx,cz)) return;
+            for(const ox of[-1,1]) for(const oz of[-1,1]){
+              const gx=cx+ox*PITCH/2, gz=cz+oz*PITCH/2;
+              if(rngRim()<0.34*(1-cl(hollow(gx,gz)/RIMW))+0.05) rPos.push([gx,gz]); } }); }
+        lay(rPos, rngRim, rpick);
         const gmat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.5,metalness:0,side:THREE.DoubleSide}); regMat(gmat,0.35);
         const meshes=[];
         kits.forEach((k,i)=>{ const L=spots[i]; if(!L.length) return;
           const im=new THREE.InstancedMesh(k.geo,gmat,L.length);
           im.castShadow=false; im.receiveShadow=true;
           const mm=new THREE.Matrix4();
-          L.forEach((s,j)=>{ mm.makeRotationY(s[2]); mm.setPosition(s[0],plateTop,s[1]);
+          L.forEach((s,j)=>{ mm.makeRotationY(s[2]); mm.setPosition(s[0], s[4]==null?plateTop:s[4], s[1]);
             im.setMatrixAt(j,mm); im.setColorAt(j,s[3]); });
           im.instanceMatrix.needsUpdate=true; im.instanceColor.needsUpdate=true; scene.add(im); meshes.push(im); });
         window.__gravel={kits,spots,meshes};               // debug handle, strip with the rest
@@ -2705,6 +3094,130 @@
     syncPowerHUD();
   }
 
+  // ── THE GHOST. A THIRD body, and unlike the suit it replaces the figure ENTIRELY rather than
+  // swapping everything below the neck. That is the whole difference between the two and it is
+  // why this needs no collar fit, no measured neck stud and no hip pivots: a ghost has no head
+  // of its own to keep, so the civilian body and the suit both simply go away and one shrouded
+  // piece stands in their place, hung off the same figBody so the walk carries it around.
+  // Its height is the FIGURE'S, not a number: the Realm's minifig tops out at 1.770 and the
+  // model is 3.4215, so the scale is that ratio and a ghost is exactly as tall as the man it
+  // replaces.
+  let ghostRoot=null, ghostOn=false, ghostUnlocked=false, ghostMats=[];
+  const GHOST_H=1.770;
+  // SEE-THROUGH, and it has to be done by hand. Every one of the model's materials ships alpha
+  // 1 (its own blend mode is Blender's HASHED, which glTF cannot express, exactly as the Aston's
+  // glass does), so polish() leaves them opaque: its glassy test only flips `transparent` when
+  // opacity is already under 1. GHOST_OP is therefore set explicitly on every material.
+  // depthWrite stays ON. A ghost is one closed shroud, so its own back faces are the only thing
+  // it can z-fight with, and turning depth writes off to "fix" transparency is what makes a
+  // single solid read as a cloud of overlapping films.
+  // 0.46 read as frosted rather than see-through: the torso and the skeleton print under the
+  // shroud were still solid enough to look like a figure in a sheet (user, 2026-09-01). 0.30 is
+  // the same cloth with the world behind it coming through. It is a floor rather than a free
+  // dial: much under 0.25 and the shroud stops reading against the cave's own dark rock, which
+  // is the one place the ghost is guaranteed to be standing. Live on __ghost.op().
+  const GHOST_OP=0.30;
+  function wearGhost(on){
+    if(!ghostRoot) return;
+    ghostOn=!!on; ghostStep=ghostOn;
+    if(ghostOn && heroOn) wearHero(false);
+    ghostRoot.visible=ghostOn;
+    // TRAVERSE THE PLAYER, NOT figBody. Measured with the ghost on: 13 of the 28 civilian meshes
+    // stayed visible and showed through the shroud, because attach() reparents the limbs onto the
+    // hip and shoulder pivots and not every tagged mesh ends up under figBody. wearHero gets away
+    // with the narrower root; this does not, and the difference is invisible until you look.
+    player.traverse(o=>{ if(!o.isMesh) return;
+      if(o.userData.ghostPart) return;                    // the ghost itself is driven above
+      if(o.userData.heroPart) o.visible=false;            // no suit under a shroud
+      else if(o.userData.civPart) o.visible=!ghostOn; });
+    if(!ghostOn && heroUnlocked) wearHero(heroOn);        // put back whatever he was wearing
+    if(ghostOn && flying) setFly(false);
+    syncPowerHUD();
+  }
+  // IT FLOATS AND IT HAS NO LEGS (user, 2026-09-01), and the two are one idea: a ghost that keeps
+  // its legs and bobs along on them is a man in a sheet.
+  // NO LEGS is done by MEASUREMENT, not by a name list. The model is 3.4215 tall and its shroud
+  // (the one MILKY piece) runs the whole height, so everything else below the waist is a minifig's
+  // legs and hips standing inside it. GHOST_CUT is that waistline: any non-shroud mesh whose top
+  // sits under it is dropped, which takes the leg pair, their two stud caps and the hip block, and
+  // leaves the shroud trailing empty. Reading the pieces out of the geometry rather than off names
+  // means a re-export cannot silently leave the legs in.
+  // FLOATING is why it hangs off `player` and not `figBody`. figBody carries the WALK: the waddle,
+  // and the footfall bob. Inherit those and the ghost paces up and down in time with steps it is
+  // not taking. On player it still turns with him and goes where he goes, and its own height is
+  // GHOST_LIFT plus a slow breath on its own clock.
+  const GHOST_LIFT=0.30, GHOST_BOB=0.055, GHOST_HZ=0.85, GHOST_GLIDE=2.6;
+  // ── AND IT RISES AND SINKS (user, 2026-09-01). A third of a unit off the ground is a HEIGHT,
+  // not a movement: the ghost had no way up and no way down, so the whole Realm was still read
+  // from a walker's eye line. SPACE lifts it and letting go lets it settle.
+  // It deliberately does NOT borrow the suit's flight, and that is not laziness avoided, it is
+  // the opposite. Flight is a MODE: it is entered and left, it launches off a coil, it lands on
+  // two boots, it lies the body flat down the flight path and it swaps the controls bar out from
+  // under you. A ghost has none of that to give. It has no legs to push off with, nothing to land
+  // on, and it is already in the air before you touch a key. So there is no mode here at all. It
+  // simply weighs less than the air while you hold the key, and drifts back down when you stop.
+  // GH_SINK is far slower than GH_RISE on purpose: rising is an act of will and coming down is
+  // the want of one, so it goes up briskly and comes down like something being let go of. SHIFT
+  // is the impatient version, and only once it is already off the ground, or a ghost could never
+  // run.
+  // GH_MAX is a ceiling over WHAT IS UNDER IT rather than an absolute one, so the cave pit takes
+  // its own headroom down the hole with it. 8.0 clears the tallest thing in the Realm, the
+  // mansion's 6.68 roof, with enough left to look down on it.
+  // Measured by replaying the SHIPPED block against a harness (`scratchpad/verify_ghost_float.cjs`,
+  // which pulls this branch and its constants out of the file by content, so what is graded is
+  // what runs): 1.5s of Space lifts it 2.53 units and is still accelerating at 3.03 of the 3.4;
+  // frame one moves 0.0000, i.e. the double ease really does start at zero slope, and the worst
+  // frame-to-frame change in rate over the whole climb is 0.00099 units. Letting go sinks at
+  // 1.15, Shift at 2.86 and climbing toward 3.4, and it settles to exactly the floor every time.
+  let GH_RISE=3.4, GH_SINK=1.15, GH_DIVE=3.4, GH_EASE=2.6, GH_MAX=8.0;
+  // the eased vertical velocity it is chasing, and how much of THIS frame's height was its own
+  // doing rather than the ground's (the shroud's glide below reads that, and only that)
+  let ghWant=0, ghDrive=0;
+  let ghostY=null;   // its own eased world height, so terraces pass under it
+  gltf.load('./assets/ghost.glb',(g)=>{
+    const m=g.scene; m.updateMatrixWorld(true);
+    const b=new THREE.Box3().setFromObject(m);
+    const s=GHOST_H/((b.max.y-b.min.y)||1);
+    // WHAT COMES OFF IS THE LEGS AND THE HEAD, AND NOTHING ELSE (user, 2026-09-01). I overshot
+    // this twice: first a waistline that took only the legs and left the head block showing
+    // through the cloth, then a material test that took EVERYTHING non-milky and stripped the
+    // torso and arms with it. The shroud alone is not a ghost, it is a sheet.
+    // So the cut is two named things, both read off the geometry rather than off a piece list:
+    // anything whose top sits under GHOST_CUT is the legs, the hips and their stud caps; and the
+    // SOLID-BLACK piece at y 2.16..3.10 is the head block inside the hood. The torso (y
+    // 1.08..2.56), the arms (1.14..2.07) and the hands (0.85..1.62) all stay, which is what
+    // gives the shroud something to hang on.
+    const GHOST_CUT=1.25;
+    let cut=0;
+    m.traverse(o=>{ if(!o.isMesh) return;
+      const mn0=(o.material&&o.material.name)||'';
+      const milky=/MILKY/i.test(mn0);
+      const ob=new THREE.Box3().setFromObject(o);
+      const legs=ob.max.y-b.min.y < GHOST_CUT;
+      const head=/SOLID-BLACK/i.test(mn0);
+      if(!milky && (legs||head)){ o.visible=false; o.userData.ghostPart=true; cut++; return; }
+      o.castShadow=false; o.receiveShadow=true; o.frustumCulled=false;   // a ghost casting a hard shadow is the one thing that would give it away
+      polish(o);
+      const mm=o.material=o.material.clone();
+      mm.transparent=true; mm.opacity=GHOST_OP; mm.depthWrite=true; mm.side=THREE.FrontSide;
+      mm.needsUpdate=true; ghostMats.push(mm);
+      o.userData.ghostPart=true; });
+    ghostRoot=new THREE.Group();
+    m.position.set(-(b.min.x+b.max.x)/2, -b.min.y, -(b.min.z+b.max.z)/2);
+    const inner=new THREE.Group(); inner.add(m); inner.scale.setScalar(s);
+    ghostRoot.add(inner); ghostRoot.visible=false;
+    player.add(ghostRoot);
+    window.__ghost={root:ghostRoot, scale:s, height:GHOST_H, legsCut:cut,
+      op:v=>{ ghostMats.forEach(x=>{x.opacity=v;}); return v; },
+      lift:(l,bob)=>{ if(l!=null) GHOST_LIFT_V=l; if(bob!=null) GHOST_BOB_V=bob;
+        return [GHOST_LIFT_V, GHOST_BOB_V]; },
+      rise:(r,sink,dive,max)=>{ if(r!=null) GH_RISE=+r; if(sink!=null) GH_SINK=+sink;
+        if(dive!=null) GH_DIVE=+dive; if(max!=null) GH_MAX=+max;
+        return {rise:GH_RISE, sink:GH_SINK, dive:GH_DIVE, max:GH_MAX}; },
+      on:v=>{ wearGhost(v); return ghostOn; }};
+  }, undefined, e=>console.warn('ghost load failed', e));
+  let GHOST_LIFT_V=GHOST_LIFT, GHOST_BOB_V=GHOST_BOB;
+
   // FIGURE — your minifig, scaled to ~5 studs tall, feet on the ground
   gltf.load('./assets/figure.glb', (g)=>{
     const model=g.scene;
@@ -3077,7 +3590,13 @@
       // ground's to it. One candidate had to move for this by hand: [57,19] stood 4.35 from the
       // cave's east rock, close enough for its canopy to hang 1.75 off it, and is now [58.6,23.5],
       // 6.16 from the same corner. Nothing else on the map falls inside.
-      if(x>42.94&&x<56.05&&z>9.90&&z<25.23) return false;   // the cave pit + 3.6
+      // THE CAVE BOWL, measured on its own FIELD rather than against a rectangle. The bowl is a
+      // wobbled ellipse and a box round it either rejected trees standing in perfectly good grass
+      // at the corners or let one stand on the lip; hollow() is a distance, so this is exactly
+      // "no trunk within 3.6 of the rim", which is the widest a planted canopy can be (2.608 at
+      // the top of its own scale range) plus its trunk. It also follows the bowl automatically if
+      // the bowl is ever moved or resized again.
+      if(hollow(x,z)<3.6) return false;
       if(riverAt(x,z)||riverAt(x+1.4,z)||riverAt(x-1.4,z)||riverAt(x,z+1.4)||riverAt(x,z-1.4)) return false;   // trunks clear of the water
       if(Math.abs(x)<3 && Math.abs(z)<3) return false;   // keep spawn clear
       for(let i=0;i<placed.length;i++) if(Math.hypot(x-placed[i][0],z-placed[i][1])<3.5) return false;  // spacing (was 5.5; lowered for the border tree line, the original 16 are unaffected)
@@ -3091,6 +3610,17 @@
     // the spawn. That pocket is flowers now (see bridgeArea in the flowers loader).
     const cand=[[-24,-13],[-25.5,-3],[-22,6],[-24,15],[-13,20],[-3,-24],[30,-24],[44,-27],
                 [58.6,23.5],[16,20],[26,16],[36,22],[3.4,-19],[34,10],   // was [57,19]: see treeOK, the cave pit
+                // FOUR PLANTED FOR THE MOVED CAVE (user, 2026-09-01: it should sit in the wood,
+                // not on open lawn). The pit went 6 tiles north into the existing stand, and the
+                // stand was one sided: (58.6,23.5) (60,28.5) (49.8,30.4) (44.3,31.2) (55.3,31.3)
+                // ring it to the east and behind, and the whole WEST flank was bare, so the walk
+                // down had trees on one side and nothing on the other. Three close that flank and
+                // one takes the east of the mouth. All four clear treeOK's own rules rather than
+                // being dropped in: outside the pit rect grown by 3.6, and no closer than 3.5 to
+                // any tree already placed (nearest is 3.83). A fifth was wanted east of the
+                // chamber and there is no room for it: everything there lands within 3.36 of
+                // (58.6,23.5) or 2.73 of (60,28.5).
+                [42.0,19.4],[40.3,24.0],[38.35,26.98],[56.8,19.9],
                 [12,-24],[-10,-16],[13,-30],[46,-22],
                 // north rim (the gap at x 5..12 is where the river exits through the tree line)
                 [-27,-32.6],[-21.5,-33.2],[-16,-32.3],[-10.4,-33],[-4.9,-32.2],[0.7,-33.3],
@@ -3099,7 +3629,7 @@
                 // south rim
                 [-27.2,30.8],[-21.7,31.4],[-16.2,30.4],[-10.7,31.2],[-5.2,30.3],[0.3,31.5],
                 [5.8,30.5],[11.3,31.3],[16.8,30.4],[22.3,31.1],[27.8,30.3],[33.3,31.4],
-                [38.8,30.5],[44.3,31.2],[49.8,30.4],[55.3,31.3],[60.8,30.6],[64.5,31.6],
+                [37.83,31.29],[39.7,34.02],[50.36,37.73],[58.79,33.59],[60.8,30.6],[64.5,31.6],
                 // west rim
                 [-28.6,-29],[-29.2,-23.4],[-28.3,-17.8],[-29,-12.2],[-28.4,-6.6],[-29.3,-1],
                 [-28.5,4.6],[-29.1,10.2],[-28.4,15.8],[-29.2,21.4],[-28.6,26.6],
@@ -3160,7 +3690,7 @@
       [26.60,-40.27,1.13,2.97,0.05],[26.23,-62.07,1.26,0.59,0.12],[-48.77,-50.25,1.45,0.57,0.12],
       [-37.31,36.21,1.54,2.31,0.12],[36.21,56.16,1.46,0.88,0.12],
       [-9.98,-46.92,1.73,6.23,0.12],[-59.11,-37.68,1.25,6.06,0.12],[41.01,43.60,1.86,5.99,0.12],
-      [63.91,35.47,1.03,6.20,0.05],[-0.74,42.12,1.68,5.18,0.12],[50.25,33.99,1.21,5.64,0.05],
+      [63.91,35.47,1.03,6.20,0.05],[-0.74,42.12,1.68,5.18,0.12],[50.4,38.9,1.21,5.64,0.05],
       [-38.79,11.08,1.83,0.13,0.12],[80.54,-20.32,1.59,0.32,0.12],[-51.35,-15.89,1.44,0.06,0.12],
       [-38.42,-7.76,1.48,0.81,0.12],[49.51,-56.16,1.27,5.98,0.12],[89.78,-48.77,1.23,3.91,0.12],
       [-40.64,-56.16,1.47,3.91,0.12],[65.39,-65.02,1.37,5.81,0.12],[87.56,-44.70,1.39,1.08,0.12],
@@ -3422,10 +3952,35 @@
       [33.01,-23.69,1],[35.09,-17.82,1],[33,-6.26,1],[34.74,1.54,2],[36.41,8.62,2],
       [35.73,12.79,3],[33.99,16.71,2],[32.99,21.8,2],[35.32,25.44,2],[35.33,30.28,1],
       [39.59,-30.97,2],[38.02,-26.51,1],[37.74,-23.21,3],[39.06,-19.79,3],[39.08,-15.11,1],
+      // ── THE APPROACH TO THE CAVE. The strip between the car pad and the bowl's rim was bare
+      // lawn, so the walk from the driveway to the hole read as crossing an empty field.
+      // DENSITY IS MEASURED, NOT CHOSEN (user, 2026-09-01: the first cut was way overboard). The
+      // shipped SPOTS array has a median nearest-neighbour spacing of 3.77 and a plants-per-site
+      // mix of 128/182/90 across 1/2/3; that first cut put 46 sites in here at a median of 1.26,
+      // three times the rest of the world, and it read as a planted flowerbed rather than as more
+      // of the same lawn. Ten sites at 3.3 minimum spacing lands the median on 3.47, which is the
+      // map's own, and the counts are drawn from the map's own weights.
+      // Each is still checked off the concrete, 1.3 clear of the bowl's lip so none stands on the
+      // terraces, and 2.4 from any trunk. scratchpad/gen_flowers.py measures the existing array
+      // and regenerates against it, so it stays honest if the strip is ever redone.
+      // TWO OF THE TEN WERE PULLED AGAIN. The generator builds its keep-away list from the shipped
+      // array MINUS this strip, so that a re-run does not measure itself, and that also dropped
+      // the three sites which were legitimately here before any of this: two new ones then landed
+      // 0.63 and 0.58 from [52.16,15.29] and [56.68,16.18]. Excluding a region is not the same as
+      // excluding your own previous output, and the check that caught it is the one that measures
+      // spacing against the WHOLE array afterwards.
+      [51.18,12.68,1],
+      [54.50,12.80,2],
+      [44.72,13.07,2],
+      [48.08,13.95,3],
+      [46.48,16.88,2],
+      [49.72,19.98,1],
+      [54.23,20.82,2],
+      [46.68,21.79,3],
       [39.3,-4.94,1],[39.41,7.92,1],[38.95,13.35,3],[38.47,17.62,1],[39.05,21.07,2],
-      [39.97,25.36,2],[40.31,29.32,1],[44.46,-33.59,3],[42.69,-28.57,2],[42.96,-24.59,2],
+      [39.97,25.36,2],[44.46,-33.59,3],[42.69,-28.57,2],[42.96,-24.59,2],
       [42.37,-19.67,3],[42.26,-16.23,2],[44.32,-9.36,1],[42.56,-4.99,1],
-      [42.08,16.31,2],[44.54,19.93,1],[42.95,24.14,3],[43.78,29.37,3],
+      [42.08,16.31,2],[44.54,19.93,1],
       [48.25,-33.66,2],[47.38,-27.2,2],[46.53,-23.77,3],[47.78,-19.95,1],[48.98,-16.34,2],
       // [49.1,16.87] and [47.95,21.93] REMOVED for the CAVE PIT (user: nothing round the hole but
       // a flower or two). The first stood in the middle of the trench; the second was 0.04 off the
@@ -3435,11 +3990,30 @@
       // flowers, which is the ask. [51.27,24.14] went too, 2.24 off the cave's back rock, and the
       // two that stay were cut from 3 plants each to 1: the count is what a "flower or two" means
       // on the ground, since a site plants a cluster. Nearest plant to the lip is now 1.19.
-      [48,26.49,2],[47.1,29.62,1],[52.86,-31.15,3],[53.47,-27.87,2],[52.07,-24.33,2],
+      // ── AND NINE MORE WENT WHEN THE CLEARING GREW ROCK (user, 2026-09-02: flowers standing on
+      // the concrete round the hole). Those nine were vetted onto LAWN when the scatter was
+      // generated and never moved; the ground moved under them, because the bowl's stone apron
+      // (caveGround, APRON_W 2.2 past the rim) was laid later and spread over the tiles they
+      // stand on. Removed: [40.31,29.32] [42.95,24.14] [40.92,31.02] [41.66,26.16] [42.31,32.93]
+      // on the west rim, [56.19,26.17] [56.07,25.09] [57.98,28.86] on the east, and [46.9,35.08]
+      // off the north. 17 plants, and one more that went with its own site.
+      // THE TEST IS THE TILE, NOT THE DISTANCE, and that is the whole reason this list is what it
+      // is. The classifier lays a 2x2 tile WHOLE in stone if any of its four stud cells is in the
+      // apron, so a socket a few hundredths outside the field still stands on a rock piece: on the
+      // raw distance [40.31,29.32] reads 1.19 clear and on the tile it is stone. Replayed through
+      // the page's own studSpot and its live `taken` set (`scratchpad/flowers_on_stone.cjs`,
+      // which extracts all of it by content): 17 of 782 plants on stone before, 0 of 764 after,
+      // and the nearest plant of any kind to the rim is now 2.31, i.e. 0.11 past the stone's own
+      // edge, so the clearing still has flowers standing against it rather than a bare ring.
+      // [48,26.49] MOVED BACK to 27.8. The cave went 6 tiles north and its rock now reaches
+      // z 26.33 at that x, so the plant stood 0.45 off the chamber's back edge and inside the
+      // stone; a plant's own reach is 0.53..0.68. At 27.8 it is 1.47 clear of the rock and still
+      // reads as growing against the back of the hole.
+      [52.86,-31.15,3],[53.47,-27.87,2],[52.07,-24.33,2],
       [53.27,-19.49,1],[52.16,-15.12,2],[52.16,15.29,1],
-      [51.12,27.89,1],[56.01,-31.93,3],[57.24,-28.85,1],
+      [56.01,-31.93,3],[57.24,-28.85,1],
       [57.4,-22.97,2],[57.03,-17.56,2],[56.68,16.18,2],
-      [57.76,21.18,1],[56.07,25.09,3],[56.28,28.86,3],[60.96,-31.31,1],[60.97,-26.74,3],
+      [57.76,21.18,1],[60.96,-31.31,1],[60.97,-26.74,3],
       [60.94,-22.81,1],[59.05,-20.17,1],[61.47,-15.55,2],[60.64,-8.88,1],
       [62.04,2.22,1],[62.19,12.96,2],[60.59,16.23,2],
       [61.67,20.49,1],[59.41,24.83,1],[62.02,28.68,2],
@@ -3478,7 +4052,7 @@
       [35.25,-35.66,2],[32.62,35.05,3],[34.18,41.23,2],[35.55,44.59,2],[39.34,-47.18,1],
       [41.07,-39.25,2],[38.58,-36.07,1],[41.12,38,2],[38.71,47.38,2],[43.25,-46.89,1],
       [46.76,-36.59,1],[43.28,46.53,1],[47.43,-49.59,2],[49.73,-42.63,1],[51.27,-35.98,2],
-      [46.9,35.08,1],[51.45,38.68,1],[46.84,43.71,2],[49.79,47.15,3],[53.64,-48.61,3],
+      [51.45,38.68,1],[46.84,43.71,2],[49.79,47.15,3],[53.64,-48.61,3],
       [54.6,-43.07,2],[56.89,-36.37,2],[56.08,44.91,1],[53.11,47.37,1],[57.99,-41.21,3],
       [59.91,-35.25,2],[59.6,34.69,2],[60.08,39.91,2],[67.3,-48.93,2],[65.3,-46.32,2],
       [66.31,-40.4,3],[65.67,-30.26,2],[65.9,-19.61,2],[65.55,-4.01,1],[65.41,12.05,2],
@@ -4414,6 +4988,31 @@
   loadProp('./assets/piano.glb',   {name:'piano',   pos:[49.87575,-2.9556], y:-0.0931,
     rotY:Math.PI, scale:1.0800247, solid:true});
   // Skull on the ground left of the ruins doorway, against the wall, face out. Same size as the figure's head, stamped in.
+  // ── THE SUIT ON DISPLAY, standing in the upstairs room's NORTH-EAST GLASS CORNER (user,
+  // 2026-09-01). It used to be a chest behind the cottage, found by wandering; it is now a thing
+  // you SEE from the driveway, through the glass, on a floor you cannot obviously reach, so the
+  // question it asks is "how do I get up there" rather than "is there anything in this box".
+  // The corner is measured off the model: the room's east wall's inner face is x 56.4374 and the
+  // north glass's is z 1.2825, its floor's plate top is 3.714 and the roof is at 5.900. It stands
+  // at 55.8, 0.72, which is about 0.6 in from both panes, and faces +Z (the figure's own facing
+  // in model space) so it looks out of the glass at whoever is looking in.
+  // targetH 1.36 is the CIVILIAN NECK height, not a guess: hero_suit.glb is everything below the
+  // neck, and buildHero fits the worn copy collar to collar at exactly that. The display and the
+  // one you put on are therefore the same size.
+  // IT HAS TO BE RECOLOURED LIKE THE WORN ONE (user, 2026-09-01: "you also put the wrong suit").
+  // hero_suit.glb IS the super hero's suit, but only as the piece it was cut from: its palette
+  // lives in seven TEXTURES and the Iron Man read is made in the SHADER, by recolourPart, when
+  // buildHero dresses the figure. A second copy loaded straight through loadProp gets polish()
+  // and nothing else, so it stood on its plinth in the original green and magenta. Same call,
+  // same keys, same glow index, so the suit on the stand and the suit on your back are the same
+  // suit and cannot drift apart.
+  // x 54.5, not 55.8: the corner is the GLASS one, and up against the room's east wall it read
+  // as pushed into the corner rather than standing in it.
+  loadProp('./assets/hero_suit.glb', {name:'suitDisplay', pos:[54.5,0.72], y:3.714, rotY:0, targetH:1.36,
+    onload:(holder,m)=>{ m.traverse(o=>{ if(o.isMesh){ o.castShadow=true;
+        recolourPart(o.material, SUIT_KEY, SUIT_NEW, SUIT_GLOW); } });
+      if(suitTaken) holder.visible=false;          // already claimed this session
+      window.__suitDisplay=holder; }});
   loadProp('./assets/skull.glb',   {name:'skull',   pos:[-3.81,15.08], y:-0.03, rotY:Math.PI, targetH:0.46});
   // LEGO rat along the ruins' left side wall (east flank, wall face x 1.62), heading toward the back:
   // nose toward the sidewalk (south), tail toward the back of the ruin. Native blend size, stamped in.
@@ -4654,6 +5253,89 @@
   // sends you back to the spawn point. This is the interaction end to end, with nothing wired to
   // the payoff yet: it is the hook a future add-on hangs off.
   let nearChest=false;
+  // ── THE SEATED SKELETON is the ghost's unlock, the way the chest is the suit's. Its radius is
+  // generous because it sits at the back of the cave under a low arch: you cannot get far from it
+  // and still be looking at it, and a tight circle in there is a prompt that flickers.
+  let nearBones=false;
+  const BONES_R=2.6;
+  function bonesAt(x,z){ const sk=window.__skeleton; if(!sk) return false;
+    return Math.hypot(x-sk.position.x, z-sk.position.z) < BONES_R; }
+  function inspectBones(){
+    if(!ghostRoot) return;                       // the model has not finished loading yet
+    ghostUnlocked=true;
+    wearGhost(!ghostOn);
+    if(typeof zap==='function') zap(0.22);
+    heroMsg = ghostOn ? 'You are a ghost. <b>E</b> at the bones to come back.'
+                      : 'Back in the flesh.';
+    heroMsgT = 3.2;
+  }
+  // ── TAKING THE SUIT. Walk up to it in the room and press E. It goes on, and the DISPLAY IS
+  // GONE FOR GOOD: taking it off again with T does not put it back on its stand (user,
+  // 2026-09-01), because you are wearing it, and a suit that reappears the moment you take it off
+  // reads as a copy rather than the thing itself. suitTaken is what enforces that, and it is
+  // deliberately NOT persisted, exactly as heroUnlocked is not: a cold load puts it back on its
+  // stand and the room has to be reached again.
+  // ── THE FRONT DOOR SAYS NO. The mansion's front door is glass in the interior wall at x 51.1,
+  // z -0.87..0.42, at the back of the covered porch; walking into it is the first thing anyone
+  // does and it just stopped them dead with no explanation. Now it tells them there is another
+  // way in, which there is: the balcony, by air.
+  // THREE conditions, and all three are load bearing. He has to be IN FRONT OF IT (the porch
+  // side, a shallow box, not merely near the mansion). He has to be PUSHING (a movement input
+  // with an eastward component, not just standing there). And he has to be BLOCKED, which is
+  // what makes it the door and not the open porch: stepBlocked one pace ahead. Without the third
+  // the line fires while you walk freely across the porch, and without the second it fires while
+  // you stand admiring it. Nothing else in the Realm gets this message, which is the point.
+  const FD_X0=50.10, FD_X1=51.30, FD_Z0=-1.00, FD_Z1=0.55;
+  let fdMsgT=0;
+  function frontDoorPush(dt){
+    if(mode!=='hub'||fading||flying||ghostOn) return;
+    fdMsgT-=dt; if(fdMsgT>0) return;
+    const x=player.position.x, z=player.position.z;
+    if(x<FD_X0||x>FD_X1||z<FD_Z0||z>FD_Z1) return;      // not at the door
+    if(Math.abs(player.position.y)>0.6) return;         // ground floor only
+    if(velX<0.35) return;                               // not pushing east into it
+    if(!stepBlocked(x+0.42, z)) return;                 // not actually up against anything
+    heroMsg='Find another way inside.'; heroMsgT=2.6; fdMsgT=6.0;
+  }
+  let suitTaken=false, nearSuit=false;
+  const SUIT_R=1.9;
+  function suitAt(x,z){ const d=window.__suitDisplay;
+    if(!d || suitTaken || !d.visible) return false;
+    return Math.hypot(x-d.position.x, z-d.position.z) < SUIT_R; }
+  function takeSuit(){
+    if(!heroMeshes.length || suitTaken) return;
+    suitTaken=true;
+    if(window.__suitDisplay) window.__suitDisplay.visible=false;
+    heroUnlocked=true;
+    wearHero(true);
+    if(typeof suitOnSfx==='function') suitOnSfx();
+    heroMsg='Suit on. <b>T</b> to take it off.'; heroMsgT=3.4;
+  }
+
+  // ── T IS THE OUTFIT ROTATION (user, 2026-09-01). It used to be a two-way toggle for the suit;
+  // with a third body it steps round whatever is UNLOCKED instead, civilian to suit to ghost and
+  // back. Unlocking is unchanged and still happens at the two props: the chest for the suit, the
+  // seated skeleton for the ghost, and E at either of them still works exactly as it did, so
+  // "Rise" and "Return" are untouched. What T does is save you the walk back.
+  // A body you have not unlocked is simply not in the ring, so on a cold load T does nothing.
+  function outfitRing(){ const r=['civ'];
+    if(heroUnlocked && heroMeshes.length) r.push('hero');
+    if(ghostUnlocked && ghostRoot) r.push('ghost');
+    return r; }
+  function wearOutfit(w){
+    if(w==='ghost'){ wearGhost(true); return; }
+    if(ghostOn) wearGhost(false);
+    wearHero(w==='hero');
+  }
+  function cycleOutfit(){
+    if(mode!=='hub') return;
+    const r=outfitRing(); if(r.length<2) return;
+    const cur=ghostOn?'ghost':(heroOn?'hero':'civ');
+    const nxt=r[(r.indexOf(cur)+1)%r.length];
+    wearOutfit(nxt);
+    if(nxt==='hero' && typeof suitOnSfx==='function') suitOnSfx();
+    say(nxt==='ghost'?'Ghost':nxt==='hero'?'Suit on':'Suit off', 2.0);
+  }
   const CHEST_R=2.4;
   function chestAt(x,z){ const c=window.__props&&window.__props.chest; if(!c) return false;
     return Math.hypot(x-c.position.x, z-c.position.z) < CHEST_R; }
@@ -5588,9 +6270,12 @@
     if(k==='r'){ location.href='/'; return; }
     if(k==='m'){ toggleSnd(); say(sndOn?'Sound on':'Sound off',1.8); return; }
     if(k==='e'){ if(mode==='hub' && nearPortal && !fading) enterPortal(nearPortal);
-      else if(mode==='hub' && nearChest && !fading) inspectChest(); return; }
-    if(k==='t'){ if(heroUnlocked && heroMeshes.length && mode==='hub'){ wearHero(!heroOn);
-      if(heroOn) suitOnSfx(); say(heroOn?'Suit on':'Suit off',2.2); } return; }
+      else if(mode==='hub' && nearChest && !fading) inspectChest();
+      else if(mode==='hub' && nearBones && !fading) inspectBones();
+      else if(mode==='hub' && nearSuit && !fading) takeSuit(); return; }
+    if(k==='t'){ cycleOutfit(); return; }
+    // F is the SUIT's key. The ghost rises and sinks on Space/Shift with no mode to enter, so
+    // there is nothing here for it to toggle (see the ghost's own vertical in the step block).
     if(k==='f'){ if(heroOn && mode==='hub' && !fading) setFly(!flying); return; }
     if(viewerOpen){ if(k==='arrowleft'){ stepShot(-1); return; } if(k==='arrowright'){ stepShot(1); return; } }
     if(mode==='menu' && !viewerOpen){ if(k==='arrowleft'||k==='a'){ menuPan=clampPan(menuPan-PGAP); return; }
@@ -5788,7 +6473,8 @@
     joyEl.addEventListener('touchmove',e=>{ e.preventDefault(); for(const t of e.changedTouches) if(t.identifier===joyId) joySet(t); },{passive:false});
     const joyEnd=e=>{ for(const t of e.changedTouches) if(t.identifier===joyId){ joyId=null; joyX=0; joyY=0; joyRun=false; joyKnob.style.transform=''; } };
     joyEl.addEventListener('touchend',joyEnd); joyEl.addEventListener('touchcancel',joyEnd);
-    btnJump.addEventListener('touchstart',e=>{ e.preventDefault(); initAudio(); if(flying) touchUp=true; else jumpQ=true; },{passive:false});
+    btnJump.addEventListener('touchstart',e=>{ e.preventDefault(); initAudio();
+      if(flying||ghostOn) touchUp=true; else jumpQ=true; },{passive:false});
     const upEnd=e=>{ e.preventDefault(); touchUp=false; };
     btnJump.addEventListener('touchend',upEnd,{passive:false}); btnJump.addEventListener('touchcancel',upEnd,{passive:false});
     btnDown.addEventListener('touchstart',e=>{ e.preventDefault(); touchDown=true; },{passive:false});
@@ -5796,7 +6482,9 @@
     btnDown.addEventListener('touchend',dnEnd,{passive:false}); btnDown.addEventListener('touchcancel',dnEnd,{passive:false});
     btnAct.addEventListener('touchstart',e=>{ e.preventDefault();
       if(mode==='hub'&&nearPortal&&!fading) enterPortal(nearPortal);
-      else if(mode==='hub'&&nearChest&&!fading) inspectChest(); },{passive:false});
+      else if(mode==='hub'&&nearChest&&!fading) inspectChest();
+      else if(mode==='hub'&&nearBones&&!fading) inspectBones();
+      else if(mode==='hub'&&nearSuit&&!fading) takeSuit(); },{passive:false});
     btnBack.addEventListener('touchstart',e=>{ e.preventDefault(); if(viewerOpen) closeViewer(); else if(mode==='menu'&&!fading) exitPortal(); },{passive:false});
   }
   canvas.addEventListener('wheel',e=>{ if(mode==='menu'){ if(!viewerOpen) menuPan=clampPan(menuPan+(e.deltaY+e.deltaX)*0.012); return; }
@@ -5819,7 +6507,14 @@
   // over your head and are not a limit; TRUNKS are. The first trunk reachable going east is the
   // one at (68.72, 24.01), whose flare reaches x 67.96, so 67.7 clears every trunk on the map
   // by 0.26 while leaving you walking under the leaves, which is the point.
-  const BX0=-30, BX1=71.8, BZ0=-35, BZ1=32, WALK=2.7, RUN=5.0;
+  // WALK 2.7 -> 3.2 and RUN 5.0 -> 7.0 (user, 2026-09-01: both too slow, the sprint especially).
+  // Everything that reads foot speed normalises against RUN, so raising it is not free: the limb
+  // swing below is 0.18+0.34*(speed/RUN), which at a fixed ratio would have left a 40% faster
+  // sprint swinging exactly as far as the old one and reading like a skater. The swing's own
+  // range is widened to match, which is the "arms and legs sway slightly more" half of the ask.
+  // FLY_SPD is deliberately NOT touched: flight normalises against itself, and a run that closes
+  // on it would flatten the difference between having the suit and not.
+  const BX0=-30, BX1=71.8, BZ0=-35, BZ1=39.4, WALK=3.2, RUN=7.0;   // BZ1 was 32; it keeps the same 3.6 of apron past the north rim, which moved to 35.789
   // ── FLIGHT. Held Space climbs, held Shift drops, letting go of both coasts to a hover, and
   // the stick still steers relative to the camera exactly as it does on foot. FLY_CEIL keeps
   // the hero inside the fog the world is lit for; FLY_CLEAR is how far above a roof a hover
@@ -5876,7 +6571,7 @@
   // live on __hero.flare() / __hero.land(), because the pane has no WebGL and these can only be
   // judged by eye, the same reason the hairpiece dials are live
   let FLY_FLARE=1.25, LAND_T=0.52, LAND_PITCH=0.26, LAND_DUCK=0.012, LAND_LEG=0.55, LAND_ARM=0.60;
-  let landT=0, landHit=0, floorNow=0, flyFell=false, heroLeapt=false, HERO_LEAP=9.5;
+  let landT=0, landHit=0, floorNow=0, flyFell=false, heroLeapt=false, HERO_LEAP=9.5, didJump=false;
   let groundT=0, GROUND_HOLD=0.45;                   // how long he has to stay down before it counts as landing
   // The vertical is DOUBLE eased, through climbIn and then velY. A key is a step function, and a
   // single exponential on a step is at its STEEPEST the instant it starts: hit Space and the climb
@@ -5897,9 +6592,13 @@
     flying=!!on;
     // however he came out of the air, the touchdown gets the beat; and a take-off abandoned
     // half way (F pressed again during the coil) must not leave the launch pose running
-    if(!on){ flyFell=true; takeT=0; }
+    if(!on){ flyFell=!ghostOn; takeT=0; }   // no landing beat for a ghost: nothing lands
     groundT=0;
     if(flying){
+      // A GHOST NEVER GETS HERE, and it is the guard above that says so: flight belongs to the
+      // suit. It does not launch and it does not land, because the coil is a crouch and the pop
+      // is a shove off the ground, and a thing with no legs that is already hovering has neither
+      // to give. Its rise and its sink are their own thing, in the step block, with no mode.
       // From a standstill he coils and launches. Already off the ground (the double tap of Space
       // arrives mid-hop) there is nothing to push against, so it just goes.
       if(grounded){ takeT=TAKE_T; takeFired=false; flyArmKick=0; if(velY>0) velY=0; }
@@ -5928,15 +6627,29 @@
   const HINT_SUITOFF='<b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; <b>T</b> for the suit &nbsp;·&nbsp; <b>R</b> leave';
   const HINT_SUIT='<b>WASD</b> walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; <b>F</b> to fly &nbsp;·&nbsp; <b>T</b> to change &nbsp;·&nbsp; <b>R</b> leave';
   const HINT_FLY ='<b>W</b> flies where you aim &nbsp;·&nbsp; drag to steer &nbsp;·&nbsp; <b>Space</b> up &nbsp;·&nbsp; <b>Shift</b> down &nbsp;·&nbsp; <b>F</b> to land &nbsp;·&nbsp; <b>R</b> leave';
+  // ── AND THE GHOST GETS ITS OWN, because not one of the other three is true of it: it cannot
+  // hop, it has no suit to put on or take off, and it does not run once it is off the ground. It
+  // was reading the civilian line and being told about a Space hop it does not have. Space is the
+  // new verb here and it is the only one that had to be taught; drifting is just WASD, and it
+  // says so because a body that is not walking should not be described as walking.
+  // Measured on the real rules and the real font rather than counted in characters
+  // (`scratchpad/hint_width.cjs`, which reproduces the shipped four at 534/554/555/620): this one
+  // is 496px, the narrowest line in the Realm, so nothing that fits the others can clip it.
+  const HINT_GHOST='<b>WASD</b> to drift &nbsp;·&nbsp; <b>Space</b> rise &nbsp;·&nbsp; <b>Shift</b> sink &nbsp;·&nbsp; <b>T</b> to change &nbsp;·&nbsp; <b>R</b> leave';
   function syncPowerHUD(){
     const hintEl=document.querySelector('.hint');
-    if(hintEl){ const want = flying ? HINT_FLY : (heroOn ? HINT_SUIT : (heroUnlocked ? HINT_SUITOFF : HINT_WALK));
+    if(hintEl){ const want = flying ? HINT_FLY : (ghostOn ? HINT_GHOST
+      : (heroOn ? HINT_SUIT : (heroUnlocked ? HINT_SUITOFF : HINT_WALK)));
       if(hintEl.innerHTML!==want) hintEl.innerHTML=want; }
     // No HUD pills left: the hint line carries T and F, and touch, which has no keyboard and no
     // hint line, changes the suit back at the CHEST, which already offers it. The jump pad is
     // touch's take-off, so it says what it will do next.
-    if(IS_TOUCH && btnJump){ btnDown.classList.toggle('on', flying);
-      btnJump.textContent = flying ? 'UP' : (heroOn ? 'FLY' : 'JUMP'); }
+    // The ghost has no jump for the pad to fire, so on touch the pad is its RISE and the second
+    // pad its sink, which is the same pair of buttons flight already uses and the only guidance
+    // a phone gets (`.hint` is display:none there).
+    if(IS_TOUCH && btnJump){ const vert=flying||ghostOn;
+      btnDown.classList.toggle('on', vert);
+      btnJump.textContent = vert ? 'UP' : (heroOn ? 'FLY' : 'JUMP'); }
   }
   function frame(dt){
     dayT=(dayT+dt/CYCLE_SECS)%1; applyTOD();   // day/night keeps turning; all lights fade smoothly
@@ -5989,7 +6702,9 @@
     mV.set(0,0,0).addScaledVector(fV,iz).addScaledVector(rV,ix);
     const mvY=fy*iz;
     const len3=Math.sqrt(mV.x*mV.x+mV.z*mV.z+mvY*mvY);
-    const mag=Math.min(1,len3), running=!flying && (!!keys['shift']||joyRun);   // in the air Shift is descend, not run
+    // in the air Shift is descend, not run, and that holds for the ghost the moment it is off the
+    // ground: one key cannot both sink it and make it run, and sinking is the one it has to do
+    const mag=Math.min(1,len3), running=!flying && !(ghostOn&&!grounded) && (!!keys['shift']||joyRun);
     // ── TOUCH TAKES OFF FROM THE JUMP PAD, because a phone has no F key and the FLY pill is gone.
     // ── SPACE TAKES OFF, on every device. In the suit a jump from the ground IS the launch: he
     // coils and goes, no double tap and no separate leap. F still toggles flight and is how you
@@ -6017,9 +6732,17 @@
     if(speed>0.3) curYaw=Math.atan2(velX,velZ);
     let dy=curYaw-player.rotation.y; dy=Math.atan2(Math.sin(dy),Math.cos(dy)); player.rotation.y+=dy*Math.min(1,dt*16);
     // hop + stair/floor following: step UP onto ledges only while grounded; otherwise land on the surface below (else fall)
-    const climb=inStair(player.position.x,player.position.z)?MAXSTEP:LOWSTEP;   // big steps only on the real stairs
+    // A GHOST DOES NOT STEP, so none of the step rules are its (user, 2026-09-01). MAXSTEP and
+    // LOWSTEP exist to stop a walker climbing rubble and to make the staircases the only way up;
+    // a thing that drifts a third of a unit clear of the ground has no business being told how
+    // tall a kerb is. It gets the whole surface below it at any height, which is what "hovers
+    // over everything" means: terraces, steps and the cave's own terracing all pass under it.
+    // It is deliberately NOT flight: gravity still holds it to the ground's shape, it simply
+    // never has to climb onto anything.
+    const climb=ghostOn ? 1e9 : (inStair(player.position.x,player.position.z)?MAXSTEP:LOWSTEP);   // big steps only on the real stairs
     let gy=surfaceBelow(player.position.x, player.position.z, player.position.y+(grounded?climb:0.12));
     if(gy===null) gy=groundY(player.position.x, player.position.z);   // open ground: the lawn's 0, or the cave pit's own step/floor
+    ghDrive=0;                                       // nothing of this frame's height is the ghost's until it says so
     if(flying){
       const up=(keys[' ']||touchUp)?1:0, dn=(keys['shift']||touchDown)?1:0;
       // the aim's own vertical, plus Space/Shift as a direct override for pure hovering climbs
@@ -6079,11 +6802,45 @@
       else groundT=0;                                  // off the floor again: the hold starts over
       if(player.position.y>FLY_CEIL){ player.position.y=FLY_CEIL; if(velY>0) velY=0; }
       grounded=false; jumpQ=false;
+    } else if(ghostOn){
+      // ── THE GHOST'S OWN VERTICAL. There is no gravity term in here at all, and that is the
+      // point: a ghost is not falling, it is SINKING, and the two look nothing alike. 16 units a
+      // second squared is a body with weight arriving; this is a slow settle it can stop at any
+      // moment by holding the key again.
+      // Held at nothing it still comes down, which is what makes this safe: there is no way to be
+      // stranded up there, and drifting off the edge of a terrace reads as a sink rather than as
+      // a figure standing on air. Shift is the same thing done impatiently, and only once it is
+      // off the ground (`running` above hands the key over at exactly the same moment, so the two
+      // can never both be true).
+      // and only while you are actually roaming the Realm: the walk freezes its own input the
+      // same way a few lines up, and a ghost holding Space inside a portal menu would otherwise
+      // be quietly rising behind the panels the whole time you browsed them. With the keys gated
+      // it sinks to the ground instead, which is where you left it and where you come back to it.
+      const live=(mode==='hub' && !fading && !viewerOpen);
+      const up=(live&&(keys[' ']||touchUp))?1:0, dn=(live&&!grounded&&(keys['shift']||touchDown))?1:0;
+      // DOUBLE EASED, exactly as flight's climb is, and for the same reason: a key is a step
+      // function and a single exponential on a step is at its STEEPEST the instant it starts, so
+      // one ease starts a rise with a jerk. Two in series start at zero slope, which is the whole
+      // difference between a swell and a hop. The first eases the TARGET, the second chases it.
+      const tgt = up ? GH_RISE : (dn ? -GH_DIVE : -GH_SINK);
+      ghWant += (tgt-ghWant)*Math.min(1,dt*GH_EASE);
+      velY   += (ghWant-velY)*Math.min(1,dt*GH_EASE*1.15);
+      const y0=player.position.y;
+      player.position.y += velY*dt;
+      floorNow=gy;
+      // the ceiling is measured over whatever is under it, so the pit keeps its own headroom
+      const cap=Math.min(FLY_CEIL, gy+GH_MAX);
+      if(player.position.y>cap){ player.position.y=cap; if(velY>0) velY=0; }
+      if(player.position.y<=gy){ player.position.y=gy; if(velY<0) velY=0; grounded=true; }
+      else { grounded=false; ghDrive=player.position.y-y0; }   // and THIS is the part the shroud must not lag
+      // no hop, no landing beat, no leap pose: none of them are a ghost's, and leaving these set
+      // would have the hidden civilian rig playing a jump under the cloth
+      didJump=false; flyFell=false; heroLeapt=false; jumpQ=false;
     } else {
       // Space is the hop it always was, it just goes higher in the suit: 4.4 clears 0.60 of a unit
       // and HERO_LEAP 9.5 clears 2.82, about seven and a half studs. The split leap pose and the
       // landing beat both already exist and both just carry over. Flight is F's job, not this one's.
-      if(jumpQ&&grounded){ velY=heroOn?HERO_LEAP:4.4; grounded=false; jumpSide=-jumpSide;
+      if(jumpQ&&grounded&&!ghostOn){ velY=heroOn?HERO_LEAP:4.4; grounded=false; didJump=true; jumpSide=-jumpSide;
         if(heroOn){ heroLeapt=true; launchSfx(surfaceAt(player.position.x, player.position.z), 0.6, false); }
       } jumpQ=false;
       velY-=16*dt; player.position.y+=velY*dt;
@@ -6098,7 +6855,7 @@
           const surf=surfaceAt(player.position.x, player.position.z);
           tick(6, surf); tick(5, surf); }
         flyFell=false; heroLeapt=false;
-        player.position.y=gy; velY=0; grounded=true; } else grounded=false;
+        player.position.y=gy; velY=0; grounded=true; didJump=false; } else grounded=false;
     }
     // walk cycle: alternating legs + counter-swinging arms, with a light stiff waddle
     phase += moving ? dt*(speed*1.9+3) : dt*2;
@@ -6148,6 +6905,29 @@
     // and judging the pose on the flat speed alone made a rocket climb read as a hover.
     poseVY += (velY-poseVY)*Math.min(1,dt*FLY_EASE*0.85);
     hoverT += dt;                                     // its own slow clock, not the walk's phase
+    // the ghost drifts on its own clock, clear of the ground and of the walk's own bob
+    // IT GLIDES OVER STEPS. The player root still snaps terrace to terrace, which is right for a
+    // walker and wrong for this: inheriting that made the ghost hop up each step and read as
+    // walking (user, 2026-09-01). So its own world height is EASED toward the root's, and the
+    // offset it carries is whatever that easing owes. Over flat ground the two agree and the term
+    // is zero; over the cave's terracing it lags and the ghost sails across them.
+    // ...and the glide is for the GROUND'S steps and nothing else. Left alone it lags any change
+    // in the root's height, which is right for a terrace and wrong for a climb the player asked
+    // for: at GH_RISE against GHOST_GLIDE the steady-state lag is 3.4/2.6 = 1.31 units, and
+    // measured over the first 1.5s of a climb it is already 0.938 (the same code replayed with
+    // this one line taken back out). A rising ghost would hang most of a body's length below
+    // where it actually is, half sunk in the ground it just left, while the camera, which follows
+    // the ROOT and not the shroud, watched it slide out of the bottom of frame. Carrying the
+    // frame's OWN drive into ghostY first makes the deliberate half exact and leaves the
+    // terracing lagged, which is all the glide was ever for: with it, the shroud never leaves its
+    // 0.30 lift by more than 0.0542, and its own breath is 0.055 of that.
+    if(ghostRoot && ghostOn){
+      const want=player.position.y + GHOST_LIFT_V;
+      if(ghostY===null) ghostY=want;
+      ghostY += ghDrive;
+      ghostY += (want-ghostY)*Math.min(1, dt*GHOST_GLIDE);
+      ghostRoot.position.y = (ghostY-player.position.y) + Math.sin(hoverT*GHOST_HZ)*GHOST_BOB_V;
+    } else ghostY=null;
     const spd3=Math.hypot(velX,poseVY,velZ);
     // HOLDING STATION: 1 at a standstill, 0 once he is actually going somewhere. Squared at the
     // point of use. Shared by the hover float and the limb sway, so they agree on what still means.
@@ -6186,13 +6966,24 @@
       // ground: at floor level fp is 0, so the dip half of the cycle can never reach through.
       figBody.position.y = figBody.position.y*(1-fp) + Math.sin(hoverT*HOVER_HZ)*HOVER_BOB*still*still*fp; }
     const si=Math.sin(phase);
-    // limb swing eases in/out with movement; scales with speed
-    const tgt = (moving && grounded) ? (0.18+0.34*Math.min(1,speed/RUN)) : 0;
+    // Limb swing eases in/out with movement and scales with speed. The range went 0.18..0.52 to
+    // 0.19..0.62 when WALK and RUN were raised: the term is a fraction of RUN, so a faster sprint
+    // at the old range would have covered more ground per stride with the same stride, which is
+    // what reads as skating. The walk end barely moves because the walk barely did.
+    const tgt = (moving && grounded) ? (0.19+0.43*Math.min(1,speed/RUN)) : 0;
     swingAmt += (tgt-swingAmt)*Math.min(1,dt*9);
     const sw = si*swingAmt;
     // the split LEAP pose is for a hop, not for flight: while flying the flight pose covers it
     // entirely, but the flare peels that back near the ground and the leap would show through
-    jumpPose += (((grounded||flying)?0:1)-jumpPose)*Math.min(1,dt*14);
+    // THE SPLIT LEAP POSE IS FOR A JUMP, NOT FOR BEING AIRBORNE (user, 2026-09-01: the arms jerk
+    // going down steps). It used to target 1 on any frame that was not grounded, and walking down
+    // a stair or a terrace leaves the ground for a frame or two every single step: the pose began
+    // blending in at dt*14, the arms snapped toward the leap, the foot landed and they snapped
+    // back. On the cave's twelve terraces that is twelve jerks on the way down.
+    // didJump is set by the jump impulse itself and cleared on touchdown, so a FALL now reads as
+    // what it is. Note it must be cleared on landing rather than tested against velY: the top of
+    // a real jump has velY 0 too, and gating on the sign would drop the pose at the apex.
+    jumpPose += (((grounded||flying||!didJump)?0:1)-jumpPose)*Math.min(1,dt*14);
     if(hipL&&hipR&&shL&&shR){ const jp=jumpPose*jumpSide;   // jumpSide mirrors the split pose on alternating jumps
       hipL.rotation.x = sw*(1-jumpPose) + 0.75*jp;      // one leg kicks up/forward
       hipR.rotation.x = -sw*(1-jumpPose) - 0.75*jp;     // the other kicks back
@@ -6297,7 +7088,10 @@
     // on foot the cape answers to the FULL speed, not the flat one, or a leap straight up is a
     // cape that does not move at all
     capeFrame(dt, flying?dnorm:Math.min(1,spd3/RUN), flying, capeAim);
-    if(grounded&&moving&&((prevSin<0&&si>=0)||(prevSin>0&&si<=0)))
+    // A GHOST MAKES NO FOOTSTEPS. It has no legs and does not touch the ground, so the one thing
+    // that gave it away was the sound (user, 2026-09-01). The gate is here rather than inside
+    // tick() because tick is also the landing, the launch scuff and the bubble's brick snaps.
+    if(grounded&&moving&&!ghostOn&&((prevSin<0&&si>=0)||(prevSin>0&&si<=0)))
       tick(speed, surfaceAt(player.position.x, player.position.z));
     prevSin=si;
     // NABU crystal idles with a slow spin so it reads as alive/interactive
@@ -6309,7 +7103,11 @@
     audioFrame(dt);           // wind/birds bed, river swell, the run-down house creaking
     if(!fading){
       nearPortal = (mode==='hub') ? portalAt(player.position.x, player.position.z, player.position.y) : null;
+      frontDoorPush(dt);
       nearChest = (mode==='hub' && !nearPortal) ? chestAt(player.position.x, player.position.z) : false;
+      nearBones = (mode==='hub' && !nearPortal && !nearChest) ? bonesAt(player.position.x, player.position.z) : false;
+      nearSuit  = (mode==='hub' && !nearPortal && !nearChest && !nearBones)
+        ? (suitAt(player.position.x, player.position.z) && Math.abs(player.position.y-3.714)<1.2) : false;
       let msg='';
       if(heroMsgT>0){ heroMsgT-=dt; }
       if(viewerOpen) msg='';
@@ -6323,6 +7121,10 @@
       else if(nearChest) msg = heroUnlocked
         ? (IS_TOUCH ? 'Suit' : 'Press <b>E</b> &nbsp;·&nbsp; Suit')
         : (IS_TOUCH ? 'Open' : 'Press <b>E</b> &nbsp;·&nbsp; Open');
+      else if(nearSuit) msg = IS_TOUCH ? 'Take the suit' : 'Press <b>E</b> &nbsp;·&nbsp; Take the suit';
+      else if(nearBones) msg = ghostOn
+        ? (IS_TOUCH ? 'Return' : 'Press <b>E</b> &nbsp;·&nbsp; Return')
+        : (IS_TOUCH ? 'Rise' : 'Press <b>E</b> &nbsp;·&nbsp; Rise');
       if(msg){ promptEl.innerHTML=msg; promptEl.classList.add('on'); } else promptEl.classList.remove('on');
       if(IS_TOUCH){ btnAct.classList.toggle('on', mode==='hub'&&(!!nearPortal||nearChest));
         btnAct.textContent = nearPortal ? 'ENTER' : 'OPEN';

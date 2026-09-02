@@ -1130,11 +1130,41 @@ title bubbles, mobile touch controls (joystick + jump + contextual pills), and M
 behind the pirate chest (suit swap + flight). Flight collision is now per-geometry in three
 dimensions (§5), and the mansion's upstairs is a real room you can fly into and walk around.
 
-The homepage scrolls: a hero, then a 13-frame storyboard of how the Realm was made, in a flowing
-layout with staggered variant-driven entrances (kicker slides, heading and body rise, stills fade
-out of a slight scale). A snap-deck version of this was built and **reverted** — the ask was
-animation, not pinning; don't rebuild it. Stills are 7 in-engine frames shot at the game's REAL fog
-and 7 staged Blender frames showing the structures part-built.
+**The homepage is a DECK** (user, 2026-09-01, and this REVERSES the earlier revert of exactly this:
+a snap deck was built once and pulled because the ask then was animation and not pinning. It has now
+been asked for. Do not undo it on the strength of that old note). A hero, then a 13-frame storyboard
+of how the Realm was made, cut into 12 slides that each hold the full viewport and snap-stop there:
+hero, four chapters (two of them sharing their screen with their one still), six frame rows and a
+closing CTA. Stills are 7 in-engine frames shot at the game's REAL fog and 7 staged Blender frames
+showing the structures part-built.
+
+`Slide` is the ONE thing on the storyboard that watches the viewport. Everything under it declares
+`variants` and nothing else, so a slide arrives as a sequence (rule, then heading a word at a time,
+then body, then the frame chrome, then the picture, then the caption) rather than as several blocks
+that happen to be near each other. Variant inheritance is React CONTEXT, so the plain grid `div`
+between a slide and its two frames does not break the chain. `once` is deliberately unset: the slide
+you left is fully off screen, so coming back replays it. Chapter kickers, body copy and the CTA head
+are split per word by `Words`; the photos keep their per-chapter signatures (establish / unfold /
+blinds in 01, slideL in 02, the stepped `courses` clip through all of 03, push in 04).
+**Mandatory snapping is only honest while a slide FITS**, and nothing guarantees that on its own:
+the stills are 16/9 and 4/3 mixed and the two-up rows stack under 760px. So the media carries a vh
+cap (cropping at the cap, hence `object-fit`), `.ss-slide` CLIPS (the watermark numeral is laid out
+from the copy's midpoint and is meant to bleed, which otherwise put 36px of scrollable slide under a
+snap point), and the whole mechanism stands down to free scrolling under 860px wide or 620px tall.
+`scratchpad/verify_deck_sizes.cjs` measures the real content against the slide box at nine window
+sizes and is the check that this still holds; `verify_deck.cjs` walks all 12 slides and asserts
+every part reaches its finished state.
+`DeckRail` is the fixed tick rail and the `07 / 12` counter. It reads the slides out of the DOM
+(`data-slide` / `data-label`), so adding a slide adds a tick and nothing has to be kept in step, and
+it picks the active one with a rootMargin that collapses the viewport to its own middle band, which
+is what makes EXACTLY ONE slide qualify: a threshold would not, since during a snap two 100dvh
+slides are partly on screen at once.
+
+**The chapter kicker is SPACE GROTESK** (user, 2026-09-01), not Bebas Neue, and the swap is not the
+face alone: Bebas is condensed and caps only, so at the same size a normal-width grotesk in mixed
+case runs about 1.6x the line length and wrapped every kicker. The size comes down, the tracking
+goes negative, and the uppercase transform comes off. It needs `!important` for the reason below.
+The scroll cue under the hero is now the ARROW ALONE; its "The 3D environment" label was removed.
 
 **Naming trap:** the Work category displays as "Personal Projects" but its internal id is still
 `creative-projects`, which keys the theme map, modal branches and portal lookups. Never rename the id.
@@ -1144,6 +1174,35 @@ and 7 staged Blender frames showing the structures part-built.
 ## 7. Traps that have cost real time
 
 **Verification**
+- **The in-app preview pane keeps `document.visibilityState === 'hidden'`, and framer-motion's
+  `whileInView` never fires there.** Every storyboard element sits pinned at its `hidden` variant,
+  so the page reads as a black screen with empty frames and NOTHING about the entrances can be
+  judged from it. `window.innerHeight` is 0 there too until `resize_window` is called, which makes
+  every `100dvh` slide measure 0. Verify the homepage in real headless Chrome instead
+  (`scratchpad/cdp.cjs` + `verify_deck.cjs`), where `visibilityState` is `visible`.
+- **THE TYPE CASCADE IS FIXED AND NO FONT RULE CARRIES `!important` ANY MORE** (user, 2026-09-01).
+  The APPLE-STYLE PASS used to set `font-family` on `*` with `!important`, which is two bugs: an
+  `!important` in a stylesheet beats an INLINE style, so every `fontFamily` written in a `style={{}}`
+  prop in `src/App.tsx` was dead and rendered as SF Pro; and a universal selector beats INHERITANCE,
+  so even a rule that won on a parent could not reach its children. It is now declared on `html`,
+  with `button, input, select, textarea, optgroup { font-family: inherit }` for the one thing the
+  `*` was really buying. **Write a new face as an ordinary rule. Do not reach for `!important`.**
+  Two things fell out of it and both are decisions:
+  · The Apple pass also forced `.ss-contact-heading` / `.ss-about-page h2` to `-0.02em` and weight
+    700. That was tuned for SF Pro and is wrong for the Bebas Neue those headings were always
+    written in: a condensed caps face needs POSITIVE tracking (they carry their own, 4px and 5px)
+    and Bebas ships one weight. The rule is gone.
+  · The app root `div` set `'Cormorant Garamond'` inline as the site's BASE face, dead for as long
+    as the `*` stood over it. Reviving it would have turned every unstyled run serif in one go (the
+    hero name, the storyboard captions, the Work header), so it was removed and the base is left to
+    `html`. Put it back on that div to make the whole site serif again; that is the one line.
+  What came back: Space Mono on every small label (nav, frame head strips, years, kickers, `× CLOSE`),
+  Bebas Neue on the About and Contact display headings, Cormorant Garamond where a paragraph asks
+  for it by name (About body, Contact tagline and values, the Work modal's description).
+  `scratchpad/verify_type.cjs` asserts the face that renders is the face the file asks for, on the
+  page each element lives on, and that zero `font-family` rules are still `!important`.
+- **`GLOBAL_CSS` is a TEMPLATE LITERAL, so one backtick in a CSS comment ends the string** and
+  breaks the file with syntax errors far from the edit. Same trap the shaders in `lego.html` carry.
 - **The in-app preview pane has NO WebGL** (`getContext('webgl')` returns null for webgl, webgl2
   and experimental-webgl). `lego.html` cannot be seen there at all. Run a dev server for Shyon.
 - When WebGL did work, the hidden pane throttled rAF AND setTimeout, so use `__D.step(dt)` frame
@@ -1407,47 +1466,34 @@ and 7 staged Blender frames showing the structures part-built.
   (`scratchpad/verify_final.cjs`).
   `looking()` and the `movementX` branch are still in the file and are now unreachable, kept only so
   a lock arriving from anywhere else would still behave. Nothing calls `requestPointerLock`.
-- **THE BLACK LINES WERE THE POINTER LOCK, and they are gone.** A stack of 7-8 of them across the
-  middle of the frame and a few just above the controls, appearing the instant you CLICKED and
-  never while you only hovered. The chain is: a lock makes Chrome announce the hidden pointer, the
-  announcement changes `innerHeight`, `resize` fires, and `PIPE.setSize()` reallocates every buffer
-  in the pipeline mid-frame. Removing the lock removed them, confirmed by Shyon on the live site.
-  **A plain window resize does NOT reproduce them**, which was checked afterwards on a real GPU by
-  dragging the window repeatedly: no lines. So `PIPE.setSize` is sound and there is nothing left to
-  fix here. Two theories were killed on the way and should not be re-run: it is not the AO border
-  band (that is the top and bottom EDGE rows, the wrong place), and it is not a stale
-  `depthTexture` (r128 re-syncs it in `setupDepthTexture`, read out of the vendored build).
-  **The second half of it is the gesture being taken away from the page**, which is a different
-  failure with four independent guards, none subsuming another. `preventDefault` on `mousedown` and
-  on `dragstart`, plus `user-select`/`user-drag:none` in the CSS, stop the BROWSER starting a text
-  selection across the HUD or a native drag of the canvas as an image; `contextmenu` is suppressed
-  on the canvas, because a right-click or a ctrl-click part way through a pan opens the OS menu,
-  which holds the pointer until dismissed and which `preventDefault` on `mousedown` does NOT cover,
-  being its own event; `setPointerCapture` covers the gap before a lock engages and the whole drag
-  when a lock is refused, since **without a capture the gesture belongs to whatever the pointer is
-  over**; and `pointercancel` / `lostpointercapture` plus `e.buttons===0` on a move are the releases
-  for a gesture that ends with no `pointerup`.
-  **Two traps that would bite if a lock ever came back** (both guards are still in the file, both
-  are now unreachable). Entering a lock fires `lostpointercapture`, and clearing the drag there
-  kills the pan at the instant the lock takes over, so that handler stands down while a lock is held
-  or pending. And `clientX` is FROZEN throughout a lock, so the frame a lock ENDS on carries a
-  client position that may be half a screen from `lx`: `reanchor` re-seats the anchor on the first
-  unlocked move instead of applying that jump as a pan.
-  **`blur` is deliberately not a release** while a capture is held: a window can lose focus for
-  reasons other than the user letting go, and killing the drag there froze pans still under the
-  hand. The `pointerup` or the `pointercancel` is still coming.
-  One older latch is unchanged and still load bearing: the early return for `fading`/`camAnim` keeps
-  `lx`/`ly` current, or the drag that resumes afterwards snaps by the whole distance travelled
-  meanwhile. Verified two ways, both without a GPU for the logic and with one for the lock: the
-  SHIPPED block extracted by content and replayed in a real shared `vm` context over nine gesture
-  families (`scratchpad/verify_lookdrag.cjs`), including the screen-edge pan, which reproduces the
-  bug at 281 degrees against 894 with the lock; and in headless Chrome over SwiftShader with real
-  dispatched input for the lock itself.
-  **Two things that were measured and are NOT the cause**, so they need not be re-investigated:
-  lazy shader compilation (`renderer.compile()` at spawn adds only 5 programs to the 44 already
-  linked, against 228 distinct materials) and an exception killing the render loop (`loop()`
-  schedules its `requestAnimationFrame` BEFORE calling `frame()`, so a throw costs one frame, not
-  the loop).
+- **THE BLACK LINES ARE THE AO PASS'S TEXEL, and the pointer lock was never the cause** (fixed
+  2026-09-02). A stack of thin dark rows over any flat surface, ~6px apart at dpr 2, strongest on
+  near ground. `aoMat.uniforms.texel` was set to `1/w,1/h`, the FULL-res texel, on a pass that
+  renders at HALF res, and `texel` is exactly what `normalAt` steps by to take its depth
+  neighbours: the gradient was sampled half an AO texel either side, which with a nearest-filtered
+  depth texture lands back on the SAME texel for some rows and the next one for others. The delta
+  collapses to zero, `axis()` flips to the other side, and the derived normal alternates row by
+  row, straight into the occlusion. `ign()` compounded it: its input reaches ~101 at the bottom of
+  a 2880x1540 buffer, where a float's ulp has grown enough that the per-pixel rotation stops
+  varying between neighbouring rows, so the noise stripes too. Both are fixed (`1/hw,1/hh`, and
+  `mod(gl_FragCoord.xy,64.0)`).
+  **IT IS BROWSER DEPENDENT, WHICH IS WHY IT WAS MISATTRIBUTED.** Chrome's sampling phase hides
+  it; Safari's does not. The earlier session removed the pointer lock, Shyon confirmed on Chrome
+  that the lines were gone, and the note here said the lock was the cause. It was not: the lock's
+  resize simply changed the buffer size, and the stripe pattern with it.
+  **HOW IT WAS FINALLY MEASURED, since the pane has no WebGL and Safari cannot be driven** (its
+  WebDriver needs a password, and screen recording was not granted): a COPY of `lego.html` in
+  `public/` with a harness appended that clicks Enter, pins the hour and the camera, walks
+  `__D.pipe`'s stage flags, and posts `canvas.toDataURL()` to a tiny Node server in the scratchpad
+  (`scratchpad/shotserver.cjs`), opened with `open -a Safari`. `scratchpad/linescan.cjs` and
+  `stripe_metric.cjs` then score the frames (vertical autocorrelation at the stripe period,
+  normalised): AO buffer 18.79 before, 0.39 after; the finished frame 0.37 to 0.01, which is the
+  level with AO switched off entirely. **Delete the copies from `public/` afterwards. They are
+  served publicly.**
+  Two theories were killed on the way and should not be re-run: it is not the AO border band (that
+  is the top and bottom EDGE rows, the wrong place), and it is not a stale `depthTexture` (r128's
+  `setupDepthTexture` re-syncs its dimensions to the target on bind, read out of the vendored
+  build).
 - **The mansion's plate does NOT end at z 7.2845 all the way along.** That is true only of mask row
   e, x 50.72..57.37. Across rows a to d the mask reads '.' at gi 36 AND 37, so the model's plate
   stops at z 6.545 and leaves 0.74 of open ground that the code ground grassed: a green strip 7.4

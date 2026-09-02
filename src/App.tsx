@@ -297,10 +297,6 @@ const GLOBAL_CSS = `
     z-index: 12;
   }
   .ss-story-cue:hover { opacity: 1; }
-  .ss-story-cue .ss-cue-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
-  }
   .ss-story-cue .ss-cue-arrow {
     font-size: 15px; line-height: 1;
     animation: ss-cue-drop 1.9s ease-in-out infinite;
@@ -309,20 +305,26 @@ const GLOBAL_CSS = `
     0%, 100% { transform: translateY(0); opacity: .9; }
     55% { transform: translateY(7px); opacity: .45; }
   }
-  /* The chapter heading, in Bebas Neue: the same display face the Contact and About
-     headlines use, so the storyboard reads as part of the site rather than a fourth
-     voice. Bebas is condensed and caps only, so it carries a much larger size than the
-     mono it replaced, on a tight 0.95 line and em tracking that scales with it.
+  /* The chapter heading, in SPACE GROTESK (user, 2026-09-01, replacing Bebas Neue).
+     A grotesk with engineered, slightly odd letterforms, which is the right voice for
+     copy about a thing that was built rather than styled, and it sits naturally beside
+     the mono head strips on the frames below.
+     It is NOT a swap of the face alone: Bebas is condensed and caps only, so at the
+     same size a normal-width grotesk in mixed case runs roughly 1.6x the line length
+     and would have wrapped every kicker. The size comes down accordingly, the tracking
+     goes NEGATIVE (Bebas needed +0.04em to breathe, Grotesk needs pulling in), and the
+     uppercase transform comes off so the kickers read as written.
      Deliberately still the question ("What it is"), never an answer, so the body below
      is what actually tells you anything. */
   .ss-story-kicker {
-    /* !important is required: the APPLE-STYLE PASS below sets font-family on * with
-       !important, which otherwise beats this rule and every other face on the site. */
-    font-family: 'Bebas Neue', sans-serif !important;
-    font-size: clamp(40px, 5.4vw, 76px);
-    line-height: 0.95; letter-spacing: 0.04em; text-transform: uppercase;
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: clamp(34px, 4.1vw, 62px);
+    font-weight: 700;
+    line-height: 1.02; letter-spacing: -0.022em; text-transform: none;
     color: var(--sky);
   }
+  /* the kicker's own words fly up one at a time, so it needs a per word box to turn in */
+  .ss-story-kicker .ss-w { display: inline-block; transform-origin: 50% 100%; }
   .ss-frame {
     border: 1px solid rgba(245,242,237,.16);
     background: #0a0a0c;
@@ -367,6 +369,155 @@ const GLOBAL_CSS = `
   @media (max-width: 760px) {
     .ss-frame-grid { grid-template-columns: 1fr; }
     .ss-frame figcaption { font-size: 15px; }
+  }
+
+  /* ── THE DECK ─────────────────────────────────────────────────────────────────────
+     The storyboard is a DECK (user, 2026-09-01). Every chapter and every frame row
+     holds the full viewport and locks there until you scroll past it, so a block is
+     never read half arrived: you land on it, it stages itself in, and only then does
+     the next one come. This deliberately REVERSES the earlier revert of a snap deck.
+     Mandatory snapping is only honest while a slide is guaranteed to FIT ON ONE
+     SCREEN, and nothing here guarantees that on its own: a two up frame row stacks
+     to one column under 760px, and the stills are 16/9 and 4/3 mixed. So the media
+     carries a vh cap (cropping at the cap rather than distorting, hence object-fit)
+     and the whole mechanism stands down to free scrolling on a narrow or a short
+     window, where the cap would have to eat most of the picture to fit. */
+  .ss-home-scroll { scroll-snap-type: y mandatory; }
+  .ss-snap { scroll-snap-align: start; scroll-snap-stop: always; }
+  .ss-slide {
+    position: relative;
+    min-height: 100dvh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 92px 0 88px;
+    /* The watermark numeral is laid out from the copy's midpoint and is deliberately
+       bigger than the block it sits behind, so its LAYOUT box runs past the bottom of
+       the slide even though the transform centres it on screen. Left alone that is 36px
+       of scrollable slide under a mandatory snap point, which is a slide you can never
+       quite land on. It is decoration and it is meant to bleed, so it is clipped here.
+       Nothing real is ever clipped by this: scratchpad/verify_deck_sizes.cjs measures
+       the actual content against the slide box at seven window sizes. */
+    overflow: hidden;
+  }
+  .ss-slide-inner { position: relative; z-index: 1; width: 100%; }
+  /* A chapter slide is a heading and a paragraph, which is not enough to hold a whole
+     screen on its own: the copy sits in the left half and the right half was empty.
+     The numeral fills it. Outlined rather than filled, and in the kicker's own blue at
+     an eighth of its alpha, so it reads as a watermark under the text rather than as a
+     second heading competing with it. Sized off the SHORTER of the two axes so it can
+     never outgrow the slide on a wide window or a short one. */
+  .ss-chapter-ghost {
+    position: absolute; right: -1.5vw; top: 50%; transform: translateY(-50%);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: min(52vh, 30vw); line-height: 0.8;
+    letter-spacing: -0.05em;
+    color: transparent; -webkit-text-stroke: 1.5px rgba(56,189,248,.14);
+    pointer-events: none; user-select: none; z-index: 0;
+  }
+  /* the rule the kicker hangs off, drawn out from the left as the chapter arrives */
+  .ss-chapter-rule {
+    width: 86px; height: 2px; background: var(--sky); border-radius: 2px;
+    transform-origin: left center; margin-bottom: 24px;
+  }
+  /* what the chapter contains, in the same mono the frames label themselves with */
+  .ss-chapter-meta {
+    display: flex; align-items: center; gap: 13px; margin-top: 30px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase;
+    color: rgba(245,242,237,.42);
+  }
+  .ss-chapter-meta::before { content: ''; width: 28px; height: 1px; background: rgba(245,242,237,.26); flex: none; }
+  /* two frames on one screen read as a pair when they end on the same line */
+  .ss-slide .ss-frame-grid { align-items: stretch; }
+  .ss-slide .ss-frame { display: flex; flex-direction: column; }
+  .ss-slide .ss-frame figcaption { flex: 1; }
+  .ss-slide .ss-frame-img { max-height: 43vh; object-fit: cover; }
+  /* a lone still is narrowed rather than cropped: at the full 1180 a 16/9 shot is 663
+     tall and the vh cap would have to eat into it on any normal window. */
+  .ss-slide-solo { max-width: 950px; margin: 0 auto; }
+  .ss-slide-solo .ss-frame-img { max-height: 56vh; }
+  /* ── CHAPTER + TWO STILLS ON ONE SCREEN. The deck's rule since it was cut from 12
+     slides to 7 (user, 2026-09-01): a blue kicker is never on screen without at least
+     two frames beside it. That means a chapter header and a two-up frame row have to
+     share one 100dvh slide, so the header becomes a BAND (kicker left, body right,
+     aligned on their baselines) instead of a column, and the stills give up some of
+     their height cap. 34vh against the 43vh a frame row gets when it has the screen to
+     itself: two captions and a head strip still have to fit under them. */
+  .ss-chapter-pair { display: grid; gap: 30px; }
+  .ss-chapter-head {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+    gap: 44px; align-items: end;
+  }
+  .ss-chapter-pair .ss-story-kicker { font-size: clamp(28px, 3.2vw, 46px); }
+  .ss-chapter-pair .ss-chapter-meta { margin-top: 18px; }
+  .ss-chapter-pair .ss-frame-img { max-height: 34vh; }
+  .ss-chapter-pair .ss-frame figcaption { font-size: 14px; }
+  @media (max-width: 900px) {
+    .ss-chapter-head { grid-template-columns: 1fr; gap: 22px; align-items: start; }
+  }
+  .ss-split-row {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
+    gap: 52px; align-items: center;
+  }
+  .ss-split-row .ss-frame-img { max-height: 40vh; }
+  /* the still tips up off its own bottom edge in chapter 01 */
+  .ss-shot-unfold { transform-origin: 50% 100%; }
+  /* a light passes down the still as it lands. Sits inside the shot window, which is
+     already overflow:hidden, so it is clipped to the picture and never the border. */
+  .ss-frame .ss-frame-shot { position: relative; }
+  .ss-frame-sweep {
+    position: absolute; left: 0; right: 0; top: 0; height: 32%;
+    background: linear-gradient(to bottom, transparent, rgba(56,189,248,.20), transparent);
+    pointer-events: none; mix-blend-mode: screen;
+  }
+
+  /* ── DECK RAIL ────────────────────────────────────────────────────────────────────
+     Where you are in the deck and a way to jump. The active tick is the only blue
+     thing on the right hand side, so it reads without a legend. Ticks are real
+     buttons; the label only appears on hover, so the resting state is four pixels of
+     chrome rather than a menu. */
+  .ss-deck-rail {
+    position: fixed; right: max(20px, 2.4vw); top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; align-items: flex-end; gap: 12px; z-index: 60;
+    opacity: 0; pointer-events: none; transition: opacity .5s var(--ease-out);
+  }
+  .ss-deck-rail.on { opacity: 1; pointer-events: auto; }
+  .ss-deck-tick { position: relative; display: block; width: 24px; height: 12px; padding: 0; border: 0; background: none; }
+  .ss-deck-tick::after {
+    content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    width: 11px; height: 2px; border-radius: 2px; background: rgba(245,242,237,.24);
+    transition: width .5s var(--ease-out), background .5s var(--ease-out), box-shadow .5s var(--ease-out);
+  }
+  .ss-deck-tick:hover::after { width: 24px; background: rgba(245,242,237,.66); }
+  .ss-deck-tick.on::after { width: 24px; background: var(--sky); box-shadow: 0 0 12px rgba(56,189,248,.55); }
+  .ss-deck-tip {
+    position: absolute; right: 34px; top: 50%;
+    transform: translateY(-50%) translateX(8px); white-space: nowrap;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(245,242,237,.75);
+    opacity: 0; pointer-events: none;
+    transition: opacity .35s var(--ease-out), transform .35s var(--ease-out);
+  }
+  .ss-deck-tick:hover .ss-deck-tip { opacity: 1; transform: translateY(-50%) translateX(0); }
+  .ss-deck-count {
+    position: fixed; right: max(20px, 2.4vw); bottom: 26px; z-index: 60;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 2.5px; color: rgba(245,242,237,.38);
+    opacity: 0; transition: opacity .5s var(--ease-out);
+  }
+  .ss-deck-count.on { opacity: 1; }
+  .ss-deck-count b { color: var(--sky); font-weight: 400; }
+
+  /* Narrow or short: a slide cannot be made to fit without gutting the picture, so
+     the deck stands down to ordinary scrolling and the rail goes with it. */
+  @media (max-width: 860px), (max-height: 620px) {
+    .ss-home-scroll { scroll-snap-type: none; }
+    .ss-slide { min-height: auto; display: block; padding: 58px 0; overflow: visible; }
+    .ss-slide .ss-frame-img,
+    .ss-slide-solo .ss-frame-img,
+    .ss-split-row .ss-frame-img { max-height: none; }
+    .ss-split-row { grid-template-columns: 1fr; gap: 30px; }
+    .ss-deck-rail, .ss-deck-count, .ss-chapter-ghost { display: none; }
   }
 
   /* Responsive modal sizing before mobile breakpoint */
@@ -530,17 +681,32 @@ const GLOBAL_CSS = `
      Layout, spacing and structure are untouched. Remove this
      block to revert entirely.
   ═══════════════════════════════════════════════════════════ */
-  /* Apple's system font (SF Pro on Mac) everywhere */
-  * {
+  /* ── THE BASE FACE ──
+     Apple's system font (SF Pro on Mac) is the DEFAULT here, and it used to be an
+     !important on the UNIVERSAL selector, which is two separate mistakes and both of
+     them bite. An !important in a stylesheet beats an INLINE style, so every font
+     family written in a style prop in this file was dead and rendered as SF Pro: the
+     Space Mono labels, the Cormorant Garamond body copy, the Bebas Neue headings, all
+     of it. And a universal selector beats INHERITANCE, so even a rule that did win on a
+     parent could not reach the children, because every child matched the star directly
+     and took SF Pro from it.
+     Declared on html instead it is what it was meant to be: a default that inherits
+     down and that anything more specific can override. Form controls do not inherit a
+     font family on their own, which is the one thing the star was really buying, so
+     they are given it explicitly.
+     NOTE the comment above carries no backticks on purpose. GLOBAL_CSS is a template
+     literal, so one backtick anywhere in here ends the string and breaks the file. */
+  html {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-      "SF Pro Text", "Inter", system-ui, sans-serif !important;
+      "SF Pro Text", "Inter", system-ui, sans-serif;
   }
-  /* big display headings read best with Apple's tight tracking */
-  .ss-contact-heading,
-  .ss-about-page h2 {
-    letter-spacing: -0.02em !important;
-    font-weight: 700 !important;
-  }
+  button, input, select, textarea, optgroup { font-family: inherit; }
+  /* The Apple pass also pulled the two big display headings to -0.02em and 700, which
+     was right while they were SF Pro and is wrong now that they render in the Bebas
+     Neue they were always written in: a condensed caps face needs POSITIVE tracking
+     (they carry their own, 4px and 5px) and Bebas ships one weight, so 700 bought
+     nothing and the negative tracking ran the letters into each other. Removed rather
+     than retuned, because each heading already states what it wants inline. */
   /* smooth, rounded surfaces instead of sharp corners */
   .ss-card {
     border-radius: 22px !important;
@@ -589,7 +755,7 @@ const GLOBAL_CSS = `
 
   /* asset titles: rounded "iPhone bubble" font (SF Pro Rounded) */
   .ss-asset-title {
-    font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", -apple-system, system-ui, sans-serif !important;
+    font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", -apple-system, system-ui, sans-serif;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -602,6 +768,9 @@ const GLOBAL_CSS = `
     /* the storyboard's entrances are inline transforms from framer-motion, which the rules
        above cannot reach: pin every part at its finished state instead */
     .ss-story, .ss-story * { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+    /* and the deck itself: snapping is motion the visitor did not ask for */
+    .ss-home-scroll { scroll-snap-type: none !important; }
+    .ss-frame-sweep { display: none !important; }
   }
 `;
 
@@ -799,7 +968,12 @@ export default function App() {
         position: "fixed", inset: 0,
         width: "100%", height: "100dvh",
         overflow: "hidden",
-        fontFamily: "'Cormorant Garamond', serif",
+        // The BASE face is left to html (the Apple pass's SF Pro). This div used to set
+        // Cormorant Garamond here, which was the site's original base and was dead for
+        // as long as the star rule stood over it. Reviving it along with the cascade fix
+        // would have turned every unstyled run on the site serif in one go: the hero
+        // name, the storyboard captions, the Work header. The DELIBERATE faces still
+        // land, because they are declared on the elements that want them.
         background: "#060606",
       }}
     >
@@ -946,7 +1120,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       style={{ position: "absolute", inset: 0, background: "#060606" }}
     >
       {/* ── HERO (first viewport) ── */}
-      <div style={{ position: "relative", height: "100dvh", overflow: "hidden" }}>
+      <div className="ss-snap" data-slide="hero" data-label="Top" style={{ position: "relative", height: "100dvh", overflow: "hidden" }}>
         {/* BG image */}
         <img
           src="/assets/New_Shiri_Site_Pic.jpg"
@@ -1010,150 +1184,269 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {...hover}
           style={{ cursor: "none" }}
         >
-          <span className="ss-cue-label">The 3D environment</span>
           <span className="ss-cue-arrow">▼</span>
         </motion.button>
       </div>
 
-      {/* ── STORYBOARD ── */}
+      {/* ── STORYBOARD, AS A DECK ──
+          One chapter or one frame row per screen, each locking in place and staging
+          itself in. Slide order is the only place the deck is described: `Slide` tags
+          itself for the rail, so nothing else has to be kept in step. */}
       <div className="ss-story" style={{ position: "relative", background: "#060606", padding: "0 8vw" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
 
-          {/* Chapter 01 · WHAT */}
-          <StoryChapter
-            kicker="01 · What it is"
-            first
-            body="The environment is a small town on a single LEGO baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after myself. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Personal Projects, About, and NABU."
-          />
-          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 01" scene="Player figure" src="/assets/story/story_figure_front.jpg"
-              caption="The playable character, a younger me by design. Assembled from separate parts rather than one mesh: each was modeled and textured on its own, then measured into place and bound to the rig at load time." />
-            <StoryFrame num="FR 02" scene="Night cycle" src="/assets/story/story_lamp_night.jpg"
-              caption="The modern house after dark. The lampposts are driven by the day cycle and brighten as the sun goes down. All lighting is computed in real time." />
-          </div>
-          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame num="FR 03" scene="The coffee shop" src="/assets/story/story_shop_evening.jpg"
-              caption="The coffee shop at dusk. Its interior is the portal to Professional Services." />
-            <StoryFrame num="FR 04" scene="The NABU crystal" src="/assets/story/story_crystal_night.jpg"
-              caption="The NABU portal: a crystal in the ruins built with an emissive material and a dedicated point light." />
-          </div>
+          {/* THE DECK IS 7 SLIDES, AND EVERY BLUE KICKER CARRIES ITS OWN FRAMES
+              (user, 2026-09-01). It was 12, and all five blue headings broke the rule
+              that a chapter is never on screen without at least two stills: 01 and 03
+              stood alone, 02 and 04 had one each, and the closing CTA had none. A
+              chapter that fills a screen with nothing but type is the reason the deck
+              felt long, so the chapters were folded INTO their frame rows rather than
+              introducing them from a screen of their own. The frames keep their order
+              and none was dropped: 13 stills over 7 screens, paired 2/2/2/2/2/2/1.
+              "Try it" is the one heading with a single still, because the story has
+              exactly one closing shot; the CTA lives on that screen now instead of
+              taking a thirteenth. */}
 
-          {/* Chapter 02 · WHY */}
-          <StoryChapter
-            kicker="02 · Why I made it"
-            body="The environment is a work sample in its own right. Building it required the same disciplines the portfolio presents: 3D modeling, engineering, and web development. It also traces back to where my work began, stop motion films built from LEGO, and to the technologies I have taken on since."
-          />
-          <StoryFrame anim="slideL" num="FR 05" scene="Lighting" src="/assets/story/story_sunset.jpg"
-            caption="The run down cottage and the river crossing at dusk. Sky, fog, sun color, exposure, and lamp intensity are interpolated continuously across the cycle rather than switched between presets." />
+          {/* 01 · WHAT, with the two frames it used to introduce */}
+          <Slide id="c1" label="01 · What it is" stagger={0.2}>
+            <div className="ss-chapter-pair">
+              <StoryChapter
+                pair
+                ghost="01"
+                meta="Two frames · FR 01 – 02"
+                kicker="01 · What it is"
+                body="The environment is a small town on a single LEGO baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after myself. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Personal Projects, About, and NABU."
+              />
+              <div className="ss-frame-grid">
+                <StoryFrame anim="establish" num="FR 01" scene="Player figure" src="/assets/story/story_figure_front.jpg"
+                  caption="The playable character, a younger me by design. Assembled from separate parts rather than one mesh: each was modeled and textured on its own, then measured into place and bound to the rig at load time." />
+                <StoryFrame anim="unfold" num="FR 02" scene="Night cycle" src="/assets/story/story_lamp_night.jpg"
+                  caption="The modern house after dark. The lampposts are driven by the day cycle and brighten as the sun goes down. All lighting is computed in real time." />
+              </div>
+            </div>
+          </Slide>
 
-          {/* Chapter 03 · HOW */}
-          <StoryChapter
-            kicker="03 · How I made it"
-            body="Every structure was assembled from individual bricks in Blender, using my own builds. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
-          />
-          <StoryFrame anim="courses" num="FR 06" scene="UV and texturing" src="/assets/story/story_blender_skull_uv.jpg"
-            caption="The skull prop in the UV Editing workspace. On the left the mesh is unwrapped flat over its painted texture, on the right the same texture is shown mapped onto the model. Every printed detail in the world is applied this way." />
-          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame anim="courses" num="FR 07" scene="Assembly" src="/assets/story/story_blender_shop_assembly.jpg"
-              caption="The coffee shop part way up: walls built to the halfway course, the roof and awning not yet placed, the umbrella pole still bare. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." />
-            <StoryFrame anim="courses" num="FR 08" scene="Sculpting" src="/assets/story/story_blender_hair_sculpt.jpg"
-              caption="The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." />
-          </div>
-          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame anim="courses" num="FR 09" scene="Figure assembly" src="/assets/story/story_blender_figure_exploded.jpg"
-              caption="The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." />
-            <StoryFrame anim="courses" num="FR 10" scene="Mesh editing" src="/assets/story/story_blender_ruins_edit.jpg"
-              caption="The ruins in Edit Mode, built up to the doorway arch with the upper storey still to come. The highlighted course is the one going on next. This export was later edited at the mesh level to remove extra columns and flower petals." />
-          </div>
-          <div className="ss-frame-grid" style={{ marginTop: 26 }}>
-            <StoryFrame anim="courses" num="FR 11" scene="Materials" src="/assets/story/story_blender_house_nodes.jpg"
-              caption="The modern house with the ground floor closed and the upper storey just started. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." />
-            <StoryFrame anim="courses" num="FR 12" scene="Render preview" src="/assets/story/story_blender_cottage_render.jpg"
-              caption="The run down cottage with its walls finished and the roof not yet on, in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." />
-          </div>
+          <Slide id="f1" label="FR 03 – 04" stagger={0.26}>
+            <div className="ss-frame-grid">
+              <StoryFrame anim="blinds" num="FR 03" scene="The coffee shop" src="/assets/story/story_shop_evening.jpg"
+                caption="The coffee shop at dusk. Its interior is the portal to Professional Services." />
+              <StoryFrame anim="establish" num="FR 04" scene="The NABU crystal" src="/assets/story/story_crystal_night.jpg"
+                caption="The NABU portal: a crystal in the ruins built with an emissive material and a dedicated point light." />
+            </div>
+          </Slide>
 
-          {/* Closing CTA */}
-          <StoryChapter
-            kicker="04 · Try it"
-            body="The full version runs on this site, with the day cycle and all four portals active."
-          />
-          <StoryFrame anim="push" num="FR 13" scene="Live build" src="/assets/story/story_aerial_sunset.jpg"
-            caption="The current build, running in-engine: the town from above at sunset, lampposts coming on. The entry button is below." />
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.7, ease: [0.16,1,0.3,1] }}
-            style={{ display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap", margin: "44px 0 14vh" }}
-          >
-            {!isMobile && (
-              <a
-                href="/lego.html"
+          {/* 02 · WHY, with its own still and the first of the Blender frames */}
+          <Slide id="c2" label="02 · Why I made it" stagger={0.2}>
+            <div className="ss-chapter-pair">
+              <StoryChapter
+                pair
+                ghost="02"
+                meta="Two frames · FR 05 – 06"
+                kicker="02 · Why I made it"
+                body="The environment is a work sample in its own right. Building it required the same disciplines the portfolio presents: 3D modeling, engineering, and web development. It also traces back to where my work began, stop motion films built from LEGO, and to the technologies I have taken on since."
+              />
+              <div className="ss-frame-grid">
+                <StoryFrame anim="slideL" num="FR 05" scene="Lighting" src="/assets/story/story_sunset.jpg"
+                  caption="The run down cottage and the river crossing at dusk. Sky, fog, sun color, exposure, and lamp intensity are interpolated continuously across the cycle rather than switched between presets." />
+                <StoryFrame anim="courses" num="FR 06" scene="UV and texturing" src="/assets/story/story_blender_skull_uv.jpg"
+                  caption="The skull prop in the UV Editing workspace. On the left the mesh is unwrapped flat over its painted texture, on the right the same texture is shown mapped onto the model. Every printed detail in the world is applied this way." />
+              </div>
+            </div>
+          </Slide>
+
+          {/* 03 · HOW, holding the first two of the build frames */}
+          <Slide id="c3" label="03 · How I made it" stagger={0.2}>
+            <div className="ss-chapter-pair">
+              <StoryChapter
+                pair
+                ghost="03"
+                meta="Two frames · FR 07 – 08"
+                kicker="03 · How I made it"
+                body="Every structure was assembled from individual bricks in Blender, using my own builds. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
+              />
+              <div className="ss-frame-grid">
+                <StoryFrame anim="courses" num="FR 07" scene="Assembly" src="/assets/story/story_blender_shop_assembly.jpg"
+                  caption="The coffee shop part way up: walls built to the halfway course, the roof and awning not yet placed, the umbrella pole still bare. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." />
+                <StoryFrame anim="courses" num="FR 08" scene="Sculpting" src="/assets/story/story_blender_hair_sculpt.jpg"
+                  caption="The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." />
+              </div>
+            </div>
+          </Slide>
+
+          <Slide id="f2" label="FR 09 – 10" stagger={0.26}>
+            <div className="ss-frame-grid">
+              <StoryFrame anim="courses" num="FR 09" scene="Figure assembly" src="/assets/story/story_blender_figure_exploded.jpg"
+                caption="The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." />
+              <StoryFrame anim="courses" num="FR 10" scene="Mesh editing" src="/assets/story/story_blender_ruins_edit.jpg"
+                caption="The ruins in Edit Mode, built up to the doorway arch with the upper storey still to come. The highlighted course is the one going on next. This export was later edited at the mesh level to remove extra columns and flower petals." />
+            </div>
+          </Slide>
+
+          <Slide id="f3" label="FR 11 – 12" stagger={0.26}>
+            <div className="ss-frame-grid">
+              <StoryFrame anim="courses" num="FR 11" scene="Materials" src="/assets/story/story_blender_house_nodes.jpg"
+                caption="The modern house with the ground floor closed and the upper storey just started. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." />
+              <StoryFrame anim="courses" num="FR 12" scene="Render preview" src="/assets/story/story_blender_cottage_render.jpg"
+                caption="The run down cottage with its walls finished and the roof not yet on, in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." />
+            </div>
+          </Slide>
+
+          {/* 04 · TRY IT, the closing shot and the way in, on one screen. The only
+              chapter with a single still: the story has exactly one closing frame. */}
+          <Slide id="c4" label="04 · Try it" stagger={0.28}>
+            <div className="ss-split-row">
+              <StoryChapter
+                wide
+                ghost="04"
+                meta="One frame · FR 13"
+                kicker="04 · Try it"
+                body="The full version runs on this site, with the day cycle and all four portals active. Walk it yourself."
+              />
+              <StoryFrame anim="push" num="FR 13" scene="Live build" src="/assets/story/story_aerial_sunset.jpg"
+                caption="The current build, running in-engine: the town from above at sunset, lampposts coming on." />
+            </div>
+            <motion.div
+              variants={sbRise}
+              style={{ display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap", marginTop: 30 }}
+            >
+              {!isMobile && (
+                <a
+                  href="/lego.html"
+                  {...hover}
+                  className="ss-contact-btn"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 10,
+                    padding: "16px 30px", borderRadius: 980,
+                    border: "1px solid rgba(245,242,237,.4)",
+                    color: "var(--white)", textDecoration: "none",
+                    fontSize: 13, fontWeight: 600, cursor: "none",
+                  }}
+                >
+                  <span>Enter My Lego Realm</span><span>→</span>
+                </a>
+              )}
+              <span
+                role="button" tabIndex={0}
+                onClick={() => onNavigate("work")}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
                 {...hover}
-                className="ss-contact-btn"
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: 10,
-                  padding: "16px 30px", borderRadius: 980,
-                  border: "1px solid rgba(245,242,237,.4)",
-                  color: "var(--white)", textDecoration: "none",
-                  fontSize: 13, fontWeight: 600, cursor: "none",
+                  fontFamily: "'Space Mono', monospace",
+                  fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
+                  color: "rgba(245,242,237,.72)", textDecoration: "underline",
+                  textUnderlineOffset: "4px", cursor: "none",
                 }}
               >
-                <span>Enter My Lego Realm</span><span>→</span>
-              </a>
-            )}
-            <span
-              role="button" tabIndex={0}
-              onClick={() => onNavigate("work")}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
-              {...hover}
-              style={{
-                fontFamily: "'Space Mono', monospace",
-                fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
-                color: "rgba(245,242,237,.72)", textDecoration: "underline",
-                textUnderlineOffset: "4px", cursor: "none",
-              }}
-            >
-              {isMobile ? "Browse the work" : "or browse the work"}
-            </span>
-          </motion.div>
+                {isMobile ? "Browse the work" : "or browse the work"}
+              </span>
+            </motion.div>
+          </Slide>
 
         </div>
       </div>
+
+      <DeckRail scrollRef={scrollRef} />
     </motion.div>
   );
 }
 
-/* One storyboard cell: numbered head strip, still, caption */
-/* ── STORYBOARD MOTION ───────────────────────────────────────────────────────────────
-   Every block brings its parts in one after another instead of arriving as a single
-   slab: the label slides in from the left, the heading and the body rise, the still
-   fades while settling out of a hair of scale. Deliberately gentle. Short travel, a
-   long ease-out, and a small stagger, so the page reads as alive without anything
-   flying at you. Variants propagate down the tree, so a child only has to name which
-   of these it uses and the parent decides when. */
+/* ── DECK MOTION ─────────────────────────────────────────────────────────────────────
+   The deck's rule: A SLIDE IS ONE ORCHESTRATOR AND NOTHING BELOW IT TRIGGERS ITSELF.
+   `Slide` is the only thing carrying `whileInView`; every part under it declares
+   `variants` alone and inherits when it runs. That is what makes a slide arrive as a
+   sequence, label then heading then body then the picture then the caption, instead of
+   as four independent blocks that happen to be near each other. Variant inheritance in
+   framer-motion is React CONTEXT, not the DOM, so a plain grid <div> between a slide
+   and its two frames does not break the chain and both frames still stagger off the
+   slide.
+   And it re-runs. `once` is deliberately NOT set: on a deck the slide you left is
+   fully off screen, so coming back up should replay rather than show you a finished
+   still. */
 const SB_EASE = [0.16, 1, 0.3, 1] as const;
-const sbGroup: Variants = {
+
+const sbSlide: Variants = {                       // a whole slide: paces its parts
+  hidden: {},
+  show: { transition: { staggerChildren: 0.14, delayChildren: 0.06 } },
+};
+const sbGroup: Variants = {                       // a nested group (a frame's own parts)
   hidden: {},
   show: { transition: { staggerChildren: 0.11, delayChildren: 0.04 } },
 };
-const sbSlide: Variants = {                       // labels and head strips, in from the left
-  hidden: { opacity: 0, x: -16 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: SB_EASE } },
+
+/* ── TEXT ──
+   Words, not blocks. A heading and a paragraph are the two things on a slide with no
+   picture, so a single fade would leave those slides doing nothing at all. */
+const sbWordUp: Variants = {                      // kicker: each word tips up off its baseline
+  hidden: { opacity: 0, y: "0.55em", rotateX: -68, transformPerspective: 700 },
+  show: { opacity: 1, y: "0em", rotateX: 0, transition: { duration: 0.66, ease: SB_EASE } },
 };
-const sbRise: Variants = {                        // headings, body copy, captions
+const sbWordIn: Variants = {                      // body: a quick, quiet ripple across the lines
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: SB_EASE } },
+};
+const sbRise: Variants = {                        // anything that just rises
   hidden: { opacity: 0, y: 22 },
   show: { opacity: 1, y: 0, transition: { duration: 0.72, ease: SB_EASE } },
 };
-const sbShot: Variants = {                        // stills: fade, easing out of a touch of scale
-  hidden: { opacity: 0, scale: 1.035 },
-  show: { opacity: 1, scale: 1, transition: { duration: 0.95, ease: SB_EASE } },
+const sbHead: Variants = {                        // the frame's head strip: wipes open left to right
+  hidden: { opacity: 0, clipPath: "inset(0% 100% 0% 0%)" },
+  show: { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 0.62, ease: SB_EASE } },
+};
+const sbCap: Variants = {                         // the caption: unmasks upward off its own rule line
+  hidden: { opacity: 0, y: 14, clipPath: "inset(0% 0% 100% 0%)" },
+  show: { opacity: 1, y: 0, clipPath: "inset(0% 0% -6% 0%)", transition: { duration: 0.7, ease: SB_EASE } },
+};
+const sbBox: Variants = {                         // the frame CHROME, drawn before anything is in it
+  hidden: { y: 30, borderColor: "rgba(245,242,237,0)" },
+  show: {
+    y: 0, borderColor: "rgba(245,242,237,0.16)",
+    transition: { duration: 0.8, ease: SB_EASE, staggerChildren: 0.13, delayChildren: 0.14 },
+  },
+};
+const sbRule: Variants = {                        // the blue rule a chapter hangs off, drawn from the left
+  hidden: { scaleX: 0, opacity: 0 },
+  show: { scaleX: 1, opacity: 1, transition: { duration: 0.72, ease: SB_EASE } },
+};
+const sbGhost: Variants = {                       // the watermark numeral, drifting in behind the copy
+  hidden: { opacity: 0, x: 56 },
+  show: { opacity: 1, x: 0, transition: { duration: 1.35, ease: SB_EASE } },
+};
+const sbSweep: Variants = {                       // a light running down the still as it lands
+  hidden: { y: "-140%", opacity: 0 },
+  show: { y: "180%", opacity: [0, 1, 1, 0], transition: { duration: 0.95, ease: "linear", delay: 0.12 } },
 };
 
+/* Splits a string into per-word spans so a heading or a paragraph can arrive a word at
+   a time. The word is wrapped in its OWN inline-block: a transform on a raw text run
+   does nothing, and a mask on it would clip the descenders, which is why the entrances
+   above move and rotate rather than clip. The trailing space is a non-breaking one
+   INSIDE the span, so inline-blocks that would otherwise collapse their whitespace
+   still set as a sentence. */
+function Words({ text, variant, stagger = 0.03, className, style }: {
+  text: string; variant: Variants; stagger?: number; className?: string; style?: React.CSSProperties;
+}) {
+  const words = text.split(" ");
+  return (
+    <motion.p
+      className={className}
+      style={style}
+      variants={{ hidden: {}, show: { transition: { staggerChildren: stagger } } }}
+    >
+      {words.map((w, i) => (
+        <motion.span key={i} className="ss-w" variants={variant} style={{ display: "inline-block", willChange: "transform" }}>
+          {w}{i < words.length - 1 ? " " : ""}
+        </motion.span>
+      ))}
+    </motion.p>
+  );
+}
+
 /* ── PER-CHAPTER PHOTO SIGNATURES ───────────────────────────────────────────────────
-   Each chapter brings its stills in its own way, so scrolling the storyboard reads as
-   four passages rather than one effect repeated thirteen times. Only the PHOTOS differ:
-   head strips and captions keep the shared slide/rise above, and that common rhythm is
-   what holds the chapters together while the images behave differently.
+   Each chapter brings its stills in its own way, so scrolling the deck reads as four
+   passages rather than one effect repeated thirteen times. Only the PHOTOS differ:
+   head strips, captions and copy keep the shared wipe/rise/word rhythm above, and that
+   common rhythm is what holds the chapters together while the images behave
+   differently.
    The frame panel is overflow:hidden, so a still that slides or is clipped moves inside
    its own window rather than spilling over the border. */
 // Quantizes a tween into n held intervals stepping 0 -> 1. Dividing by n-1 (not n) is
@@ -1164,6 +1457,14 @@ const stepEase = (n: number) => (t: number) => Math.min(1, Math.floor(t * n) / (
 const shotEstablish: Variants = {                 // 01 What it is: rises and settles. The calm opening read.
   hidden: { opacity: 0, y: 42, scale: 1.04 },
   show: { opacity: 1, y: 0, scale: 1, transition: { duration: 1.0, ease: SB_EASE } },
+};
+const shotUnfold: Variants = {                    // 01, the second of a pair: tips up off its bottom edge
+  hidden: { opacity: 0, rotateX: -18, y: 26, transformPerspective: 1400 },
+  show: { opacity: 1, rotateX: 0, y: 0, transition: { duration: 0.98, ease: SB_EASE } },
+};
+const shotBlinds: Variants = {                    // 01, the second row: uncovered left to right in held columns
+  hidden: { clipPath: "inset(0% 100% 0% 0%)" },
+  show: { clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 1.0, ease: stepEase(7) } },
 };
 const shotSlideL: Variants = {                    // 02 Why I made it: drives in from the left across its window
   hidden: { opacity: 0, x: "-26%" },
@@ -1181,66 +1482,159 @@ const shotPush: Variants = {                      // 04 Try it: a slow push in o
   hidden: { opacity: 0, scale: 1.11 },
   show: { opacity: 1, scale: 1, transition: { duration: 1.2, ease: SB_EASE } },
 };
-const SHOTS = { establish: shotEstablish, slideL: shotSlideL, slideR: shotSlideR, courses: shotCourses, push: shotPush };
+const SHOTS = {
+  establish: shotEstablish, unfold: shotUnfold, blinds: shotBlinds,
+  slideL: shotSlideL, slideR: shotSlideR, courses: shotCourses, push: shotPush,
+};
 type ShotAnim = keyof typeof SHOTS;
 
-function StoryFrame({ num, scene, src, caption, anim = "establish" }: { num: string; scene: string; src: string; caption: string; anim?: ShotAnim }) {
+/* One deck slide. The ONLY thing on the storyboard that watches the viewport: every
+   part inside it inherits from here. `data-slide` / `data-label` are what the rail
+   reads, so adding a slide adds a tick and nothing else has to be kept in step. */
+function Slide({ id, label, className, stagger, children }: {
+  id: string; label: string; className?: string; stagger?: number; children: React.ReactNode;
+}) {
+  const pace: Variants = stagger
+    ? { hidden: {}, show: { transition: { staggerChildren: stagger, delayChildren: 0.06 } } }
+    : sbSlide;
   return (
-    <motion.figure
-      className="ss-frame"
-      variants={sbGroup}
+    <motion.section
+      className={`ss-slide ss-snap${className ? " " + className : ""}`}
+      data-slide={id}
+      data-label={label}
+      variants={pace}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount: 0.25 }}
+      viewport={{ amount: 0.35 }}
     >
-      <motion.div className="ss-frame-head" variants={sbSlide}><span>{num}</span><span>{scene}</span></motion.div>
-      <motion.div className="ss-frame-shot" variants={SHOTS[anim]}>
+      <div className="ss-slide-inner">{children}</div>
+    </motion.section>
+  );
+}
+
+/* One storyboard cell: numbered head strip, still, caption */
+function StoryFrame({ num, scene, src, caption, anim = "establish", solo }: {
+  num: string; scene: string; src: string; caption: string; anim?: ShotAnim; solo?: boolean;
+}) {
+  return (
+    <motion.figure className={`ss-frame${solo ? " ss-slide-solo" : ""}`} variants={sbBox}>
+      <motion.div className="ss-frame-head" variants={sbHead}><span>{num}</span><span>{scene}</span></motion.div>
+      <motion.div className="ss-frame-shot" variants={SHOTS[anim]} style={anim === "unfold" ? { transformOrigin: "50% 100%" } : undefined}>
         <img className="ss-frame-img" src={src} alt={scene} loading="lazy" decoding="async" />
+        <motion.div className="ss-frame-sweep" variants={sbSweep} aria-hidden />
       </motion.div>
-      <motion.figcaption variants={sbRise}>{caption}</motion.figcaption>
+      <motion.figcaption variants={sbCap}>{caption}</motion.figcaption>
     </motion.figure>
   );
 }
 
-/* Storyboard chapter header: mono kicker, display title, serif body */
-function StoryChapter({ kicker, body, first, img, imgAlt, hero, heroLabel, anim = "establish" }: { kicker: string; body: string; first?: boolean; img?: string; imgAlt?: string; hero?: boolean; heroLabel?: [string, string]; anim?: ShotAnim }) {
-  // hero: the still runs FULL WIDTH under the text, in the same panel treatment as the numbered
-  // frames below, instead of sitting in a column beside it. Nothing else on the page competes
-  // with it, which is what makes it read as the opening shot.
-  const split = !!img && !hero;
-  return (
-    <motion.div
-      variants={sbGroup}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, amount: 0.3 }}
-      style={{ padding: first ? "13vh 0 46px" : "15vh 0 46px" }}
-    >
-      <div className={split ? "ss-chapter-split" : undefined}>
-        <div>
-          <motion.div className="ss-story-kicker" variants={sbSlide}>{kicker}</motion.div>
-          <motion.p variants={sbRise} style={{ marginTop: 24, maxWidth: split ? "none" : 720, fontSize: 18, lineHeight: 1.65, color: "rgba(245,242,237,.78)" }}>
-            {body}
-          </motion.p>
-        </div>
-        {split && (
-          <motion.figure className="ss-chapter-shot" variants={sbShot}>
-            <img src={img} alt={imgAlt || ""} loading="lazy" decoding="async" />
-          </motion.figure>
-        )}
+/* Storyboard chapter header: the blue Space Grotesk kicker over the body copy, both set
+   a word at a time. */
+function StoryChapter({ kicker, body, meta, ghost, wide, pair }: {
+  kicker: string; body: string; meta?: string; ghost?: string; wide?: boolean; pair?: boolean;
+}) {
+  // `pair` is the chapter that SHARES its screen with two stills. The kicker and the body
+  // go side by side rather than stacked, which turns the header from a column into a band
+  // and hands the rest of the slide's height to the pictures. Stacked, the two together
+  // run past half the viewport on a laptop and the stills have nowhere left to go.
+  const head = (
+    <>
+      <Words className="ss-story-kicker" text={kicker} variant={sbWordUp} stagger={0.055} />
+      <div>
+        <Words
+          text={body}
+          variant={sbWordIn}
+          stagger={0.016}
+          style={{ maxWidth: pair || wide ? "none" : 720, fontSize: pair ? 16 : 18, lineHeight: 1.6, color: "rgba(245,242,237,.78)" }}
+        />
+        {meta && <motion.div className="ss-chapter-meta" variants={sbRise}>{meta}</motion.div>}
       </div>
-      {img && hero && (
-        <motion.figure className="ss-frame ss-chapter-hero" variants={sbGroup}>
-          <motion.div className="ss-frame-head" variants={sbSlide}>
-            <span>{heroLabel ? heroLabel[0] : "Overview"}</span>
-            <span>{heroLabel ? heroLabel[1] : "In engine"}</span>
-          </motion.div>
-          <motion.div className="ss-frame-shot" variants={SHOTS[anim]}>
-            <img className="ss-frame-img" src={img} alt={imgAlt || ""} decoding="async" />
-          </motion.div>
-        </motion.figure>
+    </>
+  );
+  return (
+    <div>
+      {ghost && <motion.div className="ss-chapter-ghost" variants={sbGhost} aria-hidden>{ghost}</motion.div>}
+      <motion.div className="ss-chapter-rule" variants={sbRule} aria-hidden />
+      {pair ? <div className="ss-chapter-head">{head}</div> : (
+        <>
+          <Words className="ss-story-kicker" text={kicker} variant={sbWordUp} stagger={0.055} />
+          <Words
+            text={body}
+            variant={sbWordIn}
+            stagger={0.016}
+            style={{ marginTop: 24, maxWidth: wide ? "none" : 720, fontSize: 18, lineHeight: 1.65, color: "rgba(245,242,237,.78)" }}
+          />
+          {meta && <motion.div className="ss-chapter-meta" variants={sbRise}>{meta}</motion.div>}
+        </>
       )}
-    </motion.div>
+    </div>
+  );
+}
+
+/* The deck rail: which slide is on screen, and a click to jump to any of them. Reads
+   the slides out of the DOM rather than off a second list, so the two can never drift.
+   The active one is chosen with a rootMargin that collapses the viewport to its own
+   middle band, which means EXACTLY ONE slide qualifies at a time. A threshold on a
+   100dvh slide would not: during a snap two of them are partly on screen at once. */
+function DeckRail({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement> }) {
+  const [slides, setSlides] = useState<{ id: string; label: string }[]>([]);
+  const [active, setActive] = useState(0);
+  const els = useRef<HTMLElement[]>([]);
+
+  useEffect(() => {
+    const root = scrollRef.current;
+    if (!root) return;
+    const found = Array.from(root.querySelectorAll<HTMLElement>("[data-slide]"));
+    els.current = found;
+    setSlides(found.map((e) => ({ id: e.dataset.slide || "", label: e.dataset.label || "" })));
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            const i = els.current.indexOf(e.target as HTMLElement);
+            if (i >= 0) setActive(i);
+          }
+        }
+      },
+      { root: null, rootMargin: "-48% 0px -48% 0px", threshold: 0 }
+    );
+    found.forEach((e) => io.observe(e));
+    return () => io.disconnect();
+  }, [scrollRef]);
+
+  const jump = (i: number) => {
+    const root = scrollRef.current;
+    const el = els.current[i];
+    if (!root || !el) return;
+    root.scrollTo({
+      top: root.scrollTop + el.getBoundingClientRect().top - root.getBoundingClientRect().top,
+      behavior: "smooth",
+    });
+  };
+
+  if (slides.length < 2) return null;
+  const on = active > 0;                          // stays out of the way over the hero
+  return (
+    <>
+      <div className={`ss-deck-rail${on ? " on" : ""}`} aria-hidden={!on}>
+        {slides.map((sl, i) => (
+          <button
+            key={sl.id}
+            type="button"
+            className={`ss-deck-tick${i === active ? " on" : ""}`}
+            onClick={() => jump(i)}
+            aria-label={sl.label}
+            aria-current={i === active}
+            style={{ cursor: "none" }}
+          >
+            <span className="ss-deck-tip">{sl.label}</span>
+          </button>
+        ))}
+      </div>
+      <div className={`ss-deck-count${on ? " on" : ""}`}>
+        <b>{String(active + 1).padStart(2, "0")}</b> / {String(slides.length).padStart(2, "0")}
+      </div>
+    </>
   );
 }
 

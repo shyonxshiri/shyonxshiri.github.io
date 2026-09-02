@@ -362,6 +362,19 @@
         "--strictPort"
       ],
       "port": 5661
+    },
+    {
+      "name": "dev-ghost",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5681",
+        "--strictPort"
+      ],
+      "port": 5681
     }
   ]
 }
