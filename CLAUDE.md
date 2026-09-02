@@ -449,6 +449,79 @@ covers the table top to within a stud on every side. The rest is joined into one
 0.00000 reversed) nor an sRGB conversion (`MB_1` is 0.9047, which read as LINEAR is sRGB 245, i.e.
 LEGO White; read as sRGB it is 231, which is nothing). `scratchpad/piano/export_piano.py`.
 
+**The cave clearing.** `cave.glb`, a LEGO rock cave sunk into a dished stone clearing north of
+the car pad, with a skeleton seated inside it and loose bones scattered round. No portal: it is
+where you become the GHOST (§ below). The ground here is built FROM the cave and not the other way
+round, which is the one idea the whole area rests on: cave.glb is a single material, sRGB
+**#494848**, so the lawn gives way to STONE and the hollow reads as that stone dishing rather than
+as a hole cut in grass. Three earlier cuts read as a T-shaped trench, then a swimming pool, then a
+rock sitting on the floor like an ornament; the notes below are what each one cost.
+**The hollow is a signed distance FIELD, not rectangles.** `hollow(x,z)` is a wobbled ellipse
+(`BOWL_X/Z/R/ZS`) built from the same `wob`/`bank`/`rrect` every grey pad uses. It was two
+axis-aligned rects on straight tile indices, on the theory that a dig has straight sides; nothing
+else in this world has a straight edge, so that was the one thing that read as machined, and from
+above two rects meeting at right angles are a T.
+**`TSTEP` (1.40) IS A WALKABILITY CONSTRAINT, NOT A LOOK.** Depth is `floor(d/TSTEP)` terraces of
+`PIT_RISE` (2) courses, so the terrace index may change by at most ONE between neighbouring tiles
+or the step doubles to 0.567 and goes over `LOWSTEP` 0.35, silently unwalkable. The field's
+gradient is at most the ellipse's 1.35 plus ~0.39 from the wob terms, so a tile crossing moves `d`
+by at most 1.29; 1.40 keeps that under one terrace. An earlier cut wrote depth smoothly in z, put
+two terraces inside one tile row, and the grid skipped one. **Terraced this finely the hollow needs
+NO stair zone**: you walk in and out from any direction, and the cave's was deleted.
+**The back POCKET** (`POCK_*`) drops another 8 courses so the cave is sunk rather than standing on
+the floor. It is graded along z, one terrace per tile row, and it must START where the bowl is
+already at full depth: begun earlier its own mouth is a 0.85 cliff and the cave cannot be walked
+into at all. `POCK_IN` keeps it inside the rim so its walls never fall from open lawn. Verified by
+flood-filling the tile grid from outside, crossing only where the drop is within `LOWSTEP`: all 30
+cave-floor tiles reachable.
+**The plate's north edge was pushed out 10 tiles for it, and THE COUNT MUST BE EVEN.** `tcz(j)` is
+`(j-(NZ-1)/2)*sz+OZ`, so adding k tiles moves `(NZ-1)/2` and `OZ` by half each and they cancel:
+every existing tile keeps its world position. But the far land's stud bump is phase locked through
+`OZ` (`studTex.offset`, `fr((OZ+FAR_H-c0z)/sz)`), which moves by k/2, so an ODD k slips that
+texture half a stud against the real grid across the entire map. Nothing here would catch it.
+**The far-land punch is a HAND TRANSLITERATION of `hollow()` into GLSL and the two must move
+together.** The sheet is one 1600-unit plane that would otherwise floor the hollow in green; it is
+punched by `discard`, and the test SNAPS TO THE TILE first, because plates are laid per tile and a
+per-pixel test discards under the outer sliver of any lawn tile whose centre is outside. A mismatch
+shows as green through the floor or a hairline of void along the lip.
+`scratchpad/verify_hollow.cjs` samples both over ~600k points and asserts zero sign disagreements;
+it has already caught one constant rounded to 14.2167 against 14.21665.
+**The apron does NOT go to the mosaic.** Everywhere else a tile a grey boundary crosses is relaid
+as four 1x1s so the edge steps stud by stud. Against the cave's dark stone every 1x1 that stayed
+green read as a grass chip on rock, scattered through the clearing. A tile the apron touches at all
+is laid whole in stone, and `surfaceAt` samples the TILE the same way or a footstep disagrees with
+what you are standing on. The apron is a BAND off `hollow()` (`APRON_W`), not its own disc: it was
+a separate circle on a different centre and z-scale, so its width ran from six units to nothing.
+**The back wall** closes cave.glb's rear archway, which was open to the lawn beyond. 84 of the
+world's own plates in the cave's colour, tapered at the top to the arch's own silhouette. The
+opening (x 48.35..50.66, floor to y ~0.6) was measured off an elevation of the model,
+`scratchpad/cave/backwall.py`, not eyeballed.
+**The bones.** `skeleton.glb` is ONE file doing two jobs, which is why its seven parts keep their
+names: cloned whole it is the figure seated against that wall, a node at a time it is the loose
+bones. It is 7.8247 tall and **faces +Z**, which is the opposite of what the export's own rotation
+suggests (the yaw lands the face print on Blender -Y, and Y-up writes that as +Z) — the face
+print's bbox is the thing that settles it. `SKEL_S` is the figure's height over the skeleton's.
+**EVERY LOOSE PIECE IS SEATED ON ITS OWN BBOX, measured AFTER the lay rotation.** A cloned part
+carries the place it held in the assembled figure (a skull's geometry is at y 5.54..7.83), so
+without this a skull hangs a body's height in the air and a leg is buried. Each is solid, at its
+OWN height band and not the walk's 0.30..1.5, which measured from y 0 would miss a floor 2 units
+down. None sits in the walk-in corridor (`|x-49.6| < 1.35` past z 25): a solid bone dead centre is
+an obstacle on the one line everyone walks.
+**The ghost.** `ghost.glb`, worn at the seated skeleton with E and rotated with T. It replaces the
+figure ENTIRELY rather than below the neck like the suit, so it needs no collar fit: a ghost has no
+head of its own to keep. What is CUT is read off the geometry, not a name list: anything whose top
+is under `GHOST_CUT` (legs, hips, stud caps) and the SOLID-BLACK head block. The torso, arms and
+hands STAY — stripping every non-milky piece leaves a sheet, not a ghost.
+**Its transparency is set by hand** because every material in the file ships alpha 1: the blend
+mode is Blender's HASHED, which glTF cannot express, exactly as the Aston's glass does, so
+`polish()` leaves it opaque. `GHOST_OP` 0.30. `depthWrite` stays ON: it is one closed shroud, so
+its own back faces are all it can z-fight with.
+**It hangs off `player`, not `figBody`**, because figBody carries the walk (waddle and footfall
+bob) and a floating thing must not inherit those. Its height is eased toward the root's
+(`GHOST_GLIDE`) so terraces pass under it instead of being stepped up. It makes no footsteps, does
+not jump, is exempt from the step rules, and `stepOne` returns early for it so nothing solid stops
+it but the ground.
+
 **The walled garden.** `garden.glb`, a fenced LEGO garden standing out in the woods behind the
 mansion, entered through its brick archway. No portal, no interior: it is scenery you can walk
 into. Holder `(69.08715, -0.1354, 0.7389)`, `rotY` +PI/2, `scale` PITCH/**0.38245**, its OWN
@@ -1124,10 +1197,10 @@ hairpiece without a reload, which is the only way to tune a piece the pane canno
 
 ---
 
-## 6. Current state (2026-08-30)
+## 6. Current state (2026-09-02)
 
-`docs/` is the build output and is NOT current: the super hero, the tentacle removal and the
-walled garden live in `public/` + `src/` only. Build and deploy when Shyon asks (§4).
+`docs/` is the build output and IS current: everything below is committed and live on
+shyonshiri.com. Build and deploy when Shyon asks (§4), staging BOTH the source and `docs`.
 
 The Realm currently has: the four structures and four portals above, the walled garden out in the woods
 behind the mansion (lawn inside and out, no paving, a dirt track in), a bridge over an organic
@@ -1138,7 +1211,9 @@ red/blue/yellow, `PETAL_N` decides how many of a plant's 4 stems flower, and the
 green of its own), organic gravel paths, props (wine-red Porsche with silver rims and a peanut-butter interior, the white Corvette C7 Z06
 parked behind it on the mansion driveway, a black Lamborghini Countach with gold rims on the second
 car pad beside them and a red 1969 Aston Martin DBS parked nose on to its tail, an electric
-piano upstairs in the mansion facing the balcony archway, skull, rat,
+piano upstairs in the mansion facing the balcony archway, the CAVE CLEARING north of the car pad
+(a terraced stone bowl with the cave sunk in a back pocket, a seated skeleton and 22 loose bones,
+and the GHOST behind it), skull, rat,
 Tardis + NABU crystal, pirate chest + money bricks), the day cycle, the render pipeline, the sound layer, the
 title bubbles, mobile touch controls (joystick + jump + contextual pills), and My Lego Super Hero,
 taken off its display in the mansion's upstairs (suit swap + flight). Flight collision is now
@@ -1267,6 +1342,67 @@ The scroll cue under the hero is now the ARROW ALONE; its "The 3D environment" l
   are template strings, so a comment like `` `abs(x)` `` breaks the whole script with a syntax error
   far from the edit. Parse-check with `node -e` after editing a shader.
 
+- **A CAMERA THAT FREEZES MID-PAN IS USUALLY THE PAN RUNNING OUT OF SCREEN**, and that was the one
+  actually being hit. Steering on `clientX` means the yaw is bounded by the physical edge of the
+  display: at `SENS` 0.0065 a full turn is `2*PI/0.0065` = **967 pixels of cursor travel**, so from
+  the middle of a 1512-wide window there is only about **280 degrees** of turn in a single drag
+  before the cursor is pinned against the bezel, `clientX` stops changing, and the camera stops
+  while the hand keeps moving. Let go, re-grab, and it works again, which is exactly what it looks
+  like: an intermittent lock-up.
+  **POINTER LOCK WAS THE FIX AND IT HAS BEEN REMOVED. DO NOT PUT IT BACK.** It shipped, taken on
+  every `pointerdown`, and it cost more than it bought (user, 2026-09-01). A pointer lock is the one
+  thing that makes a browser announce that the pointer is hidden, so that banner appeared on the
+  press and went away on the release of EVERY CLICK. Worse, on Chrome the announcement CHANGES
+  `innerHeight`, which fires `resize`, which reallocates the whole render pipeline: that is where
+  the **BLACK LINES** came from, a stack of them across the middle of the frame and a few above the
+  controls, appearing the moment you clicked and never while you only hovered. Removing the lock
+  removed them, confirmed by Shyon on the live site. Note what that means: the trigger is gone, the
+  underlying fragility on `resize` is a separate thing (see the next entry).
+  **Deferring the lock to the moment a drag nears the edge was built and REJECTED**, so do not
+  reach for that either. A lock needs transient user activation; a `mousedown` grants about five
+  seconds of it and a `mousemove` does NOT renew it, so a slow deliberate pan is refused and
+  silently falls back to the bounded pan. Measured in real Chrome with dispatched input
+  (`scratchpad/lock_why.cjs`): the request fires, `pointerlockerror` comes back, and the pan stops
+  dead at **237.6 degrees**, which is exactly the screen-edge bound.
+  **`EDGE_PAN` is what solves the range now**, and it asks the browser for nothing. While a drag is
+  live and the pointer is inside `EDGE_W` (34px) of a side, the yaw keeps turning that way at up to
+  `EDGE_RATE` (2.6 rad/s), ramped by how far into the margin it has pushed. It is spent in the
+  **FRAME LOOP**, not in `pointermove`, and that is the whole trick: a cursor pinned against the
+  bezel stops firing move events at all, so the frames that need this are exactly the frames with no
+  pointer input in them. Measured: **624.6 degrees** against the old 238, the extra turn happening
+  on frames with nothing dispatched, and it stops the moment the button comes up
+  (`scratchpad/verify_final.cjs`).
+  `looking()` and the `movementX` branch are still in the file and are now unreachable, kept only so
+  a lock arriving from anywhere else would still behave. Nothing calls `requestPointerLock`.
+- **THE BLACK LINES ARE THE AO PASS'S TEXEL, and the pointer lock was never the cause** (fixed
+  2026-09-02). A stack of thin dark rows over any flat surface, ~6px apart at dpr 2, strongest on
+  near ground. `aoMat.uniforms.texel` was set to `1/w,1/h`, the FULL-res texel, on a pass that
+  renders at HALF res, and `texel` is exactly what `normalAt` steps by to take its depth
+  neighbours: the gradient was sampled half an AO texel either side, which with a nearest-filtered
+  depth texture lands back on the SAME texel for some rows and the next one for others. The delta
+  collapses to zero, `axis()` flips to the other side, and the derived normal alternates row by
+  row, straight into the occlusion. `ign()` compounded it: its input reaches ~101 at the bottom of
+  a 2880x1540 buffer, where a float's ulp has grown enough that the per-pixel rotation stops
+  varying between neighbouring rows, so the noise stripes too. Both are fixed (`1/hw,1/hh`, and
+  `mod(gl_FragCoord.xy,64.0)`).
+  **IT IS BROWSER DEPENDENT, WHICH IS WHY IT WAS MISATTRIBUTED.** Chrome's sampling phase hides
+  it; Safari's does not. The earlier session removed the pointer lock, Shyon confirmed on Chrome
+  that the lines were gone, and the note here said the lock was the cause. It was not: the lock's
+  resize simply changed the buffer size, and the stripe pattern with it.
+  **HOW IT WAS FINALLY MEASURED, since the pane has no WebGL and Safari cannot be driven** (its
+  WebDriver needs a password, and screen recording was not granted): a COPY of `lego.html` in
+  `public/` with a harness appended that clicks Enter, pins the hour and the camera, walks
+  `__D.pipe`'s stage flags, and posts `canvas.toDataURL()` to a tiny Node server in the scratchpad
+  (`scratchpad/shotserver.cjs`), opened with `open -a Safari`. `scratchpad/linescan.cjs` and
+  `stripe_metric.cjs` then score the frames (vertical autocorrelation at the stripe period,
+  normalised): AO buffer 18.79 before, 0.39 after; the finished frame 0.37 to 0.01, which is the
+  level with AO switched off entirely. **Delete the copies from `public/` afterwards. They are
+  served publicly.**
+  Two theories were killed on the way and should not be re-run: it is not the AO border band (that
+  is the top and bottom EDGE rows, the wrong place), and it is not a stale `depthTexture` (r128's
+  `setupDepthTexture` re-syncs its dimensions to the target on bind, read out of the vendored
+  build).
+
 **Assets and Blender**
 - **The blend is `~/Desktop/3D Models /My Lego World .blend`** (note the space before the slash,
   and the space before `.blend`), is NOT in git, and was once recovered from the iCloud Trash.
@@ -1355,29 +1491,19 @@ The scroll cue under the hero is now the ARROW ALONE; its "The 3D environment" l
 
 ## 8. Open work
 
-- **`garden.glb` is NOT in the saved blend.** It was exported from the LIVE Blender session, where
-  `LEGO Garden Wizard` had been added but not saved (the session was dirty; the export touched
-  only the selection, which was restored). So `public/assets/garden.glb` is currently the ONLY
-  copy outside that session. If the blend is re-saved it should pick the object up; until then,
-  do not assume a headless open of the saved file can see it.
-- **`aston.glb` is NOT in the saved blend.** `Lego car (1969 Aston Martin DBS)` was added to the
-  LIVE Blender session and the session was still dirty when it was exported, exactly as `garden.glb`
-  was. The export was taken selection-only out of the running session with the user's selection
-  saved and restored and nothing else touched (`is_dirty` was true before and after), so
-  `public/assets/aston.glb` is currently the only copy outside that session. It will be picked up
-  by the next save of the blend; until then a headless open of the saved file cannot see it.
-  Two of its material colours are import defects, shipped as-is on request (see §5).
+- **`garden.glb`, `aston.glb`, `ghost.glb` and `skeleton.glb` are IN the saved blend** as of
+  2026-09-02. All four were exported selection-only from a LIVE session that was already dirty, so
+  for a while the shipped glb was the only copy of each and a headless open of the saved file could
+  not see them. That is no longer true: the blend was saved on request and a separate headless open
+  confirms `LEGO Garden Wizard`, the Aston, `LEGO Ghost (gen002)` and `Lego skeleton` are all in
+  it. Keep the pattern in mind rather than the specific warning: an export taken out of a dirty
+  session exists only in `public/assets` until someone saves.
 - **The garden has never been SEEN in engine.** Placement, orientation, scale, the ground and the
   collision were all verified by measurement and by headless renders (§5), because the pane has no
   WebGL. It has now been pushed out once already (front 60.089 -> 61.937, `BX1` 66 -> 67.7) after
   Shyon said it read far too close to the house, and the concrete apron an earlier pass ringed it
   with was removed at the same time. It cannot go much further east without moving trees: 67.7 is
   0.26 off the nearest trunk.
-- **The super hero has never been SEEN.** The suit fit, the hairpiece seat and the flight rules
-  were all verified by measurement (headless Blender against the real GLBs, plus a standalone GLB
-  parser in a session scratchpad), because the pane has no WebGL. Shyon's eyes are the only
-  check left. `__hero.drop/.trim/.spin/.nudge/.arm/.grow` exist so both fits and the flight arm
-  pose can be dialled live.
 - **The piano upstairs has now been rendered but not PLAYED IN.** Its 2026-09-02 move was verified
   in engine against the loaded model and photographed in headless SwiftShader
   (`scratchpad/up_arch.png`, `up_ghost.png`), which is further than the downstairs placement ever
@@ -1452,66 +1578,6 @@ The scroll cue under the hero is now the ARROW ALONE; its "The 3D environment" l
   the bbox recentre cannot move them; Blender reads that frame as `(x, -z, y)`.
   `scratchpad/verify_tint.js` runs the shipped block against the real geometry in the real vendored
   three.js, on a rotated and scaled holder, and asserts the same 237,902 triangles.
-- **A CAMERA THAT FREEZES MID-PAN IS USUALLY THE PAN RUNNING OUT OF SCREEN**, and that was the one
-  actually being hit. Steering on `clientX` means the yaw is bounded by the physical edge of the
-  display: at `SENS` 0.0065 a full turn is `2*PI/0.0065` = **967 pixels of cursor travel**, so from
-  the middle of a 1512-wide window there is only about **280 degrees** of turn in a single drag
-  before the cursor is pinned against the bezel, `clientX` stops changing, and the camera stops
-  while the hand keeps moving. Let go, re-grab, and it works again, which is exactly what it looks
-  like: an intermittent lock-up.
-  **POINTER LOCK WAS THE FIX AND IT HAS BEEN REMOVED. DO NOT PUT IT BACK.** It shipped, taken on
-  every `pointerdown`, and it cost more than it bought (user, 2026-09-01). A pointer lock is the one
-  thing that makes a browser announce that the pointer is hidden, so that banner appeared on the
-  press and went away on the release of EVERY CLICK. Worse, on Chrome the announcement CHANGES
-  `innerHeight`, which fires `resize`, which reallocates the whole render pipeline: that is where
-  the **BLACK LINES** came from, a stack of them across the middle of the frame and a few above the
-  controls, appearing the moment you clicked and never while you only hovered. Removing the lock
-  removed them, confirmed by Shyon on the live site. Note what that means: the trigger is gone, the
-  underlying fragility on `resize` is a separate thing (see the next entry).
-  **Deferring the lock to the moment a drag nears the edge was built and REJECTED**, so do not
-  reach for that either. A lock needs transient user activation; a `mousedown` grants about five
-  seconds of it and a `mousemove` does NOT renew it, so a slow deliberate pan is refused and
-  silently falls back to the bounded pan. Measured in real Chrome with dispatched input
-  (`scratchpad/lock_why.cjs`): the request fires, `pointerlockerror` comes back, and the pan stops
-  dead at **237.6 degrees**, which is exactly the screen-edge bound.
-  **`EDGE_PAN` is what solves the range now**, and it asks the browser for nothing. While a drag is
-  live and the pointer is inside `EDGE_W` (34px) of a side, the yaw keeps turning that way at up to
-  `EDGE_RATE` (2.6 rad/s), ramped by how far into the margin it has pushed. It is spent in the
-  **FRAME LOOP**, not in `pointermove`, and that is the whole trick: a cursor pinned against the
-  bezel stops firing move events at all, so the frames that need this are exactly the frames with no
-  pointer input in them. Measured: **624.6 degrees** against the old 238, the extra turn happening
-  on frames with nothing dispatched, and it stops the moment the button comes up
-  (`scratchpad/verify_final.cjs`).
-  `looking()` and the `movementX` branch are still in the file and are now unreachable, kept only so
-  a lock arriving from anywhere else would still behave. Nothing calls `requestPointerLock`.
-- **THE BLACK LINES ARE THE AO PASS'S TEXEL, and the pointer lock was never the cause** (fixed
-  2026-09-02). A stack of thin dark rows over any flat surface, ~6px apart at dpr 2, strongest on
-  near ground. `aoMat.uniforms.texel` was set to `1/w,1/h`, the FULL-res texel, on a pass that
-  renders at HALF res, and `texel` is exactly what `normalAt` steps by to take its depth
-  neighbours: the gradient was sampled half an AO texel either side, which with a nearest-filtered
-  depth texture lands back on the SAME texel for some rows and the next one for others. The delta
-  collapses to zero, `axis()` flips to the other side, and the derived normal alternates row by
-  row, straight into the occlusion. `ign()` compounded it: its input reaches ~101 at the bottom of
-  a 2880x1540 buffer, where a float's ulp has grown enough that the per-pixel rotation stops
-  varying between neighbouring rows, so the noise stripes too. Both are fixed (`1/hw,1/hh`, and
-  `mod(gl_FragCoord.xy,64.0)`).
-  **IT IS BROWSER DEPENDENT, WHICH IS WHY IT WAS MISATTRIBUTED.** Chrome's sampling phase hides
-  it; Safari's does not. The earlier session removed the pointer lock, Shyon confirmed on Chrome
-  that the lines were gone, and the note here said the lock was the cause. It was not: the lock's
-  resize simply changed the buffer size, and the stripe pattern with it.
-  **HOW IT WAS FINALLY MEASURED, since the pane has no WebGL and Safari cannot be driven** (its
-  WebDriver needs a password, and screen recording was not granted): a COPY of `lego.html` in
-  `public/` with a harness appended that clicks Enter, pins the hour and the camera, walks
-  `__D.pipe`'s stage flags, and posts `canvas.toDataURL()` to a tiny Node server in the scratchpad
-  (`scratchpad/shotserver.cjs`), opened with `open -a Safari`. `scratchpad/linescan.cjs` and
-  `stripe_metric.cjs` then score the frames (vertical autocorrelation at the stripe period,
-  normalised): AO buffer 18.79 before, 0.39 after; the finished frame 0.37 to 0.01, which is the
-  level with AO switched off entirely. **Delete the copies from `public/` afterwards. They are
-  served publicly.**
-  Two theories were killed on the way and should not be re-run: it is not the AO border band (that
-  is the top and bottom EDGE rows, the wrong place), and it is not a stale `depthTexture` (r128's
-  `setupDepthTexture` re-syncs its dimensions to the target on bind, read out of the vendored
-  build).
 - **The mansion's plate does NOT end at z 7.2845 all the way along.** That is true only of mask row
   e, x 50.72..57.37. Across rows a to d the mask reads '.' at gi 36 AND 37, so the model's plate
   stops at z 6.545 and leaves 0.74 of open ground that the code ground grassed: a green strip 7.4
