@@ -70,9 +70,6 @@
   #snd{width:36px;height:33px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
   #snd svg{width:17px;height:17px;display:block;}
   #snd .x{display:none;} #snd.off .x{display:block;} #snd.off .w{display:none;}
-  /* SUPER HERO POWERS. Two pills that only exist once the chest has been opened: one wears
-     the suit, one takes off. Same pill vocabulary as the sound button beside them, and the
-     lit (yellow) state means the power is currently ON. */
   #fade{position:fixed;inset:0;background:#05070d;opacity:0;pointer-events:none;transition:opacity .45s ease;z-index:40;}
   #fade.on{opacity:1;}
   #prompt{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:25;font-weight:700;font-size:15px;
@@ -759,14 +756,10 @@
   // HU_FROM is 3.30, the top of the ground-floor ceiling: it has to sit ABOVE a hero leap from
   // the ground floor, which clears 2.82, or the upstairs walls would block a jump downstairs.
   const houseUpCells=new Set(), HU_Y0=4.02, HU_Y1=5.25, HU_FROM=3.30;
-  // ── AND WHICH OF THOSE UPPER CELLS ARE THE ROOM, which is what first person triggers on.
-  // Deliberately NOT a hardcoded rectangle: the room is every upper-floor cell with a ROOF over
-  // it, which is exactly what tells it apart from the balcony it opens onto, and it re-derives
-  // itself if the model is ever re-exported or the placement moves. Filled by the mansion loader.
-  // FP_EYE is MEASURED off the figure rather than guessed: the printed face (SOLID-BLACK-FACE)
-  // spans y 1.3184..1.4593 above the player root and the brows sit 1.4501..1.4936 over it, so the
-  // eyes are at 1.43, which is also dead centre of the head brick (1.193..1.653).
-  const houseRoomCells=new Set(), FP_EYE=1.43, FP_RATE=5.0;
+  // ── THE UPSTAIRS IS THIRD PERSON LIKE EVERYWHERE ELSE (user, 2026-09-02). It used to swap
+  // into the figure's own head the moment you crossed the grey archway, off a houseRoomCells set
+  // built by the mansion loader. That is gone, set and all: what the room is FOR now is a ghost
+  // drifting around it, and a ghost seen from behind is the whole point of wearing one.
   // THE CAVE'S ROCK, and why it is not in solidCells. Its flanks deliberately overhang the pit's
   // chamber by about 0.2 on every side, so that the earth wall butts straight into the rock and
   // there is no slot of open floor beside it. Those overhanging cells are UNDER THE LAWN: the
@@ -779,8 +772,6 @@
   // not have blocked anyone standing on it. -0.14 is half a terrace down: clear of the lawn's own
   // 0, true everywhere inside the hollow.
   const caveCells=new Set(), CV_FROM=-0.14;
-  let fpAmt=0;                       // 0 third person, 1 inside his own head; eased, never cut
-  const fpOn=()=>fpAmt>0.5;
   // FLIGHT COLLISION IN THREE DIMENSIONS. solidCells is rasterized at ground body height alone,
   // so above 1.5 a wall stops being a wall and the grid says nothing useful the moment the hero
   // leaves the ground. That used to be patched with ONE number per building, its bbox top, and
@@ -959,10 +950,6 @@
   // some loader rasterized and the open tile plate is not one of them.
   const CAM_CLEAR=0.5;
   function camFloorY(x,z,y){ const g=surfaceBelow(x,z,y+0.3); return (g===null?groundY(x,z):g)+CAM_CLEAR; }
-  // Standing in the mansion's upstairs ROOM, as against out on its balcony. The height gate is
-  // what keeps the ground floor in third person: the room's floor is 3.714 and HU_FROM is 3.30,
-  // while downstairs the player stands at 0.
-  function inRoom(){ return player.position.y>HU_FROM && houseRoomCells.has(floorKey(player.position.x, player.position.z)); }
   function surfaceBelow(x,z,maxY){ const cx=Math.floor(x/OCS), cz=Math.floor(z/OCS); let best=null;
     for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++){ const a=floorH.get((cx+dx)*100003+(cz+dz)); if(!a) continue;
       for(let i=0;i<a.length;i++){ const s=a[i]; if(s<=maxY+0.02 && (best===null||s>best)) best=s; } }
@@ -2483,7 +2470,7 @@
   }
   const heroWait={legs:false, hair:false, suit:false, hairPiece:false, head:false};
   const civMeshes=[], heroMeshes=[];
-  let heroOn=false, heroUnlocked=false;   // deliberately NOT persisted: the chest has to be found again every visit
+  let heroOn=false, heroUnlocked=false;   // deliberately NOT persisted: the suit has to be found again every visit
 
   // HAIR PIECE CONSTANTS, all measured off hero_hair.glb itself (inward-facing faces about the
   // cavity axis, so hanging locks near the axis cannot be mistaken for the socket wall):
@@ -2847,7 +2834,7 @@
     // captured at one moment, so no future reparenting can strand a piece as permanently visible.
     civMeshes .forEach(o=>{ o.userData.civPart =true; });
     heroMeshes.forEach(o=>{ o.userData.heroPart=true; o.userData.civPart=false; });
-    wearHero(false);                       // built, but the chest still has to be opened
+    wearHero(false);                       // built, but the suit still has to be found upstairs
     window.__hero={ get on(){return heroOn}, get unlocked(){return heroUnlocked},
       get flying(){return flying},
       wear:wearHero, fly:setFly,
@@ -3133,6 +3120,28 @@
     if(!ghostOn && heroUnlocked) wearHero(heroOn);        // put back whatever he was wearing
     if(ghostOn && flying) setFly(false);
     syncPowerHUD();
+  }
+  // ── AND PUTTING THE SUIT ON HANDS THE GHOST BODY BACK TO THE BONES (user, 2026-09-02). It is
+  // not merely taken off: it is RETURNED, so ghostUnlocked goes with it and the seated skeleton
+  // is once again the only place a ghost can be had. That is the whole reason the two unlocks are
+  // separate props. A ghost is how you get up to the suit in the first place, since the upstairs
+  // has no stairs and a civilian cannot fly, so the trade is the shape of the thing: you give the
+  // shroud back at the moment you take the armour.
+  // It is deliberately NOT symmetric. Taking the SUIT off with T leaves the suit yours, because
+  // the suit's own display is one-shot and there would be nowhere to fetch it from; the bones sit
+  // in the cave and can always be gone back to.
+  function returnGhostBody(){
+    if(!ghostOn) return false;
+    wearGhost(false);
+    ghostUnlocked=false;          // back with the bones, and the bones are where it is fetched from
+    return true;
+  }
+  // the one door the suit goes on through, so the handback can never be routed around
+  function suitOn(){
+    const gave=returnGhostBody();
+    wearHero(true);
+    if(typeof suitOnSfx==='function') suitOnSfx();
+    return gave;
   }
   // IT FLOATS AND IT HAS NO LEGS (user, 2026-09-01), and the two are one idea: a ghost that keeps
   // its legs and bobs along on them is a man in a sheet.
@@ -3425,15 +3434,6 @@
     // and the barriers up there, at upstairs body height, exactly as the ruins' balcony railing
     // is done. This is what makes the upstairs a room: its walls, the glass, and the parapet.
     rasterizeSolid(houseHolder, houseUpCells, HU_Y0, HU_Y1, true);
-    // ── and the ROOM, for first person. A cell counts if it carries upper floor AND has a roof
-    // over it. ceilUnder() is the flight column's top, already built by the ground rasterize's
-    // vox pass above: under the mansion's roof it reads 6.7 and over the open balcony it reads
-    // the parapet at 4.5, so 6.0 separates them with room to spare. Measured over the loaded
-    // model's own box, so nothing here is a coordinate anybody has to maintain.
-    { const rb=new THREE.Box3().setFromObject(houseHolder);
-      for(let x=rb.min.x; x<=rb.max.x+1e-6; x+=OCS) for(let z=rb.min.z; z<=rb.max.z+1e-6; z+=OCS){
-        const sf=surfaceBelow(x,z,5.0); if(sf===null||sf<3.5||sf>4.0) continue;
-        const tp=ceilUnder(x,z); if(tp!==null && tp>6.0) houseRoomCells.add(floorKey(x,z)); } }
     // If the glb ever carries grass of its own again, the ground takes its exact LegoGreen so
     // the two match seamlessly. The current model has no green: its yard plates were pulled out
     // to leave room for the world's greenery, so the grass keeps its own LegoGreen constant.
@@ -4391,6 +4391,11 @@
       // in the balcony grid instead, and only there (never in the ground grid underneath it).
       if(cfg.solidUp){ holder.updateWorldMatrix(true,true);
         rasterizeSolid(holder, ruinsUpCells, UP_Y0, UP_Y1, true); }
+      // solidHouseUp: the same thing one building over, for a prop standing in the MANSION'S
+      // upstairs room. Same band the room's own walls are rasterized at (HU_Y0..HU_Y1), and
+      // `only` again, so the hall directly underneath stays clear.
+      if(cfg.solidHouseUp){ holder.updateWorldMatrix(true,true);
+        rasterizeSolid(holder, houseUpCells, HU_Y0, HU_Y1, true); }
       if(cfg.onload) cfg.onload(holder,m);
     }, undefined, e=>console.warn(url+' load failed', e));
     return holder;
@@ -4944,39 +4949,40 @@
   // fixWinding either. Both were checked against the shipped file, not assumed.
   loadProp('./assets/garden.glb',  {name:'garden',  pos:[69.08715,0.7389], y:-0.1354,
     rotY:Math.PI/2, scale:PITCH/0.38245, solid:true});
-  // ── THE ELECTRIC PIANO, standing in the mansion's LIVING ROOM with its back against the wall
-  // the entrance porch is on the other side of, i.e. the one under the black canopy roof where
-  // the door and the walkway are. That wall runs x 47.678..51.374 along the north edge of the
-  // room and its living-room face is at z -2.35569, measured off the loaded model; the big west
-  // window (z -6.011..-2.344, y 0.737..2.511) dies straight into it, so the piano stands just
-  // past the glass. Between the west wall's inner face (x 48.4585) and the wall's own east end
-  // there are 2.916 units of wall to stand against, and past that end the room opens north.
+  // ── THE ELECTRIC PIANO, STANDING IN THE MANSION'S UPSTAIRS ROOM, ACROSS FROM THE GREY ARCHWAY
+  // (user, 2026-09-02). It used to stand in the living room downstairs, against the wall the
+  // entrance porch is on the other side of. It is now in the room you reach off the balcony, on
+  // the far side of it, facing back at the arch you came in through.
   //
-  // SIZE. It is NOT shipped at its own stud pitch, and both measurements that decide that were
-  // taken rather than eyeballed. Its lattice is 0.1855, the nearest-neighbour distance over the
-  // stud centres on four separate horizontal layers of the build (55, 49, 72 and 40 of them, all
-  // four returning the same number), which makes it a 12x6 stud table carrying a 10x4 keyboard,
-  // 22 plates tall. Scaled to PITCH that is 4.433 wide against 2.916 of wall, so it does not fit
-  // the wall it was asked to stand on, and 2.742 tall with its playing surface at y 2.00 against
-  // a figure whose head tops out at 1.770: the keys would sit above the minifig's head. At
-  // 1.0800247 it is 2.402 x 1.487 x 1.200, the keys land at y 1.188, chest height on the figure,
-  // and 0.22 of wall is left clear at one end and 0.30 at the other. Its rendered stud is then
-  // 0.2003, 0.54 of PITCH; the cars already render theirs at 0.78, so a prop carrying its own
-  // brick scale is the rule in the Realm rather than an exception to it.
+  // EVERY BOUND HERE IS MEASURED OFF THE LOADED MODEL, not off the occupancy grid, which is
+  // quantised to OCS and reads the same wall a tenth of a unit early (`scratchpad/room_probe3`,
+  // `room_probe5`). The room's east wall is LegoWhite brick and its inner face is x 56.4322. The
+  // ARCHWAY is the gap in the west wall, z -5.217..-3.104 (2.113, about 5.7 studs), so the middle
+  // of the doorway is z -4.1605 and the piano stands opposite it against the far wall.
   //
-  // WHY THAT EXACT NUMBER. loadProp snaps the holder to the world stud grid, which quantises z
-  // by a whole PITCH, and the mansion's own brick grid is a fraction of a stud out of phase with
-  // that grid, so "back flush against the wall" is not a position that can be typed in. It is
-  // solved backwards instead: at pos z -8*PITCH = -2.9556 the back face lands on the wall face
-  // exactly when the depth is 2*(2.9556-2.35569) = 1.19982, which on a model 1.110919 deep is a
-  // scale of 1.0800247. The scale is the free variable and the flush back is the constraint.
-  // x is 135*PITCH = 49.87575, the grid stud nearest the middle of the wall run.
-  // y is the floor's PLATE TOP, -0.0931, and not its stud tips at 0.0032: the mansion's wooden
-  // floor is studded plates, and a LEGO piece rests its underside on the plate and swallows the
-  // studs, which is the same reason the garden's fence is seated on plateTop.
-  // rotY PI turns the keys, which face the model's own +Z, round to -Z and into the room.
-  // solid rasterizes it from its real triangles, so you walk into the table rather than through
-  // it; it stays out of camCell, being furniture and not a building.
+  // SIZE IS UNCHANGED, and deliberately so: 1.0800247 was solved against the FIGURE (at its own
+  // stud pitch the build is 2.742 tall with its keys at y 2.00, over the head of a minifig that
+  // tops out at 1.770; at this scale the keys land 1.188 above its feet, chest height) and that
+  // fit is approved. What the old scale ALSO did was land the back face exactly on the downstairs
+  // wall, since the holder is snapped to the world stud grid and the scale was the free variable.
+  // That constraint cannot be re-solved here without giving up the approved size: the grid stud
+  // nearest this wall is 151*PITCH = 55.78695, and flushness there would need scale 0.9597, an
+  // 11% shrink. So the size wins and the piano stands 0.045 off the brick, which is an eighth of
+  // a stud and the closest the stud grid comes.
+  //   x  151*PITCH = 55.78695. Depth is 1.19982 (1.110919 x 1.0800247), so the back face lands at
+  //      56.38686 against the wall's 56.4322.
+  //   z  -11*PITCH = -4.06395, the grid stud nearest the archway's own centre, 0.097 off it. The
+  //      piano is 2.402 wide, so it spans -5.265..-2.863 and reads across the whole doorway.
+  //   y  3.6852. The upper floor is built exactly as the ground floor is (plate top 3.7144, stud
+  //      tips 3.7815, so a 0.0671 stud; downstairs the pair is -0.0640 and 0.0032, the same 0.0672),
+  //      and 3.6852 is its stud tips less the same 0.0963 the approved downstairs seat used. A
+  //      LEGO piece rests its underside on the plate and swallows the studs.
+  //   rotY -PI/2 carries the keys, which face the model's own +Z, round to world -X: they look
+  //      west, back through the archway and out at the balcony.
+  // Headroom: the piano is 1.487 tall, so it tops out at 5.172 under a 6.17 ceiling.
+  // solidHouseUp, not solid: cfg.solid rasterizes at GROUND body height, where this prop no
+  // longer exists, so it would have been walk-through up here and would have gone on blocking the
+  // living room it left. This puts it in houseUpCells, the upstairs grid, and only there.
   //
   // The export (scratchpad/piano/export_piano.py) DROPS the floating headphones the build ships
   // with: four MB_26 islands standing in mid air 0.47 beside the table at y 0.285..0.595, with
@@ -4985,8 +4991,8 @@
   // It needs neither fixWinding (all 9 meshes score 0.00000 reversed) nor an sRGB conversion
   // (MB_1 is 0.9047, which read as LINEAR is sRGB 245, i.e. LEGO White; read as sRGB it is 231,
   // which is nothing). Both were checked against the shipped file.
-  loadProp('./assets/piano.glb',   {name:'piano',   pos:[49.87575,-2.9556], y:-0.0931,
-    rotY:Math.PI, scale:1.0800247, solid:true});
+  loadProp('./assets/piano.glb',   {name:'piano',   pos:[55.78695,-4.06395], y:3.6852,
+    rotY:-Math.PI/2, scale:1.0800247, solidHouseUp:true});
   // Skull on the ground left of the ruins doorway, against the wall, face out. Same size as the figure's head, stamped in.
   // ── THE SUIT ON DISPLAY, standing in the upstairs room's NORTH-EAST GLASS CORNER (user,
   // 2026-09-01). It used to be a chest behind the cottage, found by wandering; it is now a thing
@@ -5233,7 +5239,7 @@
     {t:'Moskowite Corner', c:'#f97316', img:'./assets/RealEstate_MoskowiteCorner_Concept.jpg', year:2026, desc:'An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references.',
       mainLabel:'Concept', extras:[{img:'./assets/RealEstate_MoskowiteCorner_Before.png', label:'Existing site'}]} ];
   const ABOUT=[
-    {t:'Who I Am', c:'#38bdf8', img:'./assets/Shyon_About.png', desc:'I\'m a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. That range started in childhood with LEGO builds and stop motion films, and it became a working habit: learn the tools each project requires and use them properly.'},
+    {t:'About Me', c:'#38bdf8', frame:'#05131D', img:'./assets/Shyon_About.png', desc:'I\'m a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. That range started in childhood with LEGO builds and stop motion films, and it became a working habit: learn the tools each project requires and use them properly.'},
     // These two used to be the only imageless panels in any portal, so they showed as a bare
     // coloured tile with a title. The resume preview is the PDF's own first page rendered out and
     // padded to the panel's exact 2.15:2.70 so nothing is cropped; the contact card is drawn to
@@ -5249,11 +5255,14 @@
     {t:'NABU 2023 Spring Collection', c:'#ff7ac2', img:'./assets/Stevie_Pic.JPG', year:2022, desc:'Portrait photography for the NABU 2023 spring collection.'},
     {t:'NABU 2024 Rerelease Promotion', c:'#8b5cf6', img:'./assets/Digital_Media_Cover.jpg', year:2024, desc:'Promotional campaign for the 2024 rerelease of NABU\'s Persian rug pants.'} ];
   let mode='hub', fading=false, viewerOpen=false, nearPortal=null, activePortal=null, camAnim=null;
-  // ── THE CHEST behind the run-down house. Walk up to it and it offers an inspect; taking it
-  // sends you back to the spawn point. This is the interaction end to end, with nothing wired to
-  // the payoff yet: it is the hook a future add-on hangs off.
-  let nearChest=false;
-  // ── THE SEATED SKELETON is the ghost's unlock, the way the chest is the suit's. Its radius is
+  // ── THE CHEST BEHIND THE RUN-DOWN HOUSE IS SCENERY NOW (user, 2026-09-02). It was where the
+  // suit was unlocked and where it was changed back; the suit stands on its own display in the
+  // mansion's upstairs and is taken there, so the chest was offering a second copy of a thing
+  // that already has a home. The PROP stays exactly where it is, lid open, money bricks and all.
+  // What is gone is chestAt/inspectChest, its E prompt, and its touch button.
+  // ── THE SEATED SKELETON is the ghost's unlock, the way the display upstairs is the suit's. It
+  // is now the ONLY unlock you have to go and find on foot, and it is also where the ghost body
+  // is handed back when the suit goes on (see returnGhostBody). Its radius is
   // generous because it sits at the back of the cave under a low arch: you cannot get far from it
   // and still be looking at it, and a tight circle in there is a prompt that flickers.
   let nearBones=false;
@@ -5307,55 +5316,36 @@
     suitTaken=true;
     if(window.__suitDisplay) window.__suitDisplay.visible=false;
     heroUnlocked=true;
-    wearHero(true);
-    if(typeof suitOnSfx==='function') suitOnSfx();
-    heroMsg='Suit on. <b>T</b> to take it off.'; heroMsgT=3.4;
+    const gave=suitOn();
+    heroMsg = gave ? 'Suit on. The ghost is back with the bones.'
+                   : 'Suit on. <b>T</b> to take it off.';
+    heroMsgT=3.4;
   }
 
   // ── T IS THE OUTFIT ROTATION (user, 2026-09-01). It used to be a two-way toggle for the suit;
   // with a third body it steps round whatever is UNLOCKED instead, civilian to suit to ghost and
-  // back. Unlocking is unchanged and still happens at the two props: the chest for the suit, the
-  // seated skeleton for the ghost, and E at either of them still works exactly as it did, so
-  // "Rise" and "Return" are untouched. What T does is save you the walk back.
-  // A body you have not unlocked is simply not in the ring, so on a cold load T does nothing.
+  // back. Unlocking still happens at the two props: the suit on its display in the mansion's
+  // upstairs, the seated skeleton in the cave for the ghost, and E at either of them works
+  // exactly as it did, so "Rise" and "Return" are untouched. What T does is save you the walk.
+  // A body you have not unlocked is simply not in the ring, so on a cold load T does nothing, and
+  // once the suit is on the GHOST leaves the ring too, because it has been handed back.
   function outfitRing(){ const r=['civ'];
     if(heroUnlocked && heroMeshes.length) r.push('hero');
     if(ghostUnlocked && ghostRoot) r.push('ghost');
     return r; }
   function wearOutfit(w){
     if(w==='ghost'){ wearGhost(true); return; }
+    if(w==='hero'){ suitOn(); return; }      // and the shroud goes back to the bones on the way
     if(ghostOn) wearGhost(false);
-    wearHero(w==='hero');
+    wearHero(false);
   }
   function cycleOutfit(){
     if(mode!=='hub') return;
     const r=outfitRing(); if(r.length<2) return;
     const cur=ghostOn?'ghost':(heroOn?'hero':'civ');
     const nxt=r[(r.indexOf(cur)+1)%r.length];
-    wearOutfit(nxt);
-    if(nxt==='hero' && typeof suitOnSfx==='function') suitOnSfx();
+    wearOutfit(nxt);                         // suitOn() sounds the plates for 'hero'
     say(nxt==='ghost'?'Ghost':nxt==='hero'?'Suit on':'Suit off', 2.0);
-  }
-  const CHEST_R=2.4;
-  function chestAt(x,z){ const c=window.__props&&window.__props.chest; if(!c) return false;
-    return Math.hypot(x-c.position.x, z-c.position.z) < CHEST_R; }
-  function inspectChest(){
-    if(!heroMeshes.length) return;                    // the suit has not finished loading yet
-    if(typeof zap==='function') zap(0.26);            // it goes off in your hands
-    if(!heroUnlocked){
-      heroUnlocked=true;
-      wearHero(true);
-      // A status line, not a control panel. The hint bar underneath has already swapped to the
-      // suit's own version and lists F and T, so saying them again here is the second controls
-      // centre all over again. Touch keeps the longer line: `.hint` is display:none there.
-      suitOnSfx();
-      say(IS_TOUCH ? 'Suit unlocked. JUMP to take off, back to the chest to change.' : 'Suit unlocked', 2.6);
-    } else {
-      wearHero(!heroOn);
-      if(heroOn) suitOnSfx();
-      say(heroOn ? 'Suit on' : 'Suit off', 2.4);
-    }
-    syncPowerHUD();
   }
   const camLook=new THREE.Vector3(0,0.95,0);
 
@@ -5377,6 +5367,12 @@
   const PGAP=4.4;    // horizontal spacing between panel centers (frames are 2.67 wide, so ~1.7 of air between them)
   function buildPanels(projects){ const group=new THREE.Group(); const panels=[];
     projects.forEach((p,i)=>{ const n=projects.length, W=2.15,Hh=2.7,fr=0.26, mat=plastic(p.c,0.4), back=plastic(0x0c1120,0.6);
+      // A PINNED FRAME MUST BE CONVERTED, and this bit twice. r128's Color.set() takes a hex
+      // string as a LINEAR value and the renderer then encodes to sRGB on the way out, so real
+      // LEGO Black #05131D handed over raw renders as a dark STEEL BLUE, (39,76,94), which is
+      // exactly what the first attempt at this put on screen. strongColor() below already ends in
+      // convertSRGBToLinear() for the same reason; a pin has to do it too.
+      if(p.frame) mat.color.set(p.frame).convertSRGBToLinear();
       const g=new THREE.Group();
       g.add(new THREE.Mesh(new THREE.BoxGeometry(W,Hh,0.18),back));
       const barH=new THREE.BoxGeometry(W+fr*2,fr,0.34), barV=new THREE.BoxGeometry(fr,Hh,0.34);
@@ -5422,7 +5418,13 @@
         const pa=2.15/2.7, ia=tx.image.width/tx.image.height;
         if(ia>pa){ tx.repeat.set(pa/ia,1); tx.offset.x=(1-pa/ia)/2; } else { tx.repeat.set(1,ia/pa); tx.offset.y=(1-ia/pa)/2; }
         const m=g.userData.media; m.material.map=tx; m.material.needsUpdate=true;
-        if(g.userData.frameMat) g.userData.frameMat.color.copy(strongColor(tx.image));   // frame matches the cover's strongest color
+        // The frame takes the cover's strongest colour, UNLESS the project pins one. `frame` is
+        // that pin, and it exists because "strongest colour" is the right answer for a poster and
+        // the wrong one for a PORTRAIT: measured with the shipped strongColor against the real
+        // file, Shyon_About.png returns #3f1e11, i.e. hair and skin, so the About panel wore a
+        // brown border (the other two ABOUT covers give #9e9e9e and #22262e). It is real LEGO
+        // Black now (user, 2026-09-02). Set as sRGB, because plastic() reads a hex the same way.
+        if(g.userData.frameMat && !p.frame) g.userData.frameMat.color.copy(strongColor(tx.image));
       }, undefined, e=>console.warn('panel image failed', p.img)); }); }
   const PORTALS={
     professional:{ label:'Professional Services', projects:PROFESSIONAL, cells:shopCells, zone:(x,z)=>shopPad(x,z,0.2),   // the WHOLE grey pad prompts, patio included, not just arm's reach of a wall
@@ -6085,8 +6087,9 @@
     gb.gain.exponentialRampToValueAtTime(vol*0.55,t+0.09); gb.gain.exponentialRampToValueAtTime(0.0004,t+dur*0.9);
     o.connect(gb).connect(ambBus); o.start(t); o.stop(t+dur); }
 
-  // ── ELECTRIC ARC. The Easter egg's only tell: something in the chest behind the run-down house
-  // is still live. Three or four crackling bursts over half a second, each a highpassed noise
+  // ── ELECTRIC ARC. Something behind the run-down house is still live. It was the Easter egg's
+  // tell while the suit was unlocked at the chest; the chest is scenery now and this is kept as
+  // the derelict's own noise. Three or four crackling bursts over half a second, each a highpassed noise
   // snap over a detuned square pair with the pitch jittering, under a low thrum. Deliberately
   // short and dry so it reads as a spark, not a machine.
   // TAKE-OFF: the scuff of the boots leaving the plate, a low thump under it for the push, and a
@@ -6247,7 +6250,9 @@
     if(creakTimer<=0){ creakTimer=7+Math.random()*10;
       const v=fall(nearRect(RDH_RECT,px,pz),1.5,24);
       if(v>0.05 && mode==='hub') creak(0.055*v); }
-    // THE CHEST'S ARC. The countdown runs all the time, but it only ever FIRES while you are
+    // THE ARC ON THE APPROACH. It was the Easter egg's tell while the suit lived in the chest;
+    // the chest is scenery now, so this is simply the run-down house's own crackle and it is kept
+    // for that. The countdown runs all the time, but it only ever FIRES while you are
     // standing on the approach in front of the run-down house, so the sound belongs to that spot
     // and is never heard anywhere else. Miss the window and it comes back round in a few seconds
     // rather than making you wait another two minutes.
@@ -6270,7 +6275,6 @@
     if(k==='r'){ location.href='/'; return; }
     if(k==='m'){ toggleSnd(); say(sndOn?'Sound on':'Sound off',1.8); return; }
     if(k==='e'){ if(mode==='hub' && nearPortal && !fading) enterPortal(nearPortal);
-      else if(mode==='hub' && nearChest && !fading) inspectChest();
       else if(mode==='hub' && nearBones && !fading) inspectBones();
       else if(mode==='hub' && nearSuit && !fading) takeSuit(); return; }
     if(k==='t'){ cycleOutfit(); return; }
@@ -6306,8 +6310,14 @@
   // FIRST PERSON opens the same upward range flight does, and for the same reason: indoors you
   // have to be able to look up, and a range that has nearly doubled needs the matching
   // sensitivity or a sweep of the ceiling costs twice the drag the same sweep costs outside.
-  const pitchSens=()=>SENS*((flying||fpOn())?PITCH_FLY_SENS:1);
-  const clampPitch=v=>Math.max((flying||fpOn())?PITCH_UP:0.06, Math.min(1.2, v));
+  // A GHOST GETS FLIGHT'S RANGE TOO, and for flight's own reason. On foot the aim may only ever
+  // look DOWN, which is right for a walker and wrong for a body whose whole vertical is Space and
+  // Shift: rising into the mansion's upstairs with the camera pinned below the horizon is being
+  // unable to see where you are going. The sensitivity has to come with the range or the same
+  // sweep costs twice the drag (see PITCH_FLY_SENS), so the two conditions are always the same one.
+  const lookUp=()=>flying||ghostOn;
+  const pitchSens=()=>SENS*(lookUp()?PITCH_FLY_SENS:1);
+  const clampPitch=v=>Math.max(lookUp()?PITCH_UP:0.06, Math.min(1.2, v));
   // ══ THE LOOK DRAG ═════════════════════════════════════════════════════════════════════════
   // A pan that stops dead while the button is still down has TWO causes and they are unrelated.
   //
@@ -6482,7 +6492,6 @@
     btnDown.addEventListener('touchend',dnEnd,{passive:false}); btnDown.addEventListener('touchcancel',dnEnd,{passive:false});
     btnAct.addEventListener('touchstart',e=>{ e.preventDefault();
       if(mode==='hub'&&nearPortal&&!fading) enterPortal(nearPortal);
-      else if(mode==='hub'&&nearChest&&!fading) inspectChest();
       else if(mode==='hub'&&nearBones&&!fading) inspectBones();
       else if(mode==='hub'&&nearSuit&&!fading) takeSuit(); },{passive:false});
     btnBack.addEventListener('touchstart',e=>{ e.preventDefault(); if(viewerOpen) closeViewer(); else if(mode==='menu'&&!fading) exitPortal(); },{passive:false});
@@ -6641,9 +6650,11 @@
     if(hintEl){ const want = flying ? HINT_FLY : (ghostOn ? HINT_GHOST
       : (heroOn ? HINT_SUIT : (heroUnlocked ? HINT_SUITOFF : HINT_WALK)));
       if(hintEl.innerHTML!==want) hintEl.innerHTML=want; }
-    // No HUD pills left: the hint line carries T and F, and touch, which has no keyboard and no
-    // hint line, changes the suit back at the CHEST, which already offers it. The jump pad is
-    // touch's take-off, so it says what it will do next.
+    // No HUD pills left: the hint line carries T and F. TOUCH has neither a keyboard nor a hint
+    // line, and since the chest stopped offering the suit it has no way to change outfit at all
+    // once the suit is taken: the display it came off is one-shot, and the bones only ever offer
+    // the ghost. Flagged rather than patched with a new button, which was not asked for.
+    // The jump pad is touch's take-off, so it says what it will do next.
     // The ghost has no jump for the pad to fire, so on touch the pad is its RISE and the second
     // pad its sink, which is the same pair of buttons flight already uses and the only guidance
     // a phone gets (`.hint` is display:none there).
@@ -6659,19 +6670,9 @@
     // camera move is never fought.
     if(edgePan && drag && mode==='hub' && !fading && !camAnim) camYaw -= edgePan*EDGE_RATE*dt;
     if(flying && mode!=='hub') setFly(false);   // a portal is entered on foot
-    // ── FIRST PERSON. Step through the grey archway off the mansion's balcony and the camera
-    // moves into his head. The trigger is THE ROOM, not the doorway: houseRoomCells is every
-    // upper-floor cell with a roof over it, so crossing the arch is itself the trigger and there
-    // is no threshold to get caught straddling, from any direction and at any angle.
-    const fpWant=(mode==='hub' && !fading && inRoom())?1:0;
-    fpAmt += (fpWant-fpAmt)*Math.min(1, dt*FP_RATE);
-    if(fpAmt<0.002) fpAmt=0; else if(fpAmt>0.998) fpAmt=1;
-    // he is inside his own head now, so the body comes off. Hub mode only: entering and leaving a
-    // portal owns this flag either side of that, and must not be fought for it.
-    if(mode==='hub' && !fading) figBody.visible = fpAmt<0.6;
-    // ...and the aim is NOT eased back down while first person holds the wider range open, or the
-    // camera would sag to the floor every time you stopped dragging indoors.
-    if(!flying && !fpOn() && camPitch<0.06) camPitch+=(0.06-camPitch)*Math.min(1,dt*5);   // ease the aim back down after landing
+    // ...and the aim is NOT eased back down while the wider range is open, or the camera would
+    // sag to the floor every time you stopped dragging.
+    if(!lookUp() && camPitch<0.06) camPitch+=(0.06-camPitch)*Math.min(1,dt*5);   // ease the aim back down after landing
     // ── AND THE TAKE-OFF LEVELS IT. On foot the camera may only ever look DOWN, so it is resting
     // somewhere around 0.24 the moment he leaves the ground, and "W flies where you look" then
     // means W flies into the plate: measured, 2.09 units a second of sink, which from a launch
@@ -6735,11 +6736,18 @@
     // A GHOST DOES NOT STEP, so none of the step rules are its (user, 2026-09-01). MAXSTEP and
     // LOWSTEP exist to stop a walker climbing rubble and to make the staircases the only way up;
     // a thing that drifts a third of a unit clear of the ground has no business being told how
-    // tall a kerb is. It gets the whole surface below it at any height, which is what "hovers
-    // over everything" means: terraces, steps and the cave's own terracing all pass under it.
-    // It is deliberately NOT flight: gravity still holds it to the ground's shape, it simply
-    // never has to climb onto anything.
-    const climb=ghostOn ? 1e9 : (inStair(player.position.x,player.position.z)?MAXSTEP:LOWSTEP);   // big steps only on the real stairs
+    // tall a kerb is. It gets the STAIRCASE allowance everywhere instead, so terraces, kerbs,
+    // steps and the cave's own terracing all pass under it wherever it drifts.
+    // IT IS BOUNDED, AND IT USED TO BE 1e9, WHICH IS A DIFFERENT THING ENTIRELY (user,
+    // 2026-09-02). surfaceBelow takes the highest surface up to its limit, so an unbounded limit
+    // does not mean "the ground under it" at all, it means "the highest floor anywhere in this
+    // cell". Measured before the change: a ghost that drifted into the mansion's ground floor
+    // was SNAPPED to 3.782, the upper storey, instantly and from any direction, and could not be
+    // downstairs at all. MAXSTEP 1.55 is the largest single step the Realm has and is well under
+    // a storey (the mansion's upper floor is 3.78 over its hall, the ruins' deck 3.33 over its
+    // floor), so every step still passes under it and no floor above it ever reaches down.
+    // Nothing becomes unreachable: going UP is Space, which is what the vertical is for.
+    const climb=ghostOn ? MAXSTEP : (inStair(player.position.x,player.position.z)?MAXSTEP:LOWSTEP);   // big steps only on the real stairs
     let gy=surfaceBelow(player.position.x, player.position.z, player.position.y+(grounded?climb:0.12));
     if(gy===null) gy=groundY(player.position.x, player.position.z);   // open ground: the lawn's 0, or the cave pit's own step/floor
     ghDrive=0;                                       // nothing of this frame's height is the ghost's until it says so
@@ -7104,9 +7112,8 @@
     if(!fading){
       nearPortal = (mode==='hub') ? portalAt(player.position.x, player.position.z, player.position.y) : null;
       frontDoorPush(dt);
-      nearChest = (mode==='hub' && !nearPortal) ? chestAt(player.position.x, player.position.z) : false;
-      nearBones = (mode==='hub' && !nearPortal && !nearChest) ? bonesAt(player.position.x, player.position.z) : false;
-      nearSuit  = (mode==='hub' && !nearPortal && !nearChest && !nearBones)
+      nearBones = (mode==='hub' && !nearPortal) ? bonesAt(player.position.x, player.position.z) : false;
+      nearSuit  = (mode==='hub' && !nearPortal && !nearBones)
         ? (suitAt(player.position.x, player.position.z) && Math.abs(player.position.y-3.714)<1.2) : false;
       let msg='';
       if(heroMsgT>0){ heroMsgT-=dt; }
@@ -7118,16 +7125,15 @@
           ? 'Click a project &nbsp;·&nbsp; Drag or scroll to browse &nbsp;·&nbsp; <b>Q</b> to leave'
           : 'Click a project &nbsp;·&nbsp; <b>Q</b> to leave');
       else if(nearPortal) msg=IS_TOUCH ? 'Enter' : 'Press <b>E</b> &nbsp;·&nbsp; Enter';   // the place's NAME is on its title bubble now
-      else if(nearChest) msg = heroUnlocked
-        ? (IS_TOUCH ? 'Suit' : 'Press <b>E</b> &nbsp;·&nbsp; Suit')
-        : (IS_TOUCH ? 'Open' : 'Press <b>E</b> &nbsp;·&nbsp; Open');
       else if(nearSuit) msg = IS_TOUCH ? 'Take the suit' : 'Press <b>E</b> &nbsp;·&nbsp; Take the suit';
       else if(nearBones) msg = ghostOn
         ? (IS_TOUCH ? 'Return' : 'Press <b>E</b> &nbsp;·&nbsp; Return')
         : (IS_TOUCH ? 'Rise' : 'Press <b>E</b> &nbsp;·&nbsp; Rise');
       if(msg){ promptEl.innerHTML=msg; promptEl.classList.add('on'); } else promptEl.classList.remove('on');
-      if(IS_TOUCH){ btnAct.classList.toggle('on', mode==='hub'&&(!!nearPortal||nearChest));
-        btnAct.textContent = nearPortal ? 'ENTER' : 'OPEN';
+      // the act button lights for everything E answers, which since the chest went quiet is the
+      // portals, the bones and the suit on its stand
+      if(IS_TOUCH){ btnAct.classList.toggle('on', mode==='hub'&&(!!nearPortal||nearBones||nearSuit));
+        btnAct.textContent = nearPortal ? 'ENTER' : nearSuit ? 'TAKE' : (ghostOn ? 'RETURN' : 'RISE');
         btnBack.classList.toggle('on', mode==='menu'&&!viewerOpen); }
     }
     // ── camera + render ──
@@ -7168,24 +7174,10 @@
         // not in the heightmap at all. That is why the walk falls back to 0 for its own floor
         // (see gy), and the camera now falls back the same way instead of dropping through.
         cy=Math.max(cy, camFloorY(cx,cz,cy));
-        // ── FIRST PERSON blends the WHOLE solution, position and aim together, rather than
-        // winding camDist down to zero: at zero the orbit collapses onto the player and camLook
-        // would sit on top of the camera's own position, which is not a direction at all.
-        // The aim runs OPPOSITE the orbit arm, because that is exactly where the third-person
-        // camera was already looking, from behind him and through him, down his own facing. The
-        // floor clamp above is left on the ORBIT solution alone: an eye belongs at the head,
-        // not pushed up off the ground the way a trailing camera has to be.
-        let lkx=player.position.x, lky=player.position.y+0.95, lkz=player.position.z;
-        if(fpAmt>0){
-          const ex=player.position.x, ey=player.position.y+FP_EYE, ez=player.position.z;
-          const cp=Math.cos(camPitch), sp=Math.sin(camPitch);
-          cx+=(ex-cx)*fpAmt; cy+=(ey-cy)*fpAmt; cz+=(ez-cz)*fpAmt;
-          lkx+=((ex-dxc*cp)-lkx)*fpAmt; lky+=((ey-sp)-lky)*fpAmt; lkz+=((ez-dzc*cp)-lkz)*fpAmt;
-        }
-        // and the FOLLOW EASE goes rigid along with it. Closing a fifth of the gap each frame is
-        // what gives the third-person camera its weight, and is precisely what makes a
-        // first-person view swim, since the head would be lagging the body it is bolted to.
-        camera.position.lerp(_v.set(cx, cy, cz), 0.2+0.8*fpAmt);
+        const lkx=player.position.x, lky=player.position.y+0.95, lkz=player.position.z;
+        // one fifth of the gap per frame is what gives the camera its weight; it trails him
+        // everywhere, upstairs included.
+        camera.position.lerp(_v.set(cx, cy, cz), 0.2);
         // and again on the EASED position. The line above fixes the TARGET, but the camera only
         // closes a fifth of the gap each frame, so on a fast low pass it lags behind the clamp and
         // spends a beat under the plate on its own account.
@@ -7203,7 +7195,6 @@
     get yaw(){return camYaw}, set yaw(v){camYaw=v},
     get pitch(){return camPitch}, set pitch(v){camPitch=v},
     get lookLocked(){return document.pointerLockElement===canvas},
-    get fp(){ return {amt:+fpAmt.toFixed(3), inRoom:inRoom(), cells:houseRoomCells.size, eye:FP_EYE}; },
     cursorBlend(on){ const d=(on!==false); document.body.classList.toggle('curdiff', d);
       return d ? "difference, the main site's own (vanishes on mid grey)" : "painted, with a dark halo"; },
     set dist(v){camDist=v},

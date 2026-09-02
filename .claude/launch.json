@@ -375,6 +375,19 @@
         "--strictPort"
       ],
       "port": 5681
+    },
+    {
+      "name": "dev-upstairs",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5701",
+        "--strictPort"
+      ],
+      "port": 5701
     }
   ]
 }

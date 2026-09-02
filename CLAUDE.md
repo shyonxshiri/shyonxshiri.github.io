@@ -660,6 +660,17 @@ image onto it, so a title drawn there would be painted over on load) and the fra
 it is bare plastic. `labelTex` with no `bg` paints the text TWICE through a soft drop shadow, which
 is what lets white read over a pale cover and over the blurred interior behind the row. The row's
 `group.position.y` of 0.8 exists for these: it lifts the captions clear of `#prompt` and `.hint`.
+**A PANEL'S FRAME COLOUR CAN BE PINNED**, with `frame` on the project entry, and the About one is
+(user, 2026-09-02). By default `texPanels` gives the frame the cover's STRONGEST colour, which is
+the right answer for a poster and the wrong one for a PORTRAIT: measured by running the shipped
+`strongColor` against the real files, `Shyon_About.png` returns **#3f1e11**, i.e. hair and skin, so
+the About panel wore a brown border, while the other two ABOUT covers give #9e9e9e and #22262e.
+`frame` is set in `buildPanels` and makes `texPanels` skip `strongColor` for that panel.
+**IT HAS TO BE `convertSRGBToLinear()`d**, and this bit on the first attempt: r128's `Color.set()`
+takes a hex STRING as a linear value and the renderer encodes to sRGB on the way out, so real LEGO
+Black #05131D handed over raw rendered as a dark STEEL BLUE, (39,76,94), and shipped a blue border
+instead of a black one. `strongColor` already ends in `convertSRGBToLinear()` for the same reason.
+The About panel's own title is **"About Me"**, renamed from "Who I Am" in the same pass.
 
 **Title bubbles.** LEGO speech bubbles (`speech_bubble.glb`) that build themselves course by
 course as you approach, print their label letter by letter, and dismantle when you leave, with
