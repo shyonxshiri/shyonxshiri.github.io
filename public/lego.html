@@ -6472,8 +6472,18 @@
   if(IS_TOUCH){
     document.body.classList.add('touch');
     const touchRows=[['Move','Left stick'],['Run','Push stick far'],['Jump','JUMP button'],['Look around','Drag the screen'],['Enter a building','Tap ENTER'],
+      ['Change outfit','CHANGE button'],
       ['Sound','Speaker button'],['Leave the Realm','Leave button']];   // touch keeps both buttons, so it names them
-    document.querySelectorAll('#controls .row').forEach((r,i)=>{ if(touchRows[i]) r.innerHTML='<span>'+touchRows[i][0]+'</span><b>'+touchRows[i][1]+'</b>'; });
+    // The card ships SEVEN .row divs for the keyboard and this list is now eight, so the extras are
+    // APPENDED rather than silently dropped: the old code only rewrote rows that already existed,
+    // which would have thrown the outfit row away and shifted Sound and Leave up a line.
+    const cRows=document.querySelectorAll('#controls .row');
+    const rowHTML=r=>'<span>'+r[0]+'</span><b>'+r[1]+'</b>';
+    cRows.forEach((r,i)=>{ if(touchRows[i]) r.innerHTML=rowHTML(touchRows[i]); });
+    let after=cRows[cRows.length-1];
+    for(let i=cRows.length;i<touchRows.length;i++){ const d=document.createElement('div');
+      d.className='row'; d.innerHTML=rowHTML(touchRows[i]);
+      after.parentNode.insertBefore(d, after.nextSibling); after=d; }
     const joySet=t=>{ const r=joyEl.getBoundingClientRect(); const R=r.width/2-10;
       let dx=t.clientX-(r.left+r.width/2), dy=t.clientY-(r.top+r.height/2); const m=Math.hypot(dx,dy);
       if(m>R){ dx*=R/m; dy*=R/m; }
@@ -6490,10 +6500,14 @@
     btnDown.addEventListener('touchstart',e=>{ e.preventDefault(); touchDown=true; },{passive:false});
     const dnEnd=e=>{ e.preventDefault(); touchDown=false; };
     btnDown.addEventListener('touchend',dnEnd,{passive:false}); btnDown.addEventListener('touchcancel',dnEnd,{passive:false});
+    // same order the label above reads in: whatever is in reach first, the outfit change last.
+    // cycleOutfit() guards the mode and the ring itself, so a tap with nothing unlocked is a no-op.
     btnAct.addEventListener('touchstart',e=>{ e.preventDefault();
-      if(mode==='hub'&&nearPortal&&!fading) enterPortal(nearPortal);
-      else if(mode==='hub'&&nearBones&&!fading) inspectBones();
-      else if(mode==='hub'&&nearSuit&&!fading) takeSuit(); },{passive:false});
+      if(mode!=='hub'||fading) return;
+      if(nearPortal) enterPortal(nearPortal);
+      else if(nearBones) inspectBones();
+      else if(nearSuit) takeSuit();
+      else cycleOutfit(); },{passive:false});
     btnBack.addEventListener('touchstart',e=>{ e.preventDefault(); if(viewerOpen) closeViewer(); else if(mode==='menu'&&!fading) exitPortal(); },{passive:false});
   }
   canvas.addEventListener('wheel',e=>{ if(mode==='menu'){ if(!viewerOpen) menuPan=clampPan(menuPan+(e.deltaY+e.deltaX)*0.012); return; }
@@ -7130,10 +7144,23 @@
         ? (IS_TOUCH ? 'Return' : 'Press <b>E</b> &nbsp;·&nbsp; Return')
         : (IS_TOUCH ? 'Rise' : 'Press <b>E</b> &nbsp;·&nbsp; Rise');
       if(msg){ promptEl.innerHTML=msg; promptEl.classList.add('on'); } else promptEl.classList.remove('on');
-      // the act button lights for everything E answers, which since the chest went quiet is the
-      // portals, the bones and the suit on its stand
-      if(IS_TOUCH){ btnAct.classList.toggle('on', mode==='hub'&&(!!nearPortal||nearBones||nearSuit));
-        btnAct.textContent = nearPortal ? 'ENTER' : nearSuit ? 'TAKE' : (ghostOn ? 'RETURN' : 'RISE');
+      // ── THE ACT BUTTON IS TOUCH'S `E` AND NOW ALSO ITS `T` (user, 2026-09-02). It lights for
+      // everything E answers, which since the chest went quiet is the portals, the bones and the
+      // suit on its stand; and when none of those is in reach it carries the OUTFIT CHANGE, which
+      // a phone otherwise had no way to reach at all once the suit was on (no T key, no pill, and
+      // the chest was where it used to be done). The contextual jobs outrank it, so standing at
+      // the bones still reads RISE rather than CHANGE.
+      // It says CHANGE and not the name of the next body, because that is the word the keyboard's
+      // own hint line already uses for `T`, and because the civilian body has never had a name in
+      // the Realm ("suit off" is wrong coming off the ghost). What you turned into is reported by
+      // `say()`, exactly as it is for T. The fallback is gated on the RING, so a cold load with
+      // nothing unlocked shows no button, as before.
+      if(IS_TOUCH){
+        const act = nearPortal ? 'ENTER' : nearSuit ? 'TAKE'
+                  : nearBones ? (ghostOn ? 'RETURN' : 'RISE')
+                  : (outfitRing().length>1 ? 'CHANGE' : '');
+        btnAct.classList.toggle('on', mode==='hub' && !!act);
+        if(act) btnAct.textContent = act;
         btnBack.classList.toggle('on', mode==='menu'&&!viewerOpen); }
     }
     // ── camera + render ──

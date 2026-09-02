@@ -1068,11 +1068,24 @@ the ground did not move it (`HINT_SUIT` went 557 to 555, it got no wider). Re-me
 rather than counting characters if a line is ever edited: `scratchpad/verify_final.cjs` sets each
 one on the real element and reads `scrollWidth`. `say()` is for STATUS now
 ("Suit unlocked", "Suit on"), never for controls. The one exception is TOUCH, where `.hint` is
-`display:none` and those lines are the only guidance a phone gets. **TOUCH CAN NO LONGER CHANGE
-OUTFIT AT ALL ONCE THE SUIT IS ON**, and that is a known hole rather than an oversight: it has no
-`T` key and no pill, it used to change back at the chest, and the chest went quiet on 2026-09-02.
-The display the suit came off is one-shot and the bones only ever offer the ghost. It was flagged
-rather than patched with a new button, which was not asked for.
+`display:none` and those lines are the only guidance a phone gets.
+**TOUCH CHANGES OUTFIT ON THE ACT BUTTON** (user, 2026-09-02). It has no `T` key and no pill, and
+it used to change back at the chest, so when the chest went quiet a phone had no way to change at
+all once the suit was on: the display the suit came off is one-shot and the bones only ever offer
+the ghost. `#btnAct` is touch's `E` and is now its `T` as well. Its contextual jobs OUTRANK the
+change (`ENTER` at a portal, `TAKE` at the suit, `RISE`/`RETURN` at the bones), and when none of
+them is in reach it reads **CHANGE** and calls `cycleOutfit()`. It is gated on `outfitRing().length
+> 1`, so a cold load with nothing unlocked shows no button, exactly as before.
+It says CHANGE rather than naming the next body, for two reasons: that is the word the keyboard's
+own hint line already uses for `T`, so both surfaces say the same thing; and the civilian body has
+never had a name in the Realm, so "suit off" would be wrong coming off the ghost. What you turned
+into is reported by `say()`, exactly as it is for `T`.
+**The CONTROLS card names it, and that needed an APPEND.** The card ships seven `.row` divs for the
+keyboard and `touchRows` is eight now; the old code only rewrote rows that already existed, which
+would have dropped the outfit row and shifted Sound and Leave up a line. Verified in a real
+touch-emulated Chrome (`scratchpad/verify_touch_act.cjs`, 13 assertions): note the page has to be
+RELOADED under the emulation, because `IS_TOUCH` is read once at load from `(pointer:coarse)` /
+`ontouchstart`.
 
 **Flight.** `F` toggles it (or a double tap of Space, guarded on `e.repeat` because a held hop fires
 keydown 30 times a second), and `T` swaps the outfit. There are NO HUD pills left: both the yellow FLY and
