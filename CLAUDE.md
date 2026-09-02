@@ -268,13 +268,12 @@ the nose (`6220959` Brick 1x1 outboard plus `6252041` Plate 1x1 inboard per lamp
 the nose deck as closed pop-up covers) and two `Lego_Transparent_Red` `6337596` Cone 1x1 at the
 tail. `Lego_Transparent_Brown` is the side and rear GLASS, measured (x 0.354..1.975, reaching
 y 1.633), so it takes the window tier and keeps 0.25, and so does the windscreen.
-**The Porsche could never be matched on alpha, because it has a REFLECTOR and this car does not.**
-Ray-cast through `MB40` and 78.8% of its outward area lands on `MB309`, a 0.617 light grey plate
-right behind the lens; 100% of the Countach's clear lens lands on the printed nose panel, which
-this build's own black repaint took to #05131D. That is why copying the Porsche's numbers failed
-and why the tier had to be built out of DoubleSide and colour rather than alpha. Winding, normals
-and the world matrix determinant were all checked first and all three are clean (reversed fraction
-0.00000, outward normals on all 254 parts, determinant +0.518).
+**The Porsche could never be matched on alpha, because it has a REFLECTOR behind its lens and
+this car does not.** 78.8% of the Porsche lens's outward area lands on `MB309`, a 0.617 light grey
+plate; 100% of the Countach's lands on the printed nose panel, which its black repaint took to
+#05131D. So copying the Porsche's alpha numbers failed, and the tier is built out of DoubleSide and
+colour instead. Winding, normals and the matrix determinant were all checked first and are clean,
+so none of them is the explanation.
 `scratchpad/lambo/export_lambo.py` axis-aligns and centres it (the nose is DERIVED from the light
 lenses, clear at one end and red at the other, not hardcoded), splits the four wheel-rim tiles onto
 their own material clone `Texture_Rim`, and joins the 254 named parts into one mesh per material:
@@ -737,13 +736,11 @@ hover pitch exactly), 72 degrees down and behind at a run, and straight down whi
 negative half of the swing is clamped short at -0.25 so the cape can never fold through his chest,
 which is why a fast straight-down drop reads as the cape blown up behind him rather than hanging.
 
-**The legs used to come out through it.** Measured against the real geometry: with the cape hanging
-straight down, which is exactly what a leap gives (going up, drag reinforces gravity), the split
-leap's 0.75 rad clears the fabric by only 0.066, and the wave then eats that. At the wave's forward
-extreme the boot is 0.077 THROUGH the back of the cape. `CAPE_KICK` 0.45 of the leg's own angle
-leaves 0.10 to 0.24 of clearance across the whole wave cycle. It is also just what a cape does when
-you kick into it.
-
+**The legs used to come out through it.** With the cape hanging straight down, which is what a
+leap gives (going up, drag reinforces gravity), the split leap's 0.75 rad clears the fabric by only
+0.066, and the wave eats that: at its forward extreme the boot is 0.077 THROUGH the back of the
+cape. `CAPE_KICK` 0.45 of the leg's own angle leaves 0.10 to 0.24 of clearance across the whole
+cycle, and is also just what a cape does when you kick into it.
 Three things then make it safe, all measured off the piece and none assumed:
 
 - **The axes are DERIVED.** `hero_suit.glb` came out of Blender Z-UP, so every mesh node carries a
@@ -895,30 +892,22 @@ knock; a servo sawtooth sweeping up under them and stopping when they stop; then
 for the reactor, arriving last and staying. 6.7x a footstep in mean power over 1.16s, peak 0.200,
 which puts it just above a landing and well under the chest's arc at 22.5.
 
-**The hero's head.** Cut from a Hulk head in the live blend (`Object_7.001`, 2206 verts, one 512
-texture), and RECOLOURED off that texture rather than tinted at runtime: 92.9% of it was the base
-green, which became the figure's own skin `#C68B5E`, 3.5% was the black print, which stayed, 1.1%
-was a dark green print, which went to black, and 0.65% was near-white, kept. The other 267 colours
-are antialiasing, so every pixel is remapped ALONG the segment between the two key colours it sits
-between rather than snapped to the nearest one, which is what keeps the eye and mouth edges clean
-(max residual to a segment, 0.048 linear). It is WELDED before it is smoothed: the Sketchfab source
-ships unwelded, 2225 vertices over only 506 distinct positions, so nearly every triangle is its own
-island and shading it smooth does nothing at all, whatever angle is set. Merging by distance takes
-it to 506 verts, 1512 edges and ZERO boundary edges, a closed manifold, with the bounding box
-unmoved to five decimals and the print's 436 distinct UVs intact. The creases are then written onto
-the EDGES (`edge.use_edge_sharp`), not left to `shade_smooth_by_angle`, whose modifier the glTF
-export did not carry through. 60 degrees, because the dihedral distribution is bimodal: the same
-192 edges of 1512 exceed 40 and 60, so anything between those thresholds is the same answer and the
-higher one is safely clear of curvature. Shipped: 770 vertices, 314 positions fully smooth and 192
-carrying a real crease. The piece is fitted INTO
-THE CIVILIAN HEAD'S OWN BOX: uniform scale to that head's height, then centred and seated so the
-necks coincide. Nothing else is re-solved, because the suit's collar and the hairpiece's seat were
-both measured against the civilian head and the box they measured is unchanged. At matching height
-it comes out 5% narrower (0.4029 against 0.4244) with a stud radius within 3%, which is the safe
-direction: the hairpiece sits marginally loose rather than clipping. It is deliberately NOT added
-to `civMeshes`, which is the MEASURING set (a head inside it drags the collar the suit is sized
-against up to the crown); `headSet` is tagged `civPart` directly instead, and `wearHero` reads
-tags off a live traverse, so tagging is all that is needed.
+**The hero's head.** Cut from a Hulk head in the live blend and RECOLOURED off its 512 texture
+rather than tinted at runtime: the base green became the figure's own skin `#C68B5E`, the black
+print stayed, a dark green print went to black. Every pixel is remapped ALONG the segment between
+the two key colours it sits between, never snapped to the nearest, which is what keeps the eye and
+mouth edges clean.
+Three traps, all of which bite again on any re-export. **WELD BEFORE YOU SMOOTH**: the Sketchfab
+source ships unwelded, 2225 vertices over 506 distinct positions, so nearly every triangle is its
+own island and `shade_smooth` at any angle does nothing at all. **Write creases onto
+`edge.use_edge_sharp`**, not `shade_smooth_by_angle`, whose modifier the glTF export does not carry
+(60 degrees; the dihedral distribution is bimodal, so anything from 40 to 60 picks the same 192
+edges). **Do NOT add it to `civMeshes`**, which is the MEASURING set the suit's collar is sized
+against: a head in there drags that collar up to the crown. `headSet` is tagged `civPart` directly
+and `wearHero` reads tags off a live traverse, so tagging is all that is needed.
+It is fitted into the CIVILIAN HEAD'S OWN BOX, uniform scale to its height then seated so the necks
+coincide, so neither the collar nor the hairpiece seat has to be re-solved. It lands 5% narrower,
+which is the safe direction: the hairpiece sits marginally loose rather than clipping.
 
 Nothing about either piece is hardcoded to a size. The suit is fitted by MEASUREMENT in
 `buildHero()`: scaled COLLAR to COLLAR (`collarY()`, the top of everything within 55% of a body's
@@ -1000,36 +989,25 @@ steepest the instant it starts, so Space put the climb rate most of the way ther
 frames: two eases in series start at zero slope, and that is the difference between a swell and a
 jerk. Both rates come off `FLY_EASE` 2.8, live on `__hero.ease()`.
 
-**And two things about how the flight POSE is measured, which is where the real jitter was.** The
-lean flattens with FORWARD speed, not airspeed: a body lies flat because it is travelling forwards,
-and drifting straight up or down is not a reason to lie down. And the climb angle is WEIGHTED BY
-AIRSPEED (squared), because `asin(velY/spd3)` is exactly +-90 degrees for ANY purely vertical
-movement however gentle, since `velY` IS the whole of `spd3`. The old `spd3 > 0.6` guard then cut
-those 90 degrees to zero the moment the drift died, which is a ninety degree snap of the torso in
-ONE FRAME. Measured over a second of Shift and then a second of Space, hovering: the pose swung
-154.7 degrees with a worst frame of 90.6. Fading the term in with airspeed instead of gating it,
-the same input gives 12.0 degrees and a worst frame of 0.26. The FLARE is eased too, fast down and
-slow up, because the floor it measures against is a raycast that steps a whole storey between
-frames when a roof slides underneath. That lag costs 0.0224 of ground clearance at worst, less than
-the 0.022 a running stride already puts the boot through. `poseVY` is the same idea for
-the look of it, because on the raw `velY` a tap of Space whips the torso through 40 degrees in
-three frames and that whip is most of what reads as jerky. The walk's own BOB is faded out in the
-air: its rise and fall is a footfall and there are no footfalls up there, so carried into flight it
-read as the figure bouncing along an invisible floor. What replaces it is a HOVER FLOAT, and the
-difference is the whole point: it fades with SPEED, not with flight. He is holding himself up
-rather than standing on anything, so at a standstill he drifts 0.07 either way at 0.28 Hz, and the
-term is squared against `HOVER_REF` 2.5 so it is at 36% by one unit a second of airspeed and gone
-by two and a half. Travel does not bounce; a hover breathes. The flare keeps it honest near the
-ground, since `fp` is 0 at floor level and the dip half of the cycle can never reach through. Live
-on `__hero.hover()`. Take-off is a 0.13s COIL then one hard pop
-(`TAKE_POP` 11). Without the coil a launch is an elevator, because the flare below holds the flight
-silhouette off until he is 1.25 up, so the first quarter second was a figure standing bolt upright
-and rising. The coil is the LANDING crouch exactly, which is the only crouch a rigid-legged minifig
-has; the launch then throws the chest back 0.30, snaps the legs together and puts the arms at the
-flight kick, decaying as the flare brings the real pose in behind it. The launch pose is gated on
-`agl/0.12` so it can never be at full strength while his feet are still on the plate (the back lean
-costs the heels 0.068, against the 0.18 the pop has already lifted him). Pressing F again during
-the coil zeroes `takeT`, or the launch pose would play out on the ground. Live on `__hero.take()`.
+**The flight POSE, which is where the jitter was.** Four rules, each fixing a snap you can see.
+The lean flattens with FORWARD speed, not airspeed: a body lies flat because it is travelling
+forwards, and drifting straight up or down is no reason to lie down. The climb angle is WEIGHTED BY
+AIRSPEED (squared) rather than gated, because `asin(velY/spd3)` is exactly +-90 degrees for ANY
+purely vertical movement however gentle (`velY` IS the whole of `spd3`), so the old `spd3 > 0.6`
+guard cut 90 degrees to zero in ONE FRAME the moment a drift died; hovering swung the pose 154.7
+degrees against 12.0 once the term fades in instead. The FLARE is eased fast-down slow-up, because
+the floor it measures is a raycast that steps a whole storey when a roof slides under it. `poseVY`
+eases `velY` for the same reason: raw, a tap of Space whips the torso 40 degrees in three frames.
+**The walk's BOB is faded out in the air and a HOVER FLOAT replaces it**, and the difference is the
+point: the float fades with SPEED, not with flight, because he is holding himself up rather than
+standing on anything. 0.07 either way at 0.28 Hz at a standstill, squared against `HOVER_REF` 2.5
+so it is gone by 2.5 units a second. Travel does not bounce; a hover breathes. Live on
+`__hero.hover()`.
+**Take-off is a 0.13s COIL then one hard pop** (`TAKE_POP` 11). Without the coil a launch is an
+elevator, because the flare holds the flight silhouette off until he is 1.25 up. The coil is the
+LANDING crouch exactly, the only crouch a rigid-legged minifig has. The launch pose is gated on
+`agl/0.12` so it is never at full strength with his feet still down, and pressing F again during
+the coil zeroes `takeT` or it plays out on the ground. Live on `__hero.take()`.
 
 **Coming down.** Two separate mechanisms, and the first is not cosmetic. `figBody` turns about the
 figure's FEET, so a flight pitch past 90 degrees puts the head below the ground the feet stand on.
