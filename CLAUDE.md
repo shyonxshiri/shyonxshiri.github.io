@@ -391,43 +391,57 @@ band clears it from feet 4.41) and walking in through its door, which is the gap
 x 50.4..51.5, z -5.1..-3.3, open from the floor to a header at 5.76. The floor is the upper plate
 top 3.714 with stud tips at 3.782; the roof is 6.676 and the room's own headroom runs out around
 5.9. Its walls, glass and parapet are `houseUpCells`, its floor is the mansion's `tight` heightmap
-slice, and both are measured off the loaded model. The room is EMPTY on purpose, it is where
-Shyon is going to put something. Nothing else about the mansion moved: the ground floor, the
+slice, and both are measured off the loaded model. It holds the SUIT on its display in the
+north-east glass corner and, since 2026-09-02, the ELECTRIC PIANO against the far wall opposite
+the archway. Nothing else about the mansion moved: the ground floor, the
 driveway and both parked cars walk exactly as they did, which is why the heightmap slice is
 3.70..3.90 and not the default band (the model's own plate tops sit at -0.06, a tenth below the
 ground everything currently stands on).
 
-**The electric piano in the living room.** `piano.glb`, a LEGO keyboard on a brown stand, back
-against the wall the entrance porch is on the other side of, the one under the black canopy roof
-where the door and the walkway are. That wall runs x 47.678..51.374 along the north edge of the
-room and its living-room face is `z -2.35569`; the big west window (z -6.011..-2.344, y
-0.737..2.511) dies straight into it, so the piano stands just past the glass. Between the west
-wall's inner face (x 48.4585) and the wall's own east end there are 2.916 units to stand against.
+**The electric piano is UPSTAIRS, across from the grey archway** (user, 2026-09-02). It stood in
+the living room downstairs until then, against the wall the entrance porch is on the other side of;
+it is now in the room off the balcony, against the far wall, facing back at the arch you come in
+through. `piano.glb`, a LEGO keyboard on a brown stand.
+Every bound is measured off the LOADED MODEL and not off the occupancy grid, which is quantised to
+`OCS` and reads the same wall a tenth of a unit early: the room's east wall is `LegoWhite` brick
+with its inner face at **x 56.4322**, and the ARCHWAY is the gap in the west wall at
+**z -5.217..-3.104** (2.113, about 5.7 studs), so the doorway's middle is z -4.1605
+(`scratchpad/room_probe3.cjs`, `room_probe5.cjs`).
 **It is deliberately NOT at its own stud pitch, and both measurements that decide that were taken.**
 Its lattice is **0.1855**, the nearest-neighbour distance over the stud centres on four separate
 horizontal layers of the build (55, 49, 72 and 40 studs, all four returning the same number), which
-makes it a 12x6 stud table carrying a 10x4 keyboard, 22 plates tall. Scaled to `PITCH` that is 4.433
-wide against 2.916 of wall, so it does not fit the wall it was asked to stand on, and 2.742 tall
-with its playing surface at y 2.00 against a figure whose head tops out at 1.770: the keys would sit
-above the minifig's head. At **1.0800247** it is 2.402 x 1.487 x 1.200, the keys land at y 1.188,
-chest height on the figure, and 0.22 of wall is clear at one end and 0.30 at the other. Rendered its
-stud is 0.2003, 0.54 of `PITCH`; the cars already render theirs at 0.78, so a prop carrying its own
-brick scale is the rule here rather than an exception.
-**That exact scale is SOLVED, not chosen.** `loadProp` snaps the holder to the world stud grid,
-which quantises z by a whole `PITCH`, and the mansion's own brick grid is a fraction of a stud out
-of phase with it, so "back flush against the wall" is not a position that can be typed in. At
-`pos` z `-8*PITCH` = -2.9556 the back face lands on the wall face exactly when the depth is
-2*(2.9556-2.35569) = 1.19982, which on a model 1.110919 deep is 1.0800247. The scale is the free
-variable and the flush back is the constraint. x is `135*PITCH` = 49.87575, the grid stud nearest
-the middle of the wall run. `y` is the floor's PLATE TOP, **-0.0931**, not its stud tips at 0.0032,
-for the same reason the garden's fence is seated on `plateTop`: a LEGO piece rests its underside on
-the plate and swallows the studs. `rotY` PI turns the keys, which face the model's own +Z, round to
--Z and into the room. `solid` rasterizes it from its real triangles so you walk into the table
-rather than through it; it stays out of `camCell`, being furniture and not a building.
-Verified by replaying the SHIPPED config against the real geometry (`scratchpad/piano/verify.py`,
-which pulls the config out of `lego.html` by content): back face gap 0.00000, all 81 mansion wall
-vertices inside the piano's box sitting exactly on the wall plane and nothing intruding, base
-exactly on the floor plate top, 1.252 of headroom under the 2.6456 ceiling, keys facing the room.
+makes it a 12x6 stud table carrying a 10x4 keyboard, 22 plates tall. Scaled to `PITCH` it is 2.742
+tall with its playing surface at y 2.00 against a figure whose head tops out at 1.770: the keys
+would sit above the minifig's head. At **1.0800247** it is 2.402 x 1.487 x 1.200 and the keys land
+1.188 above his feet, chest height. Rendered its stud is 0.2003, 0.54 of `PITCH`; the cars already
+render theirs at 0.78, so a prop carrying its own brick scale is the rule here rather than an
+exception.
+**THE SCALE IS UNCHANGED BY THE MOVE, AND THAT COSTS THE FLUSH BACK.** Downstairs 1.0800247 was
+SOLVED rather than chosen: `loadProp` snaps the holder to the world stud grid, so at `pos` z
+`-8*PITCH` the back face landed on the wall exactly when the depth was 1.19982, i.e. that scale on a
+model 1.110919 deep. That constraint cannot be re-solved against this wall without giving up the
+approved size (the grid stud nearest it is `151*PITCH` = 55.78695, where flushness would need scale
+0.9597, an 11% shrink), so the SIZE wins: the piano stands **0.0454** off the brick, an eighth of a
+stud and the closest the grid comes.
+· `x` `151*PITCH` = **55.78695**, back face at 56.38686 against the wall's 56.4322.
+· `z` `-11*PITCH` = **-4.06395**, the grid stud nearest the archway's centre, 0.097 off it. At 2.402
+  wide it spans -5.265..-2.863 and reads across the whole doorway.
+· `y` **3.6852**. The upper floor is built exactly as the ground floor is: plate top 3.7144, stud
+  tips 3.7815, a 0.0671 stud, against -0.0640 and 0.0032 downstairs for the same 0.0672. Read by
+  AREA and not by triangle count, which is what tells a plate top from a stud cap (the plate carries
+  25.4 units of up-facing area against the studs' 6.4 while having far fewer triangles). 3.6852 is
+  the stud tips less the same 0.0963 the approved downstairs seat used: a LEGO piece rests its
+  underside on the plate and swallows the studs.
+· `rotY` **-PI/2** carries the keys, which face the model's own +Z, round to world -X, so they look
+  west through the archway and out at the balcony.
+· **`solidHouseUp`, not `solid`.** `cfg.solid` rasterizes at GROUND body height, where this prop no
+  longer exists, so it would have been walk-through up here AND would have gone on blocking the
+  living room it left. `solidHouseUp` is the mansion's twin of `solidUp`: `houseUpCells` at
+  `HU_Y0..HU_Y1`, `only`, so the hall underneath stays clear.
+Headroom: 1.487 tall, topping out at 5.172 under a 6.17 ceiling.
+Verified in engine, not by arithmetic (`scratchpad/verify_upstairs.cjs`): the holder's live
+position, rotation and scale, its world box against all four walls and the ceiling, real floor under
+all four corners, `stepBlocked` true upstairs and false in the hall, and its cells in `houseUpCells`.
 **The export DROPS the floating headphones the build ships with**: four `MB_26` islands standing in
 mid air 0.47 beside the table at y 0.285..0.595, with nowhere to be rested, since the keyboard
 covers the table top to within a stud on every side. The rest is joined into one mesh per material:
@@ -732,9 +746,20 @@ low reflection; the face print is forced true black, roughness 0.65, envBase 0 s
 never tint it. The shipped `hair.glb` is the DOC OCK piece (material `hair_docock`, baseColorFactor
 `0.02732 / 0.01096 / 0.00518`), not the Bizarro one an older code comment still names.
 
-**My Lego Super Hero.** The pirate chest behind the cottage is the unlock. `zap()` still crackles
-on the bridge approach (`ZAP_ZONE`); **E** at the chest opens it, and from then on the figure has a
-second body. `hero_suit.glb` is the Mysterio minifig from the blend, everything below the neck
+**My Lego Super Hero.** The suit stands on DISPLAY in the mansion's upstairs room and **E** takes
+it; from then on the figure has a second body. **THE PIRATE CHEST IS SCENERY** (user, 2026-09-02):
+it was the unlock and the place you changed back, and both are gone, `chestAt` / `inspectChest` /
+its E prompt / its touch button with them. The PROP stays exactly where it is, lid open and money
+bricks in it, and `zap()` still crackles on the bridge approach (`ZAP_ZONE`), kept now as the
+derelict's own noise rather than as a tell.
+**PUTTING THE SUIT ON HANDS THE GHOST BODY BACK TO THE BONES**, and `ghostUnlocked` goes with it, so
+the seated skeleton is once again the only place a ghost can be had. That is the shape of the thing:
+a ghost is how you GET up to the suit, since the upstairs has no stairs and a civilian cannot fly,
+so you give the shroud back at the moment you take the armour. `returnGhostBody()` does it and
+`suitOn()` is the one door the suit goes on through (`takeSuit` and `wearOutfit('hero')` both route
+through it), so the handback cannot be walked around. It is deliberately NOT symmetric: taking the
+SUIT off with `T` leaves the suit yours, because its display is one-shot and there is nowhere to
+fetch it from, while the bones sit in the cave and can always be gone back to. `hero_suit.glb` is the Mysterio minifig from the blend, everything below the neck
 (torso, waist, arms, hands, legs, cape, back plate), `hero_hair.glb` is the Joker hairpiece
 recoloured to the exact `baseColorFactor` the shipped `hair.glb` carries, and `hero_head.glb` is
 his own head (below).
@@ -981,15 +1006,18 @@ the ground did not move it (`HINT_SUIT` went 557 to 555, it got no wider). Re-me
 rather than counting characters if a line is ever edited: `scratchpad/verify_final.cjs` sets each
 one on the real element and reads `scrollWidth`. `say()` is for STATUS now
 ("Suit unlocked", "Suit on"), never for controls. The one exception is TOUCH, where `.hint` is
-`display:none` and those lines are the only guidance a phone gets. Touch also has no `T` key and no
-pill any more, so on a phone the suit is changed back at the CHEST, which already offers it.
+`display:none` and those lines are the only guidance a phone gets. **TOUCH CAN NO LONGER CHANGE
+OUTFIT AT ALL ONCE THE SUIT IS ON**, and that is a known hole rather than an oversight: it has no
+`T` key and no pill, it used to change back at the chest, and the chest went quiet on 2026-09-02.
+The display the suit came off is one-shot and the bones only ever offer the ghost. It was flagged
+rather than patched with a new button, which was not asked for.
 
 **Flight.** `F` toggles it (or a double tap of Space, guarded on `e.repeat` because a held hop fires
 keydown 30 times a second), and `T` swaps the outfit. There are NO HUD pills left: both the yellow FLY and
 the SUIT pill were removed at Shyon's request (with them went the whole `.pw` class), so the hint
 line under the canvas is the only place any of it is named. That line has three versions picked by `syncPowerHUD` on the state transitions
 rather than per frame: `HINT_WALK`, `HINT_SUIT` (which adds `F` to fly, on the ground and only
-there) and `HINT_FLY`. The unlock line at the chest names `F` too. TOUCH has no F key and no pill,
+there) and `HINT_FLY`. TOUCH has no F key and no pill,
 so on touch alone the JUMP pad is the take-off, and it reads JUMP / FLY / UP. In the air, Space climbs, Shift drops,
 letting go coasts to a hover, and the stick steers relative to the camera as it does on foot.
 `solidCells` is rasterized at BODY height (0.30..1.5) alone, so it says nothing useful the moment
@@ -997,8 +1025,8 @@ you leave the ground: flight collision instead uses `roofY`, the four big struct
 heights measured by the loaders that rasterize them, and a structure blocks only BELOW its roof.
 Everything smaller (trees, props, the river) is simply flown past. Roofs are NOT in the walkable
 heightmap, so a hover over a building settles at `roof + FLY_CLEAR` and the landing only commits
-over real ground. The unlock is deliberately NOT persisted: the chest has to be found again every
-visit, so the suit can never be an option on a cold load.
+over real ground. The unlock is deliberately NOT persisted: the suit has to be found again every
+visit, so it can never be an option on a cold load.
 
 The arms lead the flight and answer to SPEED, not to being airborne: `flyArmKick` throws them up on
 take-off and decays over about a second, after which `speed/(FLY_SPD*0.5)` holds them up while he is
@@ -1057,51 +1085,37 @@ buttons, and `touchRows` names them in the CONTROLS card, which gained a row for
 Note `R` sits a finger away from `WASD` and the hero unlock is not persisted, so a stray press
 costs the suit.
 
-**First person in the mansion's upstairs.** Step through the grey archway off the balcony and the
-camera moves into his head (user, 2026-08-31). The archway is identified rather than assumed: the
-geometry bordering the opening is the mansion's own `Dark_grey` `#4d4d4d`, and it is the ONLY way
-between the balcony and the room.
-**The trigger is THE ROOM, not the doorway.** `houseRoomCells` is every upper-floor cell with a ROOF
-over it, which is exactly what tells the room apart from the open balcony it opens onto, so crossing
-the arch IS the trigger, from any direction and at any angle, and there is no threshold to get
-caught straddling. It is built at load off the loaded model's own box (`surfaceBelow` in 3.5..4.0
-for the upper floor, `ceilUnder` over 6.0 for a roof: under the mansion's roof the flight column
-tops out at 6.7 and over the balcony at the 4.5 parapet), so no coordinate needs maintaining and it
-re-derives itself if the model ever moves. 2296 cells, against the 1444 the ASCII plan reports,
-because the plan skips WALL cells before testing for a roof and the build does not, which is
-harmless: a cell under a wall has a floor and a roof like any other and you can never stand in one.
-The height gate `player.y > HU_FROM` (3.30) is what keeps the GROUND floor in third person, since
-the room's floor is 3.714 and downstairs he stands at 0.
-`FP_EYE` is 1.43 and is MEASURED, not guessed: the printed face (`SOLID-BLACK-FACE`) spans y
-1.3184..1.4593 above the player root with the brows at 1.4501..1.4936 over it, and 1.43 is also dead
-centre of the head brick (1.193..1.653).
-**The blend is of the WHOLE solution, position and aim together, and not `camDist` wound down to
-zero**: at zero the orbit collapses onto the player and `camLook` sits on top of the camera's own
-position, which is not a direction at all. The aim runs OPPOSITE the orbit arm, because that is
-where the third-person camera was already looking, from behind him and through him. The floor clamp
-stays on the ORBIT solution alone, since an eye belongs at the head rather than pushed up off the
-ground the way a trailing camera has to be. And **the follow ease goes rigid with it**
-(`0.2 + 0.8*fpAmt`): closing a fifth of the gap per frame is what gives the third-person camera its
-weight and is precisely what makes a first-person view swim, the head lagging the body it is bolted
-to. The body is hidden over `fpAmt > 0.6`, in hub mode only, because `enterPortal`/`exitPortal` own
-that flag either side of it.
-**The pitch range opens exactly as flight's does**, and needs flight's sensitivity with it: indoors
-you have to be able to look up, and a range that has nearly doubled would otherwise cost twice the
-drag for the same sweep. The ease-back that pulls the aim down to 0.06 on foot is gated off while
-first person holds that range open, or the camera sags to the floor every time you stop dragging.
-Measured in engine: `fpAmt` 0 on the balcony and 1 in the room, the camera exactly at the player in
-x/z and at `player.y + 1.43`, the ground floor still third person, the arch crossing at x 50.6, a
-ramp that is monotonic and reaches 90% in 0.45s, and the view direction really pointing up at
-`camPitch` -0.7 (`scratchpad/verify_fp.cjs`, 26 assertions). The transition does sweep the camera
-through the wall on the way in, which reads as a push-in and is ~0.45s; note there is no camera
-collision upstairs at all (`camCell` only runs below y 1.5), so the third-person camera up there was
-already outside the building looking through its walls, and this removes that rather than adding it.
+**THE UPSTAIRS IS THIRD PERSON, AND WHAT IT IS FOR IS A GHOST** (user, 2026-09-02). Crossing the
+grey archway off the balcony used to move the camera into the figure's own head. That is gone
+outright: `houseRoomCells`, `fpAmt`, `fpOn`, `FP_EYE`, `FP_RATE`, `inRoom()`, the loader pass that
+built the room-cell set, and the camera's whole position-and-aim blend. The camera trails him up
+there exactly as it does everywhere else, at the flat `lerp 0.2`.
+Note what that restores rather than adds: there is no camera collision upstairs at all (`camCell`
+only runs below y 1.5), so the third-person camera up there sits outside the building looking
+through its walls, which is what it did before first person was built.
+**The look-up range is now the GHOST's, not the room's.** `lookUp()` is `flying || ghostOn` and it
+gates both `clampPitch`'s `PITCH_UP` and `pitchSens`'s `PITCH_FLY_SENS` (a range that has nearly
+doubled must not cost twice the drag for the same sweep), and it gates off the ease-back that pulls
+the aim down to 0.06 on foot. A body whose entire vertical is Space and Shift has to be able to see
+where it is going; a walker still may only ever look down.
+**AND THE GHOST'S GROUNDED CLIMB IS BOUNDED, WHICH IT WAS NOT.** `stepOne` lets a ghost through
+every barrier, and the height half of the walk used to hand it `climb = 1e9`. `surfaceBelow` takes
+the HIGHEST surface up to its limit, so an unbounded limit does not mean "the ground under it", it
+means "the highest floor anywhere in this cell": measured before the change, a ghost that drifted
+into the mansion's ground floor was SNAPPED to 3.782, the upper storey, instantly and from any
+direction, and could not be downstairs at all. It is `MAXSTEP` (1.55) now, the largest single step
+the Realm has and well under a storey (the mansion's upper floor is 3.78 over its hall, the ruins'
+deck 3.33 over its floor), so every terrace, kerb and stair tread still passes under it and no floor
+above it ever reaches down. Nothing became unreachable: going UP is Space, which is what the
+ghost's vertical is for, and a rise from the hall lands it on the upper floor at 3.782 on the way
+through. Verified in engine (`scratchpad/verify_upstairs.cjs`): 0 on the hall floor, the lawn and
+the driveway, 3.782 after a held Space, and the aim really reaching `camPitch` -0.7.
 
 **Debug hooks**, all temporary, strip before a final polish deploy. URL hashes (no console needed,
 which is what makes them usable in Safari): `#nopipe` forces the old direct path, `#noao` / `#nobloom`
 / `#nosmaa` switch off one pipeline stage each, `#noshade` skips the suit's colour remap. Objects: `window.__D` (`time`, `tp(x,z)`,
 `step(dt)`, `blocked`, `portalAt`, `shopPad`, `surfaceAt`, `audio`, `pipe`, `scene`, `camera`, and
-`yaw`/`pitch`/`lookLocked`/`fp`, which READ back as well as set, and `cursorBlend`), `__FC` free-cam, `__R`, `__props`, `__bub`, `__petals`, `__stems`, `__gravel`, `__reeds`,
+`yaw`/`pitch`/`lookLocked`, which READ back as well as set, and `cursorBlend`), `__FC` free-cam, `__R`, `__props`, `__bub`, `__petals`, `__stems`, `__gravel`, `__reeds`,
 `__money`, `__houseLights`, `__matGreen`, `__lambo` (`lens`), and `__hero` (`wear`, `fly`, `drop`, `trim`, `spin`,
 `nudge`, `lock`, `roofs`, `fit`, `hair`, `flare`, `ease`, `land`, `take`, `speed`, `cape`,
 `sockets`, `head`, `leap`, `colours`, `metal`, `skin`, `hover`, `sway`, `palette`).
@@ -1124,11 +1138,12 @@ red/blue/yellow, `PETAL_N` decides how many of a plant's 4 stems flower, and the
 green of its own), organic gravel paths, props (wine-red Porsche with silver rims and a peanut-butter interior, the white Corvette C7 Z06
 parked behind it on the mansion driveway, a black Lamborghini Countach with gold rims on the second
 car pad beside them and a red 1969 Aston Martin DBS parked nose on to its tail, an electric
-piano against the living room's north wall, skull, rat,
+piano upstairs in the mansion facing the balcony archway, skull, rat,
 Tardis + NABU crystal, pirate chest + money bricks), the day cycle, the render pipeline, the sound layer, the
-title bubbles, mobile touch controls (joystick + jump + contextual pills), and My Lego Super Hero
-behind the pirate chest (suit swap + flight). Flight collision is now per-geometry in three
-dimensions (§5), and the mansion's upstairs is a real room you can fly into and walk around.
+title bubbles, mobile touch controls (joystick + jump + contextual pills), and My Lego Super Hero,
+taken off its display in the mansion's upstairs (suit swap + flight). Flight collision is now
+per-geometry in three dimensions (§5), and the mansion's upstairs is a real room you can fly into
+and walk around, third person like everywhere else.
 
 **The homepage is a DECK** (user, 2026-09-01, and this REVERSES the earlier revert of exactly this:
 a snap deck was built once and pulled because the ask then was animation and not pinning. It has now
@@ -1363,14 +1378,17 @@ The scroll cue under the hero is now the ARROW ALONE; its "The 3D environment" l
   parser in a session scratchpad), because the pane has no WebGL. Shyon's eyes are the only
   check left. `__hero.drop/.trim/.spin/.nudge/.arm/.grow` exist so both fits and the flight arm
   pose can be dialled live.
-- **The piano has never been SEEN in engine.** Its size, placement, facing and clearances were all
-  verified by measurement and by headless Blender renders (§5), because the pane has no WebGL. The
-  scale in particular is a judgement made against the figure's own height and the wall's own length:
-  at true stud pitch the build does not fit either. `Lego Electric Piano` IS in the saved blend
-  (unlike `garden.glb` and `aston.glb`), and its FLOATING HEADPHONES are cut from the shipped glb.
-- **The mansion's upstairs is empty**, and deliberately so: Shyon asked for it to be solid and
-  enterable because he wants to put something in there. It is one room plus the balcony, floor
-  3.714 to 3.782, walls to about 5.9, entered through the balcony door (§5).
+- **The piano upstairs has now been rendered but not PLAYED IN.** Its 2026-09-02 move was verified
+  in engine against the loaded model and photographed in headless SwiftShader
+  (`scratchpad/up_arch.png`, `up_ghost.png`), which is further than the downstairs placement ever
+  got, but Shyon's eyes are still the check. The scale is a judgement made against the figure's own
+  height: at true stud pitch the keys sit over a minifig's head. `Lego Electric Piano` IS in the
+  saved blend (unlike `garden.glb` and `aston.glb`), and its FLOATING HEADPHONES are cut from the
+  shipped glb.
+- **The mansion's upstairs holds the suit's display and the piano**, and nothing else. It is one
+  room plus the balcony, floor 3.714 to 3.782, walls to about 5.9, ceiling 6.17, entered through
+  the balcony door (§5). Reaching it needs the ghost (Space) or the suit (flight): there are no
+  stairs, by design.
 - **A hero LEAP upstairs still pokes through the ceiling.** Space clears 2.82 in the suit and the
   room has about 2.1 of headroom. The jump arc is gravity, not the flight solver, so the climb
   guard does not see it. Nothing was done about it because nothing was asked; it needs the same
