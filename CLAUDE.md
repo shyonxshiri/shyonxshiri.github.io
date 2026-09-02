@@ -460,7 +460,23 @@ for most of it. The portal menu deliberately keeps the old direct/ACES path.
 
 **Portals.** `PORTALS` (professional / creative / about / nabu) carry `label`, `projects`, door /
 eye / look / exit points with y-gates so a portal only fires on its own floor, `cells` and/or a
-`zone` predicate (the shop's whole grey pad prompts). E enters: 3rd→1st person glide, the real
+`zone` predicate (the shop's whole grey pad prompts).
+**THE MANSION PROMPTS AT ITS FRONT DOOR AND NOWHERE ELSE** (user, 2026-09-02). It carried
+`cells: houseCells` with a 4.0 door radius, and `cellsNear` asks whether ANY of a structure's cells
+is within about a unit, so `E` was offered anywhere you could touch the building: rasterized to a
+plan the prompt covered the whole footprint and a ring right around it, x 44..58 by z -7.8..3.0, so
+you could walk into the north flank, the back wall or the driveway and let yourself in through it
+(`scratchpad/portal_zones.cjs`). The PORCH is measured rather than guessed: walking east from x 45
+at every z, the only band that gets past the west face (47.67) runs **z -1.3..1.0** and reaches
+**x 50.3**, the glass front door (`scratchpad/porch.cjs`). The zone is that corridor plus the
+approach in front of it, `x 45.4..50.9, z -1.35..1.05`; `cells` is dropped and `doorR` neutralised
+to 0.01 so the zone is the whole rule. **`door` is deliberately left where it was**: `portalAt` now
+reads only its `y`, but `BUB_DOOR` measures the title bubble's arrival from that same point and
+moving it would move that too.
+The other two were checked and left alone: the SHOP keeps its whole-pad zone on purpose (a cafe
+terrace you stand on), and the COTTAGE was already `cells: null` with a 2.6 door circle.
+`scratchpad/verify_round.cjs` asserts the mansion prompts on the porch and the approach and is
+silent on all four flanks and the driveway. E enters: 3rd→1st person glide, the real
 interior is snapshotted and blurred as a backdrop, and LEGO-framed panels float in a separate
 `menuScene`. The panel rows are browsable carousels (drag / wheel / arrows); `openPan` centres a
 RANDOM real panel on entry, never repeating the last one. Panels carry the real project media
@@ -484,6 +500,20 @@ takes a hex STRING as a linear value and the renderer encodes to sRGB on the way
 Black #05131D handed over raw rendered as a dark STEEL BLUE, (39,76,94), and shipped a blue border
 instead of a black one. `strongColor` already ends in `convertSRGBToLinear()` for the same reason.
 The About panel's own title is **"About Me"**, renamed from "Who I Am" in the same pass.
+
+**Status messages are in the MIDDLE of the screen, in `#toast`** (user, 2026-09-02). "Suit on",
+"Ghost", "Find another way inside" and everything else `say()` and `heroMsg` carry used to be pushed
+through `#prompt`, the pill at bottom 112, which is wrong twice over: it is where the eye is not
+while you are looking at the world, and it made a STATUS line and a CONTROL prompt take turns in one
+slot, so a message hid "Press E · Enter" for its whole duration and an approach then hid the
+message. `#toast` is its own element with its own z-index, centred, 20px, and it fades and SCALES in
+rather than cutting, which is most of what makes a brief thing register. It sits at `top: 36%` and
+not 50% because the figure stands around the middle of the frame and a panel over his head reads as
+a label on him. `#prompt` is left to the contextual affordances alone.
+**Toned down once** (user, 2026-09-02: a little strong in size and opacity): 20px / `.82` fill /
+16-30 padding read as a dialog rather than a passing line, and it is now 17px / `.62` / 13-24. It is
+NOT taken to a whisper. The `blur(10)` stays, because that is what lets the fill come down and still
+separate the text from a bright lawn; dropping the fill further without it is the "too glass" end.
 
 **Title bubbles.** LEGO speech bubbles (`speech_bubble.glb`) that build themselves course by
 course as you approach, print their label letter by letter, and dismantle when you leave, with
@@ -564,6 +594,34 @@ runs PER VERTEX against a sampled radius-against-height profile of the shell: ea
 how far off that profile it started, and keeps exactly that offset at whatever height it lands on.
 Verified to 0.00e+00 error at every drop from 0 to 0.05. Geometries are cloned first, never
 written through.
+
+**THE SHOULDER TURNS ON ITS OWN PEG** (user, 2026-09-02: the arms pop out of their sockets slightly
+when sprinting). The civilian pivot was pinned to the arm's top-BACK CORNER, `maxY-0.03` by
+`minZ+0.05`, which is close enough to the hinge to hide inside a walk and wrong the moment the swing
+opens up. The error is a CHORD, `2r sin(theta/2)`, so it grows with the angle: measured off the live
+geometry the corner sits **0.119** from the arm's real socket axis (0.106 up, 0.056 back), carrying
+the shoulder cap 0.019 at a walk's 0.161 rad and **0.063** at a sprint's 0.527 rad. `shoulder()` now
+uses `armHinge()`, the function written for the SUIT's arms for exactly this reason, so both bodies
+hang their arms on the peg; it falls back to the old corner if the slice comes back empty, so a
+re-export cannot break the rig. Measured after: **0.0029** off the axis and **0.0015** carried at a
+sprint, 42x better.
+**AND THE SWING ANGLE IS COMPENSATED**, because moving the pivot down the arm shortens the lever the
+hand hangs on and the same angle would have read as a visibly smaller swing. **Measure both levers
+the same way**: a first pass compared a vertical-only drop against a real distance, got 1.31, and
+over-swung by 12%. Pivot to the lowest point of the whole arm-and-hand group, the levers are 0.6588
+from the old corner and 0.5626 from the peg, a ratio of 1.171, so `0.85 x 1.171 = 0.9955`; solving
+the chord exactly (travel is `2L sin(theta/2)`, not linear in the angle) gives **1.0000**, so
+`ARM_SWING` is 1 and the arms swing through the same angle as the legs. Live on `__hero.swing(v)`.
+`scratchpad/verify_arm.cjs`.
+
+**Foot speed: `WALK` 3.2, `RUN` 6.0.** `RUN` went 5.0 to 7.0 on 2026-09-01 (too slow) and back to
+**6.0** on 2026-09-02 (too fast), which keeps most of the increase rather than reversing it. Two
+things it does not disturb, which is what makes it safe to move alone: the limb swing is a RATIO,
+`0.19+0.43*min(1, speed/RUN)`, so at a full sprint it is pinned at 0.62 whatever `RUN` is; and the
+CADENCE runs off real speed rather than `RUN` (`phase += dt*(speed*1.9+3)`), so stride length looks
+after itself, 2.70 units a cycle at 7.0 against 2.62 at 6.0. `FLY_SPD` is deliberately untouched:
+flight normalises against itself, and the gap between having the suit and not widened from 2.14x to
+2.50x. Live on `__hero.foot(walk, run)`.
 
 **The figure.** Imported rigged `.glb`s (`figure.glb`, `hair.glb`, `legs.glb`), hip/shoulder
 pivots driving a stiff minifig walk. The denim legs are fitted by MEASUREMENT against the old
@@ -788,6 +846,72 @@ face alone: Bebas is condensed and caps only, so at the same size a normal-width
 case runs about 1.6x the line length and wrapped every kicker. The size comes down, the tracking
 goes negative, and the uppercase transform comes off. It needs `!important` for the reason below.
 The scroll cue under the hero is now the ARROW ALONE; its "The 3D environment" label was removed.
+
+**WHO GETS INTO THE REALM, AND WHO IS TOLD ABOUT IT** (user, 2026-09-02). One rule in one file,
+`public/realm-support.js`, loaded as a plain script by BOTH `index.html` and `lego.html`, because
+the Realm is vanilla and cannot import from the React bundle. `window.__realmSupported()` returns
+`{ok, why}` and `__realmSupportMessage()` the line to show.
+**THE COST IS THE REASON, and it is measured, not assumed** (`scratchpad/realm_cost.cjs`, run in
+the live page): one frame is **15,894,880 triangles across 689 draw calls**, and the scene holds
+**197MB of geometry buffers plus 86MB of textures, about 283MB** of GPU-side data, after a 38.4MB
+download of 35 `.glb` files. iOS Safari reclaims a tab well below that, so on a phone the Realm does
+not run slowly, it reloads. Making it genuinely mobile is a scene-budget project (the Corvette alone
+is 1.71M triangles), not a settings change.
+Tested in order: `webgl` (a context must really initialise), `gpu` (`MAX_TEXTURE_SIZE` >= 4096),
+`memory` (`navigator.deviceMemory` < 4, where the browser answers at all), `touch` (a device whose
+PRIMARY pointer is a finger, which is the memory test for the browsers that will not answer one).
+The probe RELEASES its context with `WEBGL_lose_context`: a browser allows only a handful and drops
+the oldest, so a probe that holds one open costs the Realm the context it is about to ask for.
+**IT DOES NOT READ `innerWidth`, AND THAT IS THE POINT.** The old gate was
+`window.innerWidth <= 640` in `src/App.tsx`, which asked the wrong question twice: it hid the Realm
+from a desktop browser dragged narrow, where it runs perfectly, and it passed any wide-screened
+tablet. Capability belongs to the DEVICE, so the answer is read once and never recomputed on resize.
+It FAILS OPEN in `src/App.tsx` (a missing script shows the way in) because `lego.html` carries the
+same gate and turns away anything it should; failing closed would hide the Realm from every desktop
+over one missing file.
+**`lego.html` REDIRECTS rather than loading.** Its check sits ABOVE the vendor scripts, where none
+of them has been fetched yet, and sends an unsupported device to `public/realm-unsupported.html`
+with `location.replace` (not `href`, so Back returns to the site rather than bouncing). Verified:
+0 heavy requests on a phone.
+**AND NOBODY IS INVITED THROUGH A DOOR THAT WILL NOT OPEN.** Where the device fails, the homepage's
+"Enter My Lego Realm" button is replaced by a DESKTOP ONLY line carrying the real reason, chapter
+04's kicker becomes "The finished build" instead of "Try it", and its body drops "Walk it yourself".
+The storyboard itself is untouched: the Realm is still discussed and still has its pages.
+**The hero's full sentence is back on every device.** Its tail (", or scroll down for the
+interactive 3D environment built into it") used to be cut to a full stop under 640px, so a phone was
+never told the Realm existed. Reading about it was never the thing that needed gating.
+`scratchpad/verify_gate.cjs` drives desktop and phone and asserts all of the above, 14 assertions.
+
+**Touch targets are an OVERLAY, `.ss-tap`.** Measured across ten viewports, the nav buttons render
+17px tall and the page dots 10px, against Apple's 44px minimum. Growing them would redraw the
+design, so the hit area is a transparent `::after` laid over the element and layout, spacing and
+drawn size are all untouched; its width is `max(100%, 44px)` so a wide control keeps its own width
+and only a narrow one is padded out. It needs `position: relative` on whatever wears it. The scroll
+cue gets real padding instead, being a lone glyph. The one control left under 44px is the "here"
+link inside the hero sentence, deliberately: WCAG exempts a target inline in a sentence, and giving
+it a 44px box would overlap the lines above and below.
+
+**ABOUT'S NAV FOLLOWS THE PHOTO'S CROP, NOT THE PAGE.** It is painted solid black on a `normal`
+blend at 1024 and up, which is right for what the WIDE layout puts behind it: the photo column
+starts at 50% and the nav lands on the pale studio wall. The photo is `object-fit: cover`, so
+narrowing crops it to the dark hair and jacket, and there black on black was invisible: at 768 and
+390, WORK / ABOUT / CONTACT all but disappeared. Under 1024 it joins every other page on
+`difference`. **Do not "simplify" this to `difference` everywhere:** difference CANCELS toward mid
+grey (the same trap the Realm's cursor documents, exact at 127.5) and the studio wall's vignette
+behind the wide nav sits in that zone, which measured CONTACT at about 2.3:1 against the approved
+black's 8.6:1. About also does not DIM its inactive items, which is contrast and not colour: 0.55 of
+the near-black the blend produces on a light page reads as a washed-out grey.
+KNOWN AND NOT FIXED: on the NARROW About, WORK and CONTACT cross the same mid-grey vignette and sit
+around 50% contrast. The robust fix is a scrim behind the nav, which reshapes an approved page, so
+it was flagged rather than done.
+
+**Reading the responsive audit** (`scratchpad/responsive_audit.cjs`, ten viewports x four pages).
+Three things it reports are NOT bugs and were checked against screenshots before being believed:
+`div[-5..5]` on every page is the custom cursor dot; `img.ss-frame-img`, `img.ss-about-photo` and
+Work's `.ss-card` row all sit inside `overflow:hidden` parents (the photo's slow zoom and the
+coverflow's peeking neighbours are the design); and a `.ss-tap` control's DRAWN box is deliberately
+unchanged. The check that matters is that the DOCUMENT never scrolls sideways, and it does not, at
+any of the ten sizes.
 
 **Naming trap:** the Work category displays as "Personal Projects" but its internal id is still
 `creative-projects`, which keys the theme map, modal branches and portal lookups. Never rename the id.

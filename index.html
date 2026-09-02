@@ -89,6 +89,10 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- One rule decides whether the Realm is offered here and whether lego.html lets anyone in;
+         see public/realm-support.js. Plain script, not a module, so window.__realmSupported is
+         defined before React mounts and the first render already knows the answer. -->
+    <script src="/realm-support.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

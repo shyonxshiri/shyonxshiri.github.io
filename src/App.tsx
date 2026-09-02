@@ -288,6 +288,21 @@ const GLOBAL_CSS = `
     overscroll-behavior: contain;
   }
   .ss-home-scroll::-webkit-scrollbar { display: none; }
+  /* ── A FINGER-SIZED TAP TARGET THAT MOVES NOTHING (user, 2026-09-02).
+     The site's controls are drawn as small type: measured across ten viewports,
+     the nav buttons render 17px tall and the page dots 10px, against Apple's
+     44px minimum, so on touch they are all but unhittable. Growing them would
+     redraw the design, so the HIT AREA is a transparent ::after laid over the
+     element instead: layout, spacing and the drawn size are all untouched.
+     width is max(100%,44px) rather than 44px so a WIDE control keeps its own
+     width and only a narrow one is padded out. Needs position:relative on the
+     element it is used on. */
+  .ss-tap { position: relative; }
+  .ss-tap::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: max(100%, 44px); height: 44px;
+  }
   .ss-story-cue {
     position: absolute; left: 50%; bottom: max(22px, calc(22px + env(safe-area-inset-bottom)));
     transform: translateX(-50%);
@@ -295,6 +310,8 @@ const GLOBAL_CSS = `
     background: none; border: none; color: var(--white);
     opacity: .78; transition: opacity .3s ease;
     z-index: 12;
+    /* the arrow itself draws 11x15; this is the part a thumb has to find */
+    padding: 15px 22px;
   }
   .ss-story-cue:hover { opacity: 1; }
   .ss-story-cue .ss-cue-arrow {
@@ -989,14 +1006,29 @@ export default function App() {
           paddingBottom: "28px",
           paddingLeft: "max(48px, calc(48px + env(safe-area-inset-left)))",
           paddingRight: "max(48px, calc(48px + env(safe-area-inset-right)))",
-          mixBlendMode: page === "about" ? "normal" : "difference",
+          // ── ABOUT'S NAV FOLLOWS THE PHOTO'S CROP, NOT THE PAGE (user, 2026-09-02).
+          // It paints solid black over a `normal` blend, which is right for the backdrop the WIDE
+          // layout puts behind it: the photo column starts at 50% and the nav lands on the pale
+          // studio wall behind Shyon's head. The photo is `object-fit: cover`, so narrowing the
+          // window crops it to the dark hair and jacket instead, and there black on black was
+          // effectively invisible: measured at 768 and 390, WORK / ABOUT / CONTACT all but
+          // disappeared. Under 1024 it therefore joins every other page on `difference`, which
+          // resolves light over that dark crop.
+          // WHY NOT `difference` EVERYWHERE, which would drop the special case: difference
+          // CANCELS toward mid grey (the same trap the Realm's cursor documents, exact at 127.5),
+          // and the studio wall's vignette behind the wide layout's nav sits right in that zone.
+          // Rendered at 1024 and 1512 that put CONTACT at roughly 2.3:1 against its backdrop where
+          // the approved black gives 8.6:1. So each layout keeps the treatment that measures best
+          // for what is actually behind it, and the approved wide look is untouched.
+          mixBlendMode: page === "about" && isDesktop ? "normal" : "difference",
         }}
       >
         <div style={{ visibility: "hidden" }} />
         <ul style={{ display: "flex", gap: 40, listStyle: "none" }}>
           {PAGE_ORDER.map(p => (
             <li key={p}>
-              <NavLink label={p.charAt(0).toUpperCase() + p.slice(1)} active={page === p} onClick={() => navigate(p)} currentPage={page} />
+                <NavLink label={p.charAt(0).toUpperCase() + p.slice(1)} active={page === p} onClick={() => navigate(p)}
+                currentPage={page} wideAbout={page === "about" && isDesktop} />
             </li>
           ))}
         </ul>
@@ -1009,13 +1041,15 @@ export default function App() {
           transform: "translateY(-50%)",
           zIndex: 400,
           display: "flex", flexDirection: "column", gap: 12,
-          mixBlendMode: page === "about" ? "normal" : "difference",
+          mixBlendMode: page === "about" && isDesktop ? "normal" : "difference",   // same reason as the nav
         }}
       >
-        {PAGE_ORDER.map((p, i) => (
+        {PAGE_ORDER.map((p) => (
           <button
             key={p}
             onClick={() => navigate(p)}
+            className="ss-tap"
+            aria-label={p}
             style={{
               width: 10, height: 10, borderRadius: "50%",
               border: "1px solid rgba(245,242,237,0.4)",
@@ -1023,6 +1057,7 @@ export default function App() {
               transform: page === p ? "scale(1.5)" : "scale(1)",
               transition: "all 0.4s ease",
               cursor: "none",
+              position: "relative",
             }}
             {...hover}
           />
@@ -1061,16 +1096,22 @@ export default function App() {
 /* ─────────────────────────────────────────────────────────────
    NAV LINK
 ───────────────────────────────────────────────────────────── */
-function NavLink({ label, active, onClick, currentPage }: { label: string; active: boolean; onClick: () => void; currentPage?: string }) {
+function NavLink({ label, active, onClick, currentPage, wideAbout }: { label: string; active: boolean; onClick: () => void; currentPage?: string; wideAbout?: boolean }) {
   const hover = useCursorHover();
+  // `wideAbout` is About in the WIDE layout, the one place the nav is painted rather than blended
+  // (see the nav's own note). Everywhere else it is white through `difference`. About also does
+  // not DIM its inactive items: elsewhere the page behind is dark, so 0.55 of the near-white the
+  // blend produces still reads, while on About the backdrops are light and 0.55 of near-black
+  // measured as a washed-out grey. The active item is still marked, by the page dots.
   const isAboutPage = currentPage === "about";
   return (
     <button
       onClick={onClick}
+      className="ss-tap"
       style={{
         fontFamily: "'Space Mono', monospace",
         fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
-        color: isAboutPage ? "#000000" : "var(--white)", background: "none", border: "none",
+        color: wideAbout ? "#000000" : "var(--white)", background: "none", border: "none",
         cursor: "none", opacity: isAboutPage ? 1 : (active ? 1 : 0.55),
         transition: "opacity 0.3s ease, color 0.3s ease",
         position: "relative",
@@ -1092,11 +1133,53 @@ function NavLink({ label, active, onClick, currentPage }: { label: string; activ
 }
 
 /* ─────────────────────────────────────────────────────────────
+   CAN THIS VISITOR GET INTO THE REALM?
+
+   The rule itself lives in public/realm-support.js, loaded as a plain script by
+   index.html, because lego.html has to apply the SAME rule and cannot import
+   from this bundle. Read the reasoning there; the short version is that one
+   frame of the Realm is 15.9M triangles and 283MB of GPU-side data, which a
+   phone browser will not carry.
+
+   THIS REPLACES A WIDTH TEST. The Realm used to be offered on `window.innerWidth
+   > 640`, which hid it from a desktop browser dragged narrow (where it runs
+   perfectly) and offered it to any wide-screened tablet. Capability belongs to
+   the device, not to the size of the window, so this is read ONCE and never
+   recomputed on resize.
+
+   IT FAILS OPEN, deliberately. If the script did not load, this returns ok and
+   the way in is shown, because lego.html carries the same gate and will turn
+   away anything it should: an over-offer costs a redirect, while failing closed
+   would hide the Realm from every desktop over one missing file.
+───────────────────────────────────────────────────────────── */
+type RealmSupport = { ok: boolean; why: string; message: string };
+function readRealmSupport(): RealmSupport {
+  const w = window as unknown as {
+    __realmSupported?: () => { ok: boolean; why: string };
+    __realmSupportMessage?: () => string;
+  };
+  if (typeof w.__realmSupported !== "function") return { ok: true, why: "", message: "" };
+  try {
+    const r = w.__realmSupported();
+    return {
+      ok: !!r.ok,
+      why: r.why || "",
+      message: typeof w.__realmSupportMessage === "function" ? w.__realmSupportMessage() : "",
+    };
+  } catch {
+    return { ok: true, why: "", message: "" };
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
    HOME PAGE
 ───────────────────────────────────────────────────────────── */
 function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [loaded, setLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
+  // read once: none of its inputs change while the page is open, and it must not
+  // flip when the window is resized (see readRealmSupport)
+  const [realm] = useState(readRealmSupport);
   const hover = useCursorHover();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -1171,7 +1254,11 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             >
               here
             </span>{" "}
-            to browse my site{!isMobile ? ", or scroll down for the interactive 3D environment built into it." : "."}
+            {/* THE WHOLE SENTENCE, ON EVERY DEVICE (user, 2026-09-02). The tail used to be cut
+                to a full stop under 640px, so a phone was never told the 3D environment existed
+                at all. Whether you can ENTER it is a separate question, answered at the end of
+                the storyboard; being able to read about it is not gated on anything. */}
+            to browse my site, or scroll down for the interactive 3D environment built into it.
           </motion.p>
         </div>
 
@@ -1215,7 +1302,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 ghost="01"
                 meta="Two frames · FR 01 – 02"
                 kicker="01 · What it is"
-                body="The environment is a small town on a single LEGO baseplate: a coffee shop, a modern house, a set of ruins, a run down cottage, and a playable minifig modeled after myself. Each building functions as a portal. Entering one opens a category of my work: Professional Services, Personal Projects, About, and NABU."
+                body="The environment is a small town built on a LEGO inspired baseplate, a coffee shop, a modern house, a set of ruins, and a run down cottage. Each structure is meant to represent the category of work it holds. Entering one shows you a specific branch of who I am and what I do."
               />
               <div className="ss-frame-grid">
                 <StoryFrame anim="establish" num="FR 01" scene="Player figure" src="/assets/story/story_figure_front.jpg"
@@ -1243,7 +1330,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 ghost="02"
                 meta="Two frames · FR 05 – 06"
                 kicker="02 · Why I made it"
-                body="The environment is a work sample in its own right. Building it required the same disciplines the portfolio presents: 3D modeling, engineering, and web development. It also traces back to where my work began, stop motion films built from LEGO, and to the technologies I have taken on since."
+                body="The environment is a work sample in its own right. Building it took the same disciplines the rest of the portfolio presents, hard surface modeling and UV work in Blender, real time rendering and collision in the browser, and the front end engineering that ties the two together. It also goes back to where my work started, stop motion films built from LEGO, and to the technologies I have taken on since."
               />
               <div className="ss-frame-grid">
                 <StoryFrame anim="slideL" num="FR 05" scene="Lighting" src="/assets/story/story_sunset.jpg"
@@ -1262,7 +1349,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 ghost="03"
                 meta="Two frames · FR 07 – 08"
                 kicker="03 · How I made it"
-                body="Every structure was assembled from individual bricks in Blender, using my own builds. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
+                body="Every structure was assembled from individual bricks in Blender. Most are my own builds, with some free assets worked in and modified to fit. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
               />
               <div className="ss-frame-grid">
                 <StoryFrame anim="courses" num="FR 07" scene="Assembly" src="/assets/story/story_blender_shop_assembly.jpg"
@@ -1295,12 +1382,17 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               chapter with a single still: the story has exactly one closing frame. */}
           <Slide id="c4" label="04 · Try it" stagger={0.28}>
             <div className="ss-split-row">
+              {/* The KICKER is an invitation as much as the body is, so it changes with it. The
+                  Slide's own `label` above is deliberately left alone: that feeds the deck rail,
+                  which wants one stable name per slide. */}
               <StoryChapter
                 wide
                 ghost="04"
                 meta="One frame · FR 13"
-                kicker="04 · Try it"
-                body="The full version runs on this site, with the day cycle and all four portals active. Walk it yourself."
+                kicker={realm.ok ? "04 · Try it" : "04 · The finished build"}
+                body={realm.ok
+                  ? "The full version runs on this site, with the day cycle and all four portals active. Walk it yourself."
+                  : "The full version runs on this site, with the day cycle and all four portals active, on a desktop or laptop. The frames above are the walk from here."}
               />
               <StoryFrame anim="push" num="FR 13" scene="Live build" src="/assets/story/story_aerial_sunset.jpg"
                 caption="The current build, running in-engine: the town from above at sunset, lampposts coming on." />
@@ -1309,14 +1401,19 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               variants={sbRise}
               style={{ display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap", marginTop: 30 }}
             >
-              {!isMobile && (
+              {/* THE WAY IN IS SHOWN ONLY TO A DEVICE THAT CAN TAKE IT (user, 2026-09-02).
+                  Not `!isMobile` any more: that hid the door from a narrow desktop window and
+                  offered it to tablets. Where the device cannot run it the button is replaced by
+                  the reason, so the storyboard still tells the Realm's story and nobody is
+                  invited through a door that will not open for them. */}
+              {realm.ok ? (
                 <a
                   href="/lego.html"
                   {...hover}
                   className="ss-contact-btn"
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 10,
-                    padding: "16px 30px", borderRadius: 980,
+                    padding: "16px 30px", borderRadius: 980, minHeight: 46,
                     border: "1px solid rgba(245,242,237,.4)",
                     color: "var(--white)", textDecoration: "none",
                     fontSize: 13, fontWeight: 600, cursor: "none",
@@ -1324,20 +1421,40 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 >
                   <span>Enter My Lego Realm</span><span>→</span>
                 </a>
+              ) : (
+                <p
+                  style={{
+                    maxWidth: 430, fontSize: 14, lineHeight: 1.6,
+                    color: "rgba(245,242,237,.62)",
+                    fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  }}
+                >
+                  <span style={{
+                    display: "block", marginBottom: 6,
+                    fontFamily: "'Space Mono', monospace", fontSize: 10,
+                    letterSpacing: 2, textTransform: "uppercase", color: "var(--sky)",
+                  }}>
+                    Desktop only
+                  </span>
+                  {realm.message}
+                </p>
               )}
               <span
                 role="button" tabIndex={0}
                 onClick={() => onNavigate("work")}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
                 {...hover}
+                className="ss-tap"
                 style={{
                   fontFamily: "'Space Mono', monospace",
                   fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
                   color: "rgba(245,242,237,.72)", textDecoration: "underline",
                   textUnderlineOffset: "4px", cursor: "none",
+                  display: "inline-block",   // ss-tap needs a box to hang its hit area on
                 }}
               >
-                {isMobile ? "Browse the work" : "or browse the work"}
+                {/* the "or" only makes sense standing next to the button */}
+                {realm.ok ? "or browse the work" : "Browse the work"}
               </span>
             </motion.div>
           </Slide>

@@ -88,7 +88,15 @@ the seated skeleton is once again the only place a ghost can be had. That is the
 a ghost is how you GET up to the suit, since the upstairs has no stairs and a civilian cannot fly,
 so you give the shroud back at the moment you take the armour. `returnGhostBody()` does it and
 `suitOn()` is the one door the suit goes on through (`takeSuit` and `wearOutfit('hero')` both route
-through it), so the handback cannot be walked around. It is deliberately NOT symmetric: taking the
+through it), so the handback cannot be walked around.
+**IT DOES NOT MATTER WHETHER THE SHROUD IS WORN AT THAT MOMENT** (user, 2026-09-02). The first
+version of `returnGhostBody` returned early unless `ghostOn`, which meant it only ever fired on the
+ONE route that goes straight from ghost to suit, `E` at the display. `T` cannot take that route: the
+ring runs civilian to suit to ghost, so from the ghost it steps to CIVILIAN first and reaches the
+suit only on the next press, by which time the shroud is off and the early return had fired. The
+ghost therefore stayed in the ring for ever, which is exactly what was reported. The rule is about
+the SUIT GOING ON, not about what is being worn at that instant, so it now hands back whenever the
+suit goes on and `wearOutfit` returns whether it did, which is what lets the line say so. It is deliberately NOT symmetric: taking the
 SUIT off with `T` leaves the suit yours, because its display is one-shot and there is nowhere to
 fetch it from, while the bones sit in the cave and can always be gone back to. `hero_suit.glb` is the Mysterio minifig from the blend, everything below the neck
 (torso, waist, arms, hands, legs, cape, back plate), `hero_hair.glb` is the Joker hairpiece

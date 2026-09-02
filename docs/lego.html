@@ -78,6 +78,30 @@
   #prompt.on{opacity:1;}
   #prompt b{font-family:'Nunito',sans-serif;font-weight:800;color:#38bdf8;background:rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:8px;padding:1px 9px;}
+  /* ── STATUS MESSAGES GO TO THE MIDDLE OF THE SCREEN (user, 2026-09-02).
+     "Suit on", "Ghost", "Find another way inside" and the rest used to be pushed through
+     #prompt, the pill at bottom 112, which is wrong twice over. It is where the eye is NOT
+     while you are looking at the world, and it made a STATUS line and a CONTROL prompt take
+     turns in one slot, so a message arriving hid "Press E · Enter" for its whole duration and
+     an approach then hid the message. This is its own element: centred, larger type, its own
+     z-index above the prompt, and it fades and scales in rather than cutting, which is most of
+     what makes a brief thing register at all.
+     36% rather than 50%: the figure stands around the middle of the frame and a panel over his
+     head reads as a label on him rather than as a message. */
+  /* TONED DOWN ONCE (user, 2026-09-02: a little strong in size and opacity). 20px/.82/16-30
+     read as a dialog rather than as a passing line. It is NOT taken to a whisper: the blur stays
+     at 10, because that is what lets the fill come down to .62 and still separate the text from a
+     bright lawn, and dropping the fill further without it would be the "too glass" end. */
+  #toast{position:fixed;left:50%;top:36%;transform:translate(-50%,-50%) scale(.94);z-index:30;
+    font-weight:700;font-size:17px;line-height:1.35;letter-spacing:.2px;color:#fff;text-align:center;
+    background:rgba(12,15,22,.62);border:1px solid rgba(255,255,255,.14);border-radius:14px;
+    padding:13px 24px;backdrop-filter:blur(10px);box-shadow:0 12px 30px rgba(0,0,0,.38);
+    max-width:min(520px,86vw);opacity:0;pointer-events:none;
+    transition:opacity .16s ease, transform .22s cubic-bezier(.16,1,.3,1);}
+  #toast.on{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  #toast b{font-family:'Nunito',sans-serif;font-weight:800;color:#38bdf8;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.22);border-bottom-width:2px;border-radius:8px;padding:1px 9px;}
+  @media (max-width:520px){ #toast{font-size:15px;padding:11px 18px;} }
   #viewer{position:fixed;inset:0;z-index:45;background:rgba(7,9,14,.93);display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px;}
   #viewer.on{display:flex;}
   #viewer .card{max-width:min(860px,92vw);width:100%;background:#141720;border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden;}
@@ -186,6 +210,7 @@
   </div></div>
   <div id="fade"></div>
   <div id="prompt"></div>
+  <div id="toast"></div>
   <div id="joy"><div class="knob" id="joyKnob"></div></div>
   <button id="btnJump">JUMP</button>
   <button id="btnDown">DOWN</button>
@@ -193,6 +218,19 @@
   <button id="btnBack">BACK</button>
   <div id="viewer"><div class="x">Q ✕</div><div class="card"><div class="mwrap"><div class="media"></div><div class="nav prev">‹</div><div class="nav next">›</div></div><div class="cap"></div></div></div>
 
+  <!-- ── THE DOOR TEST, AND IT RUNS BEFORE ANYTHING HEAVY IS FETCHED.
+       A device that cannot hold the Realm is sent to a small static page instead of being
+       given 38MB of .glb and a 16M-triangle frame it will be killed for. This sits ABOVE the
+       vendor scripts on purpose: at this point in the parse none of them has been fetched, so
+       a redirect here costs the visitor nothing at all.
+       location.replace, not location.href, so the Back button returns to the site the visitor
+       came from rather than bouncing them straight back into this redirect. -->
+  <script src="/realm-support.js"></script>
+  <script>
+    if (!window.__realmSupported || !window.__realmSupported().ok) {
+      location.replace('/realm-unsupported.html');
+    }
+  </script>
   <script src="/vendor/three.min.js"></script>
   <script src="/vendor/GLTFLoader.js"></script>
   <script src="/vendor/DRACOLoader.js"></script>
@@ -1049,8 +1087,25 @@
     const pivot=(x,y,z)=>{ const p=new THREE.Group(); p.position.set(x+off.x,y+off.y,z+off.z); figBody.add(p); return p; };
     if(leftLeg) { hipL=pivot(leftLeg.cx,  leftLeg.maxY-0.04,  leftLeg.cz);  hipL.attach(leftLeg.o); }
     if(rightLeg){ hipR=pivot(rightLeg.cx, rightLeg.maxY-0.04, rightLeg.cz); hipR.attach(rightLeg.o); }
-    function shoulder(group){ const y=Math.max(...group.map(m=>m.maxY))-0.03;
-      const z=Math.min(...group.map(m=>m.minZ))+0.05; const x=group.reduce((s,m)=>s+m.cx,0)/group.length;
+    // ── THE CIVILIAN SHOULDER TURNS ON ITS OWN PEG (user, 2026-09-02: the arms pop out of their
+    // sockets slightly when sprinting). It used to be pinned to the arm's top-BACK CORNER,
+    // `maxY-0.03` by `minZ+0.05`, which is close enough to the hinge to hide inside a walk and
+    // wrong the moment the swing opens up. The error is a CHORD, `2r sin(theta/2)`, so it grows
+    // with the angle: measured off the live geometry, the corner sits **0.119** from the arm's
+    // real socket axis (0.106 up, 0.056 back), which carries the shoulder cap 0.019 at a walk's
+    // 0.161 rad and **0.063** at a sprint's 0.527. That is the pop, and it is three times worse
+    // sprinting for the same reason the hero's flight raise was worse still (see armHinge, which
+    // was written for exactly this and is now used by both bodies).
+    // The peg is the arm's INNERMOST tenth in x, centred in y and z. `inward` is which end faces
+    // the torso: +x for the left arm, -x for the right. It falls back to the old corner if the
+    // slice comes back empty, so a re-export that changes the topology cannot break the rig.
+    function shoulder(group){
+      const x=group.reduce((s,m)=>s+m.cx,0)/group.length;
+      // the ARM, not the hand: the piece that reaches highest is the one carrying the shoulder
+      const top=group.reduce((a,m)=>(!a||m.maxY>a.maxY)?m:a,null);
+      const h = top ? armHinge(top.o, x<0?1:-1, inv) : null;
+      const y = h ? h.y : Math.max(...group.map(m=>m.maxY))-0.03;
+      const z = h ? h.z : Math.min(...group.map(m=>m.minZ))+0.05;
       const p=pivot(x,y,z); group.forEach(m=>p.attach(m.o)); return p; }
     if(leftArm.length)  shL=shoulder(leftArm);
     if(rightArm.length) shR=shoulder(rightArm);
@@ -2848,6 +2903,12 @@
         heroSuit.updateWorldMatrix(true,true); return heroSuit.position.toArray().map(v=>+v.toFixed(4)); },
       arm(up,rest){ if(up!=null) FLY_ARM_UP=+up; if(rest!=null) FLY_ARM_REST=+rest;
         return {up:FLY_ARM_UP, rest:FLY_ARM_REST}; },
+      // the WALK/RUN arm swing, as a multiple of the leg swing (see ARM_SWING)
+      swing(v){ if(v!=null) ARM_SWING=+v; return ARM_SWING; },
+      // foot speed. Everything that reads it normalises against RUN, so the pose and the cadence
+      // follow on their own; see the note on the constants.
+      foot(walk,run){ if(walk!=null) WALK=Math.max(0.5,+walk); if(run!=null) RUN=Math.max(WALK,+run);
+        return {walk:WALK, run:RUN, vsFly:+(FLY_SPD/RUN).toFixed(2)}; },
       armAmt(kick,travel){ if(kick!=null) FLY_ARM_KICK=+kick; if(travel!=null) FLY_ARM_TRAVEL=+travel;
         return {kick:FLY_ARM_KICK, travel:FLY_ARM_TRAVEL}; },
       pitch(hover,dive){ if(hover!=null) FLY_PITCH_HOVER=+hover; if(dive!=null) FLY_PITCH_DIVE=+dive;
@@ -3130,9 +3191,17 @@
   // It is deliberately NOT symmetric. Taking the SUIT off with T leaves the suit yours, because
   // the suit's own display is one-shot and there would be nowhere to fetch it from; the bones sit
   // in the cave and can always be gone back to.
+  // IT DOES NOT MATTER WHETHER THE SHROUD IS CURRENTLY WORN (user, 2026-09-02). The first
+  // version returned early unless `ghostOn`, which meant the handback only ever happened on the
+  // ONE route that goes straight from ghost to suit: `E` at the display. `T` cannot take that
+  // route, because the ring runs civilian to suit to ghost, so from the ghost it steps to CIVILIAN
+  // first and only reaches the suit on the next press, by which time the shroud is already off and
+  // the early return fired. The ghost therefore stayed in the ring for ever. The rule is about the
+  // SUIT going on, not about what you happen to be wearing at that instant.
   function returnGhostBody(){
-    if(!ghostOn) return false;
-    wearGhost(false);
+    const had = ghostUnlocked || ghostOn;
+    if(!had) return false;
+    if(ghostOn) wearGhost(false);
     ghostUnlocked=false;          // back with the bones, and the bones are where it is fetched from
     return true;
   }
@@ -5333,19 +5402,23 @@
     if(heroUnlocked && heroMeshes.length) r.push('hero');
     if(ghostUnlocked && ghostRoot) r.push('ghost');
     return r; }
+  // returns whether the ghost body was handed back on the way, so the caller can say so
   function wearOutfit(w){
-    if(w==='ghost'){ wearGhost(true); return; }
-    if(w==='hero'){ suitOn(); return; }      // and the shroud goes back to the bones on the way
+    if(w==='ghost'){ wearGhost(true); return false; }
+    if(w==='hero') return suitOn();          // and the shroud goes back to the bones on the way
     if(ghostOn) wearGhost(false);
     wearHero(false);
+    return false;
   }
   function cycleOutfit(){
     if(mode!=='hub') return;
     const r=outfitRing(); if(r.length<2) return;
     const cur=ghostOn?'ghost':(heroOn?'hero':'civ');
     const nxt=r[(r.indexOf(cur)+1)%r.length];
-    wearOutfit(nxt);                         // suitOn() sounds the plates for 'hero'
-    say(nxt==='ghost'?'Ghost':nxt==='hero'?'Suit on':'Suit off', 2.0);
+    const gave=wearOutfit(nxt);              // suitOn() sounds the plates for 'hero'
+    say(nxt==='ghost' ? 'Ghost'
+      : nxt==='hero'  ? (gave ? 'Suit on. The ghost is back with the bones.' : 'Suit on')
+      : 'Suit off', gave ? 3.0 : 2.0);
   }
   const camLook=new THREE.Vector3(0,0.95,0);
 
@@ -5433,7 +5506,23 @@
     creative:{ label:'Personal Projects', projects:CREATIVE, cells:null, doorR:2.6,   // front-door circle only: the house's wall cells would let you enter from the back
       door:new THREE.Vector3(20.69,0,-21.40), eye:new THREE.Vector3(20.69,1.75,-22.53), look:new THREE.Vector3(20.69,1.5,-27.43),
       exit:new THREE.Vector3(20.69,0,-19.43), yaw:0 },           // step back out onto the path (north of the bridge), facing the walk (+z)
-    about:{ label:'About', projects:ABOUT, cells:houseCells, doorR:4.0,   // wide radius: the doorway itself has no wall cells, so the door circle must cover the whole approach
+    // ── THE MANSION PROMPTS AT ITS FRONT DOOR AND NOWHERE ELSE (user, 2026-09-02).
+    // It carried `cells: houseCells` with a 4.0 door radius, and `cellsNear` asks whether ANY of a
+    // structure's cells is within about a unit, so E was offered anywhere you could touch the
+    // building: rasterized to a plan, the prompt covered the whole footprint and a ring right the
+    // way around it, x 44..58 by z -7.8..3.0. You could walk into the north flank, the back, or
+    // the driveway wall and let yourself in through it (`scratchpad/portal_zones.cjs`).
+    // The PORCH is measured instead of guessed: walking east from x 45 at every z, the only band
+    // that gets past the west face (47.67) runs z -1.3..1.0 and reaches x 50.3, which is the glass
+    // front door (`scratchpad/porch.cjs`). The box is that corridor plus the approach walk in front
+    // of it, so the prompt arrives as you come up to the door and exists nowhere else on the
+    // building. `cells` is dropped and `doorR` neutralised so the zone is the whole rule.
+    // `door` is deliberately LEFT WHERE IT WAS: portalAt only reads its `y` now, but `BUB_DOOR`
+    // measures the title bubble's arrival from this same point, and moving it would move that.
+    // The shop keeps its whole-pad zone on purpose (a cafe terrace you stand on), and the cottage
+    // was already a 2.6 door circle with no cells, so neither needed this.
+    about:{ label:'About', projects:ABOUT, cells:null, doorR:0.01,
+      zone:(x,z)=> x>45.4 && x<50.9 && z>-1.35 && z<1.05,
       door:new THREE.Vector3(45.73,0,0), eye:new THREE.Vector3(49.23,1.8,0), look:new THREE.Vector3(55.23,1.4,0),
       exit:new THREE.Vector3(41.23,0,0), yaw:-Math.PI/2 },       // facing -x toward spawn/world
     nabu:{ label:'NABU', projects:NABU, cells:null,              // the blue crystal on the Tardis is the NABU portal (balcony only)
@@ -5716,6 +5805,7 @@
     }
   }
   const fadeEl=document.getElementById('fade'), promptEl=document.getElementById('prompt'),
+        toastEl=document.getElementById('toast'),
         viewerEl=document.getElementById('viewer'), shopbgEl=document.getElementById('shopbg');
   function tweenCam(p1,l1,dur,after){ camAnim={p0:camera.position.clone(), l0:camLook.clone(), p1:p1.clone(), l1:l1.clone(), t:0, dur, after}; }
   function cellsNear(set,x,z,R){ if(!set||!set.size) return false;
@@ -6520,6 +6610,18 @@
   // ── loop: LEGO waddle (fused-leg minifig) + hop ──
   const clock=new THREE.Clock();
   let velX=0,velZ=0,curYaw=Math.PI,phase=0,prevSin=0,velY=0,grounded=true,jumpQ=false,swingAmt=0,jumpPose=0,jumpSide=1;
+  // ── AND THE SWING ANGLE IS COMPENSATED FOR THE NEW PIVOT, so the walk that was approved still
+  // reads the same. Moving the shoulder onto its peg drops it 0.106 DOWN the arm, which shortens
+  // the lever the hand hangs on, and at the same angle the hand would travel less: a visibly
+  // smaller arm swing, which is not what was reported.
+  // BOTH LEVERS ARE MEASURED THE SAME WAY, pivot to the lowest point of the whole arm-and-hand
+  // group, and that matters: a first pass compared a vertical-only drop against a real distance
+  // and came out at 1.31, which over-swung by 12%. Measured properly the levers are 0.6588 from
+  // the old corner and 0.5626 from the peg, a ratio of 1.171, so 0.85 x 1.171 = 0.9955, and
+  // solving the chord exactly (the hand's travel is 2L sin(theta/2), which is not linear in the
+  // angle) gives 1.0000 on both arms. The arms now swing through the same angle as the legs.
+  // Live on __hero.swing(v) if it wants tasting.
+  let ARM_SWING=1.0000;
   const fV=new THREE.Vector3(),rV=new THREE.Vector3(),mV=new THREE.Vector3(),_v=new THREE.Vector3();
   const _cv=new THREE.Vector3(), _cq=new THREE.Quaternion();   // scratch for the cape's airflow solve
   // 2x-layout walk bounds, pushed a few units onto the apron past each rim. BX1 was 64 and is
@@ -6537,7 +6639,19 @@
   // range is widened to match, which is the "arms and legs sway slightly more" half of the ask.
   // FLY_SPD is deliberately NOT touched: flight normalises against itself, and a run that closes
   // on it would flatten the difference between having the suit and not.
-  const BX0=-30, BX1=71.8, BZ0=-35, BZ1=39.4, WALK=3.2, RUN=7.0;   // BZ1 was 32; it keeps the same 3.6 of apron past the north rim, which moved to 35.789
+  const BX0=-30, BX1=71.8, BZ0=-35, BZ1=39.4;   // BZ1 was 32; it keeps the same 3.6 of apron past the north rim, which moved to 35.789
+  // ── AND THE SPRINT CAME BACK DOWN, 7.0 -> 6.0 (user, 2026-09-02: too fast overall). That is
+  // most of the way from the old 5.0 to the 7.0 above rather than a reversal of it.
+  // TWO THINGS THIS DOES NOT DISTURB, which is why it is a safe number to move on its own.
+  // The limb swing is a RATIO, `0.19+0.43*min(1, speed/RUN)`, so at a full sprint it is pinned at
+  // 0.62 whatever RUN is: the pose that was approved is the pose you still get.
+  // And the CADENCE is driven by real speed, not by RUN (`phase += dt*(speed*1.9+3)`), so the
+  // stride length looks after itself: 7.0 gave 2.594Hz over 2.70 units a cycle, 6.0 gives 2.292Hz
+  // over 2.62, which is 3% shorter. Nothing here starts skating.
+  // FLY_SPD is still deliberately untouched: flight normalises against itself, and the gap between
+  // having the suit and not just widened from 2.14x to 2.50x.
+  // Live on __hero.foot(walk, run).
+  let WALK=3.2, RUN=6.0;
   // ── FLIGHT. Held Space climbs, held Shift drops, letting go of both coasts to a hover, and
   // the stick still steers relative to the camera exactly as it does on foot. FLY_CEIL keeps
   // the hero inside the fog the world is lit for; FLY_CLEAR is how far above a roof a hover
@@ -7009,8 +7123,8 @@
     if(hipL&&hipR&&shL&&shR){ const jp=jumpPose*jumpSide;   // jumpSide mirrors the split pose on alternating jumps
       hipL.rotation.x = sw*(1-jumpPose) + 0.75*jp;      // one leg kicks up/forward
       hipR.rotation.x = -sw*(1-jumpPose) - 0.75*jp;     // the other kicks back
-      shL.rotation.x  = -sw*0.85*(1-jumpPose) - 0.6*jp; // opposite arm back
-      shR.rotation.x  =  sw*0.85*(1-jumpPose) + 0.6*jp; // and the other arm up/forward
+      shL.rotation.x  = -sw*ARM_SWING*(1-jumpPose) - 0.6*jp; // opposite arm back
+      shR.rotation.x  =  sw*ARM_SWING*(1-jumpPose) + 0.6*jp; // and the other arm up/forward
     }
     // flight overrides the walk on the same pivots: legs trail, and the arms answer to SPEED.
     // The take-off kick decays over about a second, so the swing up reads even if you launch
@@ -7131,8 +7245,14 @@
         ? (suitAt(player.position.x, player.position.z) && Math.abs(player.position.y-3.714)<1.2) : false;
       let msg='';
       if(heroMsgT>0){ heroMsgT-=dt; }
+      // the status line has the middle of the screen to itself; #prompt below is left to the
+      // contextual affordances, so the two can no longer hide each other
+      if(toastEl){
+        const show = heroMsgT>0 && mode==='hub' && !viewerOpen;
+        if(show){ if(toastEl.innerHTML!==heroMsg) toastEl.innerHTML=heroMsg; toastEl.classList.add('on'); }
+        else toastEl.classList.remove('on');
+      }
       if(viewerOpen) msg='';
-      else if(heroMsgT>0 && mode==='hub') msg=heroMsg;   // unlock / take-off lines outrank the ambient prompts
       else if(mode==='menu') msg=IS_TOUCH
         ? ((activePortal&&PORTALS[activePortal].panMax>0) ? 'Tap a project &nbsp;·&nbsp; Drag to browse' : 'Tap a project')
         : ((activePortal&&PORTALS[activePortal].panMax>0)
