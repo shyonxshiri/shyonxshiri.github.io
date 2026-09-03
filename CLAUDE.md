@@ -813,11 +813,11 @@ and walk around, third person like everywhere else.
 
 **The homepage is a DECK** (user, 2026-09-01, and this REVERSES the earlier revert of exactly this:
 a snap deck was built once and pulled because the ask then was animation and not pinning. It has now
-been asked for. Do not undo it on the strength of that old note). A hero, then a 13-frame storyboard
-of how the Realm was made, cut into 12 slides that each hold the full viewport and snap-stop there:
-hero, four chapters (two of them sharing their screen with their one still), six frame rows and a
-closing CTA. Stills are 7 in-engine frames shot at the game's REAL fog and 7 staged Blender frames
-showing the structures part-built.
+been asked for. Do not undo it on the strength of that old note). It is **6 slides** and each holds
+the full viewport and snap-stops there: the hero, the full bleed OPENER, the interactive TOWN MAP, the quiet WHY chapter, the WORKSHOP
+contact sheet, and the full bleed CLOSER carrying the measured figures and the door. 13 stills:
+6 in-engine frames shot at the game's REAL fog and 7 staged Blender frames showing the structures
+part-built, `verify_deck.cjs` walks all 6.
 
 `Slide` is the ONE thing on the storyboard that watches the viewport. Everything under it declares
 `variants` and nothing else, so a slide arrives as a sequence (rule, then heading a word at a time,
@@ -827,13 +827,189 @@ between a slide and its two frames does not break the chain. `once` is deliberat
 you left is fully off screen, so coming back replays it. Chapter kickers, body copy and the CTA head
 are split per word by `Words`; the photos keep their per-chapter signatures (establish / unfold /
 blinds in 01, slideL in 02, the stepped `courses` clip through all of 03, push in 04).
+**THE DECK OPENS ON THE WORLD, FULL BLEED** (user, 2026-09-03: "who is coming to my website
+and intrigued to learn about my lego world when this is the opener"). The first screen past
+the hero was a chapter header reading "01 · What it is" over a contents line over two
+bordered panels a third of the screen tall, one of them a figure standing in a rubble field.
+That is a filing card, and nobody walks into a world because a heading announced that a
+section was about to describe one. Slide `open` is now `story_aerial_town.jpg`, shot in
+engine and sitting unused: the whole town at once, the river, all four structures, the real
+fog, edge to edge, with the name and one line on it. The other unused still,
+`story_world_midday.jpg`, was checked and rejected: it is an old flat Blender render with
+mint trees and no atmosphere, nothing like the Realm now. It stays on disk as the og:image.
+**The bleed uses CANCELLING MARGINS, never `100vw`.** The slide sits in `.ss-story`, padding
+`0 8vw`, so a content box is `client - 16vw` and `-8vw` either side widens it to exactly
+`client`: the vw terms cancel whatever the window or the scrollbar. `100vw` does NOT cancel,
+because vw counts a scrollbar the scroller's client width does not, which is up to 15px of
+horizontal overflow. Measured at three sizes: slide left 0, slide width == client width,
+zero overflow on both the scroller and the document. The type is put back on the deck's own
+1180 column by the inner, so the title starts on the left edge every chapter below it does.
+**The veil is a footing for the words, not a filter over the world.** A first pass ramped
+.72 left to right over the full height on top of a bottom ramp reaching 58% up, and between
+them they greyed the picture, which is the one thing this slide may not do. The top 55% is
+untouched now; a bottom band carries the type and a soft ellipse sits under the corner the
+words are in.
+**AND THE NAV NEEDED ITS OWN BAND, WHOSE DEPTH IS SOLVED.** This is the only slide whose top
+is not black. The nav is `#f5f2ed` at opacity 1 for the current page and **.55** for the
+other three, so everywhere else the dim state runs 5.8:1; over this picture it measured
+**2.4:1**. Sampled through a canvas, the world under the nav is a flat 170,140,140 and its
+brightest pixel is 172,142,142, so there is no worst case hiding anywhere. A first fix at
+.62 falling to .24 by 6% also missed, because the nav sits at **4.0% to 5.9%** of the slide
+and the ramp had collapsed before it got there. The band now holds .82 to .76 across the top
+7% and is gone by 24%, which measures **13.5:1 active and 5.1:1 dim**.
+`scratchpad/nav_contrast.cjs` measures it; do not tune this gradient by eye.
+**The opener keeps its height when the rest of the deck stands down.** The stand down exists
+because a chapter band and a two up frame row cannot share a narrow screen; one picture and
+two lines can. Collapsed with the rest it became a 270px strip with the title under the nav.
+
+**THE DECK IS 6 SLIDES AND EACH ONE IS A DIFFERENT KIND OF SCREEN** (user, 2026-09-03, who
+asked for the structure to be redesigned from scratch: "the layout structure seems to prevent
+this page from looking how i imagine"). It was eight near identical screens, each a block of
+type over two bordered rectangles, and the same treatment was given to a sunset over the town
+and to a screenshot of a Blender node graph. The organising idea now is that the 13 stills
+are TWO SPECIES and the page says so:
+· **The world**, the in-engine frames. Full bleed, type on the picture, no chrome at all.
+  That is `open` and `close`, and the map between them.
+· **The workshop**, the Blender captures. Small, gridded, monospaced, dimmed except the one
+  you are on. Evidence, and it looks like evidence.
+The sequence is hero → opener → town map → why (the quiet one) → workshop → the door.
+Every still is still on the page and `story_world_midday.jpg` is still the only one unused.
+
+**THE WORKSHOP IS ONE CONTACT SHEET, NOT THREE SLIDES.** All seven Blender captures on one
+screen, four across and two rows. **The seven captions are not lost, they are MOVED**: one
+line under the grid that answers to whichever cell you are on, so seven captions cost the
+height of one and the sheet stays dense enough to read as a sheet. That line is ALWAYS
+present, holding the first cell's caption at rest, because revealing it only on hover made
+the whole grid jump every time the pointer crossed a cell.
+**Cell HEIGHT is driven by vh and the picture is cropped to it.** The sheet shares a snap
+locked screen with a chapter band, and an `aspect-ratio` would make its height a function of
+the window's WIDTH, which is the one thing that cannot be traded against the band above it.
+
+**THE CLOSER IS THE OPENER'S TWIN**, the same full bleed treatment on the other aerial, so
+the deck ends where it began with the way in on it. Two things it needed that the opener did
+not:
+· **It has to sit OUTSIDE the 1180 column.** Cancelling `.ss-story`'s `0 8vw` is not enough
+  from inside that wrapper, because the wrapper has its own centring margin: measured, the
+  slide came out 1422 wide starting at x 45, with black bars either side. The opener escapes
+  this by being a direct child of `.ss-story`, and the closer now is too.
+· **A DEEPER VEIL.** Its block carries the four figures as well as a title, so it starts at
+  **52.8%** of the slide against the opener's ~72%, which is above everything the shared ramp
+  was tuned for: TRIANGLES A FRAME and FULL DAY CYCLE sat on open meadow and could not be
+  read. The closer's own ramp holds .74 at 48% and its figure labels come up from .52 to .72.
+**The figures are real and measured**: 15.9M triangles a frame and 689 draw calls counted in
+the live page by `scratchpad/realm_cost.cjs`, 35 glb files with them, 7 minutes is
+`CYCLE_SECS`. Do not add one that is not in the docs.
+
+**WHAT THE RESTRUCTURE KILLED.** `StoryFrame` and its whole frame chrome (border, head strip,
+caption box), `.ss-frame*`, `.ss-eyebrow`, `.ss-slide-solo`, `.ss-split-row`, the `.ss-row-l`
+/ `.ss-row-r` measure rhythm, `sbSweep`, and five of the seven photo entrances
+(`shotEstablish` / `Unfold` / `Blinds` / `SlideL` / `SlideR` / `Push`) with the `SHOTS` map.
+**`shotCourses` is the house style now** (user chose "everything builds"): the held five step
+bottom to top reveal is what every picture on the deck does, because it is how a LEGO build
+goes on. `Plate` is the borderless still that replaced `StoryFrame`, and its crop window is
+set to `50% 24%` rather than centre: the plate is far wider than it is tall and centred it
+took the top off the figure's head.
+
+**THE TOWN IS A MAP, AND IT REPLACED TWO SLIDES****THE TOWN IS A MAP, AND IT REPLACED TWO SLIDES** (user, 2026-09-03, who asked for the
+structure to be redesigned from scratch and picked this element to build first). Slide `map`
+takes the place of what were the "What it is" chapter (over the figure and the night house)
+and a "Portals" frame row (the shop and the crystal). The copy on that chapter was already
+describing a legend, four structures and the category of work each one stands for, and the
+deck opens on an aerial with all four in it, so the shot comes back close with the buildings
+pinned on it. `REALM_MAP` carries the four: shop → Professional Services, cottage → Personal
+Projects, mansion → About, ruins → NABU, each with the in-engine still those two slides were
+showing anyway. `story_aerial_town.jpg` is the ONLY aerial with all four in frame;
+`story_aerial_sunset.jpg` has no coffee shop in it and cannot be substituted.
+**THE PINS ARE IN IMAGE SPACE.** `fit` measures the CONTAINED box the picture really
+occupies inside the stage and the pins are positioned in that, so they cannot drift off a
+building when the stage's aspect stops matching the picture's. `contain` and not `cover` for
+the same reason: the mansion sits at 93.5% of the frame's width and any horizontal crop takes
+it. Coordinates were read off the RENDERED map and corrected once (the shop was 2.8% out).
+**The centring is passed as motion's `x`/`y`, never as a CSS transform.** `sbPin` animates
+`scale` and framer-motion writes the whole `transform` inline, so a `translate(-50%, -50%)`
+in the stylesheet is overwritten the moment the variant runs: measured, every stud landed
+22px down and right of its building and the mansion's ran off the picture entirely.
+**A pin is a 44px BUTTON with the label hung outside it.** In flow the label is part of the
+button's width, so `-50%` centres the stud PLUS the label on the point. And it is a button,
+not a hover: hover opens the card on a mouse, but click and focus open it too, because a
+phone has no hover and neither does a keyboard.
+**The card is a SIBLING of the stage, not a child.** The stage is aspect locked, so anything
+inside it is stuck over the map: at 390 the map is 328 wide and a card on it covered more
+than half the town. Outside, the same element overlays the map on a wide window and drops to
+a block underneath on a narrow one, where the map goes full bleed on the story's own
+cancelling gutters.
+**The pins pulse, and that is an affordance and not decoration.** Four small blue dots on a
+photograph read as part of the photograph. The four rings are offset in time so they read as
+four things rather than one blink, and the ring stops on the pin you are on.
+Verified in engine: all four pins on the image and on their buildings at 1512, 1024 and 390,
+the card opening from a click, zero console errors (`scratchpad/map_shot.cjs`,
+`map_mobile.cjs`).
+
+**A CHAPTER IS A TITLE AND A PARAGRAPH. NOTHING ELSE** (user, 2026-09-03: "why is the chapter
+number even here, why is it not just a title", and he did not like it stating "two frames").
+Three things carrying no information are gone: the `01`–`04` numbering, which numbered four
+sections already told apart by their titles; the blue rule it hung off, decoration on
+decoration once the number left; and `.ss-chapter-meta`, "TWO FRAMES · FR 05 – 06", a shot
+list telling the visitor how many pictures were coming in the private vocabulary of whoever
+assembled the page. **The FR numbers on the frames went with them**: their only job was to
+key into that contents line, so "FR 05" then referenced nothing. The head strip keeps the
+half that is real information, which is what the picture is OF.
+**THE TITLE IS BIG ENOUGH TO OWN ITS COLUMN, AND IT IS FILLED WITH A GRADIENT** (user,
+2026-09-03: "can you add some styling to the blue titles or something, why is it just
+sitting in an open black space if it doesnt even need that space"). At 52px on one line it
+was a 225px object in a 505px column with 90px of black over and under it. It is 96px on
+TWO lines now, a block about 380 by 180, so it fills the column across and stands as tall as
+the copy it is centred against: the space stops reading as empty because something is in it.
+**The two lines are set by hand and must stay that way.** `Words` takes a `\n` as a hard
+break (a real `<br>` between two runs of word spans, so the stagger runs through it) and the
+kickers carry "What\nit is", "Why I\nmade it", "How I\nmade it". Left to wrap on the column
+a display title breaks where the column runs out, which at this size is always "Why I made"
+/ "it", stranding the object on a line of its own.
+The fill ramps light at the cap height to a deeper blue at the baseline, with a faint bloom
+of its own colour over the whole title. The bloom is not invented for it: the deck rail's
+active tick already glows in this blue and the Realm's crystal is an emissive material.
+**The gradient sits on the WORD SPANS, not the paragraph**: each span is a transformed
+inline-block, and a background clipped to text on the parent has to survive every one of
+those transforms. Every span shares one line box height, so no word is a different blue.
+
+**`Words` ends each span with a NON-BREAKING space (U+00A0), and it is load bearing.** A word
+is an inline-block and an ordinary trailing space inside one is collapsed away at the end of
+the box. Retyped as a plain " " while editing the function, every paragraph on the homepage
+rendered as one unbroken run, "Theenvironmentisasmalltown". It is a real character in the
+source, not an escape, so it does not survive being retyped from a screen.
+
+**The band is `align-items: center`, and that is what let the third element go.** A one line
+title beside a five line paragraph leaves its column two thirds empty, and top aligned that
+empty runs along the BOTTOM of the title, which is a hole; split evenly it is air. The
+contents line had been propping that hole up. The pictures took the freed height back, 34vh
+to 38vh.
+
+**No two slides in a row share a MEASURE.** Six of the seven frame rows were 1fr 1fr, so the
+deck was the same two rectangles over and over: equal / lead-left / lead-right / equal /
+lead-right / lead-left now (`.ss-row-l` / `.ss-row-r`, 1.2fr against 0.8fr), and the short
+frame drops to the row's baseline instead of stretching to it. It costs NO height, which is
+why it is the lever: the stills are capped in vh and cropped with `object-fit`, so a wider
+column is a wider crop, not a taller picture. Their narrow-stack override must sit AFTER
+them in the sheet, not with the other 760px rules: same specificity, and the later rule wins
+whether or not the earlier is in a media query. The three slides that are frames alone carry
+an `.ss-eyebrow` so they are anchored rather than floating mid screen.
+
+**THE BAND HAS TO BE ABLE TO GIVE WAY, and fixing that fixed a failure that PRE-DATES all of
+this.** Three of the nine sizes `verify_deck_sizes.cjs` drives were already over their own
+viewport (1280x720 by 71px, 1366x768 by 40, 1024x700 by 151), which under mandatory snapping
+is a slide whose bottom cannot be reached. The band is the tallest thing on the deck and the
+copy is what makes it tall, so the body's size lives in `.ss-chapter-body` and not inline (an
+inline style beats a stylesheet) and clamps to 14.4px at the narrow end, resolving to the
+same 16px it always was at 1333px and over; the gutters and the band's gaps went vh-based
+with it, and `@media (max-height: 760px)` alone trims the chapter stills. All nine pass.
+
 **Mandatory snapping is only honest while a slide FITS**, and nothing guarantees that on its own:
 the stills are 16/9 and 4/3 mixed and the two-up rows stack under 760px. So the media carries a vh
 cap (cropping at the cap, hence `object-fit`), `.ss-slide` CLIPS (the watermark numeral is laid out
 from the copy's midpoint and is meant to bleed, which otherwise put 36px of scrollable slide under a
 snap point), and the whole mechanism stands down to free scrolling under 860px wide or 620px tall.
 `scratchpad/verify_deck_sizes.cjs` measures the real content against the slide box at nine window
-sizes and is the check that this still holds; `verify_deck.cjs` walks all 12 slides and asserts
+sizes and is the check that this still holds; `verify_deck.cjs` walks every slide and asserts
 every part reaches its finished state.
 `DeckRail` is the fixed tick rail and the `07 / 12` counter. It reads the slides out of the DOM
 (`data-slide` / `data-label`), so adding a slide adds a tick and nothing has to be kept in step, and

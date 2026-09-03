@@ -341,32 +341,24 @@ const GLOBAL_CSS = `
     color: var(--sky);
   }
   /* the kicker's own words fly up one at a time, so it needs a per word box to turn in */
-  .ss-story-kicker .ss-w { display: inline-block; transform-origin: 50% 100%; }
-  .ss-frame {
-    border: 1px solid rgba(245,242,237,.16);
-    background: #0a0a0c;
+  /* THE TITLE IS FILLED WITH A GRADIENT, NOT A FLAT BLUE (user, 2026-09-03: "can you add
+     some styling to the blue titles"). One sky blue at this size is a large flat area of a
+     single value, which on black reads as unlit. The ramp runs light at the cap height to a
+     deeper blue at the baseline, which is the direction light falls, and the whole title
+     then carries a faint bloom of its own colour. That bloom is not invented for this: the
+     deck rail's active tick already glows in exactly this blue, and the Realm's own crystal
+     is an emissive material, so a lit heading is the page agreeing with what it is about.
+     The gradient sits on the WORD SPANS and not on the paragraph. Each span is a transformed
+     inline-block, and a background clipped to text on the parent has to survive every one of
+     those transforms; per word it cannot be broken by them. Every span shares one line box
+     height, so the ramp is identical across a line and no word is a different blue. */
+  .ss-story-kicker .ss-w {
+    display: inline-block; transform-origin: 50% 100%;
+    background-image: linear-gradient(180deg, #a9e2fd 0%, #3fc0f8 48%, #0b86c9 100%);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
   }
-  .ss-frame .ss-frame-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 9px 14px;
-    border-bottom: 1px solid rgba(245,242,237,.14);
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
-    color: rgba(245,242,237,.6);
-  }
-  .ss-frame { overflow: hidden; }                 /* the head strip slides in from outside the box */
-  .ss-frame .ss-frame-shot { display: block; overflow: hidden; }   /* and the still settles out of scale without spilling past the border */
-  .ss-frame .ss-frame-img { display: block; width: 100%; height: auto; }
-  .ss-frame figcaption {
-    padding: 12px 14px 14px;
-    border-top: 1px solid rgba(245,242,237,.14);
-    font-size: 16px; line-height: 1.45;
-    color: rgba(245,242,237,.7);
-  }
-  .ss-frame-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 26px;
-    align-items: start;
-  }
+  .ss-story-kicker { filter: drop-shadow(0 0 26px rgba(56,189,248,.20)); }
   /* chapter header with a still alongside it */
   .ss-chapter-split {
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
@@ -382,10 +374,6 @@ const GLOBAL_CSS = `
   .ss-chapter-hero { margin: 40px 0 0; }
   @media (max-width: 1000px) {
     .ss-chapter-split { grid-template-columns: 1fr; gap: 34px; }
-  }
-  @media (max-width: 760px) {
-    .ss-frame-grid { grid-template-columns: 1fr; }
-    .ss-frame figcaption { font-size: 15px; }
   }
 
   /* ── THE DECK ─────────────────────────────────────────────────────────────────────
@@ -405,53 +393,34 @@ const GLOBAL_CSS = `
     position: relative;
     min-height: 100dvh;
     display: flex; flex-direction: column; justify-content: center;
-    padding: 92px 0 88px;
-    /* The watermark numeral is laid out from the copy's midpoint and is deliberately
-       bigger than the block it sits behind, so its LAYOUT box runs past the bottom of
-       the slide even though the transform centres it on screen. Left alone that is 36px
-       of scrollable slide under a mandatory snap point, which is a slide you can never
-       quite land on. It is decoration and it is meant to bleed, so it is clipped here.
-       Nothing real is ever clipped by this: scratchpad/verify_deck_sizes.cjs measures
-       the actual content against the slide box at seven window sizes. */
+    /* The gutters are vh based because the CONTENT is: the stills are capped in vh, so
+       on a short window the padding has to give way with them or the slide stops fitting
+       and a mandatory snap point traps you above its own bottom. */
+    padding: clamp(58px, 8.6vh, 92px) 0 clamp(54px, 8.2vh, 88px);
+    /* Clipped so an entrance that begins outside the box (the head strip's wipe, a still
+       driving in from the left) can never add scrollable height under that snap point.
+       Nothing real is ever clipped by this: scratchpad/verify_deck_sizes.cjs measures the
+       actual content against the slide box at nine window sizes. */
     overflow: hidden;
   }
   .ss-slide-inner { position: relative; z-index: 1; width: 100%; }
-  /* A chapter slide is a heading and a paragraph, which is not enough to hold a whole
-     screen on its own: the copy sits in the left half and the right half was empty.
-     The numeral fills it. Outlined rather than filled, and in the kicker's own blue at
-     an eighth of its alpha, so it reads as a watermark under the text rather than as a
-     second heading competing with it. Sized off the SHORTER of the two axes so it can
-     never outgrow the slide on a wide window or a short one. */
-  .ss-chapter-ghost {
-    position: absolute; right: -1.5vw; top: 50%; transform: translateY(-50%);
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700; font-size: min(52vh, 30vw); line-height: 0.8;
-    letter-spacing: -0.05em;
-    color: transparent; -webkit-text-stroke: 1.5px rgba(56,189,248,.14);
-    pointer-events: none; user-select: none; z-index: 0;
-  }
-  /* the rule the kicker hangs off, drawn out from the left as the chapter arrives */
-  .ss-chapter-rule {
-    width: 86px; height: 2px; background: var(--sky); border-radius: 2px;
-    transform-origin: left center; margin-bottom: 24px;
-  }
-  /* what the chapter contains, in the same mono the frames label themselves with */
-  .ss-chapter-meta {
-    display: flex; align-items: center; gap: 13px; margin-top: 30px;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase;
-    color: rgba(245,242,237,.42);
-  }
-  .ss-chapter-meta::before { content: ''; width: 28px; height: 1px; background: rgba(245,242,237,.26); flex: none; }
+  /* A CHAPTER IS A TITLE AND A PARAGRAPH. NOTHING ELSE (user, 2026-09-03: "why is the
+     chapter number even here, why is it not just a title", and he did not like it stating
+     "two frames"). Three things were carrying no information and have gone:
+     · ".ss-chapter-num" / ".ss-chapter-ghost", the 01 to 04 numbering. It numbered four
+       sections that are already told apart by their titles, and a reader counting chapters
+       is a reader who has stopped reading.
+     · ".ss-chapter-rule", the blue dash it hung off. With nothing to anchor it was
+       decoration on decoration.
+     · ".ss-chapter-meta", "TWO FRAMES · FR 05 – 06". That is a shot list. It told the
+       visitor how many pictures were about to appear, which they can see, in the private
+       vocabulary of the person who assembled the page.
+     The FR numbers on the frames themselves went with them: their only job was to key into
+     that contents line, so with it gone "FR 05" referenced nothing. The frames keep the
+     half of the strip that is real information, which is what the picture is OF. */
   /* two frames on one screen read as a pair when they end on the same line */
-  .ss-slide .ss-frame-grid { align-items: stretch; }
-  .ss-slide .ss-frame { display: flex; flex-direction: column; }
-  .ss-slide .ss-frame figcaption { flex: 1; }
-  .ss-slide .ss-frame-img { max-height: 43vh; object-fit: cover; }
   /* a lone still is narrowed rather than cropped: at the full 1180 a 16/9 shot is 663
      tall and the vh cap would have to eat into it on any normal window. */
-  .ss-slide-solo { max-width: 950px; margin: 0 auto; }
-  .ss-slide-solo .ss-frame-img { max-height: 56vh; }
   /* ── CHAPTER + TWO STILLS ON ONE SCREEN. The deck's rule since it was cut from 12
      slides to 7 (user, 2026-09-01): a blue kicker is never on screen without at least
      two frames beside it. That means a chapter header and a two-up frame row have to
@@ -459,33 +428,432 @@ const GLOBAL_CSS = `
      aligned on their baselines) instead of a column, and the stills give up some of
      their height cap. 34vh against the 43vh a frame row gets when it has the screen to
      itself: two captions and a head strip still have to fit under them. */
-  .ss-chapter-pair { display: grid; gap: 30px; }
+  .ss-chapter-pair { display: grid; gap: clamp(20px, 3vh, 30px); }
+  /* THE BAND IS THREE PARTS ON TWO ROWS, AND THE TOP ROW SPANS BOTH COLUMNS. That span is
+     what puts the title and the body copy on ONE LINE with no magic number holding them
+     there: the number and its rule take a row of their own, and the two columns under it
+     start together at whatever the clamped type resolves to on this window.
+     What it replaces is what the layout was really being blamed for. The band was two
+     columns aligned on "end" with the rule stacked ABOVE them, so the rule sat at the top
+     of the block while the kicker, bottom aligned against a paragraph three times its
+     height, hung 130px below it with nothing in between: a chapter opened on an orphaned
+     blue dash over a void. The contents line landed under the BODY on the right, where it
+     labelled the paragraph instead of the chapter it belongs to. */
   .ss-chapter-head {
-    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
-    gap: 44px; align-items: end;
+    display: grid;
+    grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr);
+    column-gap: clamp(34px, 4.4vw, 58px);
+    /* CENTRE, and this is the whole reason the band can be two things and not three. A one
+       line title beside a five line paragraph leaves a column two thirds empty, and top
+       aligned that empty runs along the BOTTOM of the title, which is a hole. Split evenly
+       above and below it, the same emptiness is air: the title sits on the paragraph's
+       middle and the band reads as balanced rather than as unfinished. It is what the
+       contents line was really propping up. */
+    align-items: center;
   }
-  .ss-chapter-pair .ss-story-kicker { font-size: clamp(28px, 3.2vw, 46px); }
-  .ss-chapter-pair .ss-chapter-meta { margin-top: 18px; }
-  .ss-chapter-pair .ss-frame-img { max-height: 34vh; }
-  .ss-chapter-pair .ss-frame figcaption { font-size: 14px; }
+  /* A measure, not a column width: the body is set to read, and the column it sits in is
+     wider than a comfortable line at the top of the clamp.
+     THE SIZE IS SET HERE AND NOT INLINE, and that is what makes it able to give way. A
+     chapter band is the tallest thing on the deck and the copy is what makes it tall: at
+     a flat 16px the body ran to 8 lines on a 1024 wide window and the slide finished 53px
+     past a viewport it is snap-locked to, which is the one failure the deck may not have.
+     Falling to 14.4px at the narrow end costs nothing anyone reads and buys most of that
+     back. At 1333px and over it resolves to the same 16px it always was. */
+  .ss-chapter-body {
+    max-width: 58ch;
+    font-size: 16px; line-height: 1.62; color: rgba(245,242,237,.78);
+  }
+  .ss-chapter-pair .ss-chapter-body { font-size: clamp(14.4px, 1.2vw, 16px); }
+  /* the chapter that does NOT share its band with a frame row (04, which sits beside a
+     single still) keeps the plain stack, and its parts are simply spaced. */
+  .ss-chapter-stack .ss-story-kicker { margin-bottom: 22px; font-size: clamp(34px, 5vw, 76px); }
+  .ss-chapter-stack .ss-chapter-body { max-width: 44ch; font-size: 18px; }
+  /* IT HAS TO BE BIG ENOUGH TO OWN THE COLUMN IT SITS IN (user, 2026-09-03: "why is it just
+     sitting in an open black space if it doesnt even need that space"). At 52px on one line
+     the title was a 225px object in a 505px column with 90px of black above and below it,
+     which is not a heading beside a paragraph, it is a heading lost next to one. At 96px on
+     two deliberate lines the block is about 380 by 180, so it fills its column across and
+     stands as tall as the copy it is centred against: the space stops being empty because
+     something is finally in it. Its two lines are set by hand in the kicker text, never by
+     letting the column wrap it. */
+  .ss-chapter-pair .ss-story-kicker {
+    font-size: clamp(36px, 6.4vw, 96px);
+    line-height: 0.92; letter-spacing: -0.035em;
+  }
+  /* the header lost the number, the rule and the contents line, so the pictures take the
+     height back: 34vh to 38vh, about 34px more picture on a laptop. */
+  /* A short window is where a chapter band and a frame row stop fitting together, and the
+     picture is the only part of a slide that can give height back without anything being
+     cut. Nothing above 760px tall is touched, so the approved framing on a laptop and up
+     is exactly what it was. */
   @media (max-width: 900px) {
-    .ss-chapter-head { grid-template-columns: 1fr; gap: 22px; align-items: start; }
+    .ss-chapter-head { grid-template-columns: 1fr; row-gap: 20px; }
   }
-  .ss-split-row {
-    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
-    gap: 52px; align-items: center;
+
+  /* ── THE OPENER ───────────────────────────────────────────────────────────────────
+     THE FIRST THING PAST THE HERO IS THE WORLD, FULL BLEED (user, 2026-09-03: "who is
+     coming to my website and intrigued to learn about my lego world when this is the
+     opener"). It was a chapter header reading "01 · What it is" over a contents line over
+     two bordered panels about a third of the screen tall, one of a figure standing in a
+     rubble field. That is a filing card. Nobody walks into a world because a heading told
+     them a section was about to describe one.
+     So the deck now opens on story_aerial_town.jpg, which was shot in engine and sitting
+     unused: the whole town at once, the river, all four structures, the real fog. It runs
+     edge to edge and the type sits on it. The other unused still, story_world_midday.jpg,
+     was considered and is not usable: it is an old flat Blender render with mint coloured
+     trees and no atmosphere, and it is nothing like what the Realm looks like now. It stays
+     on disk only because it is still the Realm's og:image.
+     THE BLEED IS DONE WITH CANCELLING MARGINS, NOT 100vw, and that is deliberate. The
+     slide sits inside ".ss-story", whose padding is "0 8vw", so a content box of width W is
+     "client - 16vw" and "-8vw" either side widens the slide to exactly "client" again: the
+     two vw terms cancel, whatever the window and whatever the scrollbar. "width: 100vw"
+     does NOT cancel, because vw counts the scrollbar the scroller's client width does not,
+     which is up to 15px of horizontal overflow on any machine that draws one. The slide
+     then clips the picture at the viewport edge with the "overflow: hidden" it already has,
+     so nothing inside needs a viewport unit at all. The type is brought back onto the
+     deck's own 1180 column by the inner. */
+  .ss-slide-open {
+    justify-content: flex-end;
+    padding-bottom: clamp(46px, 7vh, 76px);
+    margin-left: -8vw; margin-right: -8vw;
   }
-  .ss-split-row .ss-frame-img { max-height: 40vh; }
+  /* static, so the picture's "inset: 0" resolves against the SLIDE and covers all of it.
+     The inner is pushed to the foot of the slide by "flex-end", and an absolute child of it
+     would have covered the words alone. */
+  .ss-slide-open .ss-slide-inner {
+    position: static;
+    max-width: calc(1180px + 16vw); margin: 0 auto; padding: 0 8vw;
+  }
+  .ss-open-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+  .ss-open-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover;
+    will-change: transform;
+  }
+  /* THE VEIL IS A FOOTING FOR THE WORDS, NOT A FILTER OVER THE WORLD. The first attempt
+     was a full height left to right ramp at .72 on top of a bottom ramp reaching 58% up
+     the frame, and between them they greyed the whole picture: the point of the slide is
+     that the place looks worth walking into, and a scrim over the whole of it is the one
+     thing that guarantees it does not. The world's own fog is already low contrast, so it
+     has no contrast to spare.
+     So the top 55% is left completely alone, the bottom band carries the type, and a soft
+     ellipse in the corner the words actually occupy does the rest. Radial and not a second
+     linear ramp, because the words are a block in one corner and not a stripe across the
+     frame. */
+  .ss-open-veil {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(to top, rgba(6,6,6,.94) 0%, rgba(6,6,6,.78) 14%, rgba(6,6,6,.3) 32%, rgba(6,6,6,0) 48%),
+      radial-gradient(105% 78% at 4% 104%, rgba(6,6,6,.62) 0%, rgba(6,6,6,.22) 45%, rgba(6,6,6,0) 72%),
+      /* AND A BAND UNDER THE NAV, WHOSE DEPTH IS SOLVED AND NOT GUESSED. This is the only
+         slide on the deck whose top is not black. The nav is #f5f2ed at opacity 1 for the
+         current page and .55 for the other three, so on every other slide it inverts
+         against a near black and the dim state still runs 5.8:1. Over this picture it does
+         not: sampled through a canvas, the world under the nav is a flat 170,140,140 (the
+         brightest pixel in the whole strip is 172,142,142, so there is no worst case to
+         hide from), and the three dim items measured 2.4:1 against it. A first attempt at
+         .62 falling to .24 by 6% missed too, because the nav sits at 4.0% to 5.9% of the
+         slide and the ramp had already collapsed by the time it got there.
+         Solved against that sample, .75 through the nav's own band puts the dim state back
+         over 4.5:1, so the ramp holds .82 to .76 across the top 7% and is gone by 24%.
+         scratchpad/nav_contrast.cjs measures it rather than trusting the gradient. */
+      linear-gradient(to bottom, rgba(6,6,6,.82) 0%, rgba(6,6,6,.76) 7%, rgba(6,6,6,.34) 13%, rgba(6,6,6,0) 24%);
+  }
+  .ss-open-copy { position: relative; z-index: 1; max-width: 760px; }
+  .ss-open-title {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: clamp(42px, 6.6vw, 96px);
+    font-weight: 700; line-height: 0.98; letter-spacing: -0.035em;
+    color: var(--white);
+  }
+  .ss-open-title .ss-w { display: inline-block; transform-origin: 50% 100%; }
+  .ss-open-line {
+    margin-top: clamp(16px, 2.4vh, 26px);
+    max-width: 54ch;
+    font-size: clamp(15px, 1.35vw, 19px); line-height: 1.55;
+    color: rgba(245,242,237,.82);
+  }
+
+  /* ── THE TOWN MAP ─────────────────────────────────────────────────────────────────
+     Type column left, one interactive object right. Deliberately NOT full bleed like the
+     opener: the opener already spent that shot on drama, and this is the same shot doing
+     the opposite job. A legend has to be read, and every one of the four pins has to be on
+     screen at once, which a cover crop cannot promise. */
+  /* the map slide buys its height back from the gutters: it is one picture and two lines,
+     and it is the picture that has to be big */
+  .ss-slide-map { padding: 62px 0 58px; }
+  .ss-slide-map .ss-chapter-head { align-items: center; margin-bottom: clamp(20px, 3vh, 34px); }
+  .ss-slide-map .ss-story-kicker { font-size: clamp(32px, 4.2vw, 64px); line-height: 1; }
+  .ss-slide-map .ss-chapter-body { max-width: 62ch; }
+  /* WIDTH IS DRIVEN BY THE HEIGHT LEFT OVER, not the other way round. The picture is 16/9
+     and the slide is snap locked to one screen, so the stage takes whatever vertical it can
+     have and derives its width from that; capped at 100% it simply goes full column on a
+     tall window. Sizing by width instead overflows the slide on anything short. */
+  .ss-map-col { width: min(100%, calc(58vh * 16 / 9)); margin: 0 auto; }
+  .ss-slide-map .ss-chapter-head { grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); }
+  .ss-map-stage {
+    position: relative; aspect-ratio: 16 / 9; width: 100%;
+    overflow: hidden; background: #05070b;
+    border: 1px solid rgba(245,242,237,.14);
+  }
+  .ss-map-hint {
+    margin-top: 11px; text-align: right;
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px; letter-spacing: 2.2px; text-transform: uppercase;
+    color: rgba(245,242,237,.34);
+  }
+  .ss-map-bed {
+    position: absolute; left: -6%; top: -6%; width: 112%; height: 112%;
+    object-fit: cover; filter: blur(26px) saturate(.75) brightness(.42);
+  }
+  .ss-map-fit { position: absolute; }
+  .ss-map-img { display: block; width: 100%; height: 100%; }
+  /* A PIN IS A STUD SEEN FROM ABOVE, which is what the whole world is made of, and it is
+     the 44px target the tap rules ask for with a 15px stud drawn in the middle of it. */
+  /* THE BUTTON IS A FIXED 44 SQUARE CENTRED ON THE BUILDING AND THE LABEL HANGS OUTSIDE
+     IT. Laid out in flow beside the stud the label is part of the button's width, so
+     "translate(-50%)" centres the STUD PLUS THE LABEL on the point and the stud itself
+     lands well to the left of the thing it is pointing at: measured, the four pins sat at
+     31.2 / 64.7 / 100.5 / 15.5 against the 17.8 / 53.3 / 95.0 / 10.5 they were given, and
+     the mansion's ran clean off the picture. Absolutely positioned, the label cannot move
+     the anchor whatever it says. 44 is the tap target the rest of the site holds to. */
+  /* NOTE the centring is NOT here. "sbPin" animates "scale", and framer-motion writes the
+     whole "transform" inline, so a "translate(-50%, -50%)" in this rule is silently
+     overwritten the moment the variant runs and every stud lands 22px down and right of
+     its building. It is passed as motion's own "x" / "y" instead, which motion composes
+     with the scale rather than replacing. */
+  .ss-map-pin {
+    position: absolute;
+    width: 44px; height: 44px; padding: 0;
+    display: grid; place-items: center;
+    background: none; border: 0; cursor: none;
+  }
+  /* A PIN HAS TO LOOK LIVE OR NOBODY FINDS OUT IT IS ONE. Four small blue dots on a
+     photograph read as part of the photograph; the ring pushing out of each one is the only
+     thing that says the picture answers back. The four are offset in time so they read as
+     four separate things rather than one blinking pattern, and the ring stops on the pin
+     you are actually on, where it would be noise. */
+  .ss-map-stud {
+    position: relative; flex: none; width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid var(--sky); background: rgba(56,189,248,.22);
+    box-shadow: 0 0 0 4px rgba(6,6,6,.5), 0 0 14px rgba(56,189,248,.5);
+    transition: transform .18s var(--ease-out), background .18s var(--ease-out);
+  }
+  .ss-map-stud::after {
+    content: ''; position: absolute; inset: -3px; border-radius: 50%;
+    border: 1px solid rgba(56,189,248,.6);
+    animation: ss-pin-pulse 2.8s cubic-bezier(.2,.7,.3,1) infinite;
+  }
+  .ss-map-pin:nth-child(3) .ss-map-stud::after { animation-delay: .7s; }
+  .ss-map-pin:nth-child(4) .ss-map-stud::after { animation-delay: 1.4s; }
+  .ss-map-pin:nth-child(5) .ss-map-stud::after { animation-delay: 2.1s; }
+  .ss-map-pin:hover .ss-map-stud::after, .ss-map-pin.on .ss-map-stud::after { animation: none; opacity: 0; }
+  @keyframes ss-pin-pulse {
+    0% { transform: scale(.75); opacity: .85; }
+    72% { transform: scale(2.3); opacity: 0; }
+    100% { transform: scale(2.3); opacity: 0; }
+  }
+  .ss-map-tag {
+    position: absolute; left: calc(100% - 12px); top: 50%;
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px; letter-spacing: 1.8px; text-transform: uppercase;
+    color: rgba(245,242,237,.86); white-space: nowrap;
+    padding: 3px 7px; border-radius: 3px;
+    background: rgba(6,6,6,.66); backdrop-filter: blur(6px);
+    opacity: 0; transform: translateY(-50%) translateX(-5px);
+    transition: opacity .2s var(--ease-out), transform .2s var(--ease-out);
+  }
+  .ss-map-pin:hover .ss-map-tag, .ss-map-pin:focus-visible .ss-map-tag, .ss-map-pin.on .ss-map-tag {
+    opacity: 1; transform: translateY(-50%) translateX(0);
+  }
+  .ss-map-pin:hover .ss-map-stud, .ss-map-pin.on .ss-map-stud {
+    transform: scale(1.25); background: var(--sky);
+  }
+  /* the mansion sits at 95% of the frame, so its label opens to the LEFT or it runs off
+     the picture. Driven by the data and not by :nth-child, which would re-point at the
+     wrong building the moment the four are reordered. */
+  .ss-map-pin.flip .ss-map-tag {
+    left: auto; right: calc(100% - 12px);
+    transform: translateY(-50%) translateX(5px);
+  }
+  .ss-map-pin.flip:hover .ss-map-tag,
+  .ss-map-pin.flip:focus-visible .ss-map-tag,
+  .ss-map-pin.flip.on .ss-map-tag { transform: translateY(-50%) translateX(0); }
+  /* the card sits bottom right, the one quarter of this aerial with no building in it */
+  .ss-map-frame { position: relative; }
+  .ss-map-card {
+    position: absolute; right: 2.6%; bottom: 3.6%; width: min(28%, 306px);
+    background: rgba(8,9,12,.9); backdrop-filter: blur(12px);
+    border: 1px solid rgba(245,242,237,.18);
+  }
+  .ss-map-card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+  .ss-map-card-body { padding: 11px 13px 13px; display: flex; flex-direction: column; gap: 3px; }
+  .ss-map-card-cat {
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--sky);
+  }
+  .ss-map-card-name {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: var(--white);
+  }
+  .ss-map-card p { font-size: 12.5px; line-height: 1.45; color: rgba(245,242,237,.66); margin-top: 3px; }
+  /* NARROW: the map takes the whole screen width by cancelling the story's gutters, the
+     way the opener does, and the card drops below it instead of lying on it. Laid out side
+     on, so a phone shows the still and the words without a scroll. */
+  @media (max-width: 900px) {
+    /* the map slide's own header override is more specific than the shared stack rule, so
+       it has to be stacked again here or the title and the copy stay side by side on a
+       phone in a column 150px wide */
+    .ss-slide-map .ss-chapter-head { grid-template-columns: 1fr; gap: 16px; align-items: start; }
+    .ss-map-col { width: 100%; }
+    .ss-map-frame { margin-left: -8vw; margin-right: -8vw; }
+    .ss-map-stage { border-left: 0; border-right: 0; }
+    .ss-map-card {
+      position: static; width: auto; margin: 0 8vw;
+      display: grid; grid-template-columns: 40% 1fr; align-items: start;
+      border-top: 0;
+    }
+    .ss-map-card img { height: 100%; }
+    .ss-map-card-body { padding: 10px 12px 12px; }
+    .ss-map-hint { text-align: left; }
+  }
+
+  /* ── THE QUIET SLIDE ──────────────────────────────────────────────────────────────
+     A chapter band over one bordlerless plate. Everything either side of this screen is
+     loud, so it is the one that is allowed to be nearly empty. */
+  .ss-quiet { display: grid; row-gap: clamp(20px, 3.4vh, 38px); }
+  .ss-plate { margin: 0; display: grid; row-gap: 11px; justify-items: start; }
+  .ss-plate-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: rgba(245,242,237,.5);
+  }
+  .ss-plate-shot { display: block; overflow: hidden; width: 100%; }
+  /* THE CROP WINDOW IS SET, NOT LEFT AT CENTRE. The plate is much wider than it is tall,
+     so a landscape still is cropped hard, and centred that took the top off the figure's
+     head, which is the subject of both the picture and the paragraph over it. 24% down
+     keeps the whole minifig with the plate under his feet. */
+  .ss-plate-shot img {
+    display: block; width: 100%;
+    height: clamp(180px, 36vh, 380px);
+    object-fit: cover; object-position: 50% 24%;
+  }
+  .ss-plate figcaption {
+    max-width: 74ch; font-size: 15px; line-height: 1.5; color: rgba(245,242,237,.62);
+  }
+
+  /* ── THE WORKSHOP SHEET ───────────────────────────────────────────────────────────
+     Four across, two rows, seven cells. Cell HEIGHT is driven by vh and the picture is
+     cropped to it, because the sheet shares a snap locked screen with a chapter band and
+     an aspect ratio would have made the height a function of the window's WIDTH, which is
+     the one thing that cannot be traded for the band above it. */
+  .ss-sheet { margin-top: clamp(18px, 3vh, 34px); }
+  .ss-sheet-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(9px, 1vw, 15px);
+  }
+  .ss-cell {
+    display: grid; row-gap: 7px; justify-items: start;
+    padding: 0; border: 0; background: none; text-align: left; cursor: none;
+  }
+  .ss-cell-shot {
+    display: block; width: 100%; overflow: hidden;
+    border: 1px solid rgba(245,242,237,.12);
+    transition: border-color .2s var(--ease-out);
+  }
+  .ss-cell-shot img {
+    display: block; width: 100%; height: clamp(78px, 14.5vh, 150px); object-fit: cover;
+    filter: saturate(.72) brightness(.72);
+    transition: filter .25s var(--ease-out), transform .25s var(--ease-out);
+  }
+  .ss-cell-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(245,242,237,.42);
+    transition: color .2s var(--ease-out);
+  }
+  /* the cell you are on is the only one at full strength, which is what makes a sheet of
+     seven read as one thing being examined rather than seven competing for you */
+  .ss-cell.on .ss-cell-shot { border-color: rgba(56,189,248,.55); }
+  .ss-cell.on .ss-cell-shot img { filter: none; transform: scale(1.04); }
+  .ss-cell.on .ss-cell-label { color: var(--sky); }
+  .ss-sheet-cap {
+    margin-top: clamp(13px, 2vh, 22px);
+    max-width: 96ch; min-height: 3.1em;
+    font-size: 14px; line-height: 1.55; color: rgba(245,242,237,.66);
+  }
+  .ss-sheet-cap b {
+    font-family: 'Space Mono', monospace; font-weight: 400;
+    font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--sky); margin-right: 12px;
+  }
+  @media (max-width: 900px) {
+    .ss-sheet-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .ss-sheet-cap { min-height: 5em; }
+  }
+  @media (max-width: 560px) {
+    .ss-sheet-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  /* ── THE MEASURED FIGURES, on the closing slide over the picture ──────────────────── */
+  .ss-figs {
+    display: flex; flex-wrap: wrap; gap: clamp(24px, 3.6vw, 54px);
+    margin: 0 0 clamp(20px, 3vh, 32px);
+    padding-bottom: clamp(16px, 2.4vh, 26px);
+    border-bottom: 1px solid rgba(245,242,237,.16);
+  }
+  .ss-fig { display: flex; flex-direction: column-reverse; gap: 4px; }
+  .ss-fig dd {
+    margin: 0;
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: clamp(26px, 3vw, 44px); font-weight: 700;
+    line-height: 1; letter-spacing: -0.03em; color: var(--white);
+  }
+  .ss-fig dd i {
+    font-style: normal; font-size: .52em; color: var(--sky); margin-left: 2px;
+  }
+  .ss-fig dt {
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px; letter-spacing: 2.1px; text-transform: uppercase;
+    color: rgba(245,242,237,.52);
+  }
+  /* the closer is the opener's twin: same bleed, same veil, same type block */
+  .ss-slide-close {
+    justify-content: flex-end;
+    padding-bottom: clamp(46px, 7vh, 76px);
+    margin-left: -8vw; margin-right: -8vw;
+  }
+  .ss-slide-close .ss-slide-inner {
+    position: static;
+    max-width: calc(1180px + 16vw); margin: 0 auto; padding: 0 8vw;
+  }
+  .ss-close-title { font-size: clamp(38px, 5.4vw, 78px); }
+  /* THE CLOSER'S VEIL HAS TO REACH HIGHER THAN THE OPENER'S, because its block is taller.
+     The opener carries a title and one line and starts about 72% down; this one carries the
+     four figures as well and starts at 52.8%, measured, which is above everything the
+     opener's ramp was tuned for. Left on the shared veil the mono labels sat on open
+     meadow: TRIANGLES A FRAME and FULL DAY CYCLE were unreadable. The figures' own labels
+     also come up from .52 to .72 here, since a 9.5px mono line over a picture is the
+     smallest thing on the deck and has the least contrast to spare. */
+  .ss-slide-close .ss-open-veil {
+    background:
+      linear-gradient(to top, rgba(6,6,6,.95) 0%, rgba(6,6,6,.9) 34%, rgba(6,6,6,.74) 48%, rgba(6,6,6,.32) 62%, rgba(6,6,6,0) 78%),
+      radial-gradient(105% 70% at 4% 104%, rgba(6,6,6,.5) 0%, rgba(6,6,6,.18) 48%, rgba(6,6,6,0) 74%),
+      linear-gradient(to bottom, rgba(6,6,6,.82) 0%, rgba(6,6,6,.76) 7%, rgba(6,6,6,.34) 13%, rgba(6,6,6,0) 24%);
+  }
+  .ss-slide-close .ss-fig dt { color: rgba(245,242,237,.72); }
+
+  /* ── THE INTERSTITIAL EYEBROW ─────────────────────────────────────────────────────
+     The three slides that are frames alone had nothing on them but the two panels, which
+     left them floating in the middle of a black screen with no top edge and no relation
+     to the chapter they belong to. This is the smallest thing that anchors them: the same
+     blue rule a chapter hangs off, at half the length, over the same mono the frames label
+     themselves with. Deliberately NOT a kicker: a blue heading is a chapter, and these
+     are the frames between them. */
   /* the still tips up off its own bottom edge in chapter 01 */
   .ss-shot-unfold { transform-origin: 50% 100%; }
   /* a light passes down the still as it lands. Sits inside the shot window, which is
      already overflow:hidden, so it is clipped to the picture and never the border. */
-  .ss-frame .ss-frame-shot { position: relative; }
-  .ss-frame-sweep {
-    position: absolute; left: 0; right: 0; top: 0; height: 32%;
-    background: linear-gradient(to bottom, transparent, rgba(56,189,248,.20), transparent);
-    pointer-events: none; mix-blend-mode: screen;
-  }
 
   /* ── DECK RAIL ────────────────────────────────────────────────────────────────────
      Where you are in the deck and a way to jump. The active tick is the only blue
@@ -530,11 +898,20 @@ const GLOBAL_CSS = `
   @media (max-width: 860px), (max-height: 620px) {
     .ss-home-scroll { scroll-snap-type: none; }
     .ss-slide { min-height: auto; display: block; padding: 58px 0; overflow: visible; }
-    .ss-slide .ss-frame-img,
-    .ss-slide-solo .ss-frame-img,
-    .ss-split-row .ss-frame-img { max-height: none; }
-    .ss-split-row { grid-template-columns: 1fr; gap: 30px; }
-    .ss-deck-rail, .ss-deck-count, .ss-chapter-ghost { display: none; }
+    .ss-deck-rail, .ss-deck-count { display: none; }
+    /* THE OPENER KEEPS ITS HEIGHT WHEN THE REST OF THE DECK STANDS DOWN. The stand down
+       exists because a chapter band and a two up frame row cannot be made to share one
+       screen on a narrow or short window; the opener is one picture and two lines and has
+       no such problem. Collapsed to "min-height: auto" with the rest it became a 270px
+       strip with the title jammed under the nav, which is the one slide on the deck that
+       is nothing but its own size. It does not snap here (the container's snap is off at
+       this width), so a viewport height costs the visitor nothing. */
+    .ss-slide-open {
+      min-height: 74vh;
+      display: flex; justify-content: flex-end;
+      padding: 58px 0 clamp(34px, 5vh, 56px);
+      overflow: hidden;
+    }
   }
 
   /* Responsive modal sizing before mobile breakpoint */
@@ -787,7 +1164,6 @@ const GLOBAL_CSS = `
     .ss-story, .ss-story * { opacity: 1 !important; transform: none !important; clip-path: none !important; }
     /* and the deck itself: snapping is motion the visitor did not ask for */
     .ss-home-scroll { scroll-snap-type: none !important; }
-    .ss-frame-sweep { display: none !important; }
   }
 `;
 
@@ -1280,186 +1656,206 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           itself in. Slide order is the only place the deck is described: `Slide` tags
           itself for the rail, so nothing else has to be kept in step. */}
       <div className="ss-story" style={{ position: "relative", background: "#060606", padding: "0 8vw" }}>
+
+        {/* THE OPENER. Outside the 1180 column on purpose: it is the one slide that runs
+            edge to edge, and it does that by cancelling `.ss-story`'s own padding rather
+            than with a viewport unit (see `.ss-slide-open`). The type is put back on the
+            deck's column by the inner, so the title starts on the same left edge every
+            chapter below it does. */}
+        <Slide id="open" label="My Lego Realm" className="ss-slide-open" stagger={0.14}>
+          <div className="ss-open-bg">
+            <motion.img
+              className="ss-open-img"
+              variants={sbOpen}
+              src="/assets/story/story_aerial_town.jpg"
+              alt="The town from above: the ruins, the coffee shop, the run down cottage across the river, and the modern house with a car on its driveway."
+              decoding="async"
+            />
+            <div className="ss-open-veil" aria-hidden />
+          </div>
+          <div className="ss-open-copy">
+            <Words className="ss-open-title" text="My Lego Realm" variant={sbWordUp} stagger={0.07} />
+            <Words
+              className="ss-open-line"
+              text="An interactive real time 3D environment, built brick by brick in Blender. Walk the town and step inside any building to see the work it holds."
+              variant={sbWordIn}
+              stagger={0.018}
+            />
+          </div>
+        </Slide>
+
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
 
-          {/* THE DECK IS 7 SLIDES, AND EVERY BLUE KICKER CARRIES ITS OWN FRAMES
-              (user, 2026-09-01). It was 12, and all five blue headings broke the rule
-              that a chapter is never on screen without at least two stills: 01 and 03
-              stood alone, 02 and 04 had one each, and the closing CTA had none. A
-              chapter that fills a screen with nothing but type is the reason the deck
-              felt long, so the chapters were folded INTO their frame rows rather than
-              introducing them from a screen of their own. The frames keep their order
-              and none was dropped: 13 stills over 7 screens, paired 2/2/2/2/2/2/1.
-              "Try it" is the one heading with a single still, because the story has
-              exactly one closing shot; the CTA lives on that screen now instead of
-              taking a thirteenth. */}
-
-          {/* 01 · WHAT, with the two frames it used to introduce */}
-          <Slide id="c1" label="01 · What it is" stagger={0.2}>
-            <div className="ss-chapter-pair">
+          {/* THE TOWN IS A MAP, NOT TWO RECTANGLES. This slide replaces what were two
+              separate screens (the "What it is" chapter over the figure and the night
+              house, then a "Portals" row of the shop and the crystal), and it replaces
+              them with the thing that copy was describing all along: the paragraph says
+              the town is four structures and that each one stands for a category of work,
+              which is a LEGEND, and the aerial the deck opens on is the map it belongs to.
+              So the same shot comes back, close, with the four buildings pinned on it and
+              a card that opens on whichever one you pick. Its four payloads are the four
+              stills those two slides were showing anyway. */}
+          <Slide id="map" label="The town" className="ss-slide-map" stagger={0.18}>
+            {/* A SLIM HEADER OVER A WIDE MAP, never a type column beside a small one. Side
+                by side the map came out 778 wide and the card covered 40% of it, so two of
+                the four buildings were hidden the moment you opened one; and the title, at
+                the size it earned two slides ago, was stranded in its own half. Across the
+                full column the same card is a quarter of the map and nothing is hidden.
+                The COPY IS ALSO SHORTER HERE, because the map now says the thing the long
+                version was saying: the four structures and what each one stands for is the
+                legend, and a paragraph listing them underneath it is the same sentence
+                twice. */}
+            {/* header and map in ONE column of the map's own width. Centred on its own the
+                stage sat 148px inside the type above it and the two read as unrelated
+                objects that happened to land on the same screen. */}
+            <div className="ss-map-col">
               <StoryChapter
                 pair
-                ghost="01"
-                meta="Two frames · FR 01 – 02"
-                kicker="01 · What it is"
-                body="The environment is a small town built on a LEGO inspired baseplate, a coffee shop, a modern house, a set of ruins, and a run down cottage. Each structure is meant to represent the category of work it holds. Entering one shows you a specific branch of who I am and what I do."
+                kicker="What it is"
+                body="A small town built on a LEGO inspired baseplate. Each structure holds a different branch of the work, and walking into one is how you open it."
               />
-              <div className="ss-frame-grid">
-                <StoryFrame anim="establish" num="FR 01" scene="Player figure" src="/assets/story/story_figure_front.jpg"
-                  caption="The playable character, a younger me by design. Assembled from separate parts rather than one mesh: each was modeled and textured on its own, then measured into place and bound to the rig at load time." />
-                <StoryFrame anim="unfold" num="FR 02" scene="Night cycle" src="/assets/story/story_lamp_night.jpg"
-                  caption="The modern house after dark. The lampposts are driven by the day cycle and brighten as the sun goes down. All lighting is computed in real time." />
-              </div>
+              <RealmMap />
+              <div className="ss-map-hint">Pick a structure to see what it holds</div>
             </div>
           </Slide>
 
-          <Slide id="f1" label="FR 03 – 04" stagger={0.26}>
-            <div className="ss-frame-grid">
-              <StoryFrame anim="blinds" num="FR 03" scene="The coffee shop" src="/assets/story/story_shop_evening.jpg"
-                caption="The coffee shop at dusk. Its interior is the portal to Professional Services." />
-              <StoryFrame anim="establish" num="FR 04" scene="The NABU crystal" src="/assets/story/story_crystal_night.jpg"
-                caption="The NABU portal: a crystal in the ruins built with an emissive material and a dedicated point light." />
-            </div>
-          </Slide>
-
-          {/* 02 · WHY, with its own still and the first of the Blender frames */}
-          <Slide id="c2" label="02 · Why I made it" stagger={0.2}>
-            <div className="ss-chapter-pair">
+          {/* WHY: THE QUIET ONE. Every screen either side of it is loud, the map before it
+              and the workshop after, so this one is deliberately the least furnished thing
+              on the deck: a title, the paragraph, and one picture with no border, no head
+              strip and no caption box. Its still is the last in-engine frame that is not
+              the town itself, and the figure IS the subject of the copy. */}
+          <Slide id="why" label="Why I made it" stagger={0.2}>
+            <div className="ss-quiet">
               <StoryChapter
                 pair
-                ghost="02"
-                meta="Two frames · FR 05 – 06"
-                kicker="02 · Why I made it"
+                kicker={"Why I\nmade it"}
                 body="The environment is a work sample in its own right. Building it took the same disciplines the rest of the portfolio presents, hard surface modeling and UV work in Blender, real time rendering and collision in the browser, and the front end engineering that ties the two together. It also goes back to where my work started, stop motion films built from LEGO, and to the technologies I have taken on since."
               />
-              <div className="ss-frame-grid">
-                <StoryFrame anim="slideL" num="FR 05" scene="Lighting" src="/assets/story/story_sunset.jpg"
-                  caption="The run down cottage and the river crossing at dusk. Sky, fog, sun color, exposure, and lamp intensity are interpolated continuously across the cycle rather than switched between presets." />
-                <StoryFrame anim="courses" num="FR 06" scene="UV and texturing" src="/assets/story/story_blender_skull_uv.jpg"
-                  caption="The skull prop in the UV Editing workspace. On the left the mesh is unwrapped flat over its painted texture, on the right the same texture is shown mapped onto the model. Every printed detail in the world is applied this way." />
-              </div>
-            </div>
-          </Slide>
-
-          {/* 03 · HOW, holding the first two of the build frames */}
-          <Slide id="c3" label="03 · How I made it" stagger={0.2}>
-            <div className="ss-chapter-pair">
-              <StoryChapter
-                pair
-                ghost="03"
-                meta="Two frames · FR 07 – 08"
-                kicker="03 · How I made it"
-                body="Every structure was assembled from individual bricks in Blender. Most are my own builds, with some free assets worked in and modified to fit. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
+              <Plate
+                scene="The player figure"
+                src="/assets/story/story_figure_front.jpg"
+                caption="A younger me by design. Assembled from separate parts rather than one mesh: each was modeled and textured on its own, then measured into place and bound to the rig at load time."
               />
-              <div className="ss-frame-grid">
-                <StoryFrame anim="courses" num="FR 07" scene="Assembly" src="/assets/story/story_blender_shop_assembly.jpg"
-                  caption="The coffee shop part way up: walls built to the halfway course, the roof and awning not yet placed, the umbrella pole still bare. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." />
-                <StoryFrame anim="courses" num="FR 08" scene="Sculpting" src="/assets/story/story_blender_hair_sculpt.jpg"
-                  caption="The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." />
-              </div>
             </div>
           </Slide>
 
-          <Slide id="f2" label="FR 09 – 10" stagger={0.26}>
-            <div className="ss-frame-grid">
-              <StoryFrame anim="courses" num="FR 09" scene="Figure assembly" src="/assets/story/story_blender_figure_exploded.jpg"
-                caption="The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." />
-              <StoryFrame anim="courses" num="FR 10" scene="Mesh editing" src="/assets/story/story_blender_ruins_edit.jpg"
-                caption="The ruins in Edit Mode, built up to the doorway arch with the upper storey still to come. The highlighted course is the one going on next. This export was later edited at the mesh level to remove extra columns and flower petals." />
-            </div>
+          {/* THE WORKSHOP. All seven Blender captures on one screen, and the density is the
+              point: everything above this is the world, cinematic and full bleed, and this
+              is the evidence under it. They used to be spread over three slides in the same
+              hero frames the world shots got, which said a node graph and a sunset were the
+              same kind of picture. Small, gridded and monospaced says what they are.
+              The caption is not lost with the frames, it is MOVED: one line under the sheet
+              that answers to whichever cell you are on, so seven captions cost the height of
+              one and the sheet stays a sheet. */}
+          <Slide id="shop" label="How I made it" stagger={0.18}>
+            <StoryChapter
+              pair
+              kicker={"How I\nmade it"}
+              body="Every structure was assembled from individual bricks in Blender. Most are my own builds, with some free assets worked in and modified to fit. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
+            />
+            <WorkSheet />
           </Slide>
 
-          <Slide id="f3" label="FR 11 – 12" stagger={0.26}>
-            <div className="ss-frame-grid">
-              <StoryFrame anim="courses" num="FR 11" scene="Materials" src="/assets/story/story_blender_house_nodes.jpg"
-                caption="The modern house with the ground floor closed and the upper storey just started. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." />
-              <StoryFrame anim="courses" num="FR 12" scene="Render preview" src="/assets/story/story_blender_cottage_render.jpg"
-                caption="The run down cottage with its walls finished and the roof not yet on, in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." />
-            </div>
-          </Slide>
-
-          {/* 04 · TRY IT, the closing shot and the way in, on one screen. The only
-              chapter with a single still: the story has exactly one closing frame. */}
-          <Slide id="c4" label="04 · Try it" stagger={0.28}>
-            <div className="ss-split-row">
-              {/* The KICKER is an invitation as much as the body is, so it changes with it. The
-                  Slide's own `label` above is deliberately left alone: that feeds the deck rail,
-                  which wants one stable name per slide. */}
-              <StoryChapter
-                wide
-                ghost="04"
-                meta="One frame · FR 13"
-                kicker={realm.ok ? "04 · Try it" : "04 · The finished build"}
-                body={realm.ok
-                  ? "The full version runs on this site, with the day cycle and all four portals active. Walk it yourself."
-                  : "The full version runs on this site, with the day cycle and all four portals active, on a desktop or laptop. The frames above are the walk from here."}
-              />
-              <StoryFrame anim="push" num="FR 13" scene="Live build" src="/assets/story/story_aerial_sunset.jpg"
-                caption="The current build, running in-engine: the town from above at sunset, lampposts coming on." />
-            </div>
-            <motion.div
-              variants={sbRise}
-              style={{ display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap", marginTop: 30 }}
-            >
-              {/* THE WAY IN IS SHOWN ONLY TO A DEVICE THAT CAN TAKE IT (user, 2026-09-02).
-                  Not `!isMobile` any more: that hid the door from a narrow desktop window and
-                  offered it to tablets. Where the device cannot run it the button is replaced by
-                  the reason, so the storyboard still tells the Realm's story and nobody is
-                  invited through a door that will not open for them. */}
-              {realm.ok ? (
-                <a
-                  href="/lego.html"
-                  {...hover}
-                  className="ss-contact-btn"
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 10,
-                    padding: "16px 30px", borderRadius: 980, minHeight: 46,
-                    border: "1px solid rgba(245,242,237,.4)",
-                    color: "var(--white)", textDecoration: "none",
-                    fontSize: 13, fontWeight: 600, cursor: "none",
-                  }}
-                >
-                  <span>Enter My Lego Realm</span><span>→</span>
-                </a>
-              ) : (
-                <p
-                  style={{
-                    maxWidth: 430, fontSize: 14, lineHeight: 1.6,
-                    color: "rgba(245,242,237,.62)",
-                    fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  }}
-                >
-                  <span style={{
-                    display: "block", marginBottom: 6,
-                    fontFamily: "'Space Mono', monospace", fontSize: 10,
-                    letterSpacing: 2, textTransform: "uppercase", color: "var(--sky)",
-                  }}>
-                    Desktop only
-                  </span>
-                  {realm.message}
-                </p>
-              )}
-              <span
-                role="button" tabIndex={0}
-                onClick={() => onNavigate("work")}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
-                {...hover}
-                className="ss-tap"
-                style={{
-                  fontFamily: "'Space Mono', monospace",
-                  fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
-                  color: "rgba(245,242,237,.72)", textDecoration: "underline",
-                  textUnderlineOffset: "4px", cursor: "none",
-                  display: "inline-block",   // ss-tap needs a box to hang its hit area on
-                }}
-              >
-                {/* the "or" only makes sense standing next to the button */}
-                {realm.ok ? "or browse the work" : "Browse the work"}
-              </span>
-            </motion.div>
-          </Slide>
 
         </div>
+
+        {/* THE DOOR, and it mirrors the opener: the same full bleed treatment on the other
+            aerial, so the deck ends where it began with the way in on it. The MEASURED
+            FIGURES sit above the title. They are the one thing the page can say that the
+            pictures cannot, they are all real (scratchpad/realm_cost.cjs and CLAUDE.md),
+            and they cost no screen of their own here. */}
+        <Slide id="close" label="Try it" className="ss-slide-close" stagger={0.16}>
+          <div className="ss-open-bg">
+            <motion.img
+              className="ss-open-img"
+              variants={sbOpen}
+              src="/assets/story/story_aerial_sunset.jpg"
+              alt="The town from above at sunset, the lampposts coming on."
+              decoding="async"
+            />
+            <div className="ss-open-veil" aria-hidden />
+          </div>
+          <div className="ss-open-copy">
+            <motion.dl className="ss-figs" variants={sbGroup}>
+              {REALM_FIGS.map((f) => (
+                <motion.div key={f.label} className="ss-fig" variants={sbFig}>
+                  <dd>{f.n}<i>{f.unit}</i></dd>
+                  <dt>{f.label}</dt>
+                </motion.div>
+              ))}
+            </motion.dl>
+            <Words
+              className="ss-open-title ss-close-title"
+              text={realm.ok ? "Walk it yourself" : "The finished build"}
+              variant={sbWordUp}
+              stagger={0.07}
+            />
+            <Words
+              className="ss-open-line"
+              text={realm.ok
+                ? "The full version runs on this site, with the day cycle and all four portals active."
+                : "The full version runs on this site on a desktop or laptop, with the day cycle and all four portals active."}
+              variant={sbWordIn}
+              stagger={0.018}
+            />
+            <motion.div
+              variants={sbRise}
+              style={{ display: "flex", alignItems: "center", gap: 22, flexWrap: "wrap", marginTop: 26 }}
+            >
+            {realm.ok ? (
+              <a
+                href="/lego.html"
+                {...hover}
+                className="ss-contact-btn"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 10,
+                  padding: "16px 30px", borderRadius: 980, minHeight: 46,
+                  border: "1px solid rgba(245,242,237,.4)",
+                  color: "var(--white)", textDecoration: "none",
+                  fontSize: 13, fontWeight: 600, cursor: "none",
+                }}
+              >
+                <span>Enter My Lego Realm</span><span>→</span>
+              </a>
+            ) : (
+              <p
+                style={{
+                  maxWidth: 430, fontSize: 14, lineHeight: 1.6,
+                  color: "rgba(245,242,237,.62)",
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                }}
+              >
+                <span style={{
+                  display: "block", marginBottom: 6,
+                  fontFamily: "'Space Mono', monospace", fontSize: 10,
+                  letterSpacing: 2, textTransform: "uppercase", color: "var(--sky)",
+                }}>
+                  Desktop only
+                </span>
+                {realm.message}
+              </p>
+            )}
+            <span
+              role="button" tabIndex={0}
+              onClick={() => onNavigate("work")}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
+              {...hover}
+              className="ss-tap"
+              style={{
+                fontFamily: "'Space Mono', monospace",
+                fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
+                color: "rgba(245,242,237,.72)", textDecoration: "underline",
+                textUnderlineOffset: "4px", cursor: "none",
+                display: "inline-block",   // ss-tap needs a box to hang its hit area on
+              }}
+            >
+              {/* the "or" only makes sense standing next to the button */}
+              {realm.ok ? "or browse the work" : "Browse the work"}
+            </span>
+            </motion.div>
+          </div>
+        </Slide>
+
       </div>
 
       <DeckRail scrollRef={scrollRef} />
@@ -1520,17 +1916,9 @@ const sbBox: Variants = {                         // the frame CHROME, drawn bef
     transition: { duration: 0.8, ease: SB_EASE, staggerChildren: 0.13, delayChildren: 0.14 },
   },
 };
-const sbRule: Variants = {                        // the blue rule a chapter hangs off, drawn from the left
-  hidden: { scaleX: 0, opacity: 0 },
-  show: { scaleX: 1, opacity: 1, transition: { duration: 0.72, ease: SB_EASE } },
-};
-const sbGhost: Variants = {                       // the watermark numeral, drifting in behind the copy
-  hidden: { opacity: 0, x: 56 },
-  show: { opacity: 1, x: 0, transition: { duration: 1.35, ease: SB_EASE } },
-};
-const sbSweep: Variants = {                       // a light running down the still as it lands
-  hidden: { y: "-140%", opacity: 0 },
-  show: { y: "180%", opacity: [0, 1, 1, 0], transition: { duration: 0.95, ease: "linear", delay: 0.12 } },
+const sbOpen: Variants = {                        // the opener's picture: a slow settle out of scale
+  hidden: { opacity: 0, scale: 1.09 },
+  show: { opacity: 1, scale: 1, transition: { duration: 1.9, ease: SB_EASE } },
 };
 
 /* Splits a string into per-word spans so a heading or a paragraph can arrive a word at
@@ -1539,21 +1927,37 @@ const sbSweep: Variants = {                       // a light running down the st
    above move and rotate rather than clip. The trailing space is a non-breaking one
    INSIDE the span, so inline-blocks that would otherwise collapse their whitespace
    still set as a sentence. */
+/* A "\\n" in the text is a HARD line break, and the chapter titles need one. Left to wrap
+   on its own a display title breaks wherever the column happens to run out, which at this
+   size is always the wrong place: "Why I made" / "it" and "How I made" / "it" both strand
+   the object on a line of its own. The break is a real <br> between two runs of word spans,
+   so every word still animates on its own and the stagger runs straight through it. The
+   nodes are flattened into one array rather than grouped per line, which keeps the <br> a
+   sibling of the spans and needs no fragment.
+   THE TRAILING SPACE IS A NON-BREAKING ONE (U+00A0) AND IT IS LOAD BEARING. A word is an
+   inline-block, and an ordinary trailing space inside one is collapsed away at the end of
+   the box: retyped as " " this renders every paragraph on the page as one unbroken run,
+   "Theenvironmentisasmalltown". It is a real character in the source, not an escape. */
 function Words({ text, variant, stagger = 0.03, className, style }: {
   text: string; variant: Variants; stagger?: number; className?: string; style?: React.CSSProperties;
 }) {
-  const words = text.split(" ");
+  const nodes: React.ReactNode[] = [];
+  text.split("\n").forEach((line, li) => {
+    if (li > 0) nodes.push(<br key={"br" + li} />);
+    const words = line.split(" ");
+    words.forEach((w, i) => nodes.push(
+      <motion.span key={li + "-" + i} className="ss-w" variants={variant} style={{ display: "inline-block", willChange: "transform" }}>
+        {w}{i < words.length - 1 ? " " : ""}
+      </motion.span>
+    ));
+  });
   return (
     <motion.p
       className={className}
       style={style}
       variants={{ hidden: {}, show: { transition: { staggerChildren: stagger } } }}
     >
-      {words.map((w, i) => (
-        <motion.span key={i} className="ss-w" variants={variant} style={{ display: "inline-block", willChange: "transform" }}>
-          {w}{i < words.length - 1 ? " " : ""}
-        </motion.span>
-      ))}
+      {nodes}
     </motion.p>
   );
 }
@@ -1571,39 +1975,223 @@ function Words({ text, variant, stagger = 0.03, className, style }: {
 // keyframe sampling skips, which left every still clipped a fifth short of the top forever.
 const stepEase = (n: number) => (t: number) => Math.min(1, Math.floor(t * n) / (n - 1));
 
-const shotEstablish: Variants = {                 // 01 What it is: rises and settles. The calm opening read.
-  hidden: { opacity: 0, y: 42, scale: 1.04 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 1.0, ease: SB_EASE } },
-};
-const shotUnfold: Variants = {                    // 01, the second of a pair: tips up off its bottom edge
-  hidden: { opacity: 0, rotateX: -18, y: 26, transformPerspective: 1400 },
-  show: { opacity: 1, rotateX: 0, y: 0, transition: { duration: 0.98, ease: SB_EASE } },
-};
-const shotBlinds: Variants = {                    // 01, the second row: uncovered left to right in held columns
-  hidden: { clipPath: "inset(0% 100% 0% 0%)" },
-  show: { clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 1.0, ease: stepEase(7) } },
-};
-const shotSlideL: Variants = {                    // 02 Why I made it: drives in from the left across its window
-  hidden: { opacity: 0, x: "-26%" },
-  show: { opacity: 1, x: 0, transition: { duration: 0.85, ease: SB_EASE } },
-};
-const shotSlideR: Variants = {                    // the mirrored half, for any future paired row in that chapter
-  hidden: { opacity: 0, x: "26%" },
-  show: { opacity: 1, x: 0, transition: { duration: 0.85, ease: SB_EASE } },
-};
 const shotCourses: Variants = {                   // 03 How I made it: uncovered bottom to top in five held
   hidden: { clipPath: "inset(100% 0% 0% 0%)" },   // courses, the way a build goes on course by course
   show: { clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 1.05, ease: stepEase(6) } },
 };
-const shotPush: Variants = {                      // 04 Try it: a slow push in on the closing shot
-  hidden: { opacity: 0, scale: 1.11 },
-  show: { opacity: 1, scale: 1, transition: { duration: 1.2, ease: SB_EASE } },
+
+/* A PLATE: a still with no border, no head strip and no caption box. The frame chrome was
+   right when every picture on the deck was one of thirteen specimens in a catalogue; it is
+   wrong now that the world shots are full bleed and the Blender captures are a contact
+   sheet. A label over it, the picture, a caption under it, all in the open. */
+function Plate({ scene, src, caption }: { scene: string; src: string; caption: string }) {
+  return (
+    <motion.figure className="ss-plate" variants={sbBox}>
+      <motion.span className="ss-plate-label" variants={sbHead}>{scene}</motion.span>
+      <motion.div className="ss-plate-shot" variants={shotCourses}>
+        <img src={src} alt={scene} loading="lazy" decoding="async" />
+      </motion.div>
+      <motion.figcaption variants={sbCap}>{caption}</motion.figcaption>
+    </motion.figure>
+  );
+}
+
+/* ── THE WORKSHOP SHEET ──────────────────────────────────────────────────────────────
+   The seven Blender captures as one contact sheet. The cell you are on is answered by a
+   single caption line under the grid rather than by seven blocks of prose between the
+   thumbnails, which is what lets the sheet stay dense enough to read as evidence.
+   The line is ALWAYS PRESENT, holding the first cell's caption at rest, so nothing on the
+   slide moves when you point at a cell: revealing it only on hover made the grid jump
+   every time the pointer crossed one. */
+const WORK_SHEET = [
+  { scene: "Assembly", src: "/assets/story/story_blender_shop_assembly.jpg",
+    caption: "The coffee shop part way up: walls built to the halfway course, the roof and awning not yet placed, the umbrella pole still bare. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." },
+  { scene: "Mesh editing", src: "/assets/story/story_blender_ruins_edit.jpg",
+    caption: "The ruins in Edit Mode, built up to the doorway arch with the upper storey still to come. The highlighted course is the one going on next." },
+  { scene: "Sculpting", src: "/assets/story/story_blender_hair_sculpt.jpg",
+    caption: "The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." },
+  { scene: "UV and texturing", src: "/assets/story/story_blender_skull_uv.jpg",
+    caption: "The skull prop in the UV Editing workspace. On the left the mesh is unwrapped flat over its painted texture, on the right the same texture is shown mapped onto the model. Every printed detail in the world is applied this way." },
+  { scene: "Figure assembly", src: "/assets/story/story_blender_figure_exploded.jpg",
+    caption: "The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." },
+  { scene: "Materials", src: "/assets/story/story_blender_house_nodes.jpg",
+    caption: "The modern house with the ground floor closed and the upper storey just started. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." },
+  { scene: "Render preview", src: "/assets/story/story_blender_cottage_render.jpg",
+    caption: "The run down cottage with its walls finished and the roof not yet on, in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." },
+];
+
+function WorkSheet() {
+  const [at, setAt] = useState(0);
+  return (
+    <motion.div className="ss-sheet" variants={sbGroup}>
+      <div className="ss-sheet-grid">
+        {WORK_SHEET.map((c, i) => (
+          <motion.button
+            key={c.src}
+            className={`ss-cell${i === at ? " on" : ""}`}
+            variants={sbBox}
+            onMouseEnter={() => setAt(i)}
+            onFocus={() => setAt(i)}
+            aria-label={c.scene}
+          >
+            <motion.span className="ss-cell-shot" variants={shotCourses}>
+              <img src={c.src} alt={c.scene} loading="lazy" decoding="async" />
+            </motion.span>
+            <span className="ss-cell-label">{c.scene}</span>
+          </motion.button>
+        ))}
+      </div>
+      <motion.p className="ss-sheet-cap" variants={sbCap}>
+        <b>{WORK_SHEET[at].scene}</b>{WORK_SHEET[at].caption}
+      </motion.p>
+    </motion.div>
+  );
+}
+
+/* The measured figures on the closing slide. Every one is real and in the docs: the frame
+   cost and the draw calls were counted in the live page by scratchpad/realm_cost.cjs, the
+   file count with them, and the cycle is CYCLE_SECS. */
+const REALM_FIGS = [
+  { n: "15.9", unit: "M", label: "Triangles a frame" },
+  { n: "689", unit: "", label: "Draw calls" },
+  { n: "35", unit: "", label: "Models loaded" },
+  { n: "7", unit: "min", label: "Full day cycle" },
+];
+const sbFig: Variants = {                         // a figure lands in held steps, like a piece
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: stepEase(4) } },
 };
-const SHOTS = {
-  establish: shotEstablish, unfold: shotUnfold, blinds: shotBlinds,
-  slideL: shotSlideL, slideR: shotSlideR, courses: shotCourses, push: shotPush,
+
+/* ── THE TOWN MAP ────────────────────────────────────────────────────────────────────
+   The four structures of the Realm pinned on the aerial the deck opens on, each opening a
+   card that names the category of work it holds. This is the one element on the page that
+   does what the Realm does rather than describing it.
+   Two things about it are not obvious:
+   · THE PINS ARE IN IMAGE SPACE, NOT CONTAINER SPACE. A percentage inside the stage would
+     drift off its building the moment the stage's aspect stopped matching the picture's, so
+     `fit` measures the CONTAINED box (the letterboxed rect the image really occupies) and
+     the pins are positioned inside that. `contain` and not `cover` for the same reason: a
+     map that crops its own corners off on a narrow window is not a map, and the mansion
+     sits at 95% of the frame's width where any horizontal crop would take it.
+   · A PIN IS A BUTTON. Hover opens a card on a mouse, but hover is not available on a
+     phone and is not available from a keyboard, so click and focus open it too and the
+     open card is real state rather than a CSS hover. */
+const REALM_MAP = [
+  { id: "shop", name: "The coffee shop", cat: "Professional Services", x: 15.0, y: 25.5, flip: false,
+    src: "/assets/story/story_shop_evening.jpg",
+    line: "The shop at dusk, its terrace laid out under the umbrella. The interior is the way into the professional work." },
+  { id: "cottage", name: "The run down cottage", cat: "Personal Projects", x: 53.5, y: 25.0, flip: false,
+    src: "/assets/story/story_sunset.jpg",
+    line: "The cottage stands across the river, and the bridge beside it is the only crossing in the world." },
+  { id: "house", name: "The modern house", cat: "About", x: 93.5, y: 38.0, flip: true,
+    src: "/assets/story/story_lamp_night.jpg",
+    line: "The house after dark. Its lampposts run off the day cycle and brighten as the sun goes down." },
+  { id: "ruins", name: "The ruins", cat: "NABU", x: 13.0, y: 85.0, flip: false,
+    src: "/assets/story/story_crystal_night.jpg",
+    line: "A crystal on the ruins balcony, built with an emissive material and a point light of its own." },
+];
+
+/* the pin snaps on in held steps instead of easing, because everything in this world
+   arrives by being pressed onto a plate */
+const sbPin: Variants = {
+  hidden: { opacity: 0, scale: 0 },
+  show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: stepEase(4) } },
 };
-type ShotAnim = keyof typeof SHOTS;
+const sbCard: Variants = {                        // and the card builds course by course
+  hidden: { opacity: 0, clipPath: "inset(100% 0% 0% 0%)" },
+  show: { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 0.5, ease: stepEase(5) } },
+};
+
+function RealmMap() {
+  const stage = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState({ left: 0, top: 0, w: 0, h: 0 });
+  const [open, setOpen] = useState<string | null>(null);
+  const [pinned, setPinned] = useState(false);
+
+  useEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    const IW = 2400, IH = 1350;                    // story_aerial_town.jpg, measured
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const sc = Math.min(r.width / IW, r.height / IH);
+      const w = IW * sc, h = IH * sc;
+      setFit({ left: (r.width - w) / 2, top: (r.height - h) / 2, w, h });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const shown = REALM_MAP.find((b) => b.id === open) || null;
+  return (
+    <div className="ss-map-frame">
+    <motion.div className="ss-map-stage" ref={stage} variants={sbRise}>
+      {/* a blurred bed behind, so the letterbox on an off aspect window is the world out
+          of focus rather than two black bars */}
+      <img className="ss-map-bed" src="/assets/story/story_aerial_town.jpg" alt="" aria-hidden decoding="async" />
+      <div className="ss-map-fit" style={{ left: fit.left, top: fit.top, width: fit.w, height: fit.h }}>
+        <img className="ss-map-img" src="/assets/story/story_aerial_town.jpg"
+          alt="The town from above: the coffee shop, the run down cottage, the modern house and the ruins."
+          decoding="async" />
+        {REALM_MAP.map((b) => (
+          <motion.button
+            key={b.id}
+            variants={sbPin}
+            className={`ss-map-pin${b.flip ? " flip" : ""}${open === b.id ? " on" : ""}`}
+            style={{ left: b.x + "%", top: b.y + "%", x: "-50%", y: "-50%" }}
+            onMouseEnter={() => { if (!pinned) setOpen(b.id); }}
+            onMouseLeave={() => { if (!pinned) setOpen(null); }}
+            onFocus={() => setOpen(b.id)}
+            onClick={() => {
+              const same = open === b.id && pinned;
+              setPinned(!same);
+              setOpen(same ? null : b.id);
+            }}
+            aria-label={b.name + ", " + b.cat}
+          >
+            <span className="ss-map-stud" aria-hidden />
+            <span className="ss-map-tag">{b.cat}</span>
+          </motion.button>
+        ))}
+      </div>
+    </motion.div>
+    {card()}
+    </div>
+  );
+
+  /* THE CARD IS A SIBLING OF THE STAGE, NOT A CHILD OF IT, and that is what lets it stop
+     being an overlay on a phone. The stage is aspect locked to the picture, so anything
+     inside it is stuck over the map: at 390 the map is 328 wide and a card laid on it
+     covered more than half the town, which is the one thing a map may not do. Outside it,
+     the same element is absolutely positioned over the map on a wide window and drops to a
+     plain block underneath it on a narrow one, where the deck is not snapped and the extra
+     height costs nothing. */
+  function card() {
+    return (
+      <AnimatePresence>
+        {shown && (
+          <motion.div
+            key={shown.id}
+            className="ss-map-card"
+            variants={sbCard}
+            initial="hidden" animate="show"
+            exit={{ opacity: 0, transition: { duration: 0.16 } }}
+          >
+            <img src={shown.src} alt={shown.name} decoding="async" />
+            <div className="ss-map-card-body">
+              <span className="ss-map-card-cat">{shown.cat}</span>
+              <span className="ss-map-card-name">{shown.name}</span>
+              <p>{shown.line}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+}
 
 /* One deck slide. The ONLY thing on the storyboard that watches the viewport: every
    part inside it inherits from here. `data-slide` / `data-label` are what the rail
@@ -1629,61 +2217,35 @@ function Slide({ id, label, className, stagger, children }: {
   );
 }
 
-/* One storyboard cell: numbered head strip, still, caption */
-function StoryFrame({ num, scene, src, caption, anim = "establish", solo }: {
-  num: string; scene: string; src: string; caption: string; anim?: ShotAnim; solo?: boolean;
+/* A storyboard chapter: a TITLE and a PARAGRAPH, and nothing else (user, 2026-09-03).
+   It carried a number, a rule under the number and a contents line reading "Two frames ·
+   FR 05 – 06"; all three are gone and the reasoning is on `.ss-chapter-head` in the CSS.
+   `pair` is the chapter that SHARES its screen with two stills, which is all of them but
+   04: title and copy go side by side so the header is a band rather than a column and the
+   rest of the slide's height goes to the pictures. Stacked, the two together run past half
+   the viewport on a laptop and the stills have nowhere left to go.
+   `children` is the one thing that hangs off a chapter and is not type: 04's way in. */
+function StoryChapter({ kicker, body, pair, children }: {
+  kicker: string; body: string; pair?: boolean; children?: React.ReactNode;
 }) {
-  return (
-    <motion.figure className={`ss-frame${solo ? " ss-slide-solo" : ""}`} variants={sbBox}>
-      <motion.div className="ss-frame-head" variants={sbHead}><span>{num}</span><span>{scene}</span></motion.div>
-      <motion.div className="ss-frame-shot" variants={SHOTS[anim]} style={anim === "unfold" ? { transformOrigin: "50% 100%" } : undefined}>
-        <img className="ss-frame-img" src={src} alt={scene} loading="lazy" decoding="async" />
-        <motion.div className="ss-frame-sweep" variants={sbSweep} aria-hidden />
-      </motion.div>
-      <motion.figcaption variants={sbCap}>{caption}</motion.figcaption>
-    </motion.figure>
-  );
-}
-
-/* Storyboard chapter header: the blue Space Grotesk kicker over the body copy, both set
-   a word at a time. */
-function StoryChapter({ kicker, body, meta, ghost, wide, pair }: {
-  kicker: string; body: string; meta?: string; ghost?: string; wide?: boolean; pair?: boolean;
-}) {
-  // `pair` is the chapter that SHARES its screen with two stills. The kicker and the body
-  // go side by side rather than stacked, which turns the header from a column into a band
-  // and hands the rest of the slide's height to the pictures. Stacked, the two together
-  // run past half the viewport on a laptop and the stills have nowhere left to go.
-  const head = (
-    <>
-      <Words className="ss-story-kicker" text={kicker} variant={sbWordUp} stagger={0.055} />
-      <div>
-        <Words
-          text={body}
-          variant={sbWordIn}
-          stagger={0.016}
-          style={{ maxWidth: pair || wide ? "none" : 720, fontSize: pair ? 16 : 18, lineHeight: 1.6, color: "rgba(245,242,237,.78)" }}
-        />
-        {meta && <motion.div className="ss-chapter-meta" variants={sbRise}>{meta}</motion.div>}
+  const kickerEl = <Words className="ss-story-kicker" text={kicker} variant={sbWordUp} stagger={0.055} />;
+  // size, leading and colour come from `.ss-chapter-body`, not from an inline style: an
+  // inline style beats a stylesheet, and the body's size has to be able to give way on a
+  // short or narrow window for the slide to keep fitting its own screen.
+  const bodyEl = <Words text={body} variant={sbWordIn} stagger={0.016} />;
+  if (pair) {
+    return (
+      <div className="ss-chapter-head">
+        <div>{kickerEl}</div>
+        <div className="ss-chapter-body">{bodyEl}</div>
       </div>
-    </>
-  );
+    );
+  }
   return (
-    <div>
-      {ghost && <motion.div className="ss-chapter-ghost" variants={sbGhost} aria-hidden>{ghost}</motion.div>}
-      <motion.div className="ss-chapter-rule" variants={sbRule} aria-hidden />
-      {pair ? <div className="ss-chapter-head">{head}</div> : (
-        <>
-          <Words className="ss-story-kicker" text={kicker} variant={sbWordUp} stagger={0.055} />
-          <Words
-            text={body}
-            variant={sbWordIn}
-            stagger={0.016}
-            style={{ marginTop: 24, maxWidth: wide ? "none" : 720, fontSize: 18, lineHeight: 1.65, color: "rgba(245,242,237,.78)" }}
-          />
-          {meta && <motion.div className="ss-chapter-meta" variants={sbRise}>{meta}</motion.div>}
-        </>
-      )}
+    <div className="ss-chapter-stack">
+      {kickerEl}
+      <div className="ss-chapter-body">{bodyEl}</div>
+      {children}
     </div>
   );
 }
