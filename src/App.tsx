@@ -153,8 +153,9 @@ const GLOBAL_CSS = `
     nav ul { gap: 16px !important; }
     nav { padding-left: max(16px, calc(16px + env(safe-area-inset-left))) !important; padding-right: max(16px, calc(16px + env(safe-area-inset-right))) !important; }
 
-    /* Work Page - Cards */
-    .ss-card { min-height: 420px !important; }
+    /* Work Page - Cards. The floor comes down with the card itself (360 -> 330 wide),
+       or a short phone draws a card taller than the desktop proportion. */
+    .ss-card { min-height: 385px !important; }
 
     /* About Page */
     .ss-about-subtitle { font-size: 9px !important; }
@@ -1190,8 +1191,6 @@ const GLOBAL_CSS = `
   /* Work page: hover "View" cue on cards + CTA link */
   .ss-view-cue { opacity: 0; transform: translateX(-6px); transition: opacity .35s var(--ease-out), transform .35s var(--ease-out); }
   .ss-card:hover .ss-view-cue { opacity: 1; transform: translateX(0); }
-  .ss-work-cta { transition: color .3s ease; }
-  .ss-work-cta:hover { color: var(--sky) !important; }
 
   /* asset titles: rounded "iPhone bubble" font (SF Pro Rounded) */
   .ss-asset-title {
@@ -2525,9 +2524,13 @@ function WorkPage({ onCardClick, onNavigate }: { onCardClick: (p: Project) => vo
   }, [active, n]);
   const go = (dir: number) => setActive((a) => (a + dir + n) % n);
   const isMob = window.innerWidth <= 640;
-  const cardW = isDesktop ? 420 : Math.min(window.innerWidth * 0.74, 360);
-  const cardH = Math.min(cardW * 1.32, window.innerHeight * 0.6);
-  const sideX = cardW * (isDesktop ? 0.98 : 0.62);
+  // Cards a step smaller and pushed further apart (user, 2026-09-03). The gap is a
+  // function of BOTH numbers: a side card sits at sideX and is drawn at 0.82, so the
+  // clear air between it and the centre card is sideX - cardW*(0.5 + 0.41). At 420/0.98
+  // that was 29px; at 380/1.12 it is 79px, and the neighbours still peek in at 1024.
+  const cardW = isDesktop ? 380 : Math.min(window.innerWidth * 0.70, 330);
+  const cardH = Math.min(cardW * 1.32, window.innerHeight * 0.56);
+  const sideX = cardW * (isDesktop ? 1.12 : 0.70);
 
   // per-slide identity: base colour + the colour the particles emit
   const WORK_BG_THEME: Record<string, { base: string; emit: string }> = {
@@ -2574,21 +2577,9 @@ function WorkPage({ onCardClick, onNavigate }: { onCardClick: (p: Project) => vo
           Work
         </motion.h2>
 
-        {/* THE CTA IS NO LONGER DESKTOP ONLY, and it no longer states availability
-            (user, 2026-09-03). Two separate changes to one block:
-            · The gate moved from the whole motion.div ONTO THE PARAGRAPH. This link is the
-              only route from Work to Contact other than the nav, and it was inside an
-              `isDesktop && (...)` (>= 1024), so every phone and every tablet browsed the
-              entire portfolio with no call to action at the end of it. The blurb underneath
-              the heading stays desktop only, because that is a space decision and the phone
-              layout was built without it.
-            · "Available for work. Let's talk" lost its first sentence. The site said it in
-              three places, and this was the one where it sat in front of the verb: a CTA
-              should open with the action. Contact's italic line is the single place that
-              states availability now, and it is the most specific of the three.
-            `ss-tap` because at 14px this is well under the 44px touch minimum once it is
-            actually reachable on a phone. It lays a transparent ::after over the link and
-            changes neither the drawn size nor the layout. */}
+        {/* The blurb under the heading is desktop only: that is a space decision, and the
+            phone layout was built without it. The "Let's talk" CTA that used to sit under it
+            was removed at Shyon's request (2026-09-03); the nav is the route to Contact. */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.35, ease: [0.16,1,0.3,1] }}
@@ -2599,14 +2590,6 @@ function WorkPage({ onCardClick, onNavigate }: { onCardClick: (p: Project) => vo
               Commissioned client work, plus personal and academic projects across every medium.
             </p>
           )}
-          <a
-            onClick={() => onNavigate("contact")}
-            {...hover}
-            className="ss-work-cta ss-tap"
-            style={{ display: "inline-block", marginTop: 8, fontSize: 14, fontWeight: 600, color: titleColor, textShadow, cursor: "none", transition: "color 0.7s ease" }}
-          >
-            Let's talk &rarr;
-          </a>
         </motion.div>
       </div>
 
