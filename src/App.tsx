@@ -2194,19 +2194,32 @@ const sbFig: Variants = {                         // a figure lands in held step
    · A PIN IS A BUTTON. Hover opens a card on a mouse, but hover is not available on a
      phone and is not available from a keyboard, so click and focus open it too and the
      open card is real state rather than a CSS hover. */
+/* EACH LINE NAMES THE WORK BEHIND THE PORTAL, NOT THE WEATHER IN THE PICTURE
+   (user, 2026-09-03: the wording was "not professional or formal at all"). These four
+   read as scene setting: "the shop at dusk, its terrace laid out under the umbrella",
+   "the house after dark", the crystal's emissive material. That is a caption for a
+   photograph, and the photograph is already on the card, above the words, saying all of
+   it better. It also broke the site-copy-tone rule this project has reinforced before:
+   professional and technical, never poetic.
+   The card carries a CATEGORY, a NAME and this line, so the line is the only slot able to
+   answer the question a visitor actually has, which is what is in there. Each is now the
+   contents of that portal, taken from the real PROJECTS entries above, so nothing here
+   claims work that is not on the site. Kept to 12 to 15 words: the card is about 280px
+   wide at 12.5px, and it grows UPWARD off `bottom: 3.6%`, so a long line walks it up the
+   map and over the buildings. */
 const REALM_MAP = [
   { id: "shop", name: "The coffee shop", cat: "Professional Services", x: 18.2, y: 26.0, flip: false,
     src: "/assets/story/story_shop_evening.jpg",
-    line: "The shop at dusk, its terrace laid out under the umbrella. The interior is the way into the professional work." },
+    line: "Commissioned client work. Full stack websites, brand and print for small businesses, and concept visualization." },
   { id: "cottage", name: "The run down cottage", cat: "Personal Projects", x: 53.5, y: 25.0, flip: false,
     src: "/assets/story/story_sunset.jpg",
-    line: "The cottage stands across the river, and the bridge beside it is the only crossing in the world." },
+    line: "Self directed work. 3D modeling and rendering, product prototypes, custom hardware, photography and fabrication." },
   { id: "house", name: "The modern house", cat: "About", x: 93.5, y: 38.0, flip: true,
     src: "/assets/story/story_lamp_night.jpg",
-    line: "The house after dark. Its lampposts run off the day cycle and brighten as the sun goes down." },
+    line: "Background and training, and how the disciplines across the rest of the site fit together." },
   { id: "ruins", name: "The ruins", cat: "NABU", x: 13.0, y: 85.0, flip: false,
     src: "/assets/story/story_crystal_night.jpg",
-    line: "A crystal on the ruins balcony, built with an emissive material and a point light of its own." },
+    line: "Art direction, promotional video and campaign photography for the NABU clothing label." },
 ];
 
 /* the pin snaps on in held steps instead of easing, because everything in this world
