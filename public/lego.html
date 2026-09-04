@@ -5315,7 +5315,17 @@
     // match (dark ground, stud grid, the Realm's yellow). The resume keeps its link, so opening
     // the viewer still gets you to the actual PDF.
     {t:'Resume', c:'#f4c430', img:'./assets/resume_preview.jpg', desc:'My full resume, with experience and skills.', links:[{label:'Open My Resume', href:'./My Resume.pdf'}]},
-    {t:'Contact', c:'#2ee078', img:'./assets/contact_preview.jpg', desc:'Reach out for work, collaborations, or anything else.', links:[{label:'Email shyon2001@gmail.com', href:'mailto:shyon2001@gmail.com'},{label:'LinkedIn in/shyonshiri', href:'https://www.linkedin.com/in/shyonshiri/'}]} ];
+    // THE CONTACT CARD IS DRAWN IN THE MAIN SITE'S LANGUAGE (user, 2026-09-03: make it look
+    // more like the one on the main site). It used to be the Realm's own: navy ground, stud
+    // grid, Fredoka, the Realm's yellow. It is now ContactPage from src/App.tsx redrawn at the
+    // panel's own 1400x1758, value for value: the #060606 ground, the blurred Bebas ghost word,
+    // the two sky radial glows, "Let's Work." in Bebas at letter-spacing 5, the italic Cormorant
+    // line and the indexed list with its Space Mono numerals and sky arrows on .14 hairlines.
+    // Source: scratchpad/contactcard/card.html, rendered by render.cjs.
+    // THE FRAME IS PINNED for the same reason the About panel's is: run against this image the
+    // shipped strongColor() returns #14313e, the blue glow averaged down to a murky teal. LEGO
+    // Black is what the page itself is, and it matches About beside it.
+    {t:'Contact', c:'#38bdf8', frame:'#05131D', img:'./assets/contact_preview.jpg', desc:'Open to freelance, collaborations, and full-time roles.', links:[{label:'Email shyon2001@gmail.com', href:'mailto:shyon2001@gmail.com'},{label:'LinkedIn in/shyonshiri', href:'https://www.linkedin.com/in/shyonshiri/'}]} ];
   const NABU=[
     {t:'NABU Promotional Video', c:'#38bdf8', img:'./assets/Nabu_Poster_Banner.jpg', video:'./assets/Nabu_Poster_Banner.mp4', year:2023, desc:'Promotional video for NABU clothing, animated in Adobe After Effects.'},
     {t:'NABU 2026 Teaser', c:'#2ee078', img:'./assets/NABU_Puffer_AD.jpg', video:'./assets/NABU_PUFFER_AD.mp4', year:2025, desc:'Promotional video for NABU\'s puffer jacket collection.',

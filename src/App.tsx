@@ -163,7 +163,6 @@ const GLOBAL_CSS = `
 
     /* Contact Page */
     .ss-contact-heading { font-size: clamp(32px, 6vw, 64px) !important; }
-    .ss-contact-subtitle { font-size: 8px !important; letter-spacing: 3px !important; }
     .ss-contact-description { font-size: clamp(12px, 1.5vw, 14px) !important; }
   }
 
@@ -280,6 +279,28 @@ const GLOBAL_CSS = `
     transition: transform 8s ease;
   }
   .ss-hero-bg-active { transform: scale(1) !important; }
+
+  /* ── THE NAME ──
+     Bebas Neue, which is the face the About and Contact display headings were always
+     written in, so the name stops being the one big piece of type on the site still
+     falling through to Apple's system font. It is a CONDENSED CAPS face and has to be
+     set as one: positive tracking (a condensed face runs its letters together at
+     negative), a line height under 1 (caps have no descenders to leave room for, so
+     0.86 closes the two lines into one block), and a larger size than the old sans
+     needed, because the same point size in a condensed face covers far less width.
+     One weight ships, so no font-weight is stated. NO !important anywhere: see the
+     type cascade note further down, where the universal selector that used to make
+     one necessary was removed. */
+  .ss-hero-name {
+    font-family: 'Bebas Neue', 'Space Grotesk', sans-serif;
+    line-height: 0.86;
+    letter-spacing: 0.012em;
+    color: var(--white);
+  }
+  /* Each letter is its own inline-block so it can be transformed on its own; without
+     this the spans are inline boxes and every transform is silently dropped. */
+  .ss-hero-name .ss-hero-ch { display: inline-block; will-change: transform, opacity, filter; }
+  .ss-hero-name .ss-hero-line { display: block; white-space: nowrap; }
 
   /* ── Lego Realm storyboard (home page scroll) ── */
   .ss-home-scroll {
@@ -1025,6 +1046,32 @@ const GLOBAL_CSS = `
     }
   }
 
+  /* A SHORT SCREEN BUYS ITS LAST LINE OUT OF THE GAP, NOT OUT OF THE COPY. At 1280x720 the
+     column still ran 14px over once the AI evaluation clause said what the job actually is,
+     and 14px is under half a 35px line, so there was nothing to trim in the text that would
+     not have cost a whole line of meaning. The headline and the rule carry 48px of air
+     between them (16 under the H2, 16 either side of the rule), which is right on a full
+     display and is the first thing that should give on a laptop that is 720 tall. 26px back,
+     none of it from the words. 760 is the same short-height breakpoint the homepage deck
+     already uses. Both margins are INLINE styles, hence !important. */
+  @media (max-height: 760px) {
+    .ss-about-page h2 { margin-bottom: 2px !important; }
+    .ss-about-rule { margin-top: 6px !important; margin-bottom: 6px !important; }
+  }
+
+  /* THE 769 TO 1100 BAND IS THE NARROWEST MEASURE ON THE PAGE, and it is the only place the
+     About copy still overran its own box after the padding was made viewport relative. The
+     grid is a flat 1fr 1fr, so at 1024 the text column is 512 wide and the 8vw + 60px gutters
+     leave 370 of it; at 20px Cormorant that is about 38 characters a line, which is under the
+     45 to 75 a paragraph wants and wrapped 95 words into 14 lines and 475px of height. This
+     is therefore a typographic fix and a fitting fix at once: 17px takes the measure to about
+     50 characters and the block to 9 lines. It sits between the 20px the wide layout uses and
+     the 15px the 768 rule already steps down to, so the page reads as one progression.
+     It needs !important because the size is written as an INLINE style on the paragraphs. */
+  @media (min-width: 769px) and (max-width: 1100px) {
+    .ss-about-page p { font-size: 17px !important; }
+  }
+
   @media (max-width: 700px) {
     .ss-hero-bg { object-position: 82% 5% !important; }
   }
@@ -1043,7 +1090,6 @@ const GLOBAL_CSS = `
     /* media viewer close button positioned above title on all devices */
     .ss-media-viewer-close { top: 100px !important; }
     /* contact page text sizing on mobile */
-    .ss-contact-subtitle { font-size: 16px !important; }
     .ss-contact-heading { font-size: clamp(90px,12vw,200px) !important; }
     .ss-contact-description { font-size: clamp(22px,4vw,36px) !important; }
     /* about page font sizing on mobile */
@@ -1162,6 +1208,11 @@ const GLOBAL_CSS = `
     /* the storyboard's entrances are inline transforms from framer-motion, which the rules
        above cannot reach: pin every part at its finished state instead */
     .ss-story, .ss-story * { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+    /* The hero name is per letter and driven by framer-motion, so its transforms are
+       INLINE and the duration rules above cannot reach them either. Pin it finished:
+       the letters are the name, and a visitor who asked for less motion still has to
+       be able to read it. */
+    .ss-hero-name, .ss-hero-name * { opacity: 1 !important; transform: none !important; filter: none !important; }
     /* and the deck itself: snapping is motion the visitor did not ask for */
     .ss-home-scroll { scroll-snap-type: none !important; }
   }
@@ -1550,6 +1601,83 @@ function readRealmSupport(): RealmSupport {
 /* ─────────────────────────────────────────────────────────────
    HOME PAGE
 ───────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════
+   THE HERO NAME BUILDS ITSELF, ONE LETTER AT A TIME.
+
+   A brick does not glide into position. It falls, and it seats with a knock. So each
+   letter drops in from above its line, overshoots by a hair and settles back, and the
+   stagger runs left to right the way a course is laid. That is the Realm's own
+   vocabulary carried onto the homepage: everything in there snaps to the stud grid,
+   and the title bubbles over the buildings already assemble course by course and print
+   their label letter by letter. A plain fade up, which is what this was, is the same
+   entrance any site could have.
+
+   THE OVERSHOOT IS THE WHOLE EFFECT and it is in the KEYFRAMES, not in the easing.
+   A springy cubic-bezier overshoots on every property it drives, which on `filter`
+   means a negative blur (invalid, so the letter flickers) and on `opacity` means a
+   value over 1 that clamps and flattens the fade. Driving y and scale past their
+   targets explicitly, on a plain ease, keeps the knock on the two properties that
+   should have it and leaves the other two monotonic.
+
+   `y` IS IN `em`, NOT PIXELS, because the size is a `clamp()` that resolves differently
+   at every window width: a fixed 90px drop is most of a letter's height on a phone and
+   a third of one on a wide desktop. In em the fall is the same fraction of the letter
+   everywhere.
+
+   ACCESSIBILITY: split into spans the name reads as eleven separate letters to a
+   screen reader, so the `h1` carries the real string as its label and the letters are
+   hidden from the tree. Reduced motion pins the whole thing finished (see GLOBAL_CSS).
+   ══════════════════════════════════════════════════════════════════ */
+const NAME_LINES = ["Shyon", "Shiri"];
+
+// `as const` so the four control points stay a TUPLE: widened to number[] framer-motion's
+// Easing type rejects it, which is the same reason SB_EASE is written this way.
+const NAME_EASE = [0.32, 0.9, 0.28, 1] as const;
+
+const nameStagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.052, delayChildren: 0.32 } },
+};
+
+const nameChar: Variants = {
+  hidden: { opacity: 0, y: "-0.85em", scale: 1.06, filter: "blur(3px)" },
+  show: {
+    opacity: 1,
+    // the three stops ARE the drop, the knock past the line, and the settle
+    y: ["-0.85em", "0.045em", "0em"],
+    scale: [1.06, 0.985, 1],
+    filter: ["blur(3px)", "blur(0px)", "blur(0px)"],
+    transition: { duration: 0.76, times: [0, 0.72, 1], ease: NAME_EASE },
+  },
+};
+
+function HeroName({ isMobile }: { isMobile: boolean }) {
+  return (
+    <motion.h1
+      className="ss-hero-name"
+      aria-label={NAME_LINES.join(" ")}
+      variants={nameStagger}
+      initial="hidden"
+      animate="show"
+      style={{
+        // Bebas is condensed, so the same point size covers far less width than the
+        // sans this replaced: the ceiling goes 160 to 200 and the vw term with it.
+        fontSize: isMobile ? "clamp(58px,9vw,92px)" : "clamp(84px,12.5vw,200px)",
+      }}
+    >
+      {NAME_LINES.map((word) => (
+        <span className="ss-hero-line" key={word} aria-hidden="true">
+          {[...word].map((c, i) => (
+            <motion.span className="ss-hero-ch" key={word + i} variants={nameChar}>
+              {c}
+            </motion.span>
+          ))}
+        </span>
+      ))}
+    </motion.h1>
+  );
+}
+
 function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [loaded, setLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
@@ -1603,17 +1731,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
         {/* Content */}
         <div style={{ position: "absolute", bottom: isMobile ? "14vh" : "24vh", left: "8vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
-            style={{
-              fontSize: isMobile ? "clamp(48px,7vw,72px)" : "clamp(72px,10vw,160px)",
-              lineHeight: 0.99, letterSpacing: "-0.02em", fontWeight: 700,
-              color: "var(--white)",
-            }}
-          >
-            Shyon<br />Shiri
-          </motion.h1>
+          <HeroName isMobile={isMobile} />
 
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
@@ -2443,25 +2561,40 @@ function WorkPage({ onCardClick, onNavigate }: { onCardClick: (p: Project) => vo
           Work
         </motion.h2>
 
-        {isDesktop && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.35, ease: [0.16,1,0.3,1] }}
-            style={{ marginTop: 10, maxWidth: 640 }}
-          >
+        {/* THE CTA IS NO LONGER DESKTOP ONLY, and it no longer states availability
+            (user, 2026-09-03). Two separate changes to one block:
+            · The gate moved from the whole motion.div ONTO THE PARAGRAPH. This link is the
+              only route from Work to Contact other than the nav, and it was inside an
+              `isDesktop && (...)` (>= 1024), so every phone and every tablet browsed the
+              entire portfolio with no call to action at the end of it. The blurb underneath
+              the heading stays desktop only, because that is a space decision and the phone
+              layout was built without it.
+            · "Available for work. Let's talk" lost its first sentence. The site said it in
+              three places, and this was the one where it sat in front of the verb: a CTA
+              should open with the action. Contact's italic line is the single place that
+              states availability now, and it is the most specific of the three.
+            `ss-tap` because at 14px this is well under the 44px touch minimum once it is
+            actually reachable on a phone. It lays a transparent ::after over the link and
+            changes neither the drawn size nor the layout. */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.35, ease: [0.16,1,0.3,1] }}
+          style={{ marginTop: 10, maxWidth: 640 }}
+        >
+          {isDesktop && (
             <p style={{ fontSize: 15, lineHeight: 1.45, color: midColor, textShadow, transition: "color 0.7s ease" }}>
               Commissioned client work, plus personal and academic projects across every medium.
             </p>
-            <a
-              onClick={() => onNavigate("contact")}
-              {...hover}
-              className="ss-work-cta"
-              style={{ display: "inline-block", marginTop: 8, fontSize: 14, fontWeight: 600, color: titleColor, textShadow, cursor: "none", transition: "color 0.7s ease" }}
-            >
-              Available for work. Let's talk →
-            </a>
-          </motion.div>
-        )}
+          )}
+          <a
+            onClick={() => onNavigate("contact")}
+            {...hover}
+            className="ss-work-cta ss-tap"
+            style={{ display: "inline-block", marginTop: 8, fontSize: 14, fontWeight: 600, color: titleColor, textShadow, cursor: "none", transition: "color 0.7s ease" }}
+          >
+            Let's talk &rarr;
+          </a>
+        </motion.div>
       </div>
 
       {/* Coverflow carousel: one focused card, two visible on the sides */}
@@ -2617,7 +2750,15 @@ function AboutPage() {
         {/* Text column */}
         <div className="ss-about-text-column" style={{
           display: "flex", flexDirection: "column", justifyContent: "center",
-          padding: window.innerWidth <= 640 ? "60px 3vw 60px 3vw" : "80px 60px 80px 8vw",
+          /* THE VERTICAL PADDING HAS TO GIVE WAY, because this column is justify-content:
+             center AND overflow:hidden, so copy that outgrows it is not scrolled to, it is
+             silently cut in half. A flat 80px was affordable when the headline was one word
+             on one line; measured after the name and the longer copy went in, the column ran
+             6px over its own box at 1280x800, 46 at 1280x720 and 55 at 1024x768. (1024x700
+             was ALREADY 30px over before any of this, which nothing had caught.) 6vh gives
+             the copy back 64 to 76px exactly where the screen is short, and resolves to the
+             original 80px at 1333px of height and up, so nothing changes on a full display. */
+          padding: window.innerWidth <= 640 ? "60px 3vw 60px 3vw" : "clamp(32px, 6vh, 80px) 60px clamp(32px, 6vh, 80px) 8vw",
           overflow: "hidden",
         }}>
           <motion.div
@@ -2629,15 +2770,28 @@ function AboutPage() {
             Designer &amp; Maker
           </motion.div>
 
+          {/* THE NAME, NOT THE WORD "ABOUT". This is the largest object on the page and it
+              used to spend itself on the same word as the nav item that was just clicked,
+              which is a label rather than information: the nav has already said which page
+              this is. Meanwhile "Shyon Shiri" appeared nowhere in the rendered text of his
+              own About page, only in the photo's alt attribute.
+              TWO HAND SET LINES, and the break is not cosmetic. The name is 11 characters
+              against "About"'s 5, so at the old clamp(96,12vw,180) it measured wider than
+              the text column at every width the page is built for and would have run under
+              the photo. Broken, the longest line is 5 characters, which is exactly what the
+              old size was scaled for; the max comes down to 132 so the two lines together
+              (0.92 leading, so 243px) still leave the copy its room at a 900px viewport.
+              The 768 and 640 overrides below still apply and are unchanged. */}
           <motion.h2
             initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16,1,0.3,1] }}
-            style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(96px,12vw,180px)", letterSpacing: 4, lineHeight: 0.92, color: "#060606", marginBottom: 16 }}
+            style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(64px,7.4vw,124px)", letterSpacing: 4, lineHeight: 0.92, color: "#060606", marginBottom: 16 }}
           >
-            About
+            Shyon<br />Shiri
           </motion.h2>
 
           <motion.div
+            className="ss-about-rule"
             initial={{ width: 0 }} animate={{ width: 80 }}
             transition={{ duration: 1, delay: 0.5, ease: [0.16,1,0.3,1] }}
             style={{ height: 1, background: "#060606", margin: "16px 0" }}
@@ -2647,11 +2801,38 @@ function AboutPage() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.55, ease: [0.16,1,0.3,1] }}
           >
+            {/* WHAT THIS PAGE IS FOR, and it is the one job no other page does. Home carries
+                the narrative (the "Why I made it" slide already tells the stop motion and
+                LEGO origin, in context and against a picture), and Work carries the evidence.
+                About was carrying neither: it ran a six discipline list and then two
+                unfalsifiable lines about craft and standards, which is the one mode that
+                gives a reviewer nothing, since no designer claims the opposite.
+                So this is the FACTS page now, in the order a recruiter scans for them: what
+                he is, where he is, the credential and its date, the scope he works at, and
+                what he does today.
+                NO CLIENT AND NO EMPLOYER IS NAMED HERE, deliberately (user, 2026-09-03, in
+                two passes). A draft called out Everly Care Home and minasech.net with the
+                scope of each spelled out, which is the right move on a STANDALONE about page
+                where prose is the only evidence a reader will ever get. It is the wrong move
+                on this site: Work is one click away and carries both of them with images,
+                descriptions and live links, so naming them here is the same evidence twice in
+                the weaker format, it goes stale the moment a better project ships, and a
+                reader takes a list of exactly two clients as the complete list. Handshake
+                came out on the same principle in the pass after.
+                The AI evaluation FACT stays, because it is the one thing on this page that
+                the rest of the site cannot show: there is no Work entry for it, so unlike the
+                client sites it is not duplicated anywhere. Unattributed it needs to say what
+                the job actually IS or it reads as a vague claim, hence the rubric and ground
+                truth clause, which is the resume's own description of the role.
+                Proof lives on Work. About states the scope.
+                The second paragraph is the only biography kept, and it earns its line by
+                explaining the thing the work would otherwise look scattered for: why a
+                graphic designer's portfolio also holds welding, hardware and a game engine. */}
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 300, lineHeight: 1.75, color: "#3a3a3a", maxWidth: 480 }}>
-              I'm a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. Covering several disciplines lets me take a project from concept to delivery without handing it off.
+              I'm a graphic designer and developer in the Bay Area, with a BA in Graphic Design from San Jose State, 2025. I take a project from identity through to a deployed site, so design, front end, and deployment are one job rather than three handoffs. I also evaluate multimodal AI systems against rubrics, writing the corrected ground truth where models fail.
             </p>
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 300, lineHeight: 1.75, color: "#3a3a3a", maxWidth: 480, marginTop: 20 }}>
-              That range started in childhood with LEGO builds and stop motion films, and it became a working habit: learn the tools each project requires and use them properly. I hold finished work to a high standard of craft and detail.
+              Most of what I design ends up physical or interactive rather than sitting on a page. That is why the same portfolio holds 3D printed hardware enclosures, a welded steel sculpture, and a LEGO world running in this browser.
             </p>
           </motion.div>
         </div>
@@ -2734,14 +2915,13 @@ function ContactPage() {
       <div style={{ position: "relative", zIndex: 10, padding: window.innerWidth <= 640 ? "0 18px" : "0 9vw", width: "100%" }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: window.innerWidth <= 640 ? 20 : 40, flexWrap: "wrap", marginBottom: window.innerWidth <= 640 ? 24 : 44 }}>
           <div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2, ease: [0.16,1,0.3,1] }}
-              className="ss-contact-subtitle"
-              style={{ fontFamily: "'Space Mono', monospace", fontSize: 11, letterSpacing: 5, textTransform: "uppercase", color: "var(--sky)", marginBottom: 20 }}
-            >
-              Available for projects
-            </motion.div>
+            {/* The "AVAILABLE FOR PROJECTS" eyebrow was removed here (user, 2026-09-03). The
+                italic line to the right of this heading already says it, and says more:
+                "Open to freelance, collaborations & full-time roles." Two availability
+                statements on one screen is the same sentence twice, and the shorter one was
+                the weaker of the pair. `.ss-contact-subtitle` went with it, being its only
+                user. NOTE the heading's own entrance delay is deliberately left at 0.35: the
+                sequence still staggers against the description at 0.5 beside it. */}
             <motion.h2
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}

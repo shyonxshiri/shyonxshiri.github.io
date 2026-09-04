@@ -515,6 +515,37 @@ a label on him. `#prompt` is left to the contextual affordances alone.
 NOT taken to a whisper. The `blur(10)` stays, because that is what lets the fill come down and still
 separate the text from a bright lawn; dropping the fill further without it is the "too glass" end.
 
+**THE CONTACT PANEL IS DRAWN IN THE MAIN SITE'S LANGUAGE** (user, 2026-09-03). The Realm's
+"contact page" is a PANEL in the About portal (the mansion), not a page: `ABOUT[2]` in
+`lego.html`, whose face is `assets/contact_preview.jpg`. It used to be the Realm's own
+dialect, a navy ground with a LEGO stud grid, Fredoka and the Realm's yellow. It is now
+`ContactPage` from `src/App.tsx` redrawn value for value: the `#060606` ground, the blurred
+Bebas ghost word, the two sky radial glows, "Let's Work." in Bebas at letter-spacing 5, the
+italic Cormorant line, and the indexed list with its Space Mono numerals, Bebas labels,
+Cormorant values and sky arrows on `rgba(245,242,237,.14)` hairlines.
+Source is `scratchpad/contactcard/card.html`, rendered by `render.cjs` at the panel's own
+**1400x1758** (2.15 : 2.70, the same as `resume_preview.jpg`). The renderer waits on
+`document.fonts.ready` AND checks each family, because a shot taken early renders Bebas as a
+fallback grotesk and the whole point of the card is lost.
+**It is NOT a straight copy of the page's layout.** The page is a landscape viewport where a
+vertically centred block fills the frame; at 1400x1758 the same block left the top and bottom
+thirds empty and the type came out small on a panel read from across a room. So the heading
+is set on TWO lines (which is what lets it run at 190px in a portrait column), the italic
+line moves from beside the heading to under it (right aligned in this column it was a 340px
+scrap in the corner), and the content is packed from 430px down rather than centred.
+**THE FRAME IS PINNED to `#05131D`**, for the same reason About's is: run against this image
+the shipped `strongColor()` returns **#14313e**, the blue glow averaged down to a murky teal.
+LEGO Black is what the page itself is, and it matches About beside it. `c` went from the old
+green `#2ee078` to `#38bdf8`, which is only the pre-load plastic but should still be the
+site's accent. The desc is now the page's own line, "Open to freelance, collaborations, and
+full-time roles."
+Verified IN ENGINE, not as a flat JPEG (`scratchpad/contactcard/realm_shot.cjs`): teleport to
+the porch, `enterPortal('about')`, step the carousel, photograph the panel. Note the entry is
+a rAF-driven camera animation and SwiftShader runs this scene at a few frames a second, so
+the transition takes tens of seconds of wall clock and the script POLLS `mode` rather than
+sleeping a fixed time. `enterPortal` and `nearPortal` are both global, so the portal can be
+opened directly; a synthetic `keydown` for E did not take.
+
 **Title bubbles.** LEGO speech bubbles (`speech_bubble.glb`) that build themselves course by
 course as you approach, print their label letter by letter, and dismantle when you leave, with
 brick snap sounds. `BUB_SPOTS` entries take `pos / yaw / sw / scale / lines / text / rect / near /
@@ -810,6 +841,41 @@ title bubbles, mobile touch controls (joystick + jump + contextual pills), and M
 taken off its display in the mansion's upstairs (suit swap + flight). Flight collision is now
 per-geometry in three dimensions (§5), and the mansion's upstairs is a real room you can fly into
 and walk around, third person like everywhere else.
+
+**THE HERO NAME IS BEBAS NEUE AND IT BUILDS ITSELF, LETTER BY LETTER** (user, 2026-09-03: he
+asked for a cooler font and an animation, suggesting "spell out or fall into place"). It was one
+`h1` reading `Shyon<br />Shiri` in the base SF Pro at weight 700, fading up 40px as a single block,
+and it was the only big display heading on the site never given a face of its own.
+**The face is the one the site already owned.** About's and Contact's display headings are Bebas
+Neue, so the name was the odd one out rather than the standard; using it costs no extra download
+(`index.html` already fetches it) and makes the three biggest pieces of type on the site one voice.
+It is CONDENSED CAPS and has to be set as one: positive tracking (0.012em, since a condensed face
+runs its letters together at the negative tracking the old sans wanted), `line-height` 0.86 (caps
+have no descenders, so this closes the two lines into one block), and a bigger size, because the
+same point size in a condensed face covers far less width. The ceiling went 160 to 200 and the vw
+term 10 to 12.5. Anton, Syne, Instrument Serif and Space Grotesk were built and shown alongside it.
+**The animation is the REALM'S OWN VOCABULARY, not a generic entrance.** Each letter drops in from
+above its line, overshoots by a hair and settles back, staggered left to right the way a course is
+laid. Everything in the Realm snaps to the stud grid and pops into place, and the title bubbles over
+the buildings already assemble course by course and print their label letter by letter, so the
+homepage now opens with the gesture the world runs on. `HeroName`, `nameStagger`, `nameChar`.
+**THE OVERSHOOT IS IN THE KEYFRAMES, NOT THE EASING, and that is the trap.** A springy
+cubic-bezier overshoots every property it drives, which on `filter` means a NEGATIVE blur (invalid,
+so the letter flickers) and on `opacity` a value over 1 that clamps and flattens the fade. `y` and
+`scale` are driven past their targets explicitly on a plain ease instead, so the knock lands on the
+two properties that should have it and the other two stay monotonic.
+**`y` IS IN `em`, NEVER PIXELS.** The size is a `clamp()` resolving 58px to 200px across the range,
+so a fixed drop is most of a letter's height on a phone and a third of one on a wide desktop.
+**Accessibility:** split into spans the name reads as ten separate letters, so the `h1` carries
+`aria-label="Shyon Shiri"` and the letters are `aria-hidden`. There is NO `text-transform`: Bebas
+draws caps on its own, so the DOM text stays "Shyon Shiri" for screen readers and SEO. Reduced
+motion pins it finished in `GLOBAL_CSS`, alongside the storyboard's own pin, because framer-motion
+writes inline transforms the duration rules cannot reach, and the letters ARE the name.
+Verified in real headless Chrome, not the pane, which pins every framer-motion entrance at `hidden`
+(§7): `scratchpad/verify_heroname.cjs` (14 assertions, including that mid-entrance the letters sit
+at different opacities, i.e. they really stagger), `heroname_sizes.cjs` (six viewports: fits, clears
+the paragraph, no sideways scroll), `heroname_rm.cjs` (reduced motion). `verify_type.cjs`'s home
+`h1` expectation was updated from SF to `.ss-hero-name` / Bebas Neue.
 
 **The homepage is a DECK** (user, 2026-09-01, and this REVERSES the earlier revert of exactly this:
 a snap deck was built once and pulled because the ask then was animation and not pinning. It has now
