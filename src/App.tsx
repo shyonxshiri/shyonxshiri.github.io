@@ -1785,7 +1785,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               className="ss-open-img"
               variants={sbOpen}
               src="/assets/story/story_aerial_town.jpg"
-              alt="The town from above: the ruins, the coffee shop, the run down cottage across the river, and the modern house with a car on its driveway."
+              alt="The town from above: the Ruins, the Coffee Shop, the Cottage across the river, and the Modern House with a car on its driveway."
               decoding="async"
             />
             <div className="ss-open-veil" aria-hidden />
@@ -2122,7 +2122,7 @@ function Plate({ scene, src, caption }: { scene: string; src: string; caption: s
    every time the pointer crossed one. */
 const WORK_SHEET = [
   { scene: "Assembly", src: "/assets/story/story_blender_shop_assembly.jpg",
-    caption: "The coffee shop part way up: walls built to the halfway course, the roof and awning not yet placed, the umbrella pole still bare. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." },
+    caption: "The Coffee Shop part way up: walls built to the halfway course, the roof and awning not yet placed, the umbrella pole still bare. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." },
   { scene: "Mesh editing", src: "/assets/story/story_blender_ruins_edit.jpg",
     caption: "The ruins in Edit Mode, built up to the doorway arch with the upper storey still to come. The highlighted course is the one going on next." },
   { scene: "Sculpting", src: "/assets/story/story_blender_hair_sculpt.jpg",
@@ -2132,9 +2132,9 @@ const WORK_SHEET = [
   { scene: "Figure assembly", src: "/assets/story/story_blender_figure_exploded.jpg",
     caption: "The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." },
   { scene: "Materials", src: "/assets/story/story_blender_house_nodes.jpg",
-    caption: "The modern house with the ground floor closed and the upper storey just started. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." },
+    caption: "The Modern House with the ground floor closed and the upper storey just started. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." },
   { scene: "Render preview", src: "/assets/story/story_blender_cottage_render.jpg",
-    caption: "The run down cottage with its walls finished and the roof not yet on, in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." },
+    caption: "The Cottage with its walls finished and the roof not yet on, in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." },
 ];
 
 function WorkSheet() {
@@ -2205,18 +2205,27 @@ const sbFig: Variants = {                         // a figure lands in held step
    contents of that portal, taken from the real PROJECTS entries above, so nothing here
    claims work that is not on the site. Kept to 12 to 15 words: the card is about 280px
    wide at 12.5px, and it grows UPWARD off `bottom: 3.6%`, so a long line walks it up the
-   map and over the buildings. */
+   map and over the buildings.
+   THE NAMES ARE TITLE CASE AND THE COTTAGE LOST ITS ADJECTIVE (user, 2026-09-03). These
+   are the names of four places, so they are set as proper nouns rather than as
+   descriptions that happen to be sitting in a name slot. "The run down cottage" is now
+   "The Cottage": "run down" was the one informal word among the four, and dropping it
+   leaves a bare noun exactly as "The Ruins" already was, with no second cottage anywhere
+   in the world for it to be confused with.
+   In PROSE (the two alt strings and the workshop captions) the ARTICLE stays lower case
+   and only the name is capitalised, "the Cottage", because "The Cottage" mid sentence
+   reads as a broken sentence rather than as a proper noun. */
 const REALM_MAP = [
-  { id: "shop", name: "The coffee shop", cat: "Professional Services", x: 18.2, y: 26.0, flip: false,
+  { id: "shop", name: "The Coffee Shop", cat: "Professional Services", x: 18.2, y: 26.0, flip: false,
     src: "/assets/story/story_shop_evening.jpg",
     line: "Commissioned client work. Full stack websites, brand and print for small businesses, and concept visualization." },
-  { id: "cottage", name: "The run down cottage", cat: "Personal Projects", x: 53.5, y: 25.0, flip: false,
+  { id: "cottage", name: "The Cottage", cat: "Personal Projects", x: 53.5, y: 25.0, flip: false,
     src: "/assets/story/story_sunset.jpg",
     line: "Self directed work. 3D modeling and rendering, product prototypes, custom hardware, photography and fabrication." },
-  { id: "house", name: "The modern house", cat: "About", x: 93.5, y: 38.0, flip: true,
+  { id: "house", name: "The Modern House", cat: "About", x: 93.5, y: 38.0, flip: true,
     src: "/assets/story/story_lamp_night.jpg",
     line: "Background and training, and how the disciplines across the rest of the site fit together." },
-  { id: "ruins", name: "The ruins", cat: "NABU", x: 13.0, y: 85.0, flip: false,
+  { id: "ruins", name: "The Ruins", cat: "NABU", x: 13.0, y: 85.0, flip: false,
     src: "/assets/story/story_crystal_night.jpg",
     line: "Art direction, promotional video and campaign photography for the NABU clothing label." },
 ];
@@ -2264,7 +2273,7 @@ function RealmMap() {
       <img className="ss-map-bed" src="/assets/story/story_aerial_town.jpg" alt="" aria-hidden decoding="async" />
       <div className="ss-map-fit" style={{ left: fit.left, top: fit.top, width: fit.w, height: fit.h }}>
         <img className="ss-map-img" src="/assets/story/story_aerial_town.jpg"
-          alt="The town from above: the coffee shop, the run down cottage, the modern house and the ruins."
+          alt="The town from above: the Coffee Shop, the Cottage, the Modern House and the Ruins."
           decoding="async" />
         {REALM_MAP.map((b) => (
           <motion.button
