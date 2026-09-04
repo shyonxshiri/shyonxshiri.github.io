@@ -2077,7 +2077,7 @@ const sbFig: Variants = {                         // a figure lands in held step
      phone and is not available from a keyboard, so click and focus open it too and the
      open card is real state rather than a CSS hover. */
 const REALM_MAP = [
-  { id: "shop", name: "The coffee shop", cat: "Professional Services", x: 15.0, y: 25.5, flip: false,
+  { id: "shop", name: "The coffee shop", cat: "Professional Services", x: 18.2, y: 26.0, flip: false,
     src: "/assets/story/story_shop_evening.jpg",
     line: "The shop at dusk, its terrace laid out under the umbrella. The interior is the way into the professional work." },
   { id: "cottage", name: "The run down cottage", cat: "Personal Projects", x: 53.5, y: 25.0, flip: false,
