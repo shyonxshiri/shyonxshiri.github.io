@@ -1291,33 +1291,6 @@ const GLOBAL_CSS = `
     .ss-bento { grid-template-columns: repeat(4, 1fr) !important; }
   }
 
-  /* ── SPEC BAND (Contact) ── hairline dividers and no boxes, which is what keeps it a
-     BAND rather than four more cards on a page that already has three rows of them. The
-     1px gap over a lined background draws every divider, inner and outer, from one rule. */
-  .ss-spec {
-    margin-top: clamp(28px, 5vh, 56px);
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 1px; background: rgba(245,242,237,.14);
-    border-top: 1px solid rgba(245,242,237,.14);
-    border-bottom: 1px solid rgba(245,242,237,.14);
-  }
-  .ss-spec > div { background: #060606; padding: clamp(16px, 2.6vh, 26px) 8px; }
-  .ss-spec dd {
-    margin: 0; font-size: clamp(22px, 2.9vw, 38px); font-weight: 700;
-    letter-spacing: -0.03em; line-height: 1; color: var(--white);
-    font-variant-numeric: tabular-nums;
-  }
-  .ss-spec dd i { font-style: normal; font-size: .48em; color: var(--sky); margin-left: 2px; }
-  .ss-spec dt {
-    margin-top: 9px; font-size: 10.5px; font-weight: 600; letter-spacing: .06em;
-    text-transform: uppercase; color: var(--mid);
-  }
-  /* Four across needs about 140px a column to hold "Triangles a frame" on two lines. */
-  @media (max-width: 620px) {
-    .ss-spec { grid-template-columns: repeat(2, 1fr); }
-    .ss-spec dt { font-size: 9.5px; }
-  }
-
   /* smooth, rounded surfaces instead of sharp corners */
   .ss-card {
     border-radius: 22px !important;
@@ -3184,11 +3157,18 @@ function AboutPage() {
               · Open to / Full-time              -> the CONTACT page's availability line,
                 which is where an availability claim belongs.
               · Running in this browser / 15.9M  -> the phrase ends paragraph 2 directly
-                above it, AND the figure is on two other pages: Contact's `SpecBand` and the
-                deck's closer, both of which draw it from `REALM_FIGS`. Three pages carrying
-                one number is the number meaning less on each of them, so About gives it up:
-                the closer earns it (it is the payoff of a slide about the build) and Contact
-                earns it (it is the page with nothing else to fill its last quarter).
+                above it, AND the figure was on two other pages: the deck's closer and, for
+                one day, Contact's spec band, both drawing it from `REALM_FIGS`. Three pages
+                carrying one number is the number meaning less on each, so About gave it up.
+                CONTACT HAS SINCE GIVEN IT UP TOO (user, 2026-09-09), so the closer is now
+                the only place any of the four figures appears, which is where they read:
+                they sit on an aerial of the town, on a slide about building it. On Contact
+                they sat under an email address with nothing naming the Realm, so "7 MIN /
+                FULL DAY CYCLE" was a statistic with no subject. That band existed to fill
+                a measured 26% of dead space below the last link row, and filling space is
+                not a reason for a number to be on a page. Its `SpecBand`, its `CountUp`
+                and the whole `.ss-spec` rule went with it; `REALM_FIGS` stays, one user.
+                The 26% is open again, and nothing should be invented to refill it.
               What is left is the only fact set on this page that no paragraph here states
               and no other page duplicates. Tiles are equal now because four peers ARE equal;
               the unevenness was carrying the 15.9M tile and left with it. */}
@@ -3234,53 +3214,6 @@ function AboutPage() {
 /* ─────────────────────────────────────────────────────────────
    CONTACT PAGE
 ───────────────────────────────────────────────────────────── */
-/* ── THE SPEC BAND ──────────────────────────────────────────────────────────────────
-   Apple ends a page on hard numbers across a hairline row, no boxes. Here it fills the
-   bottom quarter of Contact, measured at 26% empty below the last link row.
-   THE FIGURES ARE THE ONES THE DECK'S CLOSER ALREADY CARRIES (`REALM_FIGS`), counted in
-   the live page rather than estimated, so nothing new is claimed and the two can never
-   drift apart.
-   The count runs on rAF against `performance.now()`, not a CSS transition: CSS cannot
-   interpolate the TEXT of a number. It eases out cubically so the value settles rather
-   than arriving, and it runs ONCE on mount, because this page has no scroll of its own
-   and so there is no arrival to observe. Reduced motion gets the final value outright. */
-function CountUp({ to, dec = 0 }: { to: number; dec?: number }) {
-  const [v, setV] = useState(REDUCE ? to : 0);
-  useEffect(() => {
-    if (REDUCE) return;
-    let raf = 0, t0: number | null = null;
-    const step = (t: number) => {
-      if (t0 === null) t0 = t;
-      const k = Math.min(1, (t - t0) / 1100);
-      setV(to * (1 - Math.pow(1 - k, 3)));
-      if (k < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [to]);
-  return <>{v.toFixed(dec)}</>;
-}
-
-function SpecBand() {
-  return (
-    <motion.dl
-      className="ss-spec"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: 0.8, ease: APPLE_EASE }}
-    >
-      {REALM_FIGS.map((f) => (
-        <div key={f.label}>
-          <dd>
-            <CountUp to={parseFloat(f.n)} dec={f.n.includes(".") ? 1 : 0} />
-            {f.unit && <i>{f.unit}</i>}
-          </dd>
-          <dt>{f.label}</dt>
-        </div>
-      ))}
-    </motion.dl>
-  );
-}
 
 /* The tiles land one after another rather than as a block, on the site's one ease. The
    delay clears the two paragraphs above them, which finish at 0.55 + 0.8. */
@@ -3414,8 +3347,6 @@ function ContactPage() {
           ))}
         </motion.div>
 
-        {/* fills the 26% that was empty below the list */}
-        <SpecBand />
       </div>
     </motion.div>
   );

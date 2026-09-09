@@ -1012,8 +1012,27 @@ behind it.
   backdrop's own variation survives at scale. **None of that is in the file any more.**
 **THE DEAD SPACE WAS MEASURED BEFORE ANYTHING WAS BUILT**, off 1512x900 captures: Contact
 26% empty below the last row, About 21% under the copy, Work 17% under the cards. The
-spec band (`REALM_FIGS`, the closer's own figures, so the two cannot drift) fills
+spec band (`REALM_FIGS`, the closer's own figures, so the two cannot drift) filled
 Contact's; the bento fills About's.
+**THE SPEC BAND IS GONE FROM CONTACT** (user, 2026-09-09, asking why the Realm's full day
+cycle was on the contact page). It was the right answer to the wrong question. Filling
+measured dead space is a LAYOUT reason, and a number needs an EDITORIAL one. On the closer
+the four figures sit on an aerial of the town, on a slide about building it, so they have a
+subject; on Contact they sat under an email address with nothing on the page naming the
+Realm, so "7 MIN / FULL DAY CYCLE" was a statistic about nothing. Note this is the same
+judgement the bento pass made one screen away, and it should have been made here at the same
+time: About gave up `Running in this browser / 15.9M` for putting one number on a third page,
+and Contact was explicitly excused on the grounds that it had space to fill.
+`SpecBand`, `CountUp` (its only user) and the whole `.ss-spec` rule went with it.
+`REALM_FIGS` STAYS and now has exactly one reader, the closer, which is where the comment on
+it always said it belonged. **The 26% is open again and nothing should be invented to refill
+it**, which is the rule the bento pass ended on and the one this reverses a violation of.
+`scratchpad/spec_gone.cjs` asserts, at five viewports, that no `.ss-spec`, no `<dl>` and none
+of the four figure labels survive on Contact while the heading, the availability line and all
+three link rows do. Note its own trap, hit on the first run: an assertion counting the link
+rows by guessing at `mailto` / `linkedin` / `github` selectors PASSED at 2 of an expected 3,
+because the third row is a resume PDF and there is no github row at all. It counts the three
+real labels now.
 **AND THE BENTO IS THE TOOLS AND NOTHING ELSE** (user, 2026-09-09: most of this is not needed
 on About, and the page said "running in this browser" twice). It shipped as eight tiles and
 four of them were restatement, three word for word. `Based in / San Jose, California` and
@@ -1022,9 +1041,10 @@ four of them were restatement, three word for word. `Based in / San Jose, Califo
 is the Contact page's availability line, which is the page an availability claim belongs on.
 And `Running in this browser / 15.9M` repeated the closing words of paragraph two on top of
 itself while putting the figure on its THIRD page: `SpecBand` on Contact and the deck's closer
-both draw it from `REALM_FIGS`, and one number on three pages means less on each. About gives
-it up; the closer earns it (it is the payoff of a slide about the build) and Contact earns it
-(nothing else fills its last quarter).
+both drew it from `REALM_FIGS`, and one number on three pages means less on each. About gives
+it up; the closer earns it (it is the payoff of a slide about the build). Contact was excused
+here on the grounds that nothing else filled its last quarter, and that excuse did not survive
+the day: see the spec band note above.
 What is left, Blender / Three.js / React / After Effects, is the only fact set on the page that
 no paragraph here states and no other page duplicates. Tiles are equal now (all `b-wide`, so
 2 x 2 at 480px and one column under 900) because four peers ARE equal; the unevenness the old
