@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
+import { motion, AnimatePresence, useAnimation, type Variants } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────
    TYPES
@@ -112,7 +112,20 @@ const GLOBAL_CSS = `
     --cyan: #22d3ee;
     --accent: #ff4d1c;
     --mid: #8a8a8a;
-    --ease-out: cubic-bezier(0.16,1,0.3,1);
+    /* THE SITE'S ONE EASE. It was cubic-bezier(0.16,1,0.3,1), an expo-style curve that
+       spends most of its travel in the first fifth of its duration: measured, that one
+       is 27% of the way home at 10% of the time against this one's 17.6%. Front-loading
+       that hard reads as SNAP, and snap is the opposite of what weight feels like. This
+       is Apple's curve: gentler off the mark, and a long glide into the stop.
+       Every transition in the sheet references the token, and the JS side is APPLE_EASE,
+       which carries the same four numbers for framer-motion. There is no second ease.
+       Two curves in the file are deliberately NOT this and must not be folded in:
+       the map pin's pulse (an infinite loop, not an arrival) and stepEase (a STEPPED
+       function, not a curve at all, which is what makes the storyboard's pictures build
+       course by course).
+       NOTE this comment carries no backticks on purpose: GLOBAL_CSS is a template
+       literal, so one backtick anywhere in here ends the string. */
+    --ease-out: cubic-bezier(0.32,0.72,0,1);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1090,10 +1103,10 @@ const GLOBAL_CSS = `
   .ss-work-modal { border-radius: 26px !important; overflow: hidden !important; }
   /* masonry gallery (Work modal: creative + professional) — packs mixed
      aspect ratios tightly with no ragged gaps, shows every image uncropped */
-  .ss-scell { position: relative; border-radius: 14px; overflow: hidden; background: #111214; border: 1px solid rgba(245,242,237,.1); cursor: none; transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .4s cubic-bezier(.16,1,.3,1), box-shadow .5s cubic-bezier(.16,1,.3,1); }
+  .ss-scell { position: relative; border-radius: 14px; overflow: hidden; background: #111214; border: 1px solid rgba(245,242,237,.1); cursor: none; transition: transform .5s var(--ease-out), border-color .4s var(--ease-out), box-shadow .5s var(--ease-out); }
   .ss-scell:hover { transform: translateY(-4px); border-color: var(--sky); box-shadow: 0 18px 44px rgba(0,0,0,.5); }
   .ss-scell .ss-sthumb { position: relative; width: 100%; background: #0a0a0c; overflow: hidden; }
-  .ss-scell .ss-sthumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s cubic-bezier(.16,1,.3,1); }
+  .ss-scell .ss-sthumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s var(--ease-out); }
   .ss-scell:hover .ss-sthumb img { transform: scale(1.05); }
   .ss-scell .ss-sbody { padding: 10px 12px 12px; }
   /* scroll affordances: a visible slim scrollbar + a bottom fade */
@@ -1169,14 +1182,51 @@ function useCursorHover() {
   return { onMouseEnter: enter, onMouseLeave: leave };
 }
 
+/* Where a work card sat when it was clicked, plus a detached copy of it. See
+   `openProject` and the modal's expand. */
+type CardOrigin = { rect: DOMRect; node: HTMLElement };
+
 /* ─────────────────────────────────────────────────────────────
    PAGE TRANSITION VARIANTS
 ───────────────────────────────────────────────────────────── */
-const fade = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { duration: 0.6 } },
-  exit:    { opacity: 0, transition: { duration: 0.45 } },
-};
+/* The four page roots are all `position:absolute; inset:0`, so they already occupy the
+   same box and AnimatePresence can run them CONCURRENTLY. It used to be mode="wait",
+   which unmounts the outgoing page in full before mounting the incoming one, so every
+   navigation went through a beat of bare root background: a black flash between pages.
+   They now overlap.
+   OPACITY IS LINEAR ON PURPOSE. Two opaque layers crossfading on an eased curve are not
+   the inverse of each other, so their combined coverage dips below 1 in the middle and
+   the root shows through as a grey wash. Linear on both is the only pairing that holds.
+   THE SCALE ONLY EVER SHRINKS TOWARD 1, never below it. A page that scaled under 1 would
+   reveal its own edges (About is cream on a dark root, so that reads as a hairline frame);
+   starting at 1.012 and settling means the layer over-covers for the whole move. */
+const APPLE_EASE = [0.32, 0.72, 0, 1] as const;
+
+/* Read ONCE at module load. The reduced-motion block in GLOBAL_CSS kills CSS animations
+   and transitions, but framer-motion writes inline transforms it cannot reach, which is
+   the same reason the storyboard carries its own pin. Everything added in this pass is
+   framer-driven, so it has to opt out in JS. */
+const REDUCE = typeof window !== "undefined"
+  && typeof window.matchMedia === "function"
+  && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const fade = REDUCE
+  ? {
+      initial: { opacity: 0 },
+      animate: { opacity: 1, transition: { duration: 0.001 } },
+      exit: { opacity: 0, transition: { duration: 0.001 } },
+    }
+  : {
+      initial: { opacity: 0, scale: 1.012 },
+      animate: {
+        opacity: 1, scale: 1,
+        transition: {
+          duration: 0.62, ease: APPLE_EASE,
+          opacity: { duration: 0.42, ease: "linear" as const },
+        },
+      },
+      exit: { opacity: 0, transition: { duration: 0.42, ease: "linear" as const } },
+    };
 
 /* ─────────────────────────────────────────────────────────────
    ROOT
@@ -1184,7 +1234,18 @@ const fade = {
 export default function App() {
   const [page, setPage] = useState<Page>("home");
   const [modalProject, setModalProject] = useState<Project | null>(null);
+  /* Where the modal grew FROM. Captured at the click, not looked up later, because the
+     coverflow keeps animating and a rect read one frame afterwards is already stale.
+     The node is CLONED at the same instant rather than held by reference: the modal
+     paints that clone as its own first frame, so the card appears to lift off the page
+     instead of a new panel fading in over it. */
+  const [modalFrom, setModalFrom] = useState<CardOrigin | null>(null);
   const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
+
+  const openProject = useCallback((p: Project, el?: HTMLElement | null) => {
+    setModalFrom(el ? { rect: el.getBoundingClientRect(), node: el.cloneNode(true) as HTMLElement } : null);
+    setModalProject(p);
+  }, []);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const pageIdx = PAGE_ORDER.indexOf(page);
   const cooldown = useRef(false);
@@ -1407,9 +1468,9 @@ export default function App() {
       </div>
 
 {/* ── PAGES ────────────────────────────────────────────── */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {page === "home" && <HomePage key="home" onNavigate={navigate} />}
-        {page === "work" && <WorkPage key="work" onCardClick={setModalProject} />}
+        {page === "work" && <WorkPage key="work" onCardClick={openProject} />}
         {page === "about" && <AboutPage key="about" />}
         {page === "contact" && <ContactPage key="contact" />}
       </AnimatePresence>
@@ -1419,6 +1480,7 @@ export default function App() {
         {modalProject && (
           <WorkModal
             project={modalProject}
+            from={modalFrom}
             onClose={() => setModalProject(null)}
             onMediaClick={setViewerItem}
           />
@@ -1466,7 +1528,7 @@ function NavLink({ label, active, onClick, currentPage, wideAbout }: { label: st
           position: "absolute", bottom: -4, left: 0,
           height: 1, background: "var(--sky)",
           width: active ? "100%" : 0,
-          transition: "width 0.4s cubic-bezier(0.16,1,0.3,1)",
+          transition: "width 0.4s var(--ease-out)",
           display: "none",
         }}
       />
@@ -1545,9 +1607,15 @@ function readRealmSupport(): RealmSupport {
    ══════════════════════════════════════════════════════════════════ */
 const NAME_LINES = ["Shyon", "Shiri"];
 
-// `as const` so the four control points stay a TUPLE: widened to number[] framer-motion's
-// Easing type rejects it, which is the same reason SB_EASE is written this way.
-const NAME_EASE = [0.32, 0.9, 0.28, 1] as const;
+// The name's letters ride the site's one ease too. It was its own curve,
+// [0.32, 0.9, 0.28, 1], which is close to this one but not it. What matters for THIS
+// animation is not the shape but that the curve stays MONOTONIC: the drop's overshoot
+// lives in the keyframes below, and a springy ease would overshoot every property it
+// drives, which on `filter` means a negative blur (invalid, so the letter flickers) and
+// on `opacity` a value over 1 that clamps and flattens the fade. APPLE_EASE never
+// leaves 0..1 (its y control points are 0.72 and 0), so the knock still lands only on
+// `y` and `scale`, which is where it was put on purpose.
+const NAME_EASE = APPLE_EASE;
 
 const nameStagger: Variants = {
   hidden: {},
@@ -1650,7 +1718,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.58, ease: [0.16,1,0.3,1] }}
+            transition={{ duration: 0.8, delay: 0.58, ease: APPLE_EASE }}
             style={{ marginTop: 16, maxWidth: 460, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}
           >
             Click{" "}
@@ -1908,7 +1976,9 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
    And it re-runs. `once` is deliberately NOT set: on a deck the slide you left is
    fully off screen, so coming back up should replay rather than show you a finished
    still. */
-const SB_EASE = [0.16, 1, 0.3, 1] as const;
+// The storyboard rides the site's one ease. `as const` keeps the four control points a
+// TUPLE: widened to number[] framer-motion's Easing type rejects it.
+const SB_EASE = APPLE_EASE;
 
 const sbSlide: Variants = {                       // a whole slide: paces its parts
   hidden: {},
@@ -2426,7 +2496,7 @@ function WorkParticles({ base, emit }: { base: string; emit: string }) {
 /* ─────────────────────────────────────────────────────────────
    WORK PAGE
 ───────────────────────────────────────────────────────────── */
-function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
+function WorkPage({ onCardClick }: { onCardClick: (p: Project, el?: HTMLElement | null) => void }) {
   const hover = useCursorHover();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
 
@@ -2496,7 +2566,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
       }}>
         <motion.h2
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16,1,0.3,1] }}
+          transition={{ duration: 0.8, delay: 0.1, ease: APPLE_EASE }}
           style={{ fontSize: "clamp(38px,5vw,84px)", letterSpacing: "-0.02em", fontWeight: 700, lineHeight: 1, color: titleColor, textShadow, transition: "color 0.7s ease" }}
         >
           Work
@@ -2507,7 +2577,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
             was removed at Shyon's request (2026-09-03); the nav is the route to Contact. */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.35, ease: [0.16,1,0.3,1] }}
+          transition={{ duration: 0.8, delay: 0.35, ease: APPLE_EASE }}
           style={{ marginTop: 10, maxWidth: 640 }}
         >
           {isDesktop && (
@@ -2546,8 +2616,8 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
               <motion.div
                 key={proj.id}
                 animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
+                transition={{ duration: 0.6, ease: APPLE_EASE }}
+                onClick={(e) => { if (moved.current) return; if (rel === 0) onCardClick(proj, e.currentTarget as HTMLElement); else setActive(i); }}
                 {...hover}
                 style={{
                   position: "absolute", width: cardW, height: cardH, zIndex: target.z,
@@ -2581,8 +2651,8 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
               key={proj.id}
               className="ss-card"
               animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
+              transition={{ duration: 0.6, ease: APPLE_EASE }}
+              onClick={(e) => { if (moved.current) return; if (rel === 0) onCardClick(proj, e.currentTarget as HTMLElement); else setActive(i); }}
               {...hover}
               style={{
                 position: "absolute",
@@ -2633,7 +2703,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
             style={{
               width: i === active ? 26 : 8, height: 8, borderRadius: 980,
               background: i === active ? "#38bdf8" : (light ? "rgba(20,17,11,.3)" : "rgba(245,242,237,.28)"),
-              cursor: "none", transition: "all .45s cubic-bezier(.16,1,.3,1)",
+              cursor: "none", transition: "all .45s var(--ease-out)",
             }}
           />
         ))}
@@ -2675,7 +2745,7 @@ function AboutPage() {
         }}>
           <motion.div
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.1, ease: [0.16,1,0.3,1] }}
+            transition={{ duration: 0.7, delay: 0.1, ease: APPLE_EASE }}
             className="ss-about-subtitle"
             style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: 4, textTransform: "uppercase", color: "var(--accent)", marginBottom: 16 }}
           >
@@ -2696,7 +2766,7 @@ function AboutPage() {
               The 768 and 640 overrides below still apply and are unchanged. */}
           <motion.h2
             initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.16,1,0.3,1] }}
+            transition={{ duration: 0.8, delay: 0.2, ease: APPLE_EASE }}
             style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(64px,7.4vw,124px)", letterSpacing: 4, lineHeight: 0.92, color: "#060606", marginBottom: 16 }}
           >
             Shyon<br />Shiri
@@ -2705,13 +2775,13 @@ function AboutPage() {
           <motion.div
             className="ss-about-rule"
             initial={{ width: 0 }} animate={{ width: 80 }}
-            transition={{ duration: 1, delay: 0.5, ease: [0.16,1,0.3,1] }}
+            transition={{ duration: 1, delay: 0.5, ease: APPLE_EASE }}
             style={{ height: 1, background: "#060606", margin: "16px 0" }}
           />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.55, ease: [0.16,1,0.3,1] }}
+            transition={{ duration: 0.8, delay: 0.55, ease: APPLE_EASE }}
           >
             {/* WHAT THIS PAGE IS FOR, and it is the one job no other page does. Home carries
                 the narrative (the "Why I made it" slide already tells the stop motion and
@@ -2836,7 +2906,7 @@ function ContactPage() {
                 sequence still staggers against the description at 0.5 beside it. */}
             <motion.h2
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.35, ease: [0.16,1,0.3,1] }}
+              transition={{ duration: 0.9, delay: 0.35, ease: APPLE_EASE }}
               className="ss-contact-heading"
               style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(64px,9vw,128px)", letterSpacing: 5, lineHeight: 0.86, color: "var(--white)" }}
             >
@@ -2856,7 +2926,7 @@ function ContactPage() {
         {/* indexed contact list */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.65, ease: [0.16,1,0.3,1] }}
+          transition={{ duration: 0.8, delay: 0.65, ease: APPLE_EASE }}
           style={{ display: "flex", flexDirection: "column", borderTop: "1px solid rgba(245,242,237,.14)" }}
         >
           {links.map((l, i) => (
@@ -2903,13 +2973,117 @@ function ContactPage() {
 /* ─────────────────────────────────────────────────────────────
    WORK MODAL
 ───────────────────────────────────────────────────────────── */
-function WorkModal({ project, onClose, onMediaClick }: {
+/* THE MODAL GROWS OUT OF THE CARD YOU CLICKED, and shrinks back into it.
+   It used to fade up at scale 0.96 from the middle of the screen, which is a panel
+   arriving from nowhere: the card you pressed and the thing that answered had no
+   relationship on screen, so the click read as a page change rather than as opening
+   the card.
+   It is a hand-rolled FLIP and NOT framer's `layoutId`, for a reason that is structural
+   rather than stylistic. The card is a `motion.div` the coverflow is already driving on
+   x / scale / rotateY inside a `perspective` parent, and it stays MOUNTED behind the
+   modal, so a shared layout id would have two live claimants and would fight the
+   carousel for the same transform.
+   TWO LAYERS CROSSFADE, and they are siblings rather than nested, because the panel's
+   own children carry the `flex:1; minHeight:0` that makes its scroll area work and
+   wrapping them to fade them as a group would collapse that:
+   · the GHOST is the real card's cloned DOM, so its image, its gradient and its title
+     are the ones that were on screen a frame ago and nothing pops. It starts on the
+     card's own rect and travels to the panel's, fading out over the first half.
+   · the PANEL runs the inverse: it starts scaled and translated ONTO the card and
+     settles onto its own box, fading in over the second half.
+   The measurement happens in `useLayoutEffect` and is written through `controls.set`,
+   which is imperative and lands before the browser paints, so the first frame is
+   already the card-shaped one. Doing it through `initial` cannot work: the panel has to
+   exist to be measured, and by the time it has been, framer treats any new value as a
+   target to animate TO rather than a state to start FROM. */
+function WorkModal({ project, from, onClose, onMediaClick }: {
   project: Project;
+  from?: CardOrigin | null;
   onClose: () => void;
   onMediaClick: (item: MediaItem) => void;
 }) {
   const hover = useCursorHover();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+
+  const panelRef = useRef<HTMLDivElement>(null);
+  const ghostRef = useRef<HTMLDivElement>(null);
+  const [flip, setFlip] = useState<{ x: number; y: number; sx: number; sy: number } | null>(null);
+  const panel = useAnimation();
+  const ghost = useAnimation();
+
+  useLayoutEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+
+    const r = el.getBoundingClientRect();
+    const src = REDUCE ? null : from?.rect;
+    if (!src || !r.width || !r.height || !src.width || !src.height) {
+      /* No origin (keyboard, a deep link, a resize between click and paint): fall back
+         to the plain lift the modal always had. */
+      panel.set({ x: 0, y: 0, scaleX: REDUCE ? 1 : 0.96, scaleY: REDUCE ? 1 : 0.96, opacity: 0 });
+      panel.start({
+        x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1,
+        transition: { duration: REDUCE ? 0.001 : 0.4, ease: APPLE_EASE },
+      });
+      return;
+    }
+
+    const f = {
+      x: (src.left + src.width / 2) - (r.left + r.width / 2),
+      y: (src.top + src.height / 2) - (r.top + r.height / 2),
+      sx: src.width / r.width,
+      sy: src.height / r.height,
+    };
+    setFlip(f);
+
+    /* The ghost is laid out ON the panel's final box and then flipped back onto the
+       card by the same numbers, so both layers share one coordinate space and cannot
+       drift apart mid-flight. */
+    const g = ghostRef.current;
+    if (g && from) {
+      g.style.left = r.left + "px";
+      g.style.top = r.top + "px";
+      g.style.width = r.width + "px";
+      g.style.height = r.height + "px";
+      const copy = from.node;
+      copy.style.transform = "none";
+      copy.style.position = "absolute";
+      copy.style.inset = "0";
+      copy.style.width = "100%";
+      copy.style.height = "100%";
+      copy.style.margin = "0";
+      copy.style.zIndex = "0";
+      g.replaceChildren(copy);
+    }
+
+    panel.set({ x: f.x, y: f.y, scaleX: f.sx, scaleY: f.sy, opacity: 0 });
+    ghost.set({ x: f.x, y: f.y, scaleX: f.sx, scaleY: f.sy, opacity: 1 });
+
+    const move = { duration: 0.62, ease: APPLE_EASE };
+    panel.start({
+      x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1,
+      transition: { ...move, opacity: { duration: 0.30, delay: 0.12, ease: "linear" as const } },
+    });
+    ghost.start({
+      x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 0,
+      transition: { ...move, opacity: { duration: 0.34, ease: "linear" as const } },
+    });
+    /* Measured once, off the origin the click captured. Re-running it mid-life would
+       re-flip a panel that is already home. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* Closing is the same move backwards, with the fade held to the END: the panel has to
+     still be readable while it is travelling or the close reads as a dismissal rather
+     than as the card going back down. */
+  const back = flip
+    ? {
+        x: flip.x, y: flip.y, scaleX: flip.sx, scaleY: flip.sy, opacity: 0,
+        transition: { duration: 0.42, ease: APPLE_EASE, opacity: { duration: 0.16, delay: 0.24, ease: "linear" as const } },
+      }
+    : REDUCE
+      ? { opacity: 0, transition: { duration: 0.001 } }
+      : { opacity: 0, scaleX: 0.96, scaleY: 0.96, transition: { duration: 0.3, ease: APPLE_EASE } };
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -2927,7 +3101,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.42, ease: "linear" }}
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 2000,
@@ -2936,9 +3110,26 @@ function WorkModal({ project, onClose, onMediaClick }: {
         display: "flex", alignItems: "center", justifyContent: "center",
       }}
     >
+      {/* The travelling copy of the card. `pointerEvents:none` so it never eats the
+          click that closes the modal, and it is unmounted the moment it has faded. */}
+      {from && !REDUCE && (
+        <motion.div
+          ref={ghostRef}
+          animate={ghost}
+          exit={{ opacity: 0, transition: { duration: 0.12 } }}
+          aria-hidden
+          style={{
+            position: "fixed", left: 0, top: 0, zIndex: 2002,
+            pointerEvents: "none", overflow: "hidden",
+          }}
+        />
+      )}
+
       <motion.div
-        initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
-        transition={{ duration: 0.4, ease: [0.16,1,0.3,1] }}
+        ref={panelRef}
+        initial={false}
+        animate={panel}
+        exit={back}
         onClick={e => e.stopPropagation()}
         className="ss-work-modal"
         style={{
@@ -3152,7 +3343,7 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
-        transition={{ duration: 0.35, ease: [0.16,1,0.3,1] }}
+        transition={{ duration: 0.35, ease: APPLE_EASE }}
         onClick={e => e.stopPropagation()}
         className="ss-media-viewer"
         style={{

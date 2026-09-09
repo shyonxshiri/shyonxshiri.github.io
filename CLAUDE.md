@@ -846,6 +846,85 @@ taken off its display in the mansion's upstairs (suit swap + flight). Flight col
 per-geometry in three dimensions (§5), and the mansion's upstairs is a real room you can fly into
 and walk around, third person like everywhere else.
 
+**THE WORK MODAL GROWS OUT OF THE CARD, AND THE PAGES CROSSFADE** (user, 2026-09-08, who
+asked for Apple's motion feel). Two defects and one addition, all in `src/App.tsx`.
+**The modal used to arrive from nowhere.** It faded up at `scale 0.96` in the middle of
+the screen, so the card you pressed and the panel that answered had no relationship on
+screen and the click read as a page change. It is a hand-rolled FLIP now, and NOT
+framer's `layoutId`, for a structural reason: the card is a `motion.div` the coverflow is
+already driving on x / scale / rotateY inside a `perspective` parent AND it stays mounted
+behind the modal, so a shared layout id would have two live claimants fighting the
+carousel for one transform.
+· **Two layers crossfade, as SIBLINGS not nested.** The panel's own children carry the
+  `flex:1; minHeight:0` that makes its scroll area work, so wrapping them to fade them as
+  a group collapses the layout. The GHOST is the clicked card's `cloneNode(true)`, so its
+  image, gradient and title are the ones that were on screen a frame ago and nothing pops
+  at t=0; it starts on the card's rect and travels to the panel's, fading out. The PANEL
+  runs the inverse. `openProject` captures the rect AND the clone at the CLICK, because
+  the coverflow keeps animating and a rect read a frame later is stale.
+· **The measurement goes through `controls.set` in `useLayoutEffect`, and it cannot go
+  through `initial`.** The panel has to EXIST to be measured, and by the time it has been,
+  framer treats any new value as a target to animate TO rather than a state to start FROM.
+  A layout effect lands before the browser paints, so the first painted frame is already
+  the card-shaped one. Verified: first frame 380x501 against a card of 380x501, centres
+  0px apart.
+· `.ss-work-modal` is `width:76vw` capped at 1080 but GLOBAL_CSS overrides it to **95vw
+  under 1023px**, so anything asserting its final width has to read it, not compute it.
+**The page transition used to flash black.** `AnimatePresence mode="wait"` unmounts the
+outgoing page in full before mounting the incoming one. All four page roots are already
+`position:absolute; inset:0`, so they can overlap with no layout change at all: `mode` is
+dropped. **Opacity is LINEAR on both sides on purpose**, because two opaque layers
+crossfading on an eased curve are not inverses of each other and their combined coverage
+dips in the middle, showing the root through as a grey wash. **The scale only ever shrinks
+TOWARD 1, never below it**: a page under 1 reveals its own edges, and About is cream on a
+dark root, so that reads as a hairline frame. 1.012 settling to 1 over-covers throughout.
+**THERE IS NOW ONE EASE ON THE SITE AND IT IS APPLE'S** (user, 2026-09-08, asked for it
+across the whole site in the same pass). `--ease-out` WAS `cubic-bezier(0.16,1,0.3,1)`,
+an expo-style curve that spends most of its travel in the first fifth of its duration:
+measured, that one is 27% of the way home at 10% of the time against the new one's 17.6%.
+Front-loading that hard reads as SNAP, and snap is the opposite of weight. It is
+`cubic-bezier(0.32,0.72,0,1)` now.
+**The token was never the whole story, and changing it alone would have left the site
+half-retuned.** The old curve was also written out BY HAND in six CSS declarations that
+never referenced the token (`.ss-scell`'s three transitions, its thumbnail zoom, the Work
+progress bar's inline `width`, and the carousel dots) and as a bare framer-motion array
+in **12** places, plus `SB_EASE` (the whole storyboard) and `NAME_EASE` (the hero name).
+All of them now resolve to one source: `var(--ease-out)` in CSS, `APPLE_EASE` in JS, with
+`SB_EASE` and `NAME_EASE` aliased to it. Grep for the literal after any easing work.
+**Two curves are deliberately NOT folded in.** The map pin's pulse
+(`cubic-bezier(.2,.7,.3,1)`) is an infinite loop rather than an arrival, and `stepEase(n)`
+is a STEPPED function, not a curve at all: it is what makes the storyboard's pictures
+build course by course, and an ease would destroy it.
+**`NAME_EASE` was the one real risk and it was measured, not assumed.** The hero name's
+letters drive keyframes whose OVERSHOOT is in the keyframes rather than the easing, on
+purpose: a springy curve overshoots every property it drives, which on `filter` means a
+negative blur (invalid, so the letter flickers) and on `opacity` a value over 1 that
+clamps and flattens the fade. `APPLE_EASE` never leaves 0..1 (its y control points are
+0.72 and 0), so the knock still lands only on `y` and `scale`.
+`scratchpad/verify_heroname.cjs` passes 14/14 after the change, including that the
+letters still reach different opacities mid-entrance, i.e. they really stagger.
+**`scratchpad/verify_ease.cjs` is the coverage check** and it reads the COMPUTED
+timing function off live elements rather than grepping the source, because two of the
+six folded-in copies live in inline `style` props where a `var()` has to resolve against
+`:root` at computed-style time. It also sweeps every element in the document and asserts
+none still carries the old curve. Re-run it after any easing work.
+**Inter is now actually DOWNLOADED.** It was third in the base stack at `html` and never
+fetched, so `-apple-system` gave real San Francisco on Apple hardware and Segoe UI or
+Roboto everywhere else. Note the licensing, since it is the only real line here: SF Pro
+may not be self-hosted as a webfont (Apple's licence covers building for Apple platforms),
+but naming it in a stack so the OS serves its own font is fine, which is what the site
+already did. Inter is the SIL OFL near-clone that closes the gap off Apple hardware.
+**Everything in this pass opts out of reduced motion in JS, through the module-level
+`REDUCE`,** because framer writes inline transforms that the `transition-duration` rules
+in GLOBAL_CSS cannot reach. This is the same reason the storyboard carries its own pin.
+Verified in real headless Chrome across 390 / 834 / 1512 and the NABU card, plus a
+reduced-motion pass: the scratchpad scripts are `verify_motion.cjs`, `verify_edge.cjs`
+and `verify_rm.cjs`. `verify_deck.cjs` and `verify_type.cjs` still pass unchanged.
+**NOT done, and deliberately: the deck is still scroll-TRIGGERED, not scroll-SCRUBBED.**
+Slide elements fire once on entry and play out; Apple's track the scroll position and
+scrub both ways. That is the biggest remaining difference in feel and it reshapes an
+approved layout, so it wants its own pass.
+
 **THE HERO NAME IS BEBAS NEUE AND IT BUILDS ITSELF, LETTER BY LETTER** (user, 2026-09-03: he
 asked for a cooler font and an animation, suggesting "spell out or fall into place"). It was one
 `h1` reading `Shyon<br />Shiri` in the base SF Pro at weight 700, fading up 40px as a single block,
@@ -1231,6 +1310,23 @@ that really were dead. Re-run it after any rename.
 - The camera passes through tree canopies, and the border tree line sits on the rim, so a camera
   teleported to rim coordinates is usually inside a canopy.
 - Dispatching a synthetic keydown with no matching keyup leaves the key held and the figure walks off.
+
+- **`http://127.0.0.1` IS REFUSED BY THE VITE DEV SERVER, `localhost` is not.** Several
+  of the verification scripts default to a 127.0.0.1 URL and a run against one comes back
+  with every DOM assertion failing and `found:false`, which looks exactly like the change
+  under test having broken the page. The tell is `document.body.innerText` reading "This
+  site can't be reached". Pass the localhost form explicitly.
+
+- **POLLING AN ANIMATION OVER CDP STARVES IT, and the result looks exactly like a bug.**
+  Sampling a framer-motion animation with a loop of `Runtime.evaluate` calls froze the
+  work modal's ghost at opacity 0.61 for 30 consecutive samples, and it completed the
+  instant the loop stopped. Record the frames IN THE PAGE with a `requestAnimationFrame`
+  collector and read the array once at the end. Note headless SwiftShader runs this site
+  at 6 to 8 fps, so such a recording is coarse: assert the FIRST and LAST frames and the
+  shape between them, never the sample count.
+- **Stacked layers composite as `1-(1-a)(1-b)`, not `max(a,b)`.** A crossfade metric
+  written with `max` reported the work modal's worst coverage as 0.58 when it was 0.61,
+  and would have hidden a real gap of the same size.
 
 **Three.js r128 (the vendored build)**
 - `PMREMGenerator.fromScene()` renders every material BLACK with no error. Use `fromEquirectangular()`.
