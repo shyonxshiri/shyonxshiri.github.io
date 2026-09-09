@@ -43,6 +43,13 @@ const PROJECTS: Project[] = [
     tag: "Design, 3D & Craft",
     img: "/assets/3D_Models_Cover_Pic.jpg",
     size: "tall",
+    // The file is cropped to the card's own aspect, so `cover` never trims the sides.
+    // But cardH is min(cardW*1.32, innerHeight*0.56): under a 896px viewport the card is
+    // SHORTER than that aspect and the crop turns vertical, centred, which clipped the
+    // skeleton's head. 37% is the one value that keeps the whole figure in frame all the
+    // way down to a 670px viewport, where the visible band equals the figure's height and
+    // nothing can fit. X is inert: the card can never be taller than the file.
+    objectPosition: "50% 37%",
     media: [
       { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
       { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", aspectRatio: "16/9", relatedItems: ["Custom AirPods Case", "Custom Phone Case"] },
