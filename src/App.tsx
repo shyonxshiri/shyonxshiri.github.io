@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence, useAnimation, type Variants } from "framer-motion";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────
    TYPES
@@ -43,7 +43,7 @@ const PROJECTS: Project[] = [
     tag: "Design, 3D & Craft",
     img: "/assets/3D_Models_Cover_Pic.jpg",
     size: "tall",
-    objectPosition: "45% 90%",
+    objectPosition: "54% 90%",
     media: [
       { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
       { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", aspectRatio: "16/9", relatedItems: ["Custom Airpod Case", "Custom Phone Case"] },
@@ -51,15 +51,15 @@ const PROJECTS: Project[] = [
       { type: "image", src: "/assets/Venom.PNG", title: "Rendered 3D Model", year: 2024, desc: "Movie character modeled, textured, and rendered in Blender.", aspectRatio: "16/9" },
       { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Prototypes"] },
       { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", year: 2026, desc: "Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Prototypes"] },
-      { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar — Front View", year: 2024, desc: "Front of the radar enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar — Back View", "Hardware Builds Together", "HMI Sensor System"] },
-      { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar — Back View", year: 2024, desc: "Back of the radar enclosure, showing the access panel, wiring routing, and the power and control cutouts.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar — Front View", "Hardware Builds Together", "HMI Sensor System"] },
-      { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box — Front View", year: 2024, desc: "Front of the RGB controller. A faceted 3D printed shell with the addressable LED strip seated in a chamfered channel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box — Back View", "Hardware Builds Together", "Custom RGB Controller"] },
-      { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box — Back View", year: 2024, desc: "Back of the RGB controller, with the potentiometer, mode button, and toggle switch mounted through the top panel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box — Front View", "Hardware Builds Together", "Custom RGB Controller"] },
+      { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar, Front View", year: 2024, desc: "Front of the radar enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar, Back View", "Hardware Builds Together", "HMI Sensor System"] },
+      { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar, Back View", year: 2024, desc: "Back of the radar enclosure, showing the access panel, wiring routing, and the power and control cutouts.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar, Front View", "Hardware Builds Together", "HMI Sensor System"] },
+      { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box, Front View", year: 2024, desc: "Front of the RGB controller. A faceted 3D printed shell with the addressable LED strip seated in a chamfered channel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Back View", "Hardware Builds Together", "Custom RGB Controller"] },
+      { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box, Back View", year: 2024, desc: "Back of the RGB controller, with the potentiometer, mode button, and toggle switch mounted through the top panel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Front View", "Hardware Builds Together", "Custom RGB Controller"] },
       { type: "image", src: "/assets/Programming_Cover_Pic.jpg", title: "Hardware Builds Together", year: 2024, desc: "The radar module and the RGB controller side by side. Each enclosure was modeled around its own board, display, and controls, then 3D printed and finished by hand.", aspectRatio: "4/3", hidden: true, relatedItems: ["HMI Sensor System", "Custom RGB Controller"] },
       { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "Studio portrait shot with controlled lighting.", aspectRatio: "2/3" },
       { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", year: 2024, desc: "Studio photography focused on composition and lighting.", aspectRatio: "1/1" },
-      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar — Front View", "Radar — Back View", "Hardware Builds Together"] },
-      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box — Front View", "RGB Box — Back View", "Hardware Builds Together"] },
+      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar, Front View", "Radar, Back View", "Hardware Builds Together"] },
+      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box, Front View", "RGB Box, Back View", "Hardware Builds Together"] },
       { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
       { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Campaign Project", year: 2024, desc: "Conceptual brand advertisement built around scenic composition.", aspectRatio: "16/9" },
     ],
@@ -71,19 +71,19 @@ const PROJECTS: Project[] = [
     img: "/assets/Everly_Cover_Image.png",
     size: "wide",
     media: [
-      { type: "image", src: "/assets/Mina_Website.png", title: "UI/UX — minasech.net", year: 2025, desc: "Full-stack website design including React frontend and responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Mina_Website.png", title: "UI/UX, minasech.net", year: 2025, desc: "Full-stack website design including React frontend and responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
       { type: "image", src: "/assets/Everly_Cover_Image.png", title: "Everly Care Home", year: 2026, desc: "Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
-      { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Real Estate Marketing — Luning Dr", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
-      { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Real Estate Marketing — Colleen Dr", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
-      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.png", title: "Compass × Real Estate Experts — Morning Star Dr", year: 2022, desc: "A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.", aspectRatio: "4/5" },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner — Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner — Existing Site"] },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.png", title: "Moskowite Corner — Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner — Concept Visualization"] },
+      { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Luning Dr Flyer", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
+      { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Colleen Dr Flyer", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
+      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.png", title: "Morning Star Dr Flyer", year: 2022, desc: "A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.", aspectRatio: "4/5" },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner, Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner, Existing Site"] },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.png", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner, Concept Visualization"] },
     ],
   },
   {
     id: "nabu",
     title: "NABU",
-    tag: "Clothing Brand",
+    tag: "Streetwear Brand",
     img: "/assets/New_NABU_Cover_Card.png",
     size: "tall",
     media: [
@@ -1182,10 +1182,6 @@ function useCursorHover() {
   return { onMouseEnter: enter, onMouseLeave: leave };
 }
 
-/* Where a work card sat when it was clicked, plus a detached copy of it. See
-   `openProject` and the modal's expand. */
-type CardOrigin = { rect: DOMRect; node: HTMLElement };
-
 /* ─────────────────────────────────────────────────────────────
    PAGE TRANSITION VARIANTS
 ───────────────────────────────────────────────────────────── */
@@ -1234,18 +1230,7 @@ const fade = REDUCE
 export default function App() {
   const [page, setPage] = useState<Page>("home");
   const [modalProject, setModalProject] = useState<Project | null>(null);
-  /* Where the modal grew FROM. Captured at the click, not looked up later, because the
-     coverflow keeps animating and a rect read one frame afterwards is already stale.
-     The node is CLONED at the same instant rather than held by reference: the modal
-     paints that clone as its own first frame, so the card appears to lift off the page
-     instead of a new panel fading in over it. */
-  const [modalFrom, setModalFrom] = useState<CardOrigin | null>(null);
   const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
-
-  const openProject = useCallback((p: Project, el?: HTMLElement | null) => {
-    setModalFrom(el ? { rect: el.getBoundingClientRect(), node: el.cloneNode(true) as HTMLElement } : null);
-    setModalProject(p);
-  }, []);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const pageIdx = PAGE_ORDER.indexOf(page);
   const cooldown = useRef(false);
@@ -1470,7 +1455,7 @@ export default function App() {
 {/* ── PAGES ────────────────────────────────────────────── */}
       <AnimatePresence>
         {page === "home" && <HomePage key="home" onNavigate={navigate} />}
-        {page === "work" && <WorkPage key="work" onCardClick={openProject} />}
+        {page === "work" && <WorkPage key="work" onCardClick={setModalProject} />}
         {page === "about" && <AboutPage key="about" />}
         {page === "contact" && <ContactPage key="contact" />}
       </AnimatePresence>
@@ -1480,7 +1465,6 @@ export default function App() {
         {modalProject && (
           <WorkModal
             project={modalProject}
-            from={modalFrom}
             onClose={() => setModalProject(null)}
             onMediaClick={setViewerItem}
           />
@@ -2213,7 +2197,7 @@ const REALM_MAP = [
     line: "Background and training, and how the disciplines across the rest of the site fit together." },
   { id: "ruins", name: "The Ruins", cat: "NABU", x: 13.0, y: 85.0, flip: false,
     src: "/assets/story/story_crystal_night.jpg",
-    line: "Art direction, promotional video and campaign photography for the NABU clothing label." },
+    line: "Art direction, promotional video and campaign photography for the NABU streetwear brand." },
 ];
 
 /* the pin snaps on in held steps instead of easing, because everything in this world
@@ -2496,7 +2480,7 @@ function WorkParticles({ base, emit }: { base: string; emit: string }) {
 /* ─────────────────────────────────────────────────────────────
    WORK PAGE
 ───────────────────────────────────────────────────────────── */
-function WorkPage({ onCardClick }: { onCardClick: (p: Project, el?: HTMLElement | null) => void }) {
+function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const hover = useCursorHover();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
 
@@ -2582,7 +2566,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project, el?: HTMLElement 
         >
           {isDesktop && (
             <p style={{ fontSize: 15, lineHeight: 1.45, color: midColor, textShadow, transition: "color 0.7s ease" }}>
-              Commissioned client work, plus personal and academic projects across every medium.
+              Commissioned client work, plus personal and academic projects across various mediums.
             </p>
           )}
         </motion.div>
@@ -2617,7 +2601,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project, el?: HTMLElement 
                 key={proj.id}
                 animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
                 transition={{ duration: 0.6, ease: APPLE_EASE }}
-                onClick={(e) => { if (moved.current) return; if (rel === 0) onCardClick(proj, e.currentTarget as HTMLElement); else setActive(i); }}
+                onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
                 {...hover}
                 style={{
                   position: "absolute", width: cardW, height: cardH, zIndex: target.z,
@@ -2652,7 +2636,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project, el?: HTMLElement 
               className="ss-card"
               animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
               transition={{ duration: 0.6, ease: APPLE_EASE }}
-              onClick={(e) => { if (moved.current) return; if (rel === 0) onCardClick(proj, e.currentTarget as HTMLElement); else setActive(i); }}
+              onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
               {...hover}
               style={{
                 position: "absolute",
@@ -2973,117 +2957,26 @@ function ContactPage() {
 /* ─────────────────────────────────────────────────────────────
    WORK MODAL
 ───────────────────────────────────────────────────────────── */
-/* THE MODAL GROWS OUT OF THE CARD YOU CLICKED, and shrinks back into it.
-   It used to fade up at scale 0.96 from the middle of the screen, which is a panel
-   arriving from nowhere: the card you pressed and the thing that answered had no
-   relationship on screen, so the click read as a page change rather than as opening
-   the card.
-   It is a hand-rolled FLIP and NOT framer's `layoutId`, for a reason that is structural
-   rather than stylistic. The card is a `motion.div` the coverflow is already driving on
-   x / scale / rotateY inside a `perspective` parent, and it stays MOUNTED behind the
-   modal, so a shared layout id would have two live claimants and would fight the
-   carousel for the same transform.
-   TWO LAYERS CROSSFADE, and they are siblings rather than nested, because the panel's
-   own children carry the `flex:1; minHeight:0` that makes its scroll area work and
-   wrapping them to fade them as a group would collapse that:
-   · the GHOST is the real card's cloned DOM, so its image, its gradient and its title
-     are the ones that were on screen a frame ago and nothing pops. It starts on the
-     card's own rect and travels to the panel's, fading out over the first half.
-   · the PANEL runs the inverse: it starts scaled and translated ONTO the card and
-     settles onto its own box, fading in over the second half.
-   The measurement happens in `useLayoutEffect` and is written through `controls.set`,
-   which is imperative and lands before the browser paints, so the first frame is
-   already the card-shaped one. Doing it through `initial` cannot work: the panel has to
-   exist to be measured, and by the time it has been, framer treats any new value as a
-   target to animate TO rather than a state to start FROM. */
-function WorkModal({ project, from, onClose, onMediaClick }: {
+/* THE MODAL LIFTS, IT DOES NOT GROW OUT OF THE CARD (user, 2026-09-09).
+   A hand-rolled FLIP shipped here on 2026-09-08 and was pulled the same day: the panel
+   started on the clicked card's rect carrying a clone of it and expanded into place.
+   It was built and it worked, and it still looked wrong, for a reason worth keeping:
+   the card is PORTRAIT (380x501) and the panel is LANDSCAPE (1080 x ~700), so the
+   travel between them is a NON-UNIFORM scale, 0.35 across against 0.72 down. Anything
+   carried along that path is stretched wide for the whole middle of the move. Fading
+   the clone out hides some of it and not enough of it.
+   So a card-to-panel morph is not simply a matter of tuning this one: it needs the two
+   boxes to share an aspect, which means the modal growing from a CROP of the card
+   rather than the card itself, and that is a redesign of the panel rather than a
+   transition. Do not re-attempt the FLIP without solving that first.
+   What is left is the plain lift the modal always had, on the site's one ease. */
+function WorkModal({ project, onClose, onMediaClick }: {
   project: Project;
-  from?: CardOrigin | null;
   onClose: () => void;
   onMediaClick: (item: MediaItem) => void;
 }) {
   const hover = useCursorHover();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
-
-  const panelRef = useRef<HTMLDivElement>(null);
-  const ghostRef = useRef<HTMLDivElement>(null);
-  const [flip, setFlip] = useState<{ x: number; y: number; sx: number; sy: number } | null>(null);
-  const panel = useAnimation();
-  const ghost = useAnimation();
-
-  useLayoutEffect(() => {
-    const el = panelRef.current;
-    if (!el) return;
-
-    const r = el.getBoundingClientRect();
-    const src = REDUCE ? null : from?.rect;
-    if (!src || !r.width || !r.height || !src.width || !src.height) {
-      /* No origin (keyboard, a deep link, a resize between click and paint): fall back
-         to the plain lift the modal always had. */
-      panel.set({ x: 0, y: 0, scaleX: REDUCE ? 1 : 0.96, scaleY: REDUCE ? 1 : 0.96, opacity: 0 });
-      panel.start({
-        x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1,
-        transition: { duration: REDUCE ? 0.001 : 0.4, ease: APPLE_EASE },
-      });
-      return;
-    }
-
-    const f = {
-      x: (src.left + src.width / 2) - (r.left + r.width / 2),
-      y: (src.top + src.height / 2) - (r.top + r.height / 2),
-      sx: src.width / r.width,
-      sy: src.height / r.height,
-    };
-    setFlip(f);
-
-    /* The ghost is laid out ON the panel's final box and then flipped back onto the
-       card by the same numbers, so both layers share one coordinate space and cannot
-       drift apart mid-flight. */
-    const g = ghostRef.current;
-    if (g && from) {
-      g.style.left = r.left + "px";
-      g.style.top = r.top + "px";
-      g.style.width = r.width + "px";
-      g.style.height = r.height + "px";
-      const copy = from.node;
-      copy.style.transform = "none";
-      copy.style.position = "absolute";
-      copy.style.inset = "0";
-      copy.style.width = "100%";
-      copy.style.height = "100%";
-      copy.style.margin = "0";
-      copy.style.zIndex = "0";
-      g.replaceChildren(copy);
-    }
-
-    panel.set({ x: f.x, y: f.y, scaleX: f.sx, scaleY: f.sy, opacity: 0 });
-    ghost.set({ x: f.x, y: f.y, scaleX: f.sx, scaleY: f.sy, opacity: 1 });
-
-    const move = { duration: 0.62, ease: APPLE_EASE };
-    panel.start({
-      x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1,
-      transition: { ...move, opacity: { duration: 0.30, delay: 0.12, ease: "linear" as const } },
-    });
-    ghost.start({
-      x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 0,
-      transition: { ...move, opacity: { duration: 0.34, ease: "linear" as const } },
-    });
-    /* Measured once, off the origin the click captured. Re-running it mid-life would
-       re-flip a panel that is already home. */
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  /* Closing is the same move backwards, with the fade held to the END: the panel has to
-     still be readable while it is travelling or the close reads as a dismissal rather
-     than as the card going back down. */
-  const back = flip
-    ? {
-        x: flip.x, y: flip.y, scaleX: flip.sx, scaleY: flip.sy, opacity: 0,
-        transition: { duration: 0.42, ease: APPLE_EASE, opacity: { duration: 0.16, delay: 0.24, ease: "linear" as const } },
-      }
-    : REDUCE
-      ? { opacity: 0, transition: { duration: 0.001 } }
-      : { opacity: 0, scaleX: 0.96, scaleY: 0.96, transition: { duration: 0.3, ease: APPLE_EASE } };
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -3101,7 +2994,7 @@ function WorkModal({ project, from, onClose, onMediaClick }: {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      transition={{ duration: 0.42, ease: "linear" }}
+      transition={{ duration: REDUCE ? 0.001 : 0.4 }}
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 2000,
@@ -3110,26 +3003,11 @@ function WorkModal({ project, from, onClose, onMediaClick }: {
         display: "flex", alignItems: "center", justifyContent: "center",
       }}
     >
-      {/* The travelling copy of the card. `pointerEvents:none` so it never eats the
-          click that closes the modal, and it is unmounted the moment it has faded. */}
-      {from && !REDUCE && (
-        <motion.div
-          ref={ghostRef}
-          animate={ghost}
-          exit={{ opacity: 0, transition: { duration: 0.12 } }}
-          aria-hidden
-          style={{
-            position: "fixed", left: 0, top: 0, zIndex: 2002,
-            pointerEvents: "none", overflow: "hidden",
-          }}
-        />
-      )}
-
       <motion.div
-        ref={panelRef}
-        initial={false}
-        animate={panel}
-        exit={back}
+        initial={{ opacity: 0, scale: REDUCE ? 1 : 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: REDUCE ? 1 : 0.96 }}
+        transition={{ duration: REDUCE ? 0.001 : 0.4, ease: APPLE_EASE }}
         onClick={e => e.stopPropagation()}
         className="ss-work-modal"
         style={{

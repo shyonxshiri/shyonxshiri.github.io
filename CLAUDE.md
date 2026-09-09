@@ -846,38 +846,53 @@ taken off its display in the mansion's upstairs (suit swap + flight). Flight col
 per-geometry in three dimensions (§5), and the mansion's upstairs is a real room you can fly into
 and walk around, third person like everywhere else.
 
-**THE WORK MODAL GROWS OUT OF THE CARD, AND THE PAGES CROSSFADE** (user, 2026-09-08, who
-asked for Apple's motion feel). Two defects and one addition, all in `src/App.tsx`.
-**The modal used to arrive from nowhere.** It faded up at `scale 0.96` in the middle of
-the screen, so the card you pressed and the panel that answered had no relationship on
-screen and the click read as a page change. It is a hand-rolled FLIP now, and NOT
-framer's `layoutId`, for a structural reason: the card is a `motion.div` the coverflow is
-already driving on x / scale / rotateY inside a `perspective` parent AND it stays mounted
-behind the modal, so a shared layout id would have two live claimants fighting the
-carousel for one transform.
-· **Two layers crossfade, as SIBLINGS not nested.** The panel's own children carry the
-  `flex:1; minHeight:0` that makes its scroll area work, so wrapping them to fade them as
-  a group collapses the layout. The GHOST is the clicked card's `cloneNode(true)`, so its
-  image, gradient and title are the ones that were on screen a frame ago and nothing pops
-  at t=0; it starts on the card's rect and travels to the panel's, fading out. The PANEL
-  runs the inverse. `openProject` captures the rect AND the clone at the CLICK, because
-  the coverflow keeps animating and a rect read a frame later is stale.
-· **The measurement goes through `controls.set` in `useLayoutEffect`, and it cannot go
-  through `initial`.** The panel has to EXIST to be measured, and by the time it has been,
-  framer treats any new value as a target to animate TO rather than a state to start FROM.
-  A layout effect lands before the browser paints, so the first painted frame is already
-  the card-shaped one. Verified: first frame 380x501 against a card of 380x501, centres
-  0px apart.
-· `.ss-work-modal` is `width:76vw` capped at 1080 but GLOBAL_CSS overrides it to **95vw
-  under 1023px**, so anything asserting its final width has to read it, not compute it.
-**The page transition used to flash black.** `AnimatePresence mode="wait"` unmounts the
-outgoing page in full before mounting the incoming one. All four page roots are already
-`position:absolute; inset:0`, so they can overlap with no layout change at all: `mode` is
-dropped. **Opacity is LINEAR on both sides on purpose**, because two opaque layers
-crossfading on an eased curve are not inverses of each other and their combined coverage
-dips in the middle, showing the root through as a grey wash. **The scale only ever shrinks
-TOWARD 1, never below it**: a page under 1 reveals its own edges, and About is cream on a
-dark root, so that reads as a hairline frame. 1.012 settling to 1 over-covers throughout.
+**THE WORK MODAL LIFTS. A CARD-TO-PANEL MORPH WAS BUILT, SHIPPED AND PULLED**
+(built 2026-09-08 on a request for Apple's motion feel, pulled 2026-09-09 on
+"it looks a little funny, im not a fan"). Worth keeping because the reason it failed is
+geometric and will apply to any second attempt.
+It was a hand-rolled FLIP: the panel started on the clicked card's rect carrying a
+`cloneNode(true)` of it, and the two crossfaded as the panel expanded into place. It
+worked, and it was verified: first frame 380x501 against a card of 380x501, centres 0px
+apart, at 390 / 834 / 1512. It still looked wrong.
+**THE CARD IS PORTRAIT AND THE PANEL IS LANDSCAPE, so the travel between them is a
+NON-UNIFORM scale**: 380/1080 = 0.35 across against roughly 501/700 = 0.72 down. Anything
+carried along that path is stretched wide through the whole middle of the move. Fading
+the clone out over the first half hides some of that and not enough of it.
+So this is not a tuning problem. A morph needs the two boxes to share an aspect, which
+means growing the panel from a CROP of the card rather than from the card, and that is a
+redesign of the panel rather than a transition. **Do not re-attempt the FLIP without
+solving that first.** What stands is the plain lift the modal always had, `opacity` plus
+`scale 0.96`, now on the site's one ease.
+Two things went with it and are not coming back on their own: `CardOrigin`, and
+`openProject`, which existed only to capture the rect and the clone at the click.
+**THE PAGE CROSSFADE STAYS, AND IT FIXED A REAL DEFECT.** `AnimatePresence mode="wait"`
+unmounted the outgoing page in full before mounting the incoming one, so every navigation
+went through a beat of bare root background: a black flash between pages. All four page
+roots are already `position:absolute; inset:0`, so they overlap with no layout change at
+all and `mode` is simply dropped.
+· **Opacity is LINEAR on both sides on purpose.** Two opaque layers crossfading on an
+  eased curve are not inverses of each other, so their combined coverage dips in the
+  middle and the root shows through as a grey wash.
+· **The scale only ever shrinks TOWARD 1, never below it.** A page under 1 reveals its
+  own edges, and About is cream on a dark root, so that reads as a hairline frame. 1.012
+  settling to 1 over-covers throughout.
+**Inter is now actually DOWNLOADED.** It was third in the base stack at `html` and never
+fetched, so `-apple-system` gave real San Francisco on Apple hardware and Segoe UI or
+Roboto everywhere else. Note the licensing, since it is the only real line here: SF Pro
+may not be self-hosted as a webfont (Apple's licence covers building for Apple platforms),
+but naming it in a stack so the OS serves its own font is fine, which is what the site
+already did. Inter is the SIL OFL near-clone that closes the gap off Apple hardware.
+**The page crossfade and the modal both opt out of reduced motion in JS, through the
+module-level `REDUCE`,** because framer writes inline transforms that the
+`transition-duration` rules in GLOBAL_CSS cannot reach. Same reason the storyboard
+carries its own pin.
+`scratchpad/verify_motion.cjs` covers all of it, including an assertion that the modal
+never travels, which is what will catch a FLIP if one is ever reintroduced.
+**NOT done, and deliberately: the deck is still scroll-TRIGGERED, not scroll-SCRUBBED.**
+Slide elements fire once on entry and play out; Apple's track the scroll position and
+scrub both ways. That is the biggest remaining difference in feel and it reshapes an
+approved layout, so it wants its own pass.
+
 **THERE IS NOW ONE EASE ON THE SITE AND IT IS APPLE'S** (user, 2026-09-08, asked for it
 across the whole site in the same pass). `--ease-out` WAS `cubic-bezier(0.16,1,0.3,1)`,
 an expo-style curve that spends most of its travel in the first fifth of its duration:
@@ -908,23 +923,6 @@ timing function off live elements rather than grepping the source, because two o
 six folded-in copies live in inline `style` props where a `var()` has to resolve against
 `:root` at computed-style time. It also sweeps every element in the document and asserts
 none still carries the old curve. Re-run it after any easing work.
-**Inter is now actually DOWNLOADED.** It was third in the base stack at `html` and never
-fetched, so `-apple-system` gave real San Francisco on Apple hardware and Segoe UI or
-Roboto everywhere else. Note the licensing, since it is the only real line here: SF Pro
-may not be self-hosted as a webfont (Apple's licence covers building for Apple platforms),
-but naming it in a stack so the OS serves its own font is fine, which is what the site
-already did. Inter is the SIL OFL near-clone that closes the gap off Apple hardware.
-**Everything in this pass opts out of reduced motion in JS, through the module-level
-`REDUCE`,** because framer writes inline transforms that the `transition-duration` rules
-in GLOBAL_CSS cannot reach. This is the same reason the storyboard carries its own pin.
-Verified in real headless Chrome across 390 / 834 / 1512 and the NABU card, plus a
-reduced-motion pass: the scratchpad scripts are `verify_motion.cjs`, `verify_edge.cjs`
-and `verify_rm.cjs`. `verify_deck.cjs` and `verify_type.cjs` still pass unchanged.
-**NOT done, and deliberately: the deck is still scroll-TRIGGERED, not scroll-SCRUBBED.**
-Slide elements fire once on entry and play out; Apple's track the scroll position and
-scrub both ways. That is the biggest remaining difference in feel and it reshapes an
-approved layout, so it wants its own pass.
-
 **THE HERO NAME IS BEBAS NEUE AND IT BUILDS ITSELF, LETTER BY LETTER** (user, 2026-09-03: he
 asked for a cooler font and an animation, suggesting "spell out or fall into place"). It was one
 `h1` reading `Shyon<br />Shiri` in the base SF Pro at weight 700, fading up 40px as a single block,
