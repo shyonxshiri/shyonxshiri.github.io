@@ -45,22 +45,22 @@ const PROJECTS: Project[] = [
     size: "tall",
     media: [
       { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
-      { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", aspectRatio: "16/9", relatedItems: ["Custom Airpod Case", "Custom Phone Case"] },
-      { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", year: 2024, desc: "Animated and assembled collection of images created in Adobe After Effects.", aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Venom.PNG", title: "Rendered 3D Model", year: 2024, desc: "Movie character modeled, textured, and rendered in Blender.", aspectRatio: "16/9" },
-      { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "Finalized rendition of the iPhone case prototype, designed to resemble liquid metal.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Prototypes"] },
-      { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom Airpod Case", year: 2026, desc: "Finalized rendition of the Airpod case prototype, designed to resemble liquid metal.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Prototypes"] },
-      { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar, Front View", year: 2024, desc: "Front of the radar enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar, Back View", "Hardware Builds Together", "HMI Sensor System"] },
-      { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar, Back View", year: 2024, desc: "Back of the radar enclosure, showing the access panel, wiring routing, and the power and control cutouts.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar, Front View", "Hardware Builds Together", "HMI Sensor System"] },
-      { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box, Front View", year: 2024, desc: "Front of the RGB controller. A faceted 3D printed shell with the addressable LED strip seated in a chamfered channel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Back View", "Hardware Builds Together", "Custom RGB Controller"] },
-      { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box, Back View", year: 2024, desc: "Back of the RGB controller, with the potentiometer, mode button, and toggle switch mounted through the top panel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Front View", "Hardware Builds Together", "Custom RGB Controller"] },
-      { type: "image", src: "/assets/Programming_Cover_Pic.jpg", title: "Hardware Builds Together", year: 2024, desc: "The radar module and the RGB controller side by side. Each enclosure was modeled around its own board, display, and controls, then 3D printed and finished by hand.", aspectRatio: "4/3", hidden: true, relatedItems: ["HMI Sensor System", "Custom RGB Controller"] },
-      { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "Studio portrait shot with controlled lighting.", aspectRatio: "2/3" },
-      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", year: 2024, desc: "Studio photography focused on composition and lighting.", aspectRatio: "1/1" },
-      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar, Front View", "Radar, Back View", "Hardware Builds Together"] },
-      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box, Front View", "RGB Box, Back View", "Hardware Builds Together"] },
+      { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", aspectRatio: "16/9", relatedItems: ["Custom AirPods Case", "Custom Phone Case"] },
+      { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Venom.PNG", title: "Creature Head Sculpt", year: 2024, desc: "A movie creature's head, sculpted and rendered in Blender. A wet, high gloss skin shader over the sculpt, lit with a single key against black.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "The finished case, printed in a metallic blue. An organic lattice replaces the flat back, its apertures shaped around the camera array and the side buttons.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Prototypes"] },
+      { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom AirPods Case", year: 2026, desc: "The finished sleeve, printed in purple. The same melted lattice wraps an AirPods Pro case, left open at the status light and along the hinge.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Prototypes"] },
+      { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar, Front View", year: 2024, desc: "Front of the radar enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D-printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar, Back View", "Radar and RGB Controller", "HMI Sensor System"] },
+      { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar, Back View", year: 2024, desc: "Back of the radar enclosure, showing the access panel, wiring routing, and the power and control cutouts.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar, Front View", "Radar and RGB Controller", "HMI Sensor System"] },
+      { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box, Front View", year: 2024, desc: "Front of the RGB controller. A faceted 3D-printed shell with the addressable LED strip seated in a chamfered channel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Back View", "Radar and RGB Controller", "Custom RGB Controller"] },
+      { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box, Back View", year: 2024, desc: "Back of the RGB controller, with the potentiometer, mode button, and toggle switch mounted through the top panel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Front View", "Radar and RGB Controller", "Custom RGB Controller"] },
+      { type: "image", src: "/assets/Programming_Cover_Pic.jpg", title: "Radar and RGB Controller", year: 2024, desc: "Both enclosures side by side. Each was modeled around its own board, display and controls, then 3D printed and finished by hand.", aspectRatio: "4/3", hidden: true, relatedItems: ["HMI Sensor System", "Custom RGB Controller"] },
+      { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "Caught mid laugh on a gelled teal backdrop, with the background light hot behind the head so the subject separates from it.", aspectRatio: "2/3" },
+      { type: "image", src: "/assets/Photography_1.jpg", title: "Shiri Wordmark", year: 2024, desc: "A hand drawn wordmark set over a cropped apparel shot, chains and acid washed corduroy, framed close so the type sits on the garment rather than beside it.", aspectRatio: "1/1" },
+      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D-printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar, Front View", "Radar, Back View", "Radar and RGB Controller"] },
+      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D-printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box, Front View", "RGB Box, Back View", "Radar and RGB Controller"] },
       { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
-      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Campaign Project", year: 2024, desc: "Conceptual brand advertisement built around scenic composition.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Ultron Shaver Campaign", year: 2024, desc: "A spec print advertisement for a fictional shaver brand. The rotary shaver is lit as the hero and its shadow runs back to the bloodied cartridge razor it replaces.", aspectRatio: "16/9" },
     ],
   },
   {
@@ -87,9 +87,9 @@ const PROJECTS: Project[] = [
     size: "tall",
     media: [
       { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Promotional video for NABU clothing, animated in Adobe After Effects.", wide: true },
-      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Promotional video for NABU's puffer jacket collection.", relatedItems: ["NABU Puffer Front", "NABU Puffer Back"] },
-      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Promotional video for the NABU 2025 summer collection." },
-      { type: "image", src: "/assets/Stevie_Pic.JPG", title: "NABU 2023 Spring Collection", year: 2022, desc: "Portrait photography for the NABU 2023 spring collection." },
+      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Cut in 2025 to trail the 2026 puffer jacket collection.", relatedItems: ["NABU Puffer Front", "NABU Puffer Back"] },
+      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Promotional video for the summer drop, camp collar shirts and rug pattern shorts, shot as a flat lay on white." },
+      { type: "image", src: "/assets/Stevie_Pic.JPG", title: "NABU 2023 Spring Collection", year: 2022, desc: "Shot in 2022 for the 2023 spring collection. Two looks on a white cyclorama, the graphic tees worn over the Persian rug trousers, with the raw fringed seams left showing down the leg." },
       { type: "image", src: "/assets/NABU_Puffer_Front.jpg", title: "NABU Puffer Front", year: 2025, desc: "Studio still from the puffer collection shoot. Woven bandana panelling across the body, sleeves, and hood, shot on a white cyclorama.", aspectRatio: "9/16", hidden: true, relatedItems: ["NABU Puffer Back", "NABU 2026 Teaser"] },
       { type: "image", src: "/assets/NABU_Puffer_Back.jpg", title: "NABU Puffer Back", year: 2025, desc: "Back of the same puffer, showing how the bandana medallion is centered and mirrored across the shoulders and hem.", aspectRatio: "2/3", hidden: true, relatedItems: ["NABU Puffer Front", "NABU 2026 Teaser"] },
       { type: "image", src: "/assets/Digital_Media_Cover.jpg", title: "NABU 2024 Rerelease Promotion", year: 2024, desc: "Promotional campaign for the 2024 rerelease of NABU's Persian rug pants.", aspectRatio: "3/4" },
@@ -702,47 +702,82 @@ const GLOBAL_CSS = `
   /* ── THE QUIET SLIDE ──────────────────────────────────────────────────────────────
      A chapter band over one bordlerless plate. Everything either side of this screen is
      loud, so it is the one that is allowed to be nearly empty. */
-  /* ── THE QUIET SLIDE: A BIG PLATE WITH ITS CAPTION BESIDE IT ────────────────────────
-     Two earlier arrangements were tried and are worth recording, because each fixed the
-     one before it and broke something else.
-     1. FULL WIDTH PLATE. story_figure_front.jpg is 16:9 and was rendered into a 3.63:1
-        letterbox, so object-fit cover threw away 51% of the image's height and cut a
-        standing figure off at the waist.
-     2. TWO COLUMNS, COPY LEFT AND PICTURE RIGHT. That fixed the crop but was rejected on
-        sight, for two reasons the user named: the picture got smaller than the version
-        before it, and text-left-picture-right IS THE ABOUT PAGE. The deck's own rule is
-        that no two screens share a measure, and duplicating another page's layout is a
-        worse version of the same failure.
-     So the chapter band goes back across the full width, exactly as it was, and only the
-     PLATE splits: the picture keeps a generous width on the left and its label and
-     caption move off the bottom into a narrow column beside it. That fills the right of
-     the slide with the words that were already there, keeps the picture bigger than any
-     previous version, and is a composition no other page on the site uses. */
+  /* ══ THE THREE CHAPTER SLIDES ARE THREE DIFFERENT KINDS OF SCREEN ══════════════════
+     (user, 2026-09-09: "the layout is still so similar ??????")
+     THE REPETITION WAS THE BAND, NOT WHAT SAT UNDER IT. All three carried the identical
+     chapter head: the same two line blue title in the same corner with the same paragraph
+     beside it, filling the top third of three consecutive screens. Two passes were spent
+     rearranging the CONTENT below that band, which was never what made them look alike.
+     The deck's own rule is that no two slides in a row share a measure, and three did.
+     Each now has a structure the others do not, and none of them reuses the two
+     treatments already on the deck (the opener and closer are type on a full bleed
+     picture) or the About page's 50/50 split:
+       · WHAT IT IS   centred. A narrow header centred over a full width map.
+       · WHY I MADE IT a side rail. The words in a narrow column, the picture taking the
+                       rest of the width and the height.
+       · HOW I MADE IT inverted. No display title at the top at all: the sheet leads, and
+                       the title sits small at the foot beside the running caption.
+     Below 1100 all three collapse to the stacked band they always had, because that is
+     the arrangement that fits a 700px viewport under mandatory snapping. */
+
+  /* ── WHY: THE SIDE RAIL ── */
   .ss-quiet { display: grid; row-gap: clamp(20px, 3.4vh, 38px); }
   @media (min-width: 1100px) {
-    .ss-quiet .ss-plate {
-      /* 2.45 : 1 and not something rounder, because the deck's column is capped at 1180
-         and the split has to land the picture back on the ~780 it was at full width.
-         At 1.95 : 1 it measured 747, i.e. the rearrangement had quietly shrunk it. */
-      grid-template-columns: 2.45fr 1fr;
-      column-gap: clamp(22px, 2.6vw, 44px);
-      /* ROW 1 IS PINNED TO THE LABEL. The picture spans both rows, so at auto auto
-         grid hands its 440px of height to the two rows in shares and row one grows with
-         it: the label stayed at the top, the caption was pushed to about 55% down, and
-         the two read as unrelated rather than as a heading and its text. Sizing the rows
-         auto then 1fr gives row one exactly the label and drops the slack into row two. */
-      grid-template-rows: auto 1fr;
-      row-gap: 8px;
-      justify-items: stretch;
-      align-items: start;
+    .ss-quiet {
+      grid-template-columns: minmax(240px, 300px) 1fr;
+      column-gap: clamp(30px, 3.4vw, 60px);
+      align-items: center;
+      row-gap: 0;
     }
-    /* the picture holds the left track across both rows; the words stack in the right */
-    .ss-quiet .ss-plate-shot { grid-column: 1; grid-row: 1 / span 2; max-width: 100%; }
-    .ss-quiet .ss-plate-label { grid-column: 2; grid-row: 1; }
-    .ss-quiet .ss-plate figcaption { grid-column: 2; grid-row: 2; max-width: 100%; align-self: start; }
-    /* 780 wide against the source's 1.78:1 wants about 440 of height, which is what
-       keeps the crop at a few percent instead of the 51% the letterbox was discarding. */
-    .ss-quiet .ss-plate-shot img { height: clamp(300px, 47vh, 440px); }
+    /* the rail: title, paragraph and caption stacked small, in reading order */
+    .ss-slide-why .ss-chapter-head {
+      grid-template-columns: 1fr;
+      row-gap: clamp(12px, 1.8vh, 20px);
+    }
+    /* the rail is 300px, so the display size the other slides use cannot live here. That
+       is the point rather than a compromise: a title at 44px reads as a different KIND of
+       heading from one at 96px, which is half of what makes this screen its own. */
+    .ss-slide-why .ss-story-kicker { font-size: clamp(32px, 3vw, 46px); line-height: 1.02; }
+    .ss-slide-why .ss-chapter-body { font-size: 14px; line-height: 1.6; max-width: none; }
+    /* the picture takes everything left over, and its caption goes back underneath it */
+    .ss-quiet .ss-plate { grid-template-columns: 1fr; justify-items: stretch; }
+    .ss-quiet .ss-plate-shot, .ss-quiet .ss-plate figcaption { max-width: 100%; }
+    .ss-quiet .ss-plate-shot img { height: clamp(320px, 54vh, 540px); }
+  }
+
+  /* ── HOW I MADE IT: INVERTED ── the sheet leads and the words follow it */
+  @media (min-width: 1100px) {
+    /* The order property needs a flex or grid parent, and .ss-slide-inner is a plain
+       block, so the
+       shop slide's inner box is made a flex column HERE and nowhere else, rather than
+       reordering the JSX: the source order is the reading order a screen reader and a
+       keyboard get, and the sheet's caption line only makes sense after its grid. */
+    .ss-slide-shop .ss-slide-inner { display: flex; flex-direction: column; }
+    .ss-slide-shop .ss-chapter-head {
+      order: 2;
+      grid-template-columns: minmax(0, 300px) 1fr;
+      column-gap: clamp(26px, 3vw, 52px);
+      align-items: baseline;
+      margin-top: clamp(14px, 2vh, 24px);
+    }
+    /* small enough to read as a caption's heading rather than as the screen's title */
+    .ss-slide-shop .ss-story-kicker { font-size: clamp(26px, 2.4vw, 36px); line-height: 1.04; }
+    .ss-slide-shop .ss-chapter-body { font-size: 13.5px; line-height: 1.6; max-width: 92ch; }
+    .ss-slide-shop .ss-sheet { order: 1; margin-top: 0; }
+    .ss-slide-shop .ss-sheet-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .ss-slide-shop .ss-cell-shot img { height: clamp(96px, 17vh, 178px); }
+  }
+
+  /* ── WHAT IT IS: CENTRED ── the only centred screen on the site */
+  @media (min-width: 1100px) {
+    .ss-slide-map .ss-chapter-head {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
+      row-gap: clamp(10px, 1.4vh, 16px);
+    }
+    .ss-slide-map .ss-chapter-body { max-width: 68ch; margin: 0 auto; }
+    .ss-slide-map .ss-map-hint { text-align: center; }
   }
   .ss-plate { margin: 0; display: grid; row-gap: 11px; justify-items: start; }
   .ss-plate-label {
@@ -1967,7 +2002,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <Words className="ss-open-title" text="My Lego Realm" variant={sbWordUp} stagger={0.07} />
             <Words
               className="ss-open-line"
-              text="An interactive real time 3D environment, built brick by brick in Blender. Walk the town and step inside any building to see the work it holds."
+              text="An interactive real-time 3D environment, built brick by brick in Blender. Walk the town and step inside any building to see the work it holds."
               variant={sbWordIn}
               stagger={0.018}
             />
@@ -2002,7 +2037,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               <StoryChapter
                 pair
                 kicker="What it is"
-                body="A small town built on a LEGO inspired baseplate. Each structure holds a different branch of the work, and walking into one is how you open it."
+                body="A small town built on a LEGO-inspired baseplate. Each structure holds a different branch of the work, and walking into one is how you open it."
               />
               <RealmMap />
               <div className="ss-map-hint">Pick a structure to see what it holds</div>
@@ -2014,7 +2049,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               on the deck: a title, the paragraph, and one picture with no border, no head
               strip and no caption box. Its still is the last in-engine frame that is not
               the town itself, and the figure IS the subject of the copy. */}
-          <Slide id="why" label="Why I made it" stagger={0.2}>
+          <Slide id="why" label="Why I made it" className="ss-slide-why" stagger={0.2}>
             <div className="ss-quiet">
               {/* STILL `pair`. The stacking that the two column layout needs is done in CSS
                   at the same breakpoint, NOT by dropping this prop: a stacked chapter is
@@ -2024,7 +2059,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               <StoryChapter
                 pair
                 kicker={"Why I\nmade it"}
-                body="The environment is a work sample in its own right. Building it took the same disciplines the rest of the portfolio presents, hard surface modeling and UV work in Blender, real time rendering and collision in the browser, and the front end engineering that ties the two together. It also goes back to where my work started, stop motion films built from LEGO, and to the technologies I have taken on since."
+                body="The environment is a work sample in its own right. Building it took the same disciplines the rest of the portfolio presents, hard-surface modeling and UV work in Blender, real-time rendering and collision in the browser, and the front-end engineering that ties the two together. It also goes back to where my work started, stop-motion films built from LEGO, and to the technologies I have taken on since."
               />
               <Plate
                 scene="The player figure"
@@ -2042,7 +2077,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               The caption is not lost with the frames, it is MOVED: one line under the sheet
               that answers to whichever cell you are on, so seven captions cost the height of
               one and the sheet stays a sheet. */}
-          <Slide id="shop" label="How I made it" stagger={0.18}>
+          <Slide id="shop" label="How I made it" className="ss-slide-shop" stagger={0.18}>
             <StoryChapter
               pair
               kicker={"How I\nmade it"}
@@ -2059,7 +2094,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             FIGURES sit above the title. They are the one thing the page can say that the
             pictures cannot, they are all real (scratchpad/realm_cost.cjs and CLAUDE.md),
             and they cost no screen of their own here. */}
-        <Slide id="close" label="Try it" className="ss-slide-close" stagger={0.16}>
+        <Slide id="close" label={realm.ok ? "Try it" : "The finished build"} className="ss-slide-close" stagger={0.16}>
           <div className="ss-open-bg">
             <motion.img
               className="ss-open-img"
@@ -2406,10 +2441,10 @@ const sbFig: Variants = {                         // a figure rises into place
 const REALM_MAP = [
   { id: "shop", name: "The Coffee Shop", cat: "Professional Services", x: 18.2, y: 26.0, flip: false,
     src: "/assets/story/story_shop_evening.jpg",
-    line: "Commissioned client work. Full stack websites, brand and print for small businesses, and concept visualization." },
+    line: "Commissioned client work. Full-stack websites, brand and print for small businesses, and concept visualization." },
   { id: "cottage", name: "The Cottage", cat: "Personal Projects", x: 53.5, y: 25.0, flip: false,
     src: "/assets/story/story_sunset.jpg",
-    line: "Self directed work. 3D modeling and rendering, product prototypes, custom hardware, photography and fabrication." },
+    line: "Self-directed work. 3D modeling and rendering, product prototypes, custom hardware, photography and fabrication." },
   { id: "house", name: "The Modern House", cat: "About", x: 93.5, y: 38.0, flip: true,
     src: "/assets/story/story_lamp_night.jpg",
     line: "Background and training, and how the disciplines across the rest of the site fit together." },
@@ -2581,12 +2616,21 @@ function useRiseProgress(ref: React.RefObject<HTMLElement | null>) {
     const read = () => {
       raf = 0;
       const vh = window.innerHeight || 1;
-      const top = el.getBoundingClientRect().top;
-      /* 1 when the block has risen to 58% of the screen, 0 while it is still below 92%.
-         The window is deliberately narrow: a snap crosses it in one move, so the copy
-         resolves as the slide lands rather than trailing behind it. */
-      const raw = (0.92 - top / vh) / (0.92 - 0.58);
-      setP(raw < 0 ? 0 : raw > 1 ? 1 : raw);
+      const r = el.getBoundingClientRect();
+      /* HOW MUCH OF THE BLOCK HAS ENTERED THE VIEWPORT, measured against ITS OWN HEIGHT
+         and not against fixed marks on the screen.
+         The first version ramped between two fractions of the viewport, 0 below 92% and 1
+         at 58%, which silently assumed every block sits in the upper half of its slide.
+         That held while all three chapters had the same band at the top and broke the
+         moment they did not: on the inverted slide the paragraph sits near the FOOT, at
+         about 80% down, so it could never rise past the 58% mark and its last two lines
+         stayed permanently half lit.
+         Against the element's own height there is nothing to assume: 0 as its top touches
+         the bottom of the screen, 1 once it has come up by its own height, wherever on the
+         slide that happens to be. The 0.75 makes it finish a little before it is fully in
+         view, so a settled slide is never still resolving. */
+      const risen = (vh - r.top) / Math.max(1, r.height * 0.75);
+      setP(risen < 0 ? 0 : risen > 1 ? 1 : risen);
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(read); };
     (scroller || window).addEventListener("scroll", onScroll, { passive: true });
@@ -3116,7 +3160,7 @@ function AboutPage() {
               I'm a graphic designer and developer in the Bay Area, with a BA in Graphic Design from San Jose State, 2025. I take a project from identity through to a deployed site, so design, front end, and deployment are one job rather than three handoffs. I also evaluate multimodal AI systems against rubrics, writing the corrected ground truth where models fail.
             </p>
             <p style={{ fontFamily: "var(--sf)", fontSize: 17, fontWeight: 400, lineHeight: 1.55, letterSpacing: "-0.005em", color: "#3a3a3a", maxWidth: 480, marginTop: 20 }}>
-              Most of what I design ends up physical or interactive rather than sitting on a page. That is why the same portfolio holds 3D printed hardware enclosures, a welded steel sculpture, and a LEGO world running in this browser.
+              Most of what I design ends up physical or interactive rather than sitting on a page. That is why the same portfolio holds 3D-printed hardware enclosures, a welded steel sculpture, and a LEGO world running in this browser.
             </p>
           </motion.div>
 
@@ -3463,7 +3507,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
               {project.title}
             </div>
             <div style={{ fontFamily: "var(--sf)", fontSize: 15, fontWeight: 400, lineHeight: 1.5, letterSpacing: "-0.005em", color: "var(--sky)", marginTop: 10 }}>
-              {project.id === "creative-projects" ? "A selection of projects that demonstrate my range across various creative disciplines and mediums." : project.id === "professional-services" ? "Client-focused work including UI/UX, web development, branding and marketing assets." : project.id === "nabu" ? "Design and creative direction for NABU, a streetwear brand that draws from Persian and Assyrian heritage." : "testing"}
+              {project.id === "creative-projects" ? "A selection of projects that demonstrate my range across various creative disciplines and mediums." : project.id === "professional-services" ? "Client-focused work including UI/UX, web development, branding and marketing assets." : project.id === "nabu" ? "Design and creative direction for NABU, a streetwear brand that draws from Persian and Assyrian heritage." : ""}
             </div>
           </div>
         </div>

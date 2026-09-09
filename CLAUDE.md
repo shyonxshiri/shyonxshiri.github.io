@@ -860,6 +860,72 @@ taken off its display in the mansion's upstairs (suit swap + flight). Flight col
 per-geometry in three dimensions (§5), and the mansion's upstairs is a real room you can fly into
 and walk around, third person like everywhere else.
 
+**THE THREE CHAPTER SLIDES ARE THREE DIFFERENT KINDS OF SCREEN** (user, 2026-09-09: "the
+layout is still so similar ??????"). **THE REPETITION WAS THE BAND, AND TWO PASSES WERE
+SPENT ON THE WRONG HALF OF THE SCREEN.** All three chapters carried the identical
+`.ss-chapter-head`: the same two-line blue title in the same corner with the same
+paragraph beside it, filling the top third of three consecutive slides. Rearranging the
+CONTENT under that band could never fix it. Deck rule: no two slides in a row share a
+measure, and three did.
+Each now has a structure the others do not, and none reuses a treatment already on the
+site (the opener and closer are type on a full-bleed picture; About is a 50/50 split):
+· **What it is** CENTRED. Narrow header centred over the full-width map. The only centred
+  screen on the site.
+· **Why I made it** A SIDE RAIL. Title, copy and caption stacked in a 300px column, the
+  picture taking the rest of the width and height.
+· **How I made it** INVERTED. `.ss-slide-shop .ss-slide-inner` becomes a flex column and
+  the band takes `order: 2`, so the contact sheet leads and the title sits small at the
+  foot beside the running caption. **The JSX order is NOT changed**, deliberately: source
+  order is the reading order a screen reader and a keyboard get, and the caption only
+  makes sense after its grid.
+Measured after: titles at 64 / 46 / 36px, at 39% / 0% / 0% from the left and 11% / 34% /
+69% down. The SIZE differences are structural, not decoration: a title at 46px in a 300px
+rail reads as a different kind of heading from one at 64px centred.
+**All three collapse to the stacked band below 1100px**, because that is the arrangement
+that fits a 700px viewport under mandatory snapping. An earlier attempt dropped the `pair`
+prop to stack the chapter and took 1024x700 to **793px inside a 700px viewport**, which is
+a snap point whose bottom cannot be reached. The prop stays; the stacking is CSS at the
+same breakpoint.
+**AND THE INVERTED SLIDE FOUND A REAL BUG IN THE SCROLL-DRIVEN COPY.** `useRiseProgress`
+ramped between two fixed marks on the SCREEN (0 below 92%, 1 at 58%), which silently
+assumed every paragraph sits in the upper half of its slide. True while all three shared a
+band; false the moment they did not. On the inverted slide the copy sits 71% down, so it
+could never reach the 58% mark and its last two lines stayed permanently half lit. It
+measures against THE ELEMENT'S OWN HEIGHT now: 0 as its top touches the bottom of the
+screen, 1 once it has risen by its own height, wherever on the slide that is.
+`scratchpad/lit2.cjs` asserts all three fully light when settled AND still run backwards.
+
+**THE PLATE IS SIZED BY ASPECT, NOT BY WIDTH** (user, 2026-09-09: the figure screenshot is
+too thin). `story_figure_front.jpg` is 2400x1350, so 16:9. It was rendered full bleed at
+36vh, about 1560x414 or **3.63:1**, so `object-fit: cover` discarded **51% of the image's
+height** and cut a standing figure off at the waist. Capping the width and raising the
+height brings it to about 1.85:1 and the discard to a few percent. Three arrangements were
+tried; the middle one (copy left, picture right) was rejected on sight for being smaller
+AND for being the About page's layout. See the notes in `.ss-quiet`.
+
+**THE GRADIENT TITLE WAS CLIPPING ITS OWN DESCENDERS** (user, 2026-09-09: the Y is cut off
+at the bottom). `.ss-story-kicker .ss-w` paints its glyphs with a background CLIPPED TO
+TEXT, so paint exists only inside the element's own box. The span is an inline-block, so
+that box is its line box, and `.ss-chapter-head` sets `line-height: 0.92`: at 96px that is
+an 88px box holding a face whose descenders reach past 100px, so the tail of the y in
+"Why" simply was not painted. `padding-bottom: .16em` grows the PAINT box and an equal
+negative margin takes it back out of LAYOUT, so the two lines still close up. In em, not
+px: the size is a clamp from 36 to 96. **Any future background-clip:text on a tight line
+needs the same pair.**
+
+**THE MAP CARD DROPPED ITS BLUE CATEGORY LINE** (user, 2026-09-09). The card opens from a
+pin that already shows the category as its own label, so printing it again three pixels
+above the structure's name was the same word twice in one glance in the loudest colour on
+the page. `cat` STAYS in `REALM_MAP`: it feeds `.ss-map-tag` and half the pin's
+`aria-label`. The rule went with the markup, per the dead-CSS trap in section 7.
+
+**`scratchpad/no_backticks.cjs` EXISTS BECAUSE THIS FILE'S OLDEST TRAP KEPT WINNING.** One
+backtick anywhere inside `GLOBAL_CSS` ends the template literal and breaks the file with
+syntax errors far from the edit. It happened **six times in the 2026-09-09 pass alone**,
+every time inside a CSS comment naming a property or a file in backticks out of markdown
+habit. tsc catches it but points at where the resulting garbage stops parsing, not at the
+backtick. The script names the exact line. **Run it before tsc after touching GLOBAL_CSS.**
+
 **THE APPLE PASS, ROUND TWO: ONE FAMILY, A FROSTED NAV, AND FOUR PIECES OF DEAD SPACE
 FILLED** (user, 2026-09-09). The round-one pass shipped a font change that could not be
 seen and a modal expand that was pulled the next day. What was wrong with it is worth
@@ -1522,15 +1588,82 @@ open makes every "no em dash" assertion under it pass on an EMPTY STRING, so eac
 asserts the modal really opened and has content. And the related-item buttons are
 `text-transform: uppercase`, so `innerText` gives them back capitalised and any assertion on
 their text has to be case insensitive.
-STILL OPEN from the same review, deliberately not done because it was not asked for: descriptions
-that only restate their title (`Studio Photography`, `Candid Studio Portrait`, both NABU
-collections), titles that are categories rather than names (`Rendered 3D Model`, `Campaign
-Project`, `Video Game Demo`), `Custom Airpod Case` (Apple writes AirPods), the hyphenation split
-(`Full stack` on the town map against `Full-stack` two screens away, plus `real time`,
-`3D printed`, `front end`, `stop motion` unhyphenated as modifiers), the Realm's About panel
-still carrying the six-discipline copy the About page retired, the deck rail's static `Try it`
-label on a slide whose title correctly swaps to "The finished build", and a live `: "testing"`
-fallback string in the modal's descriptor ternary.
+**AND THE MIRRORED HALF WAS DONE IN BOTH FILES AT ONCE** (2026-09-09). A project's title and
+description are ONE asset described twice, in `PROJECTS` in `src/App.tsx` and in the CREATIVE /
+PROFESSIONAL / NABU arrays in `public/lego.html`. Fixing either side alone re-opens the drift the
+em dash pass had just closed, so all 28 edits were applied to both, each one asserting its expected
+hit count in each file so a miss aborts the run instead of half-applying it
+(`scratchpad/copypass.py`).
+**THREE DESCRIPTIONS WERE NOT VAGUE, THEY WERE WRONG, and that was only found by OPENING THE
+ASSETS.** Do not rewrite a caption from the caption. `Studio Photography` ("Studio photography
+focused on composition and lighting") is a cropped apparel shot carrying a hand drawn *shiri*
+wordmark, so it is `Shiri Wordmark` now. The two cases shared one sentence word for word, and
+"designed to resemble liquid metal" describes an intention: both finished pieces are organic
+printed lattices, blue on the phone and purple on a sleeve that wraps an AirPods Pro case, doing
+different jobs. `Campaign Project` is a spec print ad for a fictional shaver brand with the product
+name in the artwork, so it is `Ultron Shaver Campaign`.
+`Rendered 3D Model` became `Creature Head Sculpt`: nine other items are also rendered 3D models.
+**IT IS STILL NOT NAMED**, and that is deliberate, matching the description's own "movie
+creature": hard rule 4 keeps licensed characters out of the shipped build and the copy holds the
+same line. `Hardware Builds Together` (a title that read like a filename) became `Radar and RGB
+Controller`, which is SEVEN edits, not one, because six `relatedItems` entries point at it by
+string. `Custom Airpod Case` became `Custom AirPods Case`, which is how Apple writes it.
+**HYPHENATION: the hyphen goes on a compound MODIFIER and nowhere else.** `3D-printed enclosure`
+but "then 3D printed and finished by hand" (a verb phrase, left open); `front-end engineering` but
+About's "design, front end, and deployment" (a noun, left open). `real-time`, `hard-surface`,
+`stop-motion`, `Self-directed`, `Full-stack` and `LEGO-inspired` all took one. Note `Full stack`
+was on the town map while `Full-stack` was two screens away in the Work descriptions.
+**CHECKED ON BOTH SURFACES, NOT ONE.** `verify_copy.cjs` is 43 assertions in real headless Chrome
+on the React side, and `scratchpad/realm_copy.cjs` walks all 12 panels of the Realm's Personal
+Projects portal by index and reads each caption, 9 assertions, because a Realm panel is a 3D
+TEXTURE and its caption is the only readable surface. A drift check now compares every `desc` in
+the two files: 23 of 26 are byte identical and the only three that differ are the Realm-only
+panels (About Me, Resume, Contact). Re-run it after any copy edit.
+**A TRAP THIS PASS HIT: `lego.html`'s data arrays are SINGLE quoted and `src/App.tsx`'s are DOUBLE
+quoted.** "A movie creature's head" is fine in the React file and terminates the string in the
+Realm, breaking a 582KB file with a syntax error nowhere near the edit. Parse-check with
+`new Function()` over each inline block after touching that data.
+
+**THE LAST THREE, AND ONE OF THEM WAS NOT A COPY BUG** (2026-09-09).
+· **The deck rail invited the visitor it had just turned away.** The closing slide swaps its own
+  title to "The finished build" when the device cannot run the Realm, but `Slide`'s `label` was a
+  hardcoded "Try it", so the tick above it still said Try it. It follows `realm.ok` now. Note WHERE
+  this showed: the rail is `display:none` under 860px wide, so a phone never saw it. It needed a
+  WIDE window that still failed the gate, which the check reproduces by emulating touch at 1280x800
+  (`pointer:coarse`, so the real probe returns `why:'touch'`) rather than by emulating a phone.
+· **`"testing"` was the fallback of the Work modal's descriptor ternary**, one added project id
+  away from rendering to a visitor. It is `""` now.
+· **THE TWO NABU YEARS ARE NOT WRONG AND WERE LEFT ALONE.** `NABU 2023 Spring Collection` displays
+  2022 and `NABU 2026 Teaser` displays 2025, which reads on screen as each title contradicting its
+  own date. Both are almost certainly right: a spring collection is shot the autumn before and a
+  teaser runs ahead of the drop it teases. So the DATA is untouched and the DESCRIPTION carries the
+  relationship ("Shot in 2022 for the 2023 spring collection", "Cut in 2025 to trail the 2026
+  puffer jacket collection"), which is where it belongs and which also makes the pairing legible
+  enough that a real typo would now be obvious. Changing the years instead would have destroyed
+  true information to tidy a presentation problem.
+  Note the descriptions live in the MEDIA VIEWER, not the modal grid, so that is the surface to
+  check: it is also the only place the title and the year label sit next to each other, i.e. where
+  the contradiction was actually visible. `scratchpad/verify_last3.cjs`, 17 assertions.
+
+**AND THE VIEWER USED TO CLIP ITS OWN CAPTION, SILENTLY. FIXED** (2026-09-09, found while
+measuring the About panel). `#viewer .card` is a flex ITEM in a column flex container with no
+max-height, so on a short window it did not overflow, it SHRANK below its own content and cut the
+bottom off the description under its own `overflow:hidden`. No scrollbar, no ellipsis, nothing to
+say text was missing. Measured before the fix: the About panel lost **13px of copy at a 700px
+viewport and 53px at 660px**, which a 1280x800 laptop reaches once browser chrome is taken off,
+and it hit every long desc in every portal rather than just that one.
+**`flex-shrink:0` is the fix and `justify-content:safe center` is what makes it usable.** Keeping
+the card's real height and letting the VIEWER scroll is only half of it: with plain
+`justify-content:center` an overflowing flex item spills equally in BOTH directions and its TOP is
+unreachable however you scroll, so shrink-to-fit alone would have traded a clipped bottom for a
+lost top. `safe` falls back to flex-start exactly when the content overflows and not before. Both
+are declared in the rule on purpose, so a browser that does not know `safe` drops that one
+declaration and keeps plain centring, which is today's behaviour, rather than losing the centring.
+Measured after, against the SHIPPED rules pulled out of the file rather than a copy of them
+(`scratchpad/capfit.cjs`, 17 assertions, and it drives the before and after side by side): the
+card holds 650px at every height, nothing is cut, and both ends stay reachable with the
+container's own 40px padding intact at each. Tall windows are untouched, still centred with no
+scrollbar. Confirmed IN ENGINE at a 660px window too (`scratchpad/about_panel.cjs`).
 
 **Naming trap:** the Work category displays as "Personal Projects" but its internal id is still
 `creative-projects`, which keys the theme map, modal branches and portal lookups. Never rename the id.
