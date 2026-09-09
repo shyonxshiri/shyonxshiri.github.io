@@ -324,7 +324,19 @@ without this a skull hangs a body's height in the air and a leg is buried. Each 
 OWN height band and not the walk's 0.30..1.5, which measured from y 0 would miss a floor 2 units
 down. None sits in the walk-in corridor (`|x-49.6| < 1.35` past z 25): a solid bone dead centre is
 an obstacle on the one line everyone walks.
-**The ghost.** `ghost.glb`, worn at the seated skeleton with E and rotated with T. It replaces the
+**The ghost.** `ghost.glb`, worn at the seated skeleton with E, and taken off there too.
+**`T` DOES NOT CARRY IT** (user, 2026-09-09): the shroud went on and off the outfit ring for a day
+and is off it again, so E at the bones is the only switch, both ways. `outfitRing()` no longer
+pushes `'ghost'` and `cycleOutfit()` returns early on `ghostOn`, and the early return is not
+optional: without it `indexOf('ghost')` is -1, the step lands on `r[0]`, and T would quietly take
+the shroud off through the civilian branch. Touch's CHANGE button is gated on `!ghostOn` for the
+same reason, since the ring can still be two long while the shroud is worn (the suit stays unlocked
+once it is taken), and a lit button that `cycleOutfit` refuses is worse than no button.
+`HINT_GHOST` names E at the bones where it used to name T, because the hint bar is the only place
+the way back is written down while you are away from the cave, `#prompt` only says it once you are
+standing there. Measured at **565px**, under `HINT_FLY`'s 620, so the bar's clip window is unmoved.
+`scratchpad/verify_ghost_t.cjs` drives the real key handler with dispatched events rather than
+calling `cycleOutfit()`, which is the only way to test a BINDING. It replaces the
 figure ENTIRELY rather than below the neck like the suit, so it needs no collar fit: a ghost has no
 head of its own to keep. What is CUT is read off the geometry, not a name list: anything whose top
 is under `GHOST_CUT` (legs, hips, stud caps) and the SOLID-BLACK head block. The torso, arms and
@@ -668,7 +680,7 @@ never tint it. The shipped `hair.glb` is the DOC OCK piece (material `hair_dococ
 `0.02732 / 0.01096 / 0.00518`), not the Bizarro one an older code comment still names.
 
 **My Lego Super Hero → `CLAUDE-hero.md`.** The suit stands on display in the mansion's upstairs
-room; taking it is the unlock, `T` rotates outfits, `F` flies. The suit, its shader recolour, the
+room; taking it is the unlock, `T` takes the suit on and off, `F` flies. The suit, its shader recolour, the
 head, the cape and the whole of flight (steering, speed, pose, take-off, landing, the high hop)
 live in that file. **Read it before touching the suit, the cape or flight**: nothing about the fit
 is hardcoded, it is all measured against the civilian body at load, and the flight pose in
@@ -687,7 +699,8 @@ it to launch, and `F` is the actual toggle. So the one permanent controls line a
 working way to LEAVE the ground while advertising "`F` to land" the moment you were up, which is
 the one asymmetry a controls bar must not have. It now reads `Space` hop / `F` to fly and mirrors
 `HINT_FLY`: the same key leaves the ground and returns to it.
-All four end in `R` leave, and the measured widths at 12.5px are **534 / 554 / 555 / 620**, so
+All of them end in `R` leave, and the measured widths at 12.5px are **534 / 554 / 555 / 620**,
+plus `HINT_GHOST` at **565** since it started naming E at the bones instead of T, so
 `white-space:nowrap` clips below a 620px window. `HINT_FLY` is the binding one and naming `F` on
 the ground did not move it (`HINT_SUIT` went 557 to 555, it got no wider). Re-measure in the page
 rather than counting characters if a line is ever edited: `scratchpad/verify_final.cjs` sets each
@@ -696,15 +709,15 @@ one on the real element and reads `scrollWidth`. `say()` is for STATUS now
 `display:none` and those lines are the only guidance a phone gets.
 **TOUCH CHANGES OUTFIT ON THE ACT BUTTON** (user, 2026-09-02). It has no `T` key and no pill, and
 it used to change back at the chest, so when the chest went quiet a phone had no way to change at
-all once the suit was on: the display the suit came off is one-shot and the bones only ever offer
-the ghost. `#btnAct` is touch's `E` and is now its `T` as well. Its contextual jobs OUTRANK the
-change (`ENTER` at a portal, `TAKE` at the suit, `RISE`/`RETURN` at the bones), and when none of
-them is in reach it reads **CHANGE** and calls `cycleOutfit()`. It is gated on `outfitRing().length
-> 1`, so a cold load with nothing unlocked shows no button, exactly as before.
+all once the suit was on: the display the suit came off is one-shot. `#btnAct` is touch's `E` and is
+now its `T` as well. Its contextual jobs OUTRANK the change (`ENTER` at a portal, `TAKE` at the
+suit, `RISE`/`RETURN` at the bones), and when none of them is in reach it reads **CHANGE** and calls
+`cycleOutfit()`. It is gated on `!ghostOn && outfitRing().length > 1`, so a cold load with nothing
+unlocked shows no button and neither does a worn shroud, which T no longer touches either.
 It says CHANGE rather than naming the next body, for two reasons: that is the word the keyboard's
 own hint line already uses for `T`, so both surfaces say the same thing; and the civilian body has
-never had a name in the Realm, so "suit off" would be wrong coming off the ghost. What you turned
-into is reported by `say()`, exactly as it is for `T`.
+never had a name in the Realm. What you turned into is reported by `say()`, exactly as it is for
+`T`.
 **The CONTROLS card names it, and that needed an APPEND.** The card ships seven `.row` divs for the
 keyboard and `touchRows` is eight now; the old code only rewrote rows that already existed, which
 would have dropped the outfit row and shifted Sound and Leave up a line. Verified in a real
@@ -713,7 +726,7 @@ RELOADED under the emulation, because `IS_TOUCH` is read once at load from `(poi
 `ontouchstart`.
 
 **Flight.** `F` toggles it (or a double tap of Space, guarded on `e.repeat` because a held hop fires
-keydown 30 times a second), and `T` swaps the outfit. There are NO HUD pills left: both the yellow FLY and
+keydown 30 times a second), and `T` swaps the SUIT (never the ghost, see above). There are NO HUD pills left: both the yellow FLY and
 the SUIT pill were removed at Shyon's request (with them went the whole `.pw` class), so the hint
 line under the canvas is the only place any of it is named. That line has three versions picked by `syncPowerHUD` on the state transitions
 rather than per frame: `HINT_WALK`, `HINT_SUIT` (which adds `F` to fly, on the ground and only
@@ -846,6 +859,131 @@ title bubbles, mobile touch controls (joystick + jump + contextual pills), and M
 taken off its display in the mansion's upstairs (suit swap + flight). Flight collision is now
 per-geometry in three dimensions (§5), and the mansion's upstairs is a real room you can fly into
 and walk around, third person like everywhere else.
+
+**THE APPLE PASS, ROUND TWO: ONE FAMILY, A FROSTED NAV, AND FOUR PIECES OF DEAD SPACE
+FILLED** (user, 2026-09-09). The round-one pass shipped a font change that could not be
+seen and a modal expand that was pulled the next day. What was wrong with it is worth
+keeping: `-apple-system` only ever reaches UNSTYLED text, and almost nothing on this site
+is unstyled, so naming SF in the base stack changed nothing visible. The site's four
+faces had to go for the type to change at all.
+**ONE FAMILY, EVERYWHERE.** `--sf` replaces Bebas Neue (display headings), Space Grotesk
+(kickers), Space Mono (every small label) and Cormorant Garamond (body copy). Apple runs
+one family and distinguishes by SIZE, WEIGHT and TRACKING alone. Inter is the only face
+still downloaded, as the licensed fallback off Apple hardware; SF Pro may not be
+self-hosted as a webfont, but naming it so the OS serves its own copy is fine.
+**IT IS NOT A FIND AND REPLACE, because the old faces had opposite metrics.** Bebas is
+condensed caps with no descenders and positive tracking; SF is none of those. 200px of SF
+on the hero's 0.86 line put "Shyon" into "Shiri", so the ceiling came to 148 and the
+tracking flipped to -0.035em, which is Apple's own signature on a large headline. Small
+labels went from Space Mono 400 at 2px tracking to SF 590/600 at 0.06em, because 2px on a
+10px SF label reads as spaced-out caps rather than as a label. Body went from a 20px serif
+at 1.75 to 17px at 1.55. Years and numerals took `tabular-nums`, which is what the
+monospace was really being used for.
+`scratchpad/verify_type.cjs` was rewritten around this: it sweeps every element on all
+four pages and asserts not one of the four old faces survives, plus that the hero tracks
+NEGATIVE, which is the tell that a rule was folded to the new family without being
+re-tuned for it.
+**THE STEPPED REVEAL IS GONE** ("i still have that glitch effect style for pictures that
+load in"). See the note on `shotReveal`: `stepEase` quantized four animations into held
+jumps, and the WIPE went with the stepping, not just the stepping.
+**THE NAV HAS NO GROUND AT ALL. THE LINKS FLOAT ON THE PAGE** (user, 2026-09-09).
+There is no bar, no fill, no blur, no hairline and no shadow, and the `scrolled` /
+`frosted` state that used to switch a bar on past the top of Home is gone with them, as is
+the `ss-nav-light` rule that thickened it on the stacked About. **What the bar was doing is
+now done by the GLYPHS**, see the halo below. Note the `nav` element is `pointer-events:
+none` with the `ul` taking it back: it is a full-width fixed box with nothing drawn in most
+of it, and the deck underneath is scrolled and dragged.
+The history below is kept because its reasoning still applies to anything that tries to
+derive a bar from what sits behind it.
+**IT WAS A FROSTED BAR FOR ONE DAY.** That deleted `mix-blend-mode: difference`, About's
+wide-layout special case, AND the opener's hand-solved nav band, all three of which existed
+only because the nav had no ground of its own and had to be derived from whatever pixel sat
+behind it.
+· **The dim opacity is 0.72 and it is MEASURED.** 0.58 was inherited from the blend era
+  and failed: on the real composited frame the three dim items ran 4.38 to 4.40 over the
+  opener and **3.87 to 3.98 on About's cream**, against a 4.5:1 bar. At 0.72 the worst
+  case anywhere is 5.72:1.
+· **THE HALO IS WHAT THE BAR USED TO BE, and it is the whole of the current answer.**
+  With nothing behind the nav, a glyph is legible only against whatever pixel happens to be
+  under it, and this site has four different grounds up there: a black portrait, a pale
+  aerial, a cream copy column and, stacked, a photograph of dark hair and a black jacket.
+  So each item carries a `text-shadow` in the OPPOSITE tone to its own type, dark under the
+  white, light under About's near-black. **Two radii, not one**: a tight 2px pass that keeps
+  the letterform crisp against a busy crop, and a 12px haze that lifts the local ground away
+  from the type. The haze is the one that carries the two real failures, white over the
+  opener's pale aerial and dark over the stacked About's jacket.
+  A halo raises the MEASURED ratio for the same reason it works by eye, because the script
+  reads the ground immediately around the glyphs: on the opener the dim items went 4.18 bare
+  (a fail) to **5.09** with it. It was three passes first, the third a 34px cloud; that
+  scored identically and read as a smudge round each word at 4x, so it is two.
+  **The dim opacity came up 0.72 -> 0.86** with the fill it was measured against gone.
+  Every page improved on the bar except the opener, which is where the halo is doing the
+  work: 21/21 pass at 1512 (worst **5.09:1**) and 41/41 across the narrow About sweep
+  (worst **4.66:1**, HOME and WORK at 430 scrolled onto the black jacket, which is legible
+  by its halo alone and is the one place a bar was genuinely prettier).
+· **`scratchpad/nav_contrast.cjs` was rewritten and the OLD METHOD IS THE LESSON.** It
+  modelled the opener's veil gradient by hand and sampled the raw image under it, which
+  was right while the picture was what carried the type. It is meaningless against a
+  translucent bar with a backdrop blur: what sits behind a glyph is the bar's fill over a
+  BLURRED photograph, and neither the gradient formula nor the source image describes
+  that. It screenshots the page and reads real pixels now, on all four pages.
+· **AND THEN THE BAR WAS TAKEN OUT ALTOGETHER** (user, 2026-09-09, twice in one pass:
+  first that the frosted bar read flat and coloured rather than transparent, then that he
+  would rather not have the header space at all). It was made glass on the way past, and
+  that step is worth keeping because it is the general lesson: a flat `rgba(6,6,6,.62)`
+  over `blur(20px)` is not glass, because 62% of one colour IS the bar and the blur only
+  softens the last third of it. Glass came from dropping the fill to about a third and
+  moving the contrast it was carrying INTO THE BACKDROP, `brightness()` in the filter
+  darkening (or, on About's cream, lifting) what is behind rather than covering it, so the
+  backdrop's own variation survives at scale. **None of that is in the file any more.**
+**THE DEAD SPACE WAS MEASURED BEFORE ANYTHING WAS BUILT**, off 1512x900 captures: Contact
+26% empty below the last row, About 21% under the copy, Work 17% under the cards. The
+spec band (`REALM_FIGS`, the closer's own figures, so the two cannot drift) fills
+Contact's; the bento fills About's.
+**AND THE BENTO IS THE TOOLS AND NOTHING ELSE** (user, 2026-09-09: most of this is not needed
+on About, and the page said "running in this browser" twice). It shipped as eight tiles and
+four of them were restatement, three word for word. `Based in / San Jose, California` and
+`Degree / BA 2025` are both in the FIRST SENTENCE of the paragraph directly above them
+("in the Bay Area", "a BA in Graphic Design from San Jose State, 2025"). `Open to / Full-time`
+is the Contact page's availability line, which is the page an availability claim belongs on.
+And `Running in this browser / 15.9M` repeated the closing words of paragraph two on top of
+itself while putting the figure on its THIRD page: `SpecBand` on Contact and the deck's closer
+both draw it from `REALM_FIGS`, and one number on three pages means less on each. About gives
+it up; the closer earns it (it is the payoff of a slide about the build) and Contact earns it
+(nothing else fills its last quarter).
+What is left, Blender / Three.js / React / After Effects, is the only fact set on the page that
+no paragraph here states and no other page duplicates. Tiles are equal now (all `b-wide`, so
+2 x 2 at 480px and one column under 900) because four peers ARE equal; the unevenness the old
+note defended was the 15.9M tile, and `.v.big` / `.b-tall` were deleted with it.
+Measured after, on the rendered page rather than the source (`scratchpad/bento_check.cjs`, three
+viewports): "running in this browser" 2 -> 1, "san jose" 2 -> 1, "15.9" and "full-time" gone
+from About, no sideways scroll. The block is 145px against the old 220, so a little of the
+21% opens back up. Nothing was invented to refill it: naming a tool he does not use to pad a
+grid is the failure mode this whole edit is against.
+**AND THE DECK'S COPY IS SCROLL DRIVEN, WHICH THE SNAP MAKES POSSIBLE RATHER THAN
+IMPOSSIBLE.** The deck is snap locked, so there is no scrolling WITHIN a slide to scrub
+against, which is what made scroll-scrubbing look inapplicable here. But a snap ANIMATES
+the scroll position over a few hundred milliseconds, so an element's distance up the
+viewport is a real, continuous, reversible signal during exactly the moment a slide
+arrives. `useRiseProgress` reads that; `LitWords` ramps the copy against it. Verified to
+run BACKWARDS, which is the whole point: 0.78 settled, 0.22 scrolled away, 0.78 on return
+(`scratchpad/lit.cjs`).
+· **It listens on the HOME SCROLLER, not on window.** The pages are `position:absolute;
+  inset:0` and scroll inside their own element, so window scroll events never fire.
+· **`LitWords` separates words with a PLAIN SPACE, and this is the exact inverse of the
+  rule that governs `Words`.** There the spans are inline-BLOCK, so a line may break
+  between two boxes whatever is inside them, and the trailing space must be U+00A0 or it
+  collapses at the end of its box. `LitWords` spans are plain INLINE, so an NBSP between
+  words means the paragraph never wraps and runs off the slide. Copying the NBSP across
+  was caught by the nine-size fit check, not by eye.
+· It ramps COLOUR, not opacity: two deck slides are photographs, and fading text against
+  a picture is not the same effect as bringing it up out of the page's grey.
+**WHAT WAS PROPOSED AND REJECTED: a horizontal rail for Work** (user, 2026-09-09: "i dont
+like the selected work nine pieces"). It listed nine top-level projects, but Work has
+THREE categories and those nine were media items INSIDE them, so the demo flattened the
+site's own information architecture to look full. **Work's coverflow is untouched and its
+17% is still open.** Do not re-propose anything for that page without first deciding
+whether the three categories or their contents are the top level.
 
 **THE WORK MODAL LIFTS. A CARD-TO-PANEL MORPH WAS BUILT, SHIPPED AND PULLED**
 (built 2026-09-08 on a request for Apple's motion feel, pulled 2026-09-09 on
@@ -1225,9 +1363,86 @@ grey (the same trap the Realm's cursor documents, exact at 127.5) and the studio
 behind the wide nav sits in that zone, which measured CONTACT at about 2.3:1 against the approved
 black's 8.6:1. About also does not DIM its inactive items, which is contrast and not colour: 0.55 of
 the near-black the blend produces on a light page reads as a washed-out grey.
-KNOWN AND NOT FIXED: on the NARROW About, WORK and CONTACT cross the same mid-grey vignette and sit
-around 50% contrast. The robust fix is a scrim behind the nav, which reshapes an approved page, so
-it was flagged rather than done.
+**ALL OF THE ABOVE IS SUPERSEDED**, and is kept because the reasoning still applies to anything
+that tries to derive a bar from what is behind it. The Apple round-two pass gave the nav its own
+ground (a frosted translucent bar, `lightPage` picking a cream fill on About and a dark one
+everywhere else), which deleted the solid-black paint, the `difference` blend and About's
+wide-layout special case together. The "known and not fixed" mid-grey failure went with them.
+
+**AND THE ABOUT PAGE STACKS UNDER 768** (user, 2026-09-09: fix the About page layout on mobile).
+The grid was a flat `1fr 1fr` at EVERY width, so the copy column is half the window less its own
+`8vw + 60px` gutters. Measured at 390 that is **172px**: the two paragraphs, the h2 and the bento
+were all rendering into about 25 characters a line. Three separate media blocks had answered that
+by shrinking the words, 15px at 768, then 13px on a 1.4 line at 640, with the eyebrow taken down to
+**6px** and the h2 to 42. **That is not a fix. A narrow measure is not made readable by setting it
+smaller.** All three blocks are deleted rather than re-tuned.
+Stacked, the portrait takes the top and the copy runs the full width under it, bounded by the 480px
+`maxWidth` the paragraphs already carry: the measure goes **172 -> 342** at 390 and the body goes
+back to the same **17px** the desktop page sets. PHOTO FIRST, by grid `order` and not by moving it
+in the DOM, so the source order stays the wide layout's reading order.
+· **The page has to be able to SCROLL, and this half would have failed silently.** Every page root
+  here is `position:absolute; inset:0; overflow:hidden`, which is right while the layout is two
+  full-height columns and truncates the moment it is not: stacked content taller than the viewport
+  is not scrolled to, it is CUT OFF. So the root takes `overflow-y:auto`, the grid gives up
+  `height:100%` for a `min-height`, and the text column gives up both its `overflow:hidden` and its
+  `justify-content:center`. All four are INLINE styles, hence the `!important`.
+· **The crop is solved, not guessed.** The source is 2184x3298 and `object-fit: cover` on a
+  landscape box is WIDTH bound, so the face sits at a fixed 131px from the top of the picture
+  whatever height the box is given: it cannot be pushed further down by making the photo taller.
+  At the old `center 10%` that put his EYES at 108px under a nav whose bottom edge is **101px**,
+  i.e. behind the glass. `center 0%` is the only value that clears it, and 46vh is the height that
+  then holds his whole head and shoulders.
+· **The nav had to thicken, and this is the old mid-grey trap arriving from the other direction.**
+  The bar runs in its LIGHT mode on About because About is a cream page, which the wide layout
+  guarantees by putting the copy column under the nav at every width. Stacked it does not: the
+  photograph is the top of the page and the whole thing scrolls under a fixed bar, so dark type on
+  a .50 white glass ended up over a black jacket. Measured on the composited frame, 3 of 16 samples
+  failed, HOME and WORK at 430 scrolled (**4.09** and **3.45**) and HOME at 768 scrolled (3.56),
+  all three over grounds of about 120,115,113. The fill goes to .90/.84 on `nav.ss-nav-light` under
+  768 and every sample passes, worst case **6.58:1**. It stays glass: the blur and the saturation
+  boost are untouched and the top of the hair still reads through it.
+  The class exists because the fill has to answer to the VIEWPORT, and a width read in JS at render
+  time does not survive a resize. The same bug was live in the text column's padding, an inline
+  `window.innerWidth <= 640` ternary evaluated once at mount; it is a stylesheet rule now.
+  **SUPERSEDED the same day: the bar is gone and `nav.ss-nav-light` with it.** The stacked
+  About's jacket is now carried by the light halo on the type instead, re-measured over the
+  same sweep at 41/41. The mid-grey trap this bullet documents is still the reason that
+  sweep exists, so keep running it.
+· **The bento is held at four tracks here**, overriding the 900px rule that takes it to two: with
+  every tile spanning two tracks, two tracks is one tile per row and four tall boxes down a phone.
+· **THE LANDSCAPE PHONE IS THE SECOND QUERY, and it was clipping worse than the portrait one.**
+  A turned phone is WIDER than 768, so it misses a width-only breakpoint entirely, while being far
+  too short for a full-height column. Measured before the change, the copy overran its own box by
+  **230px at 844x390** and 140 at 932x430, with the bento's bottom edge 198px past the column at the
+  first of them, all of it invisible: the column is `overflow:hidden` and the page above it did not
+  scroll. The trigger is `(max-width: 1100px) and (max-height: 620px)` alongside the 768 one, where
+  620 is the same short-screen height the homepage deck already stands down at and the 1100 keeps it
+  off a laptop. The photo's `min-height` came 300 -> 220 for the same reason, since 300 is most of a
+  390-tall screen. All three landscape sizes now report 0 over and a scrollable page.
+Verified in real headless Chrome at 390 / 430 / 768 / 844x390 / 932x430 / 1024 / 1512: `scratchpad/about_stack.cjs`
+(geometry, computed sizes, scrollability, no sideways scroll), `about_scrolled.cjs` (the bento is
+reachable and fully visible, zero console errors) and `nav_contrast_mobile.cjs`, which is
+`nav_contrast.cjs` retargeted at the narrow About and samples the bar both at rest and scrolled.
+1024 and 1512 are byte for byte what they were.
+`scratchpad/about_docw.cjs` is the one to re-run after any About layout work: it drives all TEN of
+the responsive audit's viewports and asserts two things per size, that the document never scrolls
+sideways and that the text column's content never exceeds its own box, i.e. that nothing is being
+silently cut. All ten clean. The full `responsive_audit.cjs` reports About at only its two
+documented non-bugs, the cursor dot and the photo's zoom inside its `overflow:hidden` parent.
+**`responsive_audit.cjs` USED TO REPORT A DEAD SERVER AS A CLEAN SITE, and that is fixed**
+(2026-09-09). It carried `http://localhost:5701/` hardcoded in TWO places, the initial open and
+the per-page `Page.navigate` inside its own loop, and ignored the URL it was passed. Since there
+are ~20 named port configs here precisely because concurrent sessions hold ports, running it on
+any other one navigated to nothing. **An empty document has no element wider than the viewport,
+so a total failure to load is indistinguishable from a perfect result**: every page came back
+"clean" and the run exited 0. The URL is `process.argv[2]` now, defaulting to 5173, and the mount
+wait ASSERTS rather than falling through, so nothing rendered after 20s prints the URL it tried
+and exits 1. Both halves were checked: 5701 fails with exit 1, 5209 audits the real site.
+That failure mode is the general lesson, not the specific port. **A checker whose subject is
+missing must fail, never pass.** The same trap is already recorded for the Vite dev server
+refusing `127.0.0.1` (every DOM assertion fails and it reads as the change under test having
+broken the page) and for a work-modal assertion passing on an empty string when the modal did
+not open.
 
 **Reading the responsive audit** (`scratchpad/responsive_audit.cjs`, ten viewports x four pages).
 Three things it reports are NOT bugs and were checked against screenshots before being believed:

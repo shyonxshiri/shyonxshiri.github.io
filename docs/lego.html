@@ -3192,12 +3192,11 @@
   // the suit's own display is one-shot and there would be nowhere to fetch it from; the bones sit
   // in the cave and can always be gone back to.
   // IT DOES NOT MATTER WHETHER THE SHROUD IS CURRENTLY WORN (user, 2026-09-02). The first
-  // version returned early unless `ghostOn`, which meant the handback only ever happened on the
-  // ONE route that goes straight from ghost to suit: `E` at the display. `T` cannot take that
-  // route, because the ring runs civilian to suit to ghost, so from the ghost it steps to CIVILIAN
-  // first and only reaches the suit on the next press, by which time the shroud is already off and
-  // the early return fired. The ghost therefore stayed in the ring for ever. The rule is about the
-  // SUIT going on, not about what you happen to be wearing at that instant.
+  // version returned early unless `ghostOn`, and the two-press route round it is still open now
+  // that `T` no longer carries the ghost: `E` at the bones takes the shroud OFF and leaves
+  // `ghostUnlocked` standing, so the next `T` puts the suit on with no shroud worn and the early
+  // return would have fired. The rule is about the SUIT going on, not about what you happen to be
+  // wearing at that instant.
   function returnGhostBody(){
     const had = ghostUnlocked || ghostOn;
     if(!had) return false;
@@ -5307,8 +5306,21 @@
     {t:'Morning Star Dr Flyer', c:'#ff7ac2', img:'./assets/RealEstate_MorningStar_Flyer.png', year:2022, desc:'A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.'},
     {t:'Moskowite Corner', c:'#f97316', img:'./assets/RealEstate_MoskowiteCorner_Concept.jpg', year:2026, desc:'An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references.',
       mainLabel:'Concept', extras:[{img:'./assets/RealEstate_MoskowiteCorner_Before.png', label:'Existing site'}]} ];
+  // THE ABOUT PANEL IS THE ABOUT PAGE'S OWN COPY, and it has to stay that way (2026-09-09).
+  // It used to run the six-discipline list ("3D design, motion graphics, UI/UX, fabrication,
+  // cinematography, and code") plus two lines about learning tools properly. src/App.tsx's
+  // About page was deliberately rewritten off exactly that copy into the FACTS a recruiter
+  // scans for, and this panel never got the rewrite, so the site's two About surfaces were
+  // describing different people. This is that page's first paragraph, verbatim.
+  // IT IS THE LONGEST DESC IN ANY PORTAL AND THAT WAS MEASURED, NOT EYEBALLED. #viewer .card
+  // is a flex ITEM in a column flex container with no max-height, so it does not overflow a
+  // short window, it SHRINKS and clips the caption under its own overflow:hidden, silently.
+  // Measured against the real CSS: this text is 3 lines and a 650px card, which is the same
+  // footprint as the copy it replaced, so it costs nothing. Adding the About page's SECOND
+  // paragraph as well took it to 4 lines and 669px, moving the clip threshold from a 730px
+  // viewport to 749px, so that clause was left out on purpose. scratchpad/capfit.cjs.
   const ABOUT=[
-    {t:'About Me', c:'#38bdf8', frame:'#05131D', img:'./assets/Shyon_About.png', desc:'I\'m a graphic designer and developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code. That range started in childhood with LEGO builds and stop motion films, and it became a working habit: learn the tools each project requires and use them properly.'},
+    {t:'About Me', c:'#38bdf8', frame:'#05131D', img:'./assets/Shyon_About.png', desc:'I\'m a graphic designer and developer in the Bay Area, with a BA in Graphic Design from San Jose State, 2025. I take a project from identity through to a deployed site, so design, front end, and deployment are one job rather than three handoffs. I also evaluate multimodal AI systems against rubrics, writing the corrected ground truth where models fail.'},
     // These two used to be the only imageless panels in any portal, so they showed as a bare
     // coloured tile with a title. The resume preview is the PDF's own first page rendered out and
     // padded to the panel's exact 2.15:2.70 so nothing is cropped; the contact card is drawn to
@@ -5401,33 +5413,33 @@
     heroMsgT=3.4;
   }
 
-  // ── T IS THE OUTFIT ROTATION (user, 2026-09-01). It used to be a two-way toggle for the suit;
-  // with a third body it steps round whatever is UNLOCKED instead, civilian to suit to ghost and
-  // back. Unlocking still happens at the two props: the suit on its display in the mansion's
-  // upstairs, the seated skeleton in the cave for the ghost, and E at either of them works
-  // exactly as it did, so "Rise" and "Return" are untouched. What T does is save you the walk.
-  // A body you have not unlocked is simply not in the ring, so on a cold load T does nothing, and
-  // once the suit is on the GHOST leaves the ring too, because it has been handed back.
+  // ── T IS THE SUIT'S KEY AND THE GHOST IS NOT ON IT (user, 2026-09-09). It used to step round
+  // every body that was UNLOCKED, civilian to suit to ghost and back, so the shroud could be put on
+  // and taken off from anywhere on the map. It cannot any more: the GHOST is switched at the bones
+  // with E, both ways, and nowhere else. That is the one unlock you have to go and find on foot,
+  // and a key that hands it to you from across the world is the thing that made the walk pointless.
+  // T is left doing what it did before the ghost existed, the suit on and off, and a body you have
+  // not unlocked is still simply not in the ring, so on a cold load T does nothing.
   function outfitRing(){ const r=['civ'];
     if(heroUnlocked && heroMeshes.length) r.push('hero');
-    if(ghostUnlocked && ghostRoot) r.push('ghost');
     return r; }
   // returns whether the ghost body was handed back on the way, so the caller can say so
   function wearOutfit(w){
-    if(w==='ghost'){ wearGhost(true); return false; }
     if(w==='hero') return suitOn();          // and the shroud goes back to the bones on the way
-    if(ghostOn) wearGhost(false);
     wearHero(false);
     return false;
   }
+  // T IS INERT WHILE THE SHROUD IS ON, and the guard is here rather than in the ring: 'ghost' is
+  // not a ring member any more, so without it indexOf() returns -1, the step lands on r[0], and T
+  // would quietly take the ghost off through the civilian branch, which is exactly what was asked
+  // to go away. The way back is E at the bones.
   function cycleOutfit(){
-    if(mode!=='hub') return;
+    if(mode!=='hub' || ghostOn) return;
     const r=outfitRing(); if(r.length<2) return;
-    const cur=ghostOn?'ghost':(heroOn?'hero':'civ');
+    const cur=heroOn?'hero':'civ';
     const nxt=r[(r.indexOf(cur)+1)%r.length];
     const gave=wearOutfit(nxt);              // suitOn() sounds the plates for 'hero'
-    say(nxt==='ghost' ? 'Ghost'
-      : nxt==='hero'  ? (gave ? 'Suit on. The ghost is back with the bones.' : 'Suit on')
+    say(nxt==='hero' ? (gave ? 'Suit on. The ghost is back with the bones.' : 'Suit on')
       : 'Suit off', gave ? 3.0 : 2.0);
   }
   const camLook=new THREE.Vector3(0,0.95,0);
@@ -6601,7 +6613,8 @@
     const dnEnd=e=>{ e.preventDefault(); touchDown=false; };
     btnDown.addEventListener('touchend',dnEnd,{passive:false}); btnDown.addEventListener('touchcancel',dnEnd,{passive:false});
     // same order the label above reads in: whatever is in reach first, the outfit change last.
-    // cycleOutfit() guards the mode and the ring itself, so a tap with nothing unlocked is a no-op.
+    // cycleOutfit() guards the mode, the shroud and the ring itself, so a tap with nothing
+    // unlocked, or one taken as a ghost, is a no-op.
     btnAct.addEventListener('touchstart',e=>{ e.preventDefault();
       if(mode!=='hub'||fading) return;
       if(nearPortal) enterPortal(nearPortal);
@@ -6779,10 +6792,15 @@
   // was reading the civilian line and being told about a Space hop it does not have. Space is the
   // new verb here and it is the only one that had to be taught; drifting is just WASD, and it
   // says so because a body that is not walking should not be described as walking.
+  // IT NAMES THE BONES AND NOT `T` (user, 2026-09-09). T no longer takes the shroud off, so the
+  // one permanent controls line would have been advertising a key that does nothing at all while
+  // you are wearing the body it is on: the way back is E at the seated skeleton, both ways, and
+  // this is the only place that is written down while you are away from it. `#prompt` says the same
+  // thing but only once you are standing there, which is no use to a ghost across the map.
   // Measured on the real rules and the real font rather than counted in characters
   // (`scratchpad/hint_width.cjs`, which reproduces the shipped four at 534/554/555/620): this one
-  // is 496px, the narrowest line in the Realm, so nothing that fits the others can clip it.
-  const HINT_GHOST='<b>WASD</b> to drift &nbsp;·&nbsp; <b>Space</b> rise &nbsp;·&nbsp; <b>Shift</b> sink &nbsp;·&nbsp; <b>T</b> to change &nbsp;·&nbsp; <b>R</b> leave';
+  // is 565px, still under HINT_FLY's 620, so it does not move the window the bar clips at.
+  const HINT_GHOST='<b>WASD</b> to drift &nbsp;·&nbsp; <b>Space</b> rise &nbsp;·&nbsp; <b>Shift</b> sink &nbsp;·&nbsp; <b>E</b> at the bones to return &nbsp;·&nbsp; <b>R</b> leave';
   function syncPowerHUD(){
     const hintEl=document.querySelector('.hint');
     if(hintEl){ const want = flying ? HINT_FLY : (ghostOn ? HINT_GHOST
@@ -7282,13 +7300,17 @@
       // the bones still reads RISE rather than CHANGE.
       // It says CHANGE and not the name of the next body, because that is the word the keyboard's
       // own hint line already uses for `T`, and because the civilian body has never had a name in
-      // the Realm ("suit off" is wrong coming off the ghost). What you turned into is reported by
-      // `say()`, exactly as it is for T. The fallback is gated on the RING, so a cold load with
-      // nothing unlocked shows no button, as before.
+      // the Realm. What you turned into is reported by `say()`, exactly as it is for T. The
+      // fallback is gated on the RING, so a cold load with nothing unlocked shows no button.
+      // AND IT IS GATED ON `!ghostOn` (user, 2026-09-09), which is touch's half of T no longer
+      // touching the shroud. The ring can still be two long while the ghost is worn (the suit
+      // stays unlocked once taken), so without this a phone would show a CHANGE that cycleOutfit
+      // now refuses: a lit button that does nothing. RETURN at the bones is the way back on both
+      // surfaces, and it is what the button reads standing there.
       if(IS_TOUCH){
         const act = nearPortal ? 'ENTER' : nearSuit ? 'TAKE'
                   : nearBones ? (ghostOn ? 'RETURN' : 'RISE')
-                  : (outfitRing().length>1 ? 'CHANGE' : '');
+                  : (!ghostOn && outfitRing().length>1 ? 'CHANGE' : '');
         btnAct.classList.toggle('on', mode==='hub' && !!act);
         if(act) btnAct.textContent = act;
         btnBack.classList.toggle('on', mode==='menu'&&!viewerOpen); }

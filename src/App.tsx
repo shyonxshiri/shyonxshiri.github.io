@@ -119,12 +119,22 @@ const GLOBAL_CSS = `
        Every transition in the sheet references the token, and the JS side is APPLE_EASE,
        which carries the same four numbers for framer-motion. There is no second ease.
        Two curves in the file are deliberately NOT this and must not be folded in:
-       the map pin's pulse (an infinite loop, not an arrival) and stepEase (a STEPPED
-       function, not a curve at all, which is what makes the storyboard's pictures build
-       course by course).
+       the map pin's pulse, which is an infinite loop rather than an arrival.
        NOTE this comment carries no backticks on purpose: GLOBAL_CSS is a template
        literal, so one backtick anywhere in here ends the string. */
     --ease-out: cubic-bezier(0.32,0.72,0,1);
+    /* ONE FAMILY, EVERYWHERE (user, 2026-09-09: "i dont see any apple style font usage
+       like anywhere on the actual site", and it should read as "some off part of the
+       official apple website"). It was FOUR faces: Bebas Neue on the display headings,
+       Space Grotesk on the kickers, Space Mono on every small label and Cormorant
+       Garamond on the body copy. Apple runs one family and distinguishes by SIZE,
+       WEIGHT and TRACKING alone, so that is what this is.
+       The -apple-system keyword resolves to the real San Francisco on Apple hardware,
+       served by the OS. SF Pro may NOT be self-hosted as a webfont (Apple's licence covers
+       building for Apple platforms), so Inter is the SIL OFL near-clone that carries
+       the same shape everywhere else, and it is the one face still downloaded. */
+    --sf: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -168,11 +178,6 @@ const GLOBAL_CSS = `
     /* Work Page - Cards. The floor comes down with the card itself (360 -> 330 wide),
        or a short phone draws a card taller than the desktop proportion. */
     .ss-card { min-height: 385px !important; }
-
-    /* About Page */
-    .ss-about-subtitle { font-size: 9px !important; }
-    .ss-about-page h2 { font-size: 28px !important; }
-    .ss-about-page p { font-size: 12px !important; line-height: 1.8 !important; }
 
     /* Contact Page */
     .ss-contact-heading { font-size: clamp(32px, 6vw, 64px) !important; }
@@ -259,9 +264,10 @@ const GLOBAL_CSS = `
      type cascade note further down, where the universal selector that used to make
      one necessary was removed. */
   .ss-hero-name {
-    font-family: 'Bebas Neue', 'Space Grotesk', sans-serif;
-    line-height: 0.86;
-    letter-spacing: 0.012em;
+    font-family: var(--sf);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
     color: var(--white);
   }
   /* Each letter is its own inline-block so it can be transformed on its own; without
@@ -322,7 +328,7 @@ const GLOBAL_CSS = `
      Deliberately still the question ("What it is"), never an answer, so the body below
      is what actually tells you anything. */
   .ss-story-kicker {
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-family: var(--sf);
     font-size: clamp(34px, 4.1vw, 62px);
     font-weight: 700;
     line-height: 1.02; letter-spacing: -0.022em; text-transform: none;
@@ -345,6 +351,18 @@ const GLOBAL_CSS = `
     background-image: linear-gradient(180deg, #a9e2fd 0%, #3fc0f8 48%, #0b86c9 100%);
     -webkit-background-clip: text; background-clip: text;
     color: transparent;
+    /* THE DESCENDER WAS BEING CUT OFF, and background-clip is why (user, 2026-09-09: the
+       Y is cut off at the bottom). The glyph is painted by a background CLIPPED to the
+       text, so paint exists only inside the element's own box. This span is an
+       inline-block, so that box is its line box, and .ss-chapter-head sets line-height
+       0.92: at 96px that is an 88px box holding a face whose descenders reach past 100px.
+       Everything below the box simply is not painted, so the tail of the y in "Why"
+       vanished while the rest of the word looked fine.
+       The padding grows the PAINT box and the negative margin takes the same amount back
+       out of layout, so the descender is drawn and the two lines close up exactly as
+       before. It has to be in em, not px: the size is a clamp running 36 to 96. */
+    padding-bottom: 0.16em;
+    margin-bottom: -0.16em;
   }
   .ss-story-kicker { filter: drop-shadow(0 0 26px rgba(56,189,248,.20)); }
 
@@ -515,24 +533,20 @@ const GLOBAL_CSS = `
     position: absolute; inset: 0;
     background:
       linear-gradient(to top, rgba(6,6,6,.94) 0%, rgba(6,6,6,.78) 14%, rgba(6,6,6,.3) 32%, rgba(6,6,6,0) 48%),
-      radial-gradient(105% 78% at 4% 104%, rgba(6,6,6,.62) 0%, rgba(6,6,6,.22) 45%, rgba(6,6,6,0) 72%),
-      /* AND A BAND UNDER THE NAV, WHOSE DEPTH IS SOLVED AND NOT GUESSED. This is the only
-         slide on the deck whose top is not black. The nav is #f5f2ed at opacity 1 for the
-         current page and .55 for the other three, so on every other slide it inverts
-         against a near black and the dim state still runs 5.8:1. Over this picture it does
-         not: sampled through a canvas, the world under the nav is a flat 170,140,140 (the
-         brightest pixel in the whole strip is 172,142,142, so there is no worst case to
-         hide from), and the three dim items measured 2.4:1 against it. A first attempt at
-         .62 falling to .24 by 6% missed too, because the nav sits at 4.0% to 5.9% of the
-         slide and the ramp had already collapsed by the time it got there.
-         Solved against that sample, .75 through the nav's own band puts the dim state back
-         over 4.5:1, so the ramp holds .82 to .76 across the top 7% and is gone by 24%.
-         scratchpad/nav_contrast.cjs measures it rather than trusting the gradient. */
-      linear-gradient(to bottom, rgba(6,6,6,.82) 0%, rgba(6,6,6,.76) 7%, rgba(6,6,6,.34) 13%, rgba(6,6,6,0) 24%);
+      radial-gradient(105% 78% at 4% 104%, rgba(6,6,6,.62) 0%, rgba(6,6,6,.22) 45%, rgba(6,6,6,0) 72%);
+    /* THE BAND UNDER THE NAV IS GONE, AND THE FROSTED NAV IS WHY. It was a solved
+       gradient, .82 falling to .76 across the top 7%: this is the only slide on the deck
+       whose top is not black, the world under the nav sampled a flat 170,140,140, and the
+       nav's dim items measured 2.4:1 against it, so the PICTURE had to be darkened to
+       carry type that had no ground of its own.
+       The bar brings its own ground now, so darkening the photograph to serve it is
+       paying twice, and stacked the two put a heavy black stripe across the top of the
+       one full bleed image on the deck. Contrast is now measured against the bar's own
+       fill; see the note on the nav itself. */
   }
   .ss-open-copy { position: relative; z-index: 1; max-width: 760px; }
   .ss-open-title {
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-family: var(--sf);
     font-size: clamp(42px, 6.6vw, 96px);
     font-weight: 700; line-height: 0.98; letter-spacing: -0.035em;
     color: var(--white);
@@ -569,8 +583,8 @@ const GLOBAL_CSS = `
   }
   .ss-map-hint {
     margin-top: 11px; text-align: right;
-    font-family: 'Space Mono', monospace;
-    font-size: 9.5px; letter-spacing: 2.2px; text-transform: uppercase;
+    font-family: var(--sf);
+    font-size: 10px; font-weight: 590; letter-spacing: .06em; text-transform: uppercase;
     color: rgba(245,242,237,.34);
   }
   .ss-map-bed {
@@ -626,8 +640,8 @@ const GLOBAL_CSS = `
   }
   .ss-map-tag {
     position: absolute; left: calc(100% - 12px); top: 50%;
-    font-family: 'Space Mono', monospace;
-    font-size: 9.5px; letter-spacing: 1.8px; text-transform: uppercase;
+    font-family: var(--sf);
+    font-size: 10px; font-weight: 590; letter-spacing: .05em; text-transform: uppercase;
     color: rgba(245,242,237,.86); white-space: nowrap;
     padding: 3px 7px; border-radius: 3px;
     background: rgba(6,6,6,.66); backdrop-filter: blur(6px);
@@ -658,13 +672,9 @@ const GLOBAL_CSS = `
     border: 1px solid rgba(245,242,237,.18);
   }
   .ss-map-card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
-  .ss-map-card-body { padding: 11px 13px 13px; display: flex; flex-direction: column; gap: 3px; }
-  .ss-map-card-cat {
-    font-family: 'Space Mono', monospace;
-    font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--sky);
-  }
+  .ss-map-card-body { padding: 12px 13px 14px; display: flex; flex-direction: column; gap: 5px; }
   .ss-map-card-name {
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-family: var(--sf);
     font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: var(--white);
   }
   .ss-map-card p { font-size: 12.5px; line-height: 1.45; color: rgba(245,242,237,.66); margin-top: 3px; }
@@ -692,24 +702,90 @@ const GLOBAL_CSS = `
   /* ── THE QUIET SLIDE ──────────────────────────────────────────────────────────────
      A chapter band over one bordlerless plate. Everything either side of this screen is
      loud, so it is the one that is allowed to be nearly empty. */
+  /* ── THE QUIET SLIDE: A BIG PLATE WITH ITS CAPTION BESIDE IT ────────────────────────
+     Two earlier arrangements were tried and are worth recording, because each fixed the
+     one before it and broke something else.
+     1. FULL WIDTH PLATE. story_figure_front.jpg is 16:9 and was rendered into a 3.63:1
+        letterbox, so object-fit cover threw away 51% of the image's height and cut a
+        standing figure off at the waist.
+     2. TWO COLUMNS, COPY LEFT AND PICTURE RIGHT. That fixed the crop but was rejected on
+        sight, for two reasons the user named: the picture got smaller than the version
+        before it, and text-left-picture-right IS THE ABOUT PAGE. The deck's own rule is
+        that no two screens share a measure, and duplicating another page's layout is a
+        worse version of the same failure.
+     So the chapter band goes back across the full width, exactly as it was, and only the
+     PLATE splits: the picture keeps a generous width on the left and its label and
+     caption move off the bottom into a narrow column beside it. That fills the right of
+     the slide with the words that were already there, keeps the picture bigger than any
+     previous version, and is a composition no other page on the site uses. */
   .ss-quiet { display: grid; row-gap: clamp(20px, 3.4vh, 38px); }
+  @media (min-width: 1100px) {
+    .ss-quiet .ss-plate {
+      /* 2.45 : 1 and not something rounder, because the deck's column is capped at 1180
+         and the split has to land the picture back on the ~780 it was at full width.
+         At 1.95 : 1 it measured 747, i.e. the rearrangement had quietly shrunk it. */
+      grid-template-columns: 2.45fr 1fr;
+      column-gap: clamp(22px, 2.6vw, 44px);
+      /* ROW 1 IS PINNED TO THE LABEL. The picture spans both rows, so at auto auto
+         grid hands its 440px of height to the two rows in shares and row one grows with
+         it: the label stayed at the top, the caption was pushed to about 55% down, and
+         the two read as unrelated rather than as a heading and its text. Sizing the rows
+         auto then 1fr gives row one exactly the label and drops the slack into row two. */
+      grid-template-rows: auto 1fr;
+      row-gap: 8px;
+      justify-items: stretch;
+      align-items: start;
+    }
+    /* the picture holds the left track across both rows; the words stack in the right */
+    .ss-quiet .ss-plate-shot { grid-column: 1; grid-row: 1 / span 2; max-width: 100%; }
+    .ss-quiet .ss-plate-label { grid-column: 2; grid-row: 1; }
+    .ss-quiet .ss-plate figcaption { grid-column: 2; grid-row: 2; max-width: 100%; align-self: start; }
+    /* 780 wide against the source's 1.78:1 wants about 440 of height, which is what
+       keeps the crop at a few percent instead of the 51% the letterbox was discarding. */
+    .ss-quiet .ss-plate-shot img { height: clamp(300px, 47vh, 440px); }
+  }
   .ss-plate { margin: 0; display: grid; row-gap: 11px; justify-items: start; }
   .ss-plate-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    font-family: var(--sf);
+    font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
     color: rgba(245,242,237,.5);
   }
-  .ss-plate-shot { display: block; overflow: hidden; width: 100%; }
-  /* THE CROP WINDOW IS SET, NOT LEFT AT CENTRE. The plate is much wider than it is tall,
-     so a landscape still is cropped hard, and centred that took the top off the figure's
-     head, which is the subject of both the picture and the paragraph over it. 24% down
-     keeps the whole minifig with the plate under his feet. */
+  /* ── THE PLATE IS NO LONGER A LETTERBOX STRIP (user, 2026-09-09: the player figure
+     screenshot is too thin). IT IS AN ASPECT PROBLEM AND THE NUMBERS SAY SO.
+     story_figure_front.jpg is 2400 x 1350, so 16:9, i.e. 1.78:1. It was rendered full
+     bleed across the story column at 36vh, which at a 900px window is about 1560 x 414,
+     or 3.63:1. object-fit cover then has to throw away 51% OF THE IMAGE'S HEIGHT to
+     fill that box, and what it throws away is the bottom half of a STANDING FIGURE: he
+     was cut at the waist, which is the one thing this particular still cannot afford,
+     since the caption beside it is about how his parts were assembled.
+     The fix is to stop asking a 16:9 photograph to fill a 3.6:1 hole. The width is capped
+     and the height raised, which brings the box to roughly 1.9:1 and cuts the discarded
+     height from 51% to about 7%. There was room for it: this slide was measured with
+     about 16% of its own screen empty under the caption, so the picture grew into space
+     that was doing nothing.
+     Width is capped in CH-INDEPENDENT units on purpose. The caption under it is set to a
+     reading measure, and matching the two by eye drifts the moment either changes. */
+  .ss-plate-shot {
+    display: block; overflow: hidden;
+    width: 100%; max-width: min(100%, 780px);
+  }
+  /* THE CROP WINDOW IS STILL SET, NOT LEFT AT CENTRE, and it still matters at 1.9:1:
+     centred, the little that is cropped comes off the top and takes the crown of his
+     head. 30% down now rather than 24%, because a taller box needs less pulling up. */
   .ss-plate-shot img {
     display: block; width: 100%;
-    height: clamp(180px, 36vh, 380px);
-    object-fit: cover; object-position: 50% 24%;
+    height: clamp(230px, 46vh, 430px);
+    object-fit: cover; object-position: 50% 30%;
   }
+  /* Under 900 the deck stands down to free scrolling and the column narrows, so the cap
+     stops doing anything useful and the picture goes back to full width. */
+  @media (max-width: 1099px) {
+    .ss-plate-shot { max-width: 100%; }
+    .ss-plate-shot img { height: clamp(200px, 34vh, 340px); }
+  }
+  /* the caption sits under the picture, so it takes the picture's measure */
   .ss-plate figcaption {
+    max-width: min(100%, 780px);
     max-width: 74ch; font-size: 15px; line-height: 1.5; color: rgba(245,242,237,.62);
   }
 
@@ -738,8 +814,8 @@ const GLOBAL_CSS = `
     transition: filter .25s var(--ease-out), transform .25s var(--ease-out);
   }
   .ss-cell-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: var(--sf);
+    font-size: 10px; font-weight: 590; letter-spacing: .06em; text-transform: uppercase;
     color: rgba(245,242,237,.42);
     transition: color .2s var(--ease-out);
   }
@@ -754,8 +830,8 @@ const GLOBAL_CSS = `
     font-size: 14px; line-height: 1.55; color: rgba(245,242,237,.66);
   }
   .ss-sheet-cap b {
-    font-family: 'Space Mono', monospace; font-weight: 400;
-    font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: var(--sf); font-weight: 600;
+    font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
     color: var(--sky); margin-right: 12px;
   }
   @media (max-width: 900px) {
@@ -776,7 +852,7 @@ const GLOBAL_CSS = `
   .ss-fig { display: flex; flex-direction: column-reverse; gap: 4px; }
   .ss-fig dd {
     margin: 0;
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-family: var(--sf);
     font-size: clamp(26px, 3vw, 44px); font-weight: 700;
     line-height: 1; letter-spacing: -0.03em; color: var(--white);
   }
@@ -784,8 +860,8 @@ const GLOBAL_CSS = `
     font-style: normal; font-size: .52em; color: var(--sky); margin-left: 2px;
   }
   .ss-fig dt {
-    font-family: 'Space Mono', monospace;
-    font-size: 9.5px; letter-spacing: 2.1px; text-transform: uppercase;
+    font-family: var(--sf);
+    font-size: 10px; font-weight: 590; letter-spacing: .06em; text-transform: uppercase;
     color: rgba(245,242,237,.52);
   }
   /* the closer is the opener's twin: same bleed, same veil, same type block */
@@ -846,8 +922,8 @@ const GLOBAL_CSS = `
   .ss-deck-tip {
     position: absolute; right: 34px; top: 50%;
     transform: translateY(-50%) translateX(8px); white-space: nowrap;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    font-family: var(--sf);
+    font-size: 10.5px; font-weight: 590; letter-spacing: .06em; text-transform: uppercase;
     color: rgba(245,242,237,.75);
     opacity: 0; pointer-events: none;
     transition: opacity .35s var(--ease-out), transform .35s var(--ease-out);
@@ -855,8 +931,8 @@ const GLOBAL_CSS = `
   .ss-deck-tick:hover .ss-deck-tip { opacity: 1; transform: translateY(-50%) translateX(0); }
   .ss-deck-count {
     position: fixed; right: max(20px, 2.4vw); bottom: 26px; z-index: 60;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 2.5px; color: rgba(245,242,237,.38);
+    font-family: var(--sf);
+    font-size: 10.5px; font-weight: 590; letter-spacing: .05em; color: rgba(245,242,237,.38);
     opacity: 0; transition: opacity .5s var(--ease-out);
   }
   .ss-deck-count.on { opacity: 1; }
@@ -976,10 +1052,6 @@ const GLOBAL_CSS = `
     html, body { cursor: grab; }
     #ss-cursor-dot, #ss-cursor-ring { display: none !important; }
     .ss-hero-bg { object-position: 78% 5% !important; }
-    /* about page font sizing on tablet */
-    .ss-about-page .ss-about-subtitle { font-size: 8px !important; }
-    .ss-about-page h2 { font-size: clamp(56px, 7vw, 120px) !important; }
-    .ss-about-page p { font-size: 15px !important; }
     /* close button fix on mobile */
     .ss-media-viewer > button:first-child {
       position: static !important;
@@ -1038,17 +1110,6 @@ const GLOBAL_CSS = `
     /* contact page text sizing on mobile */
     .ss-contact-heading { font-size: clamp(90px,12vw,200px) !important; }
     .ss-contact-description { font-size: clamp(22px,4vw,36px) !important; }
-    /* about page font sizing on mobile */
-    .ss-about-page .ss-about-subtitle { font-size: 6px !important; }
-    .ss-about-page h2 { font-size: clamp(42px, 5vw, 90px) !important; }
-    .ss-about-page p { 
-      font-size: 13px !important; 
-      line-height: 1.4 !important;
-      margin-top: 8px !important;
-    }
-    .ss-about-text-column { padding-top: 100px !important; }
-    /* reduce about page image cropping on mobile */
-    .ss-about-photo { object-position: center 25% !important; }
   }
 
   /* Ensure pages extend behind safe areas on all devices */
@@ -1083,8 +1144,7 @@ const GLOBAL_CSS = `
      NOTE the comment above carries no backticks on purpose. GLOBAL_CSS is a template
      literal, so one backtick anywhere in here ends the string and breaks the file. */
   html {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-      "SF Pro Text", "Inter", system-ui, sans-serif;
+    font-family: var(--sf);
   }
   button, input, select, textarea, optgroup { font-family: inherit; }
   /* The Apple pass also pulled the two big display headings to -0.02em and 700, which
@@ -1093,6 +1153,129 @@ const GLOBAL_CSS = `
      (they carry their own, 4px and 5px) and Bebas ships one weight, so 700 bought
      nothing and the negative tracking ran the letters into each other. Removed rather
      than retuned, because each heading already states what it wants inline. */
+  /* ── ABOUT BENTO ── Apple's spec-page tile grid. Four columns so a 2-wide tile reads as
+     wide rather than as half the row, and a fixed row height so the tiles are a GRID and not
+     a set of boxes that each shrink to their own text. It sits on the cream ground, so its
+     surfaces are a shade off it rather than the dark page's raised greys. */
+  .ss-bento {
+    margin-top: clamp(20px, 3.4vh, 34px);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: clamp(58px, 8vh, 74px); gap: 8px;
+    max-width: 480px;   /* the same measure the paragraphs above it are set to */
+  }
+  .ss-bento > div {
+    background: rgba(6,6,6,.035);
+    border: 1px solid rgba(6,6,6,.10);
+    border-radius: 12px; padding: 10px 12px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: transform .5s var(--ease-out), border-color .5s var(--ease-out),
+                background .5s var(--ease-out);
+  }
+  .ss-bento > div:hover {
+    transform: translateY(-3px);
+    border-color: rgba(6,6,6,.2); background: rgba(6,6,6,.055);
+  }
+  .ss-bento .k {
+    font-size: 9.5px; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; color: rgba(6,6,6,.45);
+  }
+  .ss-bento .v {
+    font-size: 14px; font-weight: 600; letter-spacing: -.015em; color: #060606;
+    line-height: 1.2;
+  }
+  /* The tiles are all b-wide now, i.e. two of the four tracks, so the tools lay out
+     2 x 2. The .v.big and .b-tall rules went with the 15.9M tile they were written for.
+     No backticks in here: GLOBAL_CSS is a template literal and one ends the string. */
+  .ss-bento .b-wide { grid-column: span 2; }
+  /* Under 900 the About page stacks and the column narrows past four tracks. */
+  @media (max-width: 900px) { .ss-bento { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-height: 780px) { .ss-bento { grid-auto-rows: 54px; gap: 6px; } }
+
+  /* == ABOUT STACKS UNDER 768, AND THAT REPLACES SHRINKING THE TYPE ==================
+     The grid was a flat 1fr 1fr at EVERY width, so the copy column is half the window
+     less its own 8vw + 60px gutters, and on a phone that is nothing: measured at 390 the
+     paragraphs, the h2 and the bento were all rendering 172px wide, about 25 characters
+     a line. Three separate media blocks had answered that by shrinking the words, 15px
+     at 768, then 13px on a 1.4 line at 640, with the eyebrow taken down to 6px and the
+     h2 to 42. That is not a fix. A narrow measure is not made readable by setting it
+     smaller, it is made worse, and 6px is not a size any type is read at. All three
+     blocks are deleted rather than re-tuned.
+     Stacked, the portrait takes the top of the screen and the copy runs the full width
+     beneath it, bounded by the 480px maxWidth the paragraphs already carry. The measure
+     goes 172 -> 342 at 390, and the body goes back to the 17px the desktop page sets, so
+     the phone reads the same text at the same size as the laptop instead of a squinting
+     version of it.
+     PHOTO FIRST, and by grid order rather than by moving it in the DOM: an About page
+     should open on the person, while the source order stays the wide layout's reading
+     order (copy left, portrait right) for anything reading the document linearly.
+     THE PAGE HAS TO BE ABLE TO SCROLL, and this is the half that would have failed
+     silently. Every page root here is position:absolute inset:0 with overflow:hidden,
+     which is right while the layout is two full-height columns and truncates the moment
+     it is not: stacked content taller than the viewport is not scrolled to, it is cut
+     off. So the root takes overflow-y:auto, the grid gives up height:100% for a
+     min-height, and the text column gives up both its overflow:hidden and its
+     justify-content:center, since there is now more copy than screen and centring it
+     would push the top of it off. All four are INLINE styles, hence the !important.
+     The bento is held at four tracks here, overriding the 900px rule directly above:
+     that rule takes it to two, which with every tile spanning two tracks is one tile per
+     row and four tall boxes down the phone. Four tracks keeps the 2 x 2.
+     THE SECOND QUERY IS THE LANDSCAPE PHONE, and it clips worse than the portrait one
+     ever did. A turned phone is wider than 768 and so misses the first query entirely,
+     while being far too SHORT for a full height column: measured, the copy overran its
+     own box by 230px at 844x390 and 140 at 932x430, with the bento's bottom edge 198px
+     past the column at the first of them, all of it silently cut because the column is
+     overflow:hidden and the page above it does not scroll. 620 is the same short screen
+     height the homepage deck already stands down at; the 1100 keeps it off a laptop. */
+  @media (max-width: 768px), (max-width: 1100px) and (max-height: 620px) {
+    .ss-about-page { overflow-y: auto !important; overflow-x: hidden !important; }
+    .ss-about-grid {
+      grid-template-columns: 1fr !important;
+      grid-auto-rows: min-content;
+      height: auto !important; min-height: 100%;
+    }
+    .ss-about-photo-col { order: -1; height: 46vh; min-height: 220px; }
+    .ss-about-photo { object-position: center 0% !important; }
+    .ss-about-text-column {
+      justify-content: flex-start !important;
+      overflow: visible !important;
+      padding: 34px 24px 72px 24px !important;
+    }
+    .ss-about-page p { font-size: 17px !important; line-height: 1.55 !important; }
+    /* The base clamp is 5.2vw, which is tuned for a HALF width column and pins to its 44px
+       floor everywhere under 846. Against the full width column that is small: 11vw runs
+       48 at 390 up to 72 at 768, and "About Me" sets about 220px into 342 and 330 into 720,
+       so it fills its measure at both ends without ever wrapping. */
+    .ss-about-page h2 { font-size: clamp(48px, 11vw, 72px) !important; }
+    .ss-bento { grid-template-columns: repeat(4, 1fr) !important; }
+  }
+
+  /* ── SPEC BAND (Contact) ── hairline dividers and no boxes, which is what keeps it a
+     BAND rather than four more cards on a page that already has three rows of them. The
+     1px gap over a lined background draws every divider, inner and outer, from one rule. */
+  .ss-spec {
+    margin-top: clamp(28px, 5vh, 56px);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: rgba(245,242,237,.14);
+    border-top: 1px solid rgba(245,242,237,.14);
+    border-bottom: 1px solid rgba(245,242,237,.14);
+  }
+  .ss-spec > div { background: #060606; padding: clamp(16px, 2.6vh, 26px) 8px; }
+  .ss-spec dd {
+    margin: 0; font-size: clamp(22px, 2.9vw, 38px); font-weight: 700;
+    letter-spacing: -0.03em; line-height: 1; color: var(--white);
+    font-variant-numeric: tabular-nums;
+  }
+  .ss-spec dd i { font-style: normal; font-size: .48em; color: var(--sky); margin-left: 2px; }
+  .ss-spec dt {
+    margin-top: 9px; font-size: 10.5px; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--mid);
+  }
+  /* Four across needs about 140px a column to hold "Triangles a frame" on two lines. */
+  @media (max-width: 620px) {
+    .ss-spec { grid-template-columns: repeat(2, 1fr); }
+    .ss-spec dt { font-size: 9.5px; }
+  }
+
   /* smooth, rounded surfaces instead of sharp corners */
   .ss-card {
     border-radius: 22px !important;
@@ -1131,9 +1314,8 @@ const GLOBAL_CSS = `
   /* Work page: hover "View" cue on cards + CTA link */
 
   /* asset titles: rounded "iPhone bubble" font (SF Pro Rounded) */
-  .ss-asset-title {
-    font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", -apple-system, system-ui, sans-serif;
-  }
+  /* was SF Pro Rounded, the iMessage bubble face. One family means one family. */
+  .ss-asset-title { font-weight: 590; letter-spacing: -0.01em; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -1232,6 +1414,8 @@ export default function App() {
   const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const pageIdx = PAGE_ORDER.indexOf(page);
+  /* About is the one page on a light ground, so its bar frosts light with dark type. */
+  const lightPage = page === "about";
   const cooldown = useRef(false);
   const hover = useCursorHover();
 
@@ -1385,6 +1569,19 @@ export default function App() {
 
       {/* ── NAV ─────────────────────────────────────────────── */}
       <nav
+        /* ── NO BAR. THE LINKS FLOAT ON THE PAGE (user, 2026-09-09, who did not want the
+           header space at all). This deletes the frosted glass pane, the ground it painted,
+           its hairlines and its shadow, the `scrolled` / `frosted` state that switched it on
+           past the top of Home, and the `ss-nav-light` thickening the stacked About needed.
+           WHAT THAT GIVES BACK IS THE PROBLEM THE BAR EXISTED TO SOLVE: with no ground of its
+           own the type is legible only against whatever pixel happens to be under it, and
+           this site has four different grounds up there (a black portrait, a pale aerial, a
+           cream copy column and, stacked, a photograph of dark hair and a black jacket).
+           It is NOT solved by going back to `mix-blend-mode: difference`, which cancels
+           toward mid grey (exact at 127.5, the trap the Realm's cursor documents) and put
+           CONTACT at about 2.3:1 over the studio wall's vignette. It is solved by giving the
+           GLYPHS their own separation instead of the bar: see the halo on NavLink, which is
+           the only thing now standing between the type and the picture. */
         style={{
           position: "fixed", top: 0, left: 0, right: 0,
           zIndex: 10000,
@@ -1393,29 +1590,18 @@ export default function App() {
           paddingBottom: "28px",
           paddingLeft: "max(48px, calc(48px + env(safe-area-inset-left)))",
           paddingRight: "max(48px, calc(48px + env(safe-area-inset-right)))",
-          // ── ABOUT'S NAV FOLLOWS THE PHOTO'S CROP, NOT THE PAGE (user, 2026-09-02).
-          // It paints solid black over a `normal` blend, which is right for the backdrop the WIDE
-          // layout puts behind it: the photo column starts at 50% and the nav lands on the pale
-          // studio wall behind Shyon's head. The photo is `object-fit: cover`, so narrowing the
-          // window crops it to the dark hair and jacket instead, and there black on black was
-          // effectively invisible: measured at 768 and 390, WORK / ABOUT / CONTACT all but
-          // disappeared. Under 1024 it therefore joins every other page on `difference`, which
-          // resolves light over that dark crop.
-          // WHY NOT `difference` EVERYWHERE, which would drop the special case: difference
-          // CANCELS toward mid grey (the same trap the Realm's cursor documents, exact at 127.5),
-          // and the studio wall's vignette behind the wide layout's nav sits right in that zone.
-          // Rendered at 1024 and 1512 that put CONTACT at roughly 2.3:1 against its backdrop where
-          // the approved black gives 8.6:1. So each layout keeps the treatment that measures best
-          // for what is actually behind it, and the approved wide look is untouched.
-          mixBlendMode: page === "about" && isDesktop ? "normal" : "difference",
+          /* The bar is gone, so the element must not swallow clicks across the whole width of
+             the page: it is a full-width fixed box with nothing drawn in most of it, and the
+             deck under it is scrolled and dragged. Only the buttons take the pointer. */
+          pointerEvents: "none",
         }}
       >
         <div style={{ visibility: "hidden" }} />
-        <ul style={{ display: "flex", gap: 40, listStyle: "none" }}>
+        <ul style={{ display: "flex", gap: 40, listStyle: "none", pointerEvents: "auto" }}>
           {PAGE_ORDER.map(p => (
             <li key={p}>
                 <NavLink label={p.charAt(0).toUpperCase() + p.slice(1)} active={page === p} onClick={() => navigate(p)}
-                currentPage={page} wideAbout={page === "about" && isDesktop} />
+                onLight={lightPage} />
             </li>
           ))}
         </ul>
@@ -1428,7 +1614,6 @@ export default function App() {
           transform: "translateY(-50%)",
           zIndex: 400,
           display: "flex", flexDirection: "column", gap: 12,
-          mixBlendMode: page === "about" && isDesktop ? "normal" : "difference",   // same reason as the nav
         }}
       >
         {PAGE_ORDER.map((p) => (
@@ -1439,8 +1624,9 @@ export default function App() {
             aria-label={p}
             style={{
               width: 10, height: 10, borderRadius: "50%",
-              border: "1px solid rgba(245,242,237,0.4)",
-              background: page === p ? "var(--white)" : "transparent",
+              // the dots lost the blend with the nav, so they take the page's own tone
+              border: `1px solid ${lightPage ? "rgba(20,17,11,.42)" : "rgba(245,242,237,.4)"}`,
+              background: page === p ? (lightPage ? "#14110b" : "var(--white)") : "transparent",
               transform: page === p ? "scale(1.5)" : "scale(1)",
               transition: "all 0.4s ease",
               cursor: "none",
@@ -1483,24 +1669,43 @@ export default function App() {
 /* ─────────────────────────────────────────────────────────────
    NAV LINK
 ───────────────────────────────────────────────────────────── */
-function NavLink({ label, active, onClick, currentPage, wideAbout }: { label: string; active: boolean; onClick: () => void; currentPage?: string; wideAbout?: boolean }) {
+/* `onLight` is About, the one page whose ground is cream. The old `wideAbout` /
+   `currentPage` pair is gone with the blend: the bar now paints its own ground, so an
+   item's colour follows THE PAGE rather than the layout, and the dimming that had to be
+   switched off under the blend (0.55 of a near-black reads as washed-out grey) is safe
+   again, because the inactive colour is now stated outright instead of produced. */
+function NavLink({ label, active, onClick, onLight }: { label: string; active: boolean; onClick: () => void; onLight?: boolean }) {
   const hover = useCursorHover();
-  // `wideAbout` is About in the WIDE layout, the one place the nav is painted rather than blended
-  // (see the nav's own note). Everywhere else it is white through `difference`. About also does
-  // not DIM its inactive items: elsewhere the page behind is dark, so 0.55 of the near-white the
-  // blend produces still reads, while on About the backdrops are light and 0.55 of near-black
-  // measured as a washed-out grey. The active item is still marked, by the page dots.
-  const isAboutPage = currentPage === "about";
   return (
     <button
       onClick={onClick}
       className="ss-tap"
       style={{
-        fontFamily: "'Space Mono', monospace",
-        fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
-        color: wideAbout ? "#000000" : "var(--white)", background: "none", border: "none",
-        cursor: "none", opacity: isAboutPage ? 1 : (active ? 1 : 0.55),
-        transition: "opacity 0.3s ease, color 0.3s ease",
+        fontFamily: "var(--sf)",
+        fontSize: 12, fontWeight: 590, letterSpacing: "0.05em", textTransform: "uppercase",
+        color: onLight ? "#14110b" : "var(--white)", background: "none", border: "none",
+        /* 0.72 AND NOT THE 0.55 THE BLEND USED, and the number is measured rather than
+           chosen. Against a produced colour the old value was as dim as it could be; against
+           the bar's stated fill it has to clear 4.5:1 on the real composited pixels, and at
+           0.58 the three dim items measured 4.38 to 4.40 over the opener and 3.87 to 3.98 on
+           About's cream. scratchpad/nav_contrast.cjs samples the rendered frame on all four
+           pages; re-run it if this number moves. */
+        cursor: "none", opacity: active ? 1 : 0.86,
+        /* ── THE HALO IS WHAT THE BAR USED TO BE. With no ground behind the nav the only
+           thing separating a glyph from the picture is the glyph itself, so each one carries
+           a soft shadow in the OPPOSITE tone to its own: dark under the white type, light
+           under About's near-black. Two radii, not one. The tight 2px pass is the edge that
+           keeps the letterform crisp against a busy crop; the wide 16px pass is a haze that
+           lifts the local ground away from the type, and it is the one that carries the two
+           real failures, white over the opener's pale aerial and dark over the stacked
+           About's jacket. Measured on the composited frame by scratchpad/nav_contrast.cjs;
+           a halo raises the ratio there for the same reason it works by eye, because the
+           script reads the ground immediately around the glyphs.
+           The dim opacity came up from 0.72 with the fill it was measured against gone. */
+        textShadow: onLight
+          ? "0 1px 2px rgba(255,253,249,.95), 0 0 12px rgba(255,253,249,.92)"
+          : "0 1px 2px rgba(0,0,0,.92), 0 0 12px rgba(0,0,0,.95)",
+        transition: "opacity .3s var(--ease-out), color .45s var(--ease-out), text-shadow .45s var(--ease-out)",
         position: "relative",
       }}
       {...hover}
@@ -1626,9 +1831,10 @@ function HeroName({ isMobile }: { isMobile: boolean }) {
       initial="hidden"
       animate="show"
       style={{
-        // Bebas is condensed, so the same point size covers far less width than the
-        // sans this replaced: the ceiling goes 160 to 200 and the vw term with it.
-        fontSize: isMobile ? "clamp(58px,9vw,92px)" : "clamp(84px,12.5vw,200px)",
+        // SF is NOT condensed and it has descenders, so the Bebas sizes do not carry
+        // over: 200px of SF on a 0.86 line put "Shyon" into "Shiri". The ceiling comes
+        // back to 148 and the vw term with it.
+        fontSize: isMobile ? "clamp(46px,7.4vw,74px)" : "clamp(68px,9.4vw,148px)",
       }}
     >
       {NAME_LINES.map((word) => (
@@ -1810,6 +2016,11 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               the town itself, and the figure IS the subject of the copy. */}
           <Slide id="why" label="Why I made it" stagger={0.2}>
             <div className="ss-quiet">
+              {/* STILL `pair`. The stacking that the two column layout needs is done in CSS
+                  at the same breakpoint, NOT by dropping this prop: a stacked chapter is
+                  taller than a side by side one, and dropping it here made the slide 793px
+                  tall inside a 700px viewport at 1024 x 700, which under mandatory snapping
+                  is a screen whose bottom cannot be reached. See .ss-quiet. */}
               <StoryChapter
                 pair
                 kicker={"Why I\nmade it"}
@@ -1906,13 +2117,13 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 style={{
                   maxWidth: 430, fontSize: 14, lineHeight: 1.6,
                   color: "rgba(245,242,237,.62)",
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontFamily: "var(--sf)",
                 }}
               >
                 <span style={{
                   display: "block", marginBottom: 6,
-                  fontFamily: "'Space Mono', monospace", fontSize: 10,
-                  letterSpacing: 2, textTransform: "uppercase", color: "var(--sky)",
+                  fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
+                  letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--sky)",
                 }}>
                   Desktop only
                 </span>
@@ -1926,8 +2137,8 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               {...hover}
               className="ss-tap"
               style={{
-                fontFamily: "'Space Mono', monospace",
-                fontSize: 11, letterSpacing: 2, textTransform: "uppercase",
+                fontFamily: "var(--sf)",
+                fontSize: 11.5, fontWeight: 590, letterSpacing: "0.05em", textTransform: "uppercase",
                 color: "rgba(245,242,237,.72)", textDecoration: "underline",
                 textUnderlineOffset: "4px", cursor: "none",
                 display: "inline-block",   // ss-tap needs a box to hang its hit area on
@@ -2056,14 +2267,22 @@ function Words({ text, variant, stagger = 0.03, className, style }: {
    differently.
    The frame panel is overflow:hidden, so a still that slides or is clipped moves inside
    its own window rather than spilling over the border. */
-// Quantizes a tween into n held intervals stepping 0 -> 1. Dividing by n-1 (not n) is
-// load bearing: with /n the value only reaches 1 at exactly t === 1, a single instant that
-// keyframe sampling skips, which left every still clipped a fifth short of the top forever.
-const stepEase = (n: number) => (t: number) => Math.min(1, Math.floor(t * n) / (n - 1));
-
-const shotCourses: Variants = {                   // 03 How I made it: uncovered bottom to top in five held
-  hidden: { clipPath: "inset(100% 0% 0% 0%)" },   // courses, the way a build goes on course by course
-  show: { clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 1.05, ease: stepEase(6) } },
+/* THE STEPPED REVEAL IS GONE (user, 2026-09-09: "i still have that glitch effect style
+   for pictures that load in"). `stepEase(n)` QUANTIZED a tween into n held intervals, so
+   a picture did not arrive, it jumped four to six times on the way in. It was built on
+   purpose, as the deck's echo of a LEGO build going on course by course, and it is the
+   single least Apple thing the page did: their whole vocabulary is one continuous move.
+   It drove four things and all four are now smooth: every deck picture, the closer's
+   figures, the map's pins and the map's card.
+   AND THE WIPE ITSELF WENT WITH IT, not just its stepping. A clip revealing bottom to
+   top is a curtain, which is a stage gesture; smoothing it would have left a smooth
+   curtain. A picture on an Apple page fades and settles, so that is what this does. It
+   moves on `y` rather than `scale` deliberately: `.ss-plate-shot` and `.ss-cell-shot`
+   crop their images with `overflow:hidden`, and scaling a wrapper inside a crop pushes
+   the picture against its own frame. A transform costs no layout either way. */
+const shotReveal: Variants = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.85, ease: APPLE_EASE } },
 };
 
 /* A PLATE: a still with no border, no head strip and no caption box. The frame chrome was
@@ -2074,7 +2293,7 @@ function Plate({ scene, src, caption }: { scene: string; src: string; caption: s
   return (
     <motion.figure className="ss-plate" variants={sbBox}>
       <motion.span className="ss-plate-label" variants={sbHead}>{scene}</motion.span>
-      <motion.div className="ss-plate-shot" variants={shotCourses}>
+      <motion.div className="ss-plate-shot" variants={shotReveal}>
         <img src={src} alt={scene} loading="lazy" decoding="async" />
       </motion.div>
       <motion.figcaption variants={sbCap}>{caption}</motion.figcaption>
@@ -2120,7 +2339,7 @@ function WorkSheet() {
             onFocus={() => setAt(i)}
             aria-label={c.scene}
           >
-            <motion.span className="ss-cell-shot" variants={shotCourses}>
+            <motion.span className="ss-cell-shot" variants={shotReveal}>
               <img src={c.src} alt={c.scene} loading="lazy" decoding="async" />
             </motion.span>
             <span className="ss-cell-label">{c.scene}</span>
@@ -2143,9 +2362,9 @@ const REALM_FIGS = [
   { n: "35", unit: "", label: "Models loaded" },
   { n: "7", unit: "min", label: "Full day cycle" },
 ];
-const sbFig: Variants = {                         // a figure lands in held steps, like a piece
+const sbFig: Variants = {                         // a figure rises into place
   hidden: { opacity: 0, y: 14 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: stepEase(4) } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: APPLE_EASE } },
 };
 
 /* ── THE TOWN MAP ────────────────────────────────────────────────────────────────────
@@ -2199,15 +2418,16 @@ const REALM_MAP = [
     line: "Art direction, promotional video and campaign photography for the NABU streetwear brand." },
 ];
 
-/* the pin snaps on in held steps instead of easing, because everything in this world
-   arrives by being pressed onto a plate */
+/* The pin grows in rather than snapping on. It starts at 0.55 and not at 0: a dot that
+   begins at nothing has no size to read at its first frames and flickers into being,
+   which was the same stutter the stepping gave everything else. */
 const sbPin: Variants = {
-  hidden: { opacity: 0, scale: 0 },
-  show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: stepEase(4) } },
+  hidden: { opacity: 0, scale: 0.55 },
+  show: { opacity: 1, scale: 1, transition: { duration: 0.55, ease: APPLE_EASE } },
 };
-const sbCard: Variants = {                        // and the card builds course by course
-  hidden: { opacity: 0, clipPath: "inset(100% 0% 0% 0%)" },
-  show: { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 0.5, ease: stepEase(5) } },
+const sbCard: Variants = {                        // and the card settles up under it
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: APPLE_EASE } },
 };
 
 function RealmMap() {
@@ -2290,7 +2510,13 @@ function RealmMap() {
           >
             <img src={shown.src} alt={shown.name} decoding="async" />
             <div className="ss-map-card-body">
-              <span className="ss-map-card-cat">{shown.cat}</span>
+              {/* THE BLUE CATEGORY LINE IS GONE FROM THE CARD (user, 2026-09-09). The card
+                  already opens from a pin that carries the category as its own label, so
+                  printing it again three pixels above the structure's name was the same
+                  word twice in one glance, in the loudest colour on the page.
+                  `cat` ITSELF STAYS in REALM_MAP: it is what the pin's `.ss-map-tag` shows
+                  on hover and half of the pin's aria-label, so the category is still
+                  announced and still readable, just not repeated inside the card. */}
               <span className="ss-map-card-name">{shown.name}</span>
               <p>{shown.line}</p>
             </div>
@@ -2333,6 +2559,84 @@ function Slide({ id, label, className, stagger, children }: {
    rest of the slide's height goes to the pictures. Stacked, the two together run past half
    the viewport on a laptop and the stills have nowhere left to go.
    `children` is the one thing that hangs off a chapter and is not type: 04's way in. */
+/* ── HOW FAR THIS ELEMENT HAS COME UP THE SCREEN, 0 to 1 ────────────────────────────
+   The deck is SNAP LOCKED, so there is no scrolling "within" a slide to scrub against:
+   each slide is one screen and the scroller settles on it. What there IS, is the snap
+   ITSELF. A snap animates the scroll position over a few hundred milliseconds, so an
+   element's distance up the viewport is a real, continuous, REVERSIBLE signal during
+   exactly the moment a slide is arriving. That is what this reads.
+   So the copy lights up as the slide comes in and dims again as it leaves, both driven by
+   where you actually are rather than by an entrance that fires once and is spent. Scroll
+   up and it runs backwards, which is the whole point and the thing the deck could not do.
+   It listens on the HOME SCROLLER and not on window: the page is `position:absolute;
+   inset:0` and scrolls inside its own element, so window scroll events never fire. */
+function useRiseProgress(ref: React.RefObject<HTMLElement | null>) {
+  const [p, setP] = useState(REDUCE ? 1 : 0);
+  useEffect(() => {
+    if (REDUCE) return;
+    const el = ref.current;
+    if (!el) return;
+    const scroller = el.closest(".ss-home-scroll") as HTMLElement | null;
+    let raf = 0;
+    const read = () => {
+      raf = 0;
+      const vh = window.innerHeight || 1;
+      const top = el.getBoundingClientRect().top;
+      /* 1 when the block has risen to 58% of the screen, 0 while it is still below 92%.
+         The window is deliberately narrow: a snap crosses it in one move, so the copy
+         resolves as the slide lands rather than trailing behind it. */
+      const raw = (0.92 - top / vh) / (0.92 - 0.58);
+      setP(raw < 0 ? 0 : raw > 1 ? 1 : raw);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(read); };
+    (scroller || window).addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    read();
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      (scroller || window).removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [ref]);
+  return p;
+}
+
+/* Apple sets a paragraph dim and brightens it word by word against the scroll. Each word
+   gets its own slice of the progress with a little overlap, so the light travels through
+   the sentence instead of the whole block stepping up together.
+   IT IS A COLOUR RAMP, NOT AN OPACITY ONE. Opacity would fade the words against whatever
+   is behind them, and on the deck that is a photograph on two of the slides; ramping the
+   colour keeps the text opaque and lets it come up out of the page's own grey.
+   THE SEPARATOR IS A PLAIN SPACE, NOT U+00A0, and this is the opposite of the rule that
+   governs `Words`. There the spans are inline-BLOCK, so a line may break between two boxes
+   whatever sits inside them, and the trailing space has to be non-breaking or it collapses
+   away at the end of its box. These spans are plain inline, so an NBSP between words is
+   exactly what it says: the paragraph would never wrap and would run off the slide. */
+function LitWords({ text, p }: { text: string; p: number }) {
+  const words = text.split(" ");
+  const n = words.length;
+  return (
+    <>
+      {words.map((w, i) => {
+        const start = (i / n) * 0.82;
+        const k = Math.min(1, Math.max(0, (p - start) / 0.2));
+        return (
+          <span
+            key={w + i}
+            style={{
+              color: `rgba(245,242,237,${(0.22 + 0.56 * k).toFixed(3)})`,
+              transition: "color .12s linear",
+            }}
+          >
+            {w}
+            {i < n - 1 ? " " : ""}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
 function StoryChapter({ kicker, body, pair, children }: {
   kicker: string; body: string; pair?: boolean; children?: React.ReactNode;
 }) {
@@ -2340,19 +2644,25 @@ function StoryChapter({ kicker, body, pair, children }: {
   // size, leading and colour come from `.ss-chapter-body`, not from an inline style: an
   // inline style beats a stylesheet, and the body's size has to be able to give way on a
   // short or narrow window for the slide to keep fitting its own screen.
-  const bodyEl = <Words text={body} variant={sbWordIn} stagger={0.016} />;
+  // THE BODY IS NO LONGER A ONE SHOT ENTRANCE. `Words` staggered it in once on arrival;
+  // it is now driven by where the slide actually is, so it also runs backwards. The
+  // kicker keeps its entrance: it is the title, and a title that dims as you scroll away
+  // from it reads as broken rather than as responsive.
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const p = useRiseProgress(bodyRef);
+  const bodyEl = <LitWords text={body} p={p} />;
   if (pair) {
     return (
       <div className="ss-chapter-head">
         <div>{kickerEl}</div>
-        <div className="ss-chapter-body">{bodyEl}</div>
+        <div className="ss-chapter-body" ref={bodyRef}>{bodyEl}</div>
       </div>
     );
   }
   return (
     <div className="ss-chapter-stack">
       {kickerEl}
-      <div className="ss-chapter-body">{bodyEl}</div>
+      <div className="ss-chapter-body" ref={bodyRef}>{bodyEl}</div>
       {children}
     </div>
   );
@@ -2708,7 +3018,7 @@ function AboutPage() {
       style={{ position: "absolute", inset: 0, background: "var(--cream)", overflow: "hidden" }}
       className="ss-about-page"
     >
-      <div style={{
+      <div className="ss-about-grid" style={{
         display: "grid", gridTemplateColumns: "1fr 1fr",
         height: "100%", width: "100%",
       }}>
@@ -2723,36 +3033,45 @@ function AboutPage() {
              was ALREADY 30px over before any of this, which nothing had caught.) 6vh gives
              the copy back 64 to 76px exactly where the screen is short, and resolves to the
              original 80px at 1333px of height and up, so nothing changes on a full display. */
-          padding: window.innerWidth <= 640 ? "60px 3vw 60px 3vw" : "clamp(32px, 6vh, 80px) 60px clamp(32px, 6vh, 80px) 8vw",
+          /* The narrow padding used to be an inline `window.innerWidth <= 640` ternary, which
+             is read ONCE at render and never again, so a rotate or a resize kept whichever
+             branch happened to be true at mount. It lives in the stylesheet now, where the
+             browser re-evaluates it, and the stacked layout under 768 sets its own. */
+          padding: "clamp(32px, 6vh, 80px) 60px clamp(32px, 6vh, 80px) 8vw",
           overflow: "hidden",
         }}>
           <motion.div
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: APPLE_EASE }}
             className="ss-about-subtitle"
-            style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: 4, textTransform: "uppercase", color: "var(--accent)", marginBottom: 16 }}
+            style={{ fontFamily: "var(--sf)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 14 }}
           >
             Designer &amp; Maker
           </motion.div>
 
-          {/* THE NAME, NOT THE WORD "ABOUT". This is the largest object on the page and it
-              used to spend itself on the same word as the nav item that was just clicked,
-              which is a label rather than information: the nav has already said which page
-              this is. Meanwhile "Shyon Shiri" appeared nowhere in the rendered text of his
-              own About page, only in the photo's alt attribute.
-              TWO HAND SET LINES, and the break is not cosmetic. The name is 11 characters
-              against "About"'s 5, so at the old clamp(96,12vw,180) it measured wider than
-              the text column at every width the page is built for and would have run under
-              the photo. Broken, the longest line is 5 characters, which is exactly what the
-              old size was scaled for; the max comes down to 132 so the two lines together
-              (0.92 leading, so 243px) still leave the copy its room at a 900px viewport.
-              The 768 and 640 overrides below still apply and are unchanged. */}
+          {/* "ABOUT ME", NOT THE NAME (user, 2026-09-09), which REVERSES the note that
+              stood here: this heading read "Shyon Shiri" on two hand set lines, on the
+              argument that a page should not spend its largest object on the same word as
+              the nav item just clicked. That is overruled. The heading is the label now.
+              ONE LINE, and the old two line break goes with the name. It existed because
+              "Shyon Shiri" is 11 characters and measured wider than the text column at
+              every width the page is built for. "About Me" is 8, and at the widest size
+              here (5.2vw, so 78.6px at 1512) it sets about 346px into a column of roughly
+              575px, so it fits unbroken. It still carries its own space, so a viewport
+              narrow enough to need it wraps to "About" / "Me" on its own rather than
+              overflowing. It needs NO narrow override any more: the 768 and 640 rules that
+              took it to 56 and then 42 were paying for a 172px column, and the stacked
+              layout gives it the full width, where the clamp floor of 44px sets about 200px
+              into 342 at a 390 phone.
+              NOTE this leaves "Shyon Shiri" out of the rendered text of the About page
+              again, which the old note flagged. It is still in the document title, the
+              hero on the homepage and the photo's alt text. */}
           <motion.h2
             initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: APPLE_EASE }}
-            style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(64px,7.4vw,124px)", letterSpacing: 4, lineHeight: 0.92, color: "#060606", marginBottom: 16 }}
+            style={{ fontFamily: "var(--sf)", fontSize: "clamp(44px,5.2vw,88px)", fontWeight: 700, letterSpacing: "-0.035em", lineHeight: 1.03, color: "#060606", marginBottom: 18 }}
           >
-            Shyon<br />Shiri
+            About Me
           </motion.h2>
 
           <motion.div
@@ -2793,17 +3112,53 @@ function AboutPage() {
                 The second paragraph is the only biography kept, and it earns its line by
                 explaining the thing the work would otherwise look scattered for: why a
                 graphic designer's portfolio also holds welding, hardware and a game engine. */}
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 300, lineHeight: 1.75, color: "#3a3a3a", maxWidth: 480 }}>
+            <p style={{ fontFamily: "var(--sf)", fontSize: 17, fontWeight: 400, lineHeight: 1.55, letterSpacing: "-0.005em", color: "#3a3a3a", maxWidth: 480 }}>
               I'm a graphic designer and developer in the Bay Area, with a BA in Graphic Design from San Jose State, 2025. I take a project from identity through to a deployed site, so design, front end, and deployment are one job rather than three handoffs. I also evaluate multimodal AI systems against rubrics, writing the corrected ground truth where models fail.
             </p>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 300, lineHeight: 1.75, color: "#3a3a3a", maxWidth: 480, marginTop: 20 }}>
+            <p style={{ fontFamily: "var(--sf)", fontSize: 17, fontWeight: 400, lineHeight: 1.55, letterSpacing: "-0.005em", color: "#3a3a3a", maxWidth: 480, marginTop: 20 }}>
               Most of what I design ends up physical or interactive rather than sitting on a page. That is why the same portfolio holds 3D printed hardware enclosures, a welded steel sculpture, and a LEGO world running in this browser.
             </p>
           </motion.div>
+
+          {/* ── THE BENTO ── fills the space measured empty under the copy, and it is CONTENT
+              rather than padding: the page can now say WHAT HE WORKS IN without another
+              paragraph, which is the one thing the copy above deliberately stopped doing.
+              IT IS THE TOOLS AND NOTHING ELSE (user, 2026-09-09: most of this is not needed
+              on About, and the page said "running in this browser" twice). It shipped as
+              eight tiles and four of them were restatement, three of the four word for word:
+              · Based in / San Jose, California   -> paragraph 1, "in the Bay Area" and
+                "San Jose State" in the same sentence.
+              · Degree / BA 2025                 -> paragraph 1, "a BA in Graphic Design from
+                San Jose State, 2025".
+              · Open to / Full-time              -> the CONTACT page's availability line,
+                which is where an availability claim belongs.
+              · Running in this browser / 15.9M  -> the phrase ends paragraph 2 directly
+                above it, AND the figure is on two other pages: Contact's `SpecBand` and the
+                deck's closer, both of which draw it from `REALM_FIGS`. Three pages carrying
+                one number is the number meaning less on each of them, so About gives it up:
+                the closer earns it (it is the payoff of a slide about the build) and Contact
+                earns it (it is the page with nothing else to fill its last quarter).
+              What is left is the only fact set on this page that no paragraph here states
+              and no other page duplicates. Tiles are equal now because four peers ARE equal;
+              the unevenness was carrying the 15.9M tile and left with it. */}
+          <motion.div
+            className="ss-bento"
+            variants={bentoStagger}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.div className="b-wide" variants={bentoTile}><span className="k">3D</span><span className="v">Blender</span></motion.div>
+            <motion.div className="b-wide" variants={bentoTile}><span className="k">Engine</span><span className="v">Three.js</span></motion.div>
+            <motion.div className="b-wide" variants={bentoTile}><span className="k">Front end</span><span className="v">React</span></motion.div>
+            <motion.div className="b-wide" variants={bentoTile}><span className="k">Motion</span><span className="v">After Effects</span></motion.div>
+          </motion.div>
         </div>
 
-        {/* Photo column */}
+        {/* Photo column. Second in the DOM because that is the reading order on a wide
+            screen (copy left, portrait right); the stacked layout puts it FIRST with a grid
+            `order`, so the source order does not have to be fought over. */}
         <motion.div
+          className="ss-about-photo-col"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           transition={{ duration: 0.9, delay: 0.1 }}
           style={{ position: "relative", overflow: "hidden", background: "#1a1a1a" }}
@@ -2828,6 +3183,65 @@ function AboutPage() {
 /* ─────────────────────────────────────────────────────────────
    CONTACT PAGE
 ───────────────────────────────────────────────────────────── */
+/* ── THE SPEC BAND ──────────────────────────────────────────────────────────────────
+   Apple ends a page on hard numbers across a hairline row, no boxes. Here it fills the
+   bottom quarter of Contact, measured at 26% empty below the last link row.
+   THE FIGURES ARE THE ONES THE DECK'S CLOSER ALREADY CARRIES (`REALM_FIGS`), counted in
+   the live page rather than estimated, so nothing new is claimed and the two can never
+   drift apart.
+   The count runs on rAF against `performance.now()`, not a CSS transition: CSS cannot
+   interpolate the TEXT of a number. It eases out cubically so the value settles rather
+   than arriving, and it runs ONCE on mount, because this page has no scroll of its own
+   and so there is no arrival to observe. Reduced motion gets the final value outright. */
+function CountUp({ to, dec = 0 }: { to: number; dec?: number }) {
+  const [v, setV] = useState(REDUCE ? to : 0);
+  useEffect(() => {
+    if (REDUCE) return;
+    let raf = 0, t0: number | null = null;
+    const step = (t: number) => {
+      if (t0 === null) t0 = t;
+      const k = Math.min(1, (t - t0) / 1100);
+      setV(to * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [to]);
+  return <>{v.toFixed(dec)}</>;
+}
+
+function SpecBand() {
+  return (
+    <motion.dl
+      className="ss-spec"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, delay: 0.8, ease: APPLE_EASE }}
+    >
+      {REALM_FIGS.map((f) => (
+        <div key={f.label}>
+          <dd>
+            <CountUp to={parseFloat(f.n)} dec={f.n.includes(".") ? 1 : 0} />
+            {f.unit && <i>{f.unit}</i>}
+          </dd>
+          <dt>{f.label}</dt>
+        </div>
+      ))}
+    </motion.dl>
+  );
+}
+
+/* The tiles land one after another rather than as a block, on the site's one ease. The
+   delay clears the two paragraphs above them, which finish at 0.55 + 0.8. */
+const bentoStagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.045, delayChildren: 0.75 } },
+};
+const bentoTile: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: APPLE_EASE } },
+};
+
 function ContactPage() {
   const hover = useCursorHover();
 
@@ -2853,7 +3267,7 @@ function ContactPage() {
       {/* giant ghost word */}
       <div style={{
         position: "absolute", left: -30, bottom: "-12vh",
-        fontFamily: "'Bebas Neue', sans-serif",
+        fontFamily: "var(--sf)",
         fontSize: "clamp(220px, 34vw, 460px)", lineHeight: 0.8, letterSpacing: 6,
         color: "rgba(245,242,237,.05)", whiteSpace: "nowrap",
         filter: "blur(9px)",
@@ -2891,7 +3305,7 @@ function ContactPage() {
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.35, ease: APPLE_EASE }}
               className="ss-contact-heading"
-              style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(64px,9vw,128px)", letterSpacing: 5, lineHeight: 0.86, color: "var(--white)" }}
+              style={{ fontFamily: "var(--sf)", fontSize: "clamp(46px,6.2vw,96px)", fontWeight: 700, letterSpacing: "-0.038em", lineHeight: 1.02, color: "var(--white)" }}
             >
               Let's Work<span style={{ color: "var(--white)" }}>.</span>
             </motion.h2>
@@ -2900,7 +3314,7 @@ function ContactPage() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
             className="ss-contact-description"
-            style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: 300, fontSize: "clamp(18px,2vw,22px)", color: "var(--mid)", maxWidth: 280, textAlign: "right", marginBottom: 8 }}
+            style={{ fontFamily: "var(--sf)", fontWeight: 400, fontSize: "clamp(15px,1.5vw,18px)", lineHeight: 1.5, letterSpacing: "-0.005em", color: "var(--mid)", maxWidth: 300, textAlign: "right", marginBottom: 8 }}
           >
             Open to freelance, collaborations &amp; full-time roles.
           </motion.p>
@@ -2935,19 +3349,22 @@ function ContactPage() {
               }}
               {...hover}
             >
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: window.innerWidth <= 640 ? 10 : 12, letterSpacing: 2, color: "var(--sky)", width: 34, flexShrink: 0 }}>
+              <span style={{ fontFamily: "var(--sf)", fontSize: window.innerWidth <= 640 ? 11 : 12.5, fontWeight: 600, letterSpacing: "0.02em", fontVariantNumeric: "tabular-nums", color: "var(--sky)", width: 34, flexShrink: 0 }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: window.innerWidth <= 640 ? "clamp(18px,3vw,28px)" : "clamp(28px,4vw,40px)", letterSpacing: 2, color: "var(--white)", width: window.innerWidth <= 640 ? "auto" : 240, flexShrink: 0 }}>
+              <span style={{ fontFamily: "var(--sf)", fontSize: window.innerWidth <= 640 ? "clamp(15px,2.4vw,21px)" : "clamp(21px,2.8vw,30px)", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--white)", width: window.innerWidth <= 640 ? "auto" : 240, flexShrink: 0 }}>
                 {l.label}
               </span>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: window.innerWidth <= 640 ? 14 : 20, color: "var(--mid)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ fontFamily: "var(--sf)", fontSize: window.innerWidth <= 640 ? 13.5 : 17, fontWeight: 400, letterSpacing: "-0.005em", color: "var(--mid)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {l.value}
               </span>
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 18, color: "var(--sky)", flexShrink: 0 }}>→</span>
+              <span style={{ fontFamily: "var(--sf)", fontSize: 17, color: "var(--sky)", flexShrink: 0 }}>→</span>
             </a>
           ))}
         </motion.div>
+
+        {/* fills the 26% that was empty below the list */}
+        <SpecBand />
       </div>
     </motion.div>
   );
@@ -3023,8 +3440,8 @@ function WorkModal({ project, onClose, onMediaClick }: {
           style={{
             position: "absolute", top: 60, right: 20,
             background: "none", border: "none", cursor: "none",
-            fontFamily: "'Space Mono', monospace", fontSize: 10,
-            letterSpacing: 2, textTransform: "uppercase",
+            fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
+            letterSpacing: "0.06em", textTransform: "uppercase",
             color: "var(--mid)",
             transition: "color 0.3s ease",
             padding: "4px 8px",
@@ -3045,7 +3462,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
             <div style={{ fontSize: "clamp(36px,4.4vw,64px)", letterSpacing: "-0.02em", fontWeight: 700, lineHeight: 1, color: "var(--white)" }}>
               {project.title}
             </div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, color: "var(--sky)", marginTop: 8 }}>
+            <div style={{ fontFamily: "var(--sf)", fontSize: 15, fontWeight: 400, lineHeight: 1.5, letterSpacing: "-0.005em", color: "var(--sky)", marginTop: 10 }}>
               {project.id === "creative-projects" ? "A selection of projects that demonstrate my range across various creative disciplines and mediums." : project.id === "professional-services" ? "Client-focused work including UI/UX, web development, branding and marketing assets." : project.id === "nabu" ? "Design and creative direction for NABU, a streetwear brand that draws from Persian and Assyrian heritage." : "testing"}
             </div>
           </div>
@@ -3096,7 +3513,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
           <div style={{
             marginTop: 24,
             textAlign: "center",
-            fontFamily: "'Space Mono', monospace",
+            fontFamily: "var(--sf)",
             fontSize: 10,
             letterSpacing: 1,
             color: "var(--mid)",
@@ -3134,7 +3551,7 @@ function StudioAssetCard({ item, onClick }: { item: MediaItem; onClick: () => vo
       </div>
       <div className="ss-sbody">
         <div className="ss-asset-title" style={{ fontSize: 13, fontWeight: 600, color: "var(--white)", lineHeight: 1.25 }}>{item.title}</div>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, color: "var(--mid)", marginTop: 4 }}>{item.year}</div>
+        <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--mid)", marginTop: 4 }}>{item.year}</div>
       </div>
     </div>
   );
@@ -3190,7 +3607,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
         className="ss-tile-info"
       >
         <div className="ss-asset-title" style={{ fontSize: 14, color: "var(--white)", fontWeight: 600 }}>{item.title}</div>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, color: "var(--sky)", letterSpacing: 1, marginTop: 2 }}>{item.year}</div>
+        <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--sky)", marginTop: 2 }}>{item.year}</div>
       </div>
     </div>
   );
@@ -3236,8 +3653,8 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
           style={{
             position: "absolute", top: 100, right: 20,
             background: "none", border: "none", cursor: "none",
-            fontFamily: "'Space Mono', monospace", fontSize: 10,
-            letterSpacing: 2, textTransform: "uppercase",
+            fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
+            letterSpacing: "0.06em", textTransform: "uppercase",
             color: "var(--mid)", transition: "color 0.3s ease",
             padding: "4px 8px",
             zIndex: 3001,
@@ -3299,11 +3716,11 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
           <div className="ss-asset-title" style={{ fontSize: 64, letterSpacing: 0.5, lineHeight: 1.02, color: "var(--white)", marginBottom: 24, fontWeight: 600 }}>
             {item.title}
           </div>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, letterSpacing: 2, color: "var(--sky)", textTransform: "uppercase", marginBottom: 20 }}>
+          <div style={{ fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--sky)", textTransform: "uppercase", marginBottom: 20 }}>
             {item.year}
           </div>
           {item.desc && (
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, lineHeight: 1.7, color: "rgba(245,242,237,.75)", fontWeight: 300, marginBottom: 32 }}>
+            <p style={{ fontFamily: "var(--sf)", fontSize: 16, lineHeight: 1.55, letterSpacing: "-0.005em", color: "rgba(245,242,237,.75)", fontWeight: 400, marginBottom: 32 }}>
               {item.desc}
             </p>
           )}
@@ -3319,8 +3736,8 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
                   }}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
-                    fontFamily: "'Space Mono', monospace", fontSize: 10,
-                    letterSpacing: 2, textTransform: "uppercase",
+                    fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
+                    letterSpacing: "0.06em", textTransform: "uppercase",
                     color: "var(--sky)", background: "none", border: "none",
                     borderBottom: "1px solid var(--sky)", paddingBottom: 2,
                     cursor: "none", textDecoration: "none",
@@ -3342,8 +3759,8 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 marginTop: 28,
-                fontFamily: "'Space Mono', monospace", fontSize: 10,
-                letterSpacing: 2, textTransform: "uppercase",
+                fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
+                letterSpacing: "0.06em", textTransform: "uppercase",
                 color: "var(--sky)", textDecoration: "none",
                 borderBottom: "1px solid var(--sky)", paddingBottom: 2,
                 cursor: "none",
