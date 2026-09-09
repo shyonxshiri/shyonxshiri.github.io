@@ -1703,8 +1703,8 @@ function NavLink({ label, active, onClick, onLight }: { label: string; active: b
            script reads the ground immediately around the glyphs.
            The dim opacity came up from 0.72 with the fill it was measured against gone. */
         textShadow: onLight
-          ? "0 1px 2px rgba(255,253,249,.95), 0 0 12px rgba(255,253,249,.92)"
-          : "0 1px 2px rgba(0,0,0,.92), 0 0 12px rgba(0,0,0,.95)",
+          ? "0 0 2px rgba(255,253,249,1), 0 0 4px rgba(255,253,249,1), 0 0 10px rgba(255,253,249,1), 0 0 20px rgba(255,253,249,.9)"
+          : "0 0 2px rgba(0,0,0,.95), 0 1px 3px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,.95)",
         transition: "opacity .3s var(--ease-out), color .45s var(--ease-out), text-shadow .45s var(--ease-out)",
         position: "relative",
       }}

@@ -908,19 +908,27 @@ behind it.
   under it, and this site has four different grounds up there: a black portrait, a pale
   aerial, a cream copy column and, stacked, a photograph of dark hair and a black jacket.
   So each item carries a `text-shadow` in the OPPOSITE tone to its own type, dark under the
-  white, light under About's near-black. **Two radii, not one**: a tight 2px pass that keeps
-  the letterform crisp against a busy crop, and a 12px haze that lifts the local ground away
-  from the type. The haze is the one that carries the two real failures, white over the
-  opener's pale aerial and dark over the stacked About's jacket.
-  A halo raises the MEASURED ratio for the same reason it works by eye, because the script
-  reads the ground immediately around the glyphs: on the opener the dim items went 4.18 bare
-  (a fail) to **5.09** with it. It was three passes first, the third a 34px cloud; that
-  scored identically and read as a smudge round each word at 4x, so it is two.
+  white, light under About's near-black.
+  **A HALO IS TIGHT AND DENSE, NEVER WIDE AND SOFT, and that is the whole tuning lesson.**
+  It was one 12px haze first, then a 34px cloud on top of it, and going wider stopped paying:
+  the cloud scored no better, and at 4x it read as a smudge round each word. Brightness
+  concentrated at the LETTER EDGE is what both the eye and the metric are reading, so the
+  shipped stacks are three and four passes of 2 to 10px at alpha .95 to 1, with nothing
+  past 20. Measured, on the two grounds that fail bare: the opener's dim items went 4.18
+  (a fail) to 5.09 on the soft version to **6.98** on the tight one, and the stacked About's
+  jacket went 3.00 to 4.40 on a wide white cloud to **5.86** on a tight one.
   **The dim opacity came up 0.72 -> 0.86** with the fill it was measured against gone.
-  Every page improved on the bar except the opener, which is where the halo is doing the
-  work: 21/21 pass at 1512 (worst **5.09:1**) and 41/41 across the narrow About sweep
-  (worst **4.66:1**, HOME and WORK at 430 scrolled onto the black jacket, which is legible
-  by its halo alone and is the one place a bar was genuinely prettier).
+· **THE PHONE FAILURE WAS FOUND BY SCANNING THE SCROLL, AND ONE SAMPLE HID IT.** On the
+  stacked About the photograph scrolls UNDER a nav that draws nothing, so the ground below a
+  glyph runs the whole way from cream to a black jacket as you read, and
+  `nav_contrast_mobile.cjs` samples two fixed positions. It passed at 4.66 while the true
+  minimum was **3.00:1** at 430, at a scroll position it never landed on. Anything that
+  scrolls under the bar-less nav has to be swept, not sampled: `scratchpad/about_scan.cjs`
+  walks scrollTop 0..1100 at 390 / 430 / 768 and reports the minimum, and
+  `scratchpad/phone_live.cjs` does every page and every deck slide at 390 and 430 (it takes
+  a URL, so it runs against the LIVE site as well as localhost).
+  Current worst cases, all measured: **6.98:1** at 1512 (the opener), **6.65:1** across the
+  phone sweep, **5.86:1** over the About jacket, 41/41 on the narrow About suite.
 · **`scratchpad/nav_contrast.cjs` was rewritten and the OLD METHOD IS THE LESSON.** It
   modelled the opener's veil gradient by hand and sampled the raw image under it, which
   was right while the picture was what carried the type. It is meaningless against a
