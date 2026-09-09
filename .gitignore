@@ -148,3 +148,20 @@ dist
 * [0-9].*
 * [0-9] [0-9]
 * [0-9] [0-9].*
+
+# Scratchpad: the verification and export SCRIPTS are tracked deliberately (CLAUDE.md
+# cites them by path as the way to re-check the Realm and the deck). Everything the
+# scripts EMIT is not: renders, screenshots, voxel caches, audio dumps and pre-edit
+# snapshots of files git already has. That output reached 250MB and sat one `git add -A`
+# away from the history. Tracked files are unaffected by these rules.
+scratchpad/**/*.png
+scratchpad/**/*.jpg
+scratchpad/**/*.jpeg
+scratchpad/**/*.wav
+scratchpad/**/*.npy
+scratchpad/**/*.log
+scratchpad/**/*.pkl
+scratchpad/**/*.bak
+scratchpad/**/*.pass1
+scratchpad/**/*.new
+scratchpad/**/*.pre*

@@ -50,10 +50,14 @@ font. The Realm is a moody, tactile LEGO world built entirely from Shyon's own B
   release). Nothing external except Google Fonts.
 - `public/assets/` — site media plus every `.glb`. `public/assets/story/` — storyboard stills.
 - `docs/` — **the build output GitHub Pages serves.** Committed.
-- `vite.config.ts` — `outDir: "docs"`. `.github/workflows/deploy.ml` is misnamed and references
-  `dist`; it never runs. Ignore it.
-- Root `*.md` / `*.txt` other than this file are historical auto-generated docs from early 2026.
-  Background only.
+- `vite.config.ts` — `outDir: "docs"`. There is NO CI: `.github/workflows/deploy.ml` was misnamed
+  (`.ml`, so GitHub never parsed it) AND pointed at `dist` rather than `docs`, so it could not have
+  worked if it had. Deleted 2026-09-08. Deploying is the `npm run build` + commit in §4 and nothing
+  else; if CI is ever wanted it has to be written fresh against `docs`.
+- Root `*.md` / `*.txt` other than this file and the two companions: GONE. Sixteen auto-generated
+  docs from early 2026 (the `TOUCH_*`, `*_SUMMARY`, `QUICK_*` family) were deleted 2026-09-08.
+  They referenced only EACH OTHER, nothing live pointed at any of them, and this file had already
+  demoted them to background. `README.md` is real and stays.
 
 ---
 
@@ -1155,6 +1159,25 @@ coverflow's peeking neighbours are the design); and a `.ss-tap` control's DRAWN 
 unchanged. The check that matters is that the DOCUMENT never scrolls sideways, and it does not, at
 any of the ten sizes.
 
+**THE CHAPTER BAND'S TWO HEADLINE RULES WERE ORPHANED FOR THREE COMMITS, AND ARE FIXED** (2026-09-08).
+`1e47206` restructured the deck: `StoryChapter`'s `pair` branch stopped emitting
+`<div className="ss-chapter-pair">` and started emitting `.ss-chapter-head`. The same commit ADDED
+the two rules that were the point of that redesign, and wrote both against the class it had just
+stopped rendering: `.ss-chapter-pair .ss-story-kicker` (the 96px two-line gradient title) and
+`.ss-chapter-pair .ss-chapter-body` (the `clamp(14.4px, 1.2vw, 16px)` narrow-end body). Neither
+had ever applied. Measured in real headless Chrome before the fix, the title fell back to the base
+`.ss-story-kicker` at **61.99 / 52.48 / 41.98px** at 1512 / 1280 / 1024 against the intended
+**96 / 81.92 / 65.54**, with `line-height` 1.02 instead of 0.92, and the body sat at a flat **16px**
+at every width, which is exactly the value this file records as the deck's one snap-locking failure.
+Both selectors now name `.ss-chapter-head`. Note the MAP slide is unaffected by design:
+`.ss-slide-map .ss-story-kicker` is the same specificity and comes later in the sheet, so its
+`clamp(32px, 4.2vw, 64px)` still wins there (measured 63.5px).
+**The lesson is the trap, not the instance: renaming a class means grepping the sheet for every rule
+that NAMES it, not just the JSX.** A CSS rule whose selector matches nothing fails silently in both
+directions, and neither tsc nor eslint can see it. `scratchpad/deadcss.cjs` lists every `ss-*`
+class defined in `GLOBAL_CSS` that no `className` ever carries; it found these two plus 16 rules
+that really were dead. Re-run it after any rename.
+
 **Naming trap:** the Work category displays as "Personal Projects" but its internal id is still
 `creative-projects`, which keys the theme map, modal branches and portal lookups. Never rename the id.
 
@@ -1436,6 +1459,32 @@ any of the ten sizes.
 - **Mobile gets no render pipeline** (the HDR buffers alone are ~130MB at 2x dpr) and has not been
   tested on a device. Frame cost is ~20-22M tris, dominated by `tree.glb` at 79k tris each; that is
   where any further budget lives.
-- **Debug hooks** (§5) are still in the shipped file.
+- **Debug hooks** (§5) are still in the shipped file. Reviewed 2026-09-08 and deliberately kept:
+  they are ~60 `window.__*` handles, several read by other shipped code (`__hero` reads `roofY`)
+  and most of the verification scripts this file cites drive them. Stripping them is a real edit to
+  a 582KB live file, so it wants its own pass, not a cleanup sweep.
+- **`public/studio.html` and `public/studio_classic.html` are still deployed and still unlinked**
+  (193KB of HTML, plus `character.glb` at 2.1MB which ONLY they load). Nothing on the site points
+  at either. They are the two older generations of the 3D space and were kept on purpose, so they
+  were left alone in the 2026-09-08 cleanup; deleting all three files is a 2.3MB saving whenever
+  Shyon decides the old generations are no longer wanted.
+- **Tailwind emits nothing but its preflight.** All 87 `className` tokens in `src/App.tsx` are
+  `ss-*`; there is not one utility class anywhere in the app. So `@tailwind components` and
+  `@tailwind utilities` in `src/index.css` contribute zero bytes, `tailwind.config.js`s
+  `scale` and `fontFamily` extensions generate utilities nobody uses, and the whole toolchain
+  is being carried for `@tailwind base`, the reset. Dropping it is a real change (preflight sets
+  `img{display:block}` among others and the approved look may rest on it), so it was flagged
+  rather than done.
+- **`@types/react` and `@types/react-dom` are v19 against React 18.** It typechecks clean today,
+  so nothing was touched, but the types describe a different React than the one that ships.
+- **`.git` is 459MB** against a 124MB `public` and a 140MB `docs`. Every build rewrites `docs`
+  and the assets are committed twice, once as source and once as output, so the history carries
+  many copies of the same multi-megabyte binaries. `git gc --aggressive` reclaims some without
+  touching history; anything more is a rewrite and needs asking.
+- **`scratchpad/` output is gitignored now, its scripts are not.** 250MB of renders, screenshots,
+  voxel caches and audio dumps were deleted 2026-09-08 and the patterns that produce them added to
+  `.gitignore`; all 190 `.cjs` / `.py` scripts and the five `*_raw.glb` pre-edit backups stayed.
+  The directory went 260MB to 9MB. Note gitignore does NOT untrack, so the 39 tracked scripts are
+  unaffected.
 - The Realm's og:image still points at `story_world_midday.jpg`, which is why that file stays on
   disk although the storyboard no longer uses it.

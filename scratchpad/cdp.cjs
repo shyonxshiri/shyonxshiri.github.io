@@ -1,7 +1,8 @@
 // Minimal CDP driver: launch headless Chrome with SwiftShader, attach, evaluate.
 const {spawn}=require('child_process');
 const CHROME='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const PORT=9333;
+const PORT=9300+Math.floor(Math.random()*400);
+const PROFILE='/tmp/cdp-profile-'+process.pid+'-'+Date.now();
 
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
@@ -11,7 +12,7 @@ async function launch(){
     '--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader',
     '--enable-webgl','--ignore-gpu-blocklist','--window-size=1280,800',
     '--no-first-run','--no-default-browser-check','--disable-dev-shm-usage',
-    '--user-data-dir=/tmp/cdp-profile-'+PORT,'about:blank'
+    '--user-data-dir='+PROFILE,'about:blank'
   ],{stdio:['ignore','pipe','pipe']});
   p.stderr.on('data',d=>{ const s=d.toString(); if(/ERROR|FATAL/.test(s)) process.stderr.write('[chrome] '+s); });
   for(let i=0;i<60;i++){ try{ const r=await fetch('http://127.0.0.1:'+PORT+'/json/version'); if(r.ok) return {proc:p, ver:await r.json()}; }catch(_){} await sleep(250); }

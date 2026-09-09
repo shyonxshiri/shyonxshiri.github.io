@@ -179,34 +179,9 @@ const GLOBAL_CSS = `
     mix-blend-mode: difference; /* always contrasts — visible on white or dark */
   }
 
-  /* work rail drag cursor */
-  .ss-rail { cursor: none; }
-  .ss-rail:active { cursor: none; }
-
-  @media (max-width: 1023px) {
-    /* WorkPage grid adjusts for tablet */
-    .ss-grid {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-  }
-
-  @media (max-width: 640px) {
-    /* WorkPage grid is single column on mobile */
-    .ss-grid {
-      grid-template-columns: 1fr !important;
-    }
-  }
-
   /* modal / viewer scrollbar hide */
   .ss-modal-grid { scrollbar-width: none; }
   .ss-modal-grid::-webkit-scrollbar { display: none; }
-
-  /* scroll hint wheel */
-  @keyframes ss-wheel {
-    0%,100% { top: 5px; opacity: 1; }
-    60%      { top: 18px; opacity: .15; }
-  }
-  .ss-wheel-dot { animation: ss-wheel 1.8s ease-in-out infinite; }
 
   /* scroll hint arrow (mobile) */
   @keyframes ss-arrow-bounce {
@@ -245,27 +220,6 @@ const GLOBAL_CSS = `
     transition: transform .6s var(--ease-out);
   }
   .ss-tile:hover img, .ss-tile:hover video { transform: scale(1); }
-
-  /* 3d rendering card zoom hover */
-  .ss-3d-rendering:hover img {
-    transform: scale(1.14) !important;
-  }
-
-  /* work card image */
-  .ss-card-img {
-    transform: scale(1.08);
-    transition: transform .7s var(--ease-out), filter .4s ease;
-    filter: brightness(.65) saturate(.85);
-  }
-  .ss-card:hover .ss-card-img {
-    transform: scale(1);
-    filter: brightness(.88) saturate(1);
-  }
-  .ss-card-overlay {
-    opacity: 0;
-    transition: opacity .35s ease;
-  }
-  .ss-card:hover .ss-card-overlay { opacity: 1; }
 
   /* about photo */
   .ss-about-photo {
@@ -381,22 +335,6 @@ const GLOBAL_CSS = `
     color: transparent;
   }
   .ss-story-kicker { filter: drop-shadow(0 0 26px rgba(56,189,248,.20)); }
-  /* chapter header with a still alongside it */
-  .ss-chapter-split {
-    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
-    gap: 54px; align-items: center;
-  }
-  .ss-chapter-shot {
-    margin: 0;
-    border: 1px solid rgba(245,242,237,.16);
-    background: #0a0a0c;
-  }
-  .ss-chapter-shot img { display: block; width: 100%; height: auto; }
-  /* chapter opener: the still runs the full column width under the text */
-  .ss-chapter-hero { margin: 40px 0 0; }
-  @media (max-width: 1000px) {
-    .ss-chapter-split { grid-template-columns: 1fr; gap: 34px; }
-  }
 
   /* ── THE DECK ─────────────────────────────────────────────────────────────────────
      The storyboard is a DECK (user, 2026-09-01). Every chapter and every frame row
@@ -450,7 +388,6 @@ const GLOBAL_CSS = `
      aligned on their baselines) instead of a column, and the stills give up some of
      their height cap. 34vh against the 43vh a frame row gets when it has the screen to
      itself: two captions and a head strip still have to fit under them. */
-  .ss-chapter-pair { display: grid; gap: clamp(20px, 3vh, 30px); }
   /* THE BAND IS THREE PARTS ON TWO ROWS, AND THE TOP ROW SPANS BOTH COLUMNS. That span is
      what puts the title and the body copy on ONE LINE with no magic number holding them
      there: the number and its rule take a row of their own, and the two columns under it
@@ -485,7 +422,7 @@ const GLOBAL_CSS = `
     max-width: 58ch;
     font-size: 16px; line-height: 1.62; color: rgba(245,242,237,.78);
   }
-  .ss-chapter-pair .ss-chapter-body { font-size: clamp(14.4px, 1.2vw, 16px); }
+  .ss-chapter-head .ss-chapter-body { font-size: clamp(14.4px, 1.2vw, 16px); }
   /* the chapter that does NOT share its band with a frame row (04, which sits beside a
      single still) keeps the plain stack, and its parts are simply spaced. */
   .ss-chapter-stack .ss-story-kicker { margin-bottom: 22px; font-size: clamp(34px, 5vw, 76px); }
@@ -498,7 +435,7 @@ const GLOBAL_CSS = `
      stands as tall as the copy it is centred against: the space stops being empty because
      something is finally in it. Its two lines are set by hand in the kicker text, never by
      letting the column wrap it. */
-  .ss-chapter-pair .ss-story-kicker {
+  .ss-chapter-head .ss-story-kicker {
     font-size: clamp(36px, 6.4vw, 96px);
     line-height: 0.92; letter-spacing: -0.035em;
   }
@@ -872,8 +809,6 @@ const GLOBAL_CSS = `
      blue rule a chapter hangs off, at half the length, over the same mono the frames label
      themselves with. Deliberately NOT a kicker: a blue heading is a chapter, and these
      are the frames between them. */
-  /* the still tips up off its own bottom edge in chapter 01 */
-  .ss-shot-unfold { transform-origin: 50% 100%; }
   /* a light passes down the still as it lands. Sits inside the shot window, which is
      already overflow:hidden, so it is clipped to the picture and never the border. */
 
@@ -1084,8 +1019,6 @@ const GLOBAL_CSS = `
     /* homepage content positioning on mobile */
     .ss-home-page > div > div { bottom: 18vh !important; }
     /* navigation hint on mobile */
-    .ss-nav-hint { right: 150px !important; }
-    .ss-nav-hint svg { width: 11px !important; height: 19px !important; }
     /* modal close button positioning */
     .ss-modal-close { top: 20px !important; }
     /* media viewer close button positioned above title on all devices */
@@ -1157,9 +1090,6 @@ const GLOBAL_CSS = `
   .ss-work-modal { border-radius: 26px !important; overflow: hidden !important; }
   /* masonry gallery (Work modal: creative + professional) — packs mixed
      aspect ratios tightly with no ragged gaps, shows every image uncropped */
-  .ss-masonry { column-width: 206px; column-gap: 14px; }
-  @media (max-width: 900px){ .ss-masonry { column-width: 172px; column-gap: 12px; } }
-  @media (max-width: 640px){ .ss-masonry { column-width: 144px; column-gap: 10px; } }
   .ss-scell { position: relative; border-radius: 14px; overflow: hidden; background: #111214; border: 1px solid rgba(245,242,237,.1); cursor: none; transition: transform .5s cubic-bezier(.16,1,.3,1), border-color .4s cubic-bezier(.16,1,.3,1), box-shadow .5s cubic-bezier(.16,1,.3,1); }
   .ss-scell:hover { transform: translateY(-4px); border-color: var(--sky); box-shadow: 0 18px 44px rgba(0,0,0,.5); }
   .ss-scell .ss-sthumb { position: relative; width: 100%; background: #0a0a0c; overflow: hidden; }
@@ -1178,8 +1108,6 @@ const GLOBAL_CSS = `
   @property --wbc1 { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0); }
   @property --wbc2 { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0); }
   @property --wbc3 { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0); }
-  .ss-workbg { transition: background-color .9s ease, --wbc1 .9s ease, --wbc2 .9s ease, --wbc3 .9s ease; }
-  .ss-blob { position: absolute; border-radius: 50%; filter: blur(42px); will-change: transform; pointer-events: none; }
   @keyframes ssFloatA { 0%,100% { transform: translate(-10%,-6%) scale(1); } 33% { transform: translate(9%,11%) scale(1.16); } 66% { transform: translate(15%,-8%) scale(1.08); } }
   @keyframes ssFloatB { 0%,100% { transform: translate(12%,9%) scale(1.1); } 33% { transform: translate(-10%,-7%) scale(1); } 66% { transform: translate(-15%,11%) scale(1.15); } }
   @keyframes ssFloatC { 0%,100% { transform: translate(3%,-12%) scale(1.05); } 33% { transform: translate(-12%,7%) scale(1.17); } 66% { transform: translate(11%,13%) scale(1); } }
@@ -1189,8 +1117,6 @@ const GLOBAL_CSS = `
   .ss-about-photo { border-radius: 20px !important; }
 
   /* Work page: hover "View" cue on cards + CTA link */
-  .ss-view-cue { opacity: 0; transform: translateX(-6px); transition: opacity .35s var(--ease-out), transform .35s var(--ease-out); }
-  .ss-card:hover .ss-view-cue { opacity: 1; transform: translateX(0); }
 
   /* asset titles: rounded "iPhone bubble" font (SF Pro Rounded) */
   .ss-asset-title {
@@ -1260,11 +1186,9 @@ export default function App() {
   const [modalProject, setModalProject] = useState<Project | null>(null);
   const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
-  const [hintsVisible, setHintsVisible] = useState(true);
   const pageIdx = PAGE_ORDER.indexOf(page);
   const cooldown = useRef(false);
   const hover = useCursorHover();
-  const hintInteracted = useRef(false);
 
   /* inject global styles once */
   useEffect(() => {
@@ -1310,10 +1234,6 @@ export default function App() {
   /* wheel nav — skip on modals and work page */
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
-      if (!hintInteracted.current) {
-        hintInteracted.current = true;
-        setHintsVisible(false);
-      }
       // No page navigation while a project modal / media viewer is open
       if (modalOpenRef.current) return;
       if (cooldown.current) return;
@@ -1323,7 +1243,7 @@ export default function App() {
       if (currentPageRef.current === "work" && window.innerWidth < 1024) return;
       // Skip if over a scrollable element
       const target = e.target as HTMLElement;
-      if (target.closest(".ss-modal-grid") || target.closest(".ss-masonry") || target.closest(".ss-media-viewer")) return;
+      if (target.closest(".ss-modal-grid") || target.closest(".ss-media-viewer")) return;
       // Only navigate if movement is clearly vertical (horizontal must be < 50% of vertical)
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY) * 0.5) return;
       const dir = e.deltaY > 0 ? 1 : -1;
@@ -1346,10 +1266,6 @@ export default function App() {
       touchX.current = e.touches[0].clientX;
     };
     const end = (e: TouchEvent) => {
-      if (!hintInteracted.current) {
-        hintInteracted.current = true;
-        setHintsVisible(false);
-      }
       // No page navigation while a project modal / media viewer is open
       if (modalOpenRef.current) return;
       if (cooldown.current) return;
@@ -1359,7 +1275,7 @@ export default function App() {
       if (currentPageRef.current === "work") return;
       const target = e.target as HTMLElement;
       // Skip if on a scrollable rail or modal grid
-      if (target.closest(".ss-rail") || target.closest(".ss-modal-grid") || target.closest(".ss-masonry")) return;
+      if (target.closest(".ss-modal-grid")) return;
       const dy = touchY.current - e.changedTouches[0].clientY;
       const dx = touchX.current - e.changedTouches[0].clientX;
       // Require significant vertical movement (120px) and vertical > horizontal by 3x to prevent accidental triggers
@@ -1493,7 +1409,7 @@ export default function App() {
 {/* ── PAGES ────────────────────────────────────────────── */}
       <AnimatePresence mode="wait">
         {page === "home" && <HomePage key="home" onNavigate={navigate} />}
-        {page === "work" && <WorkPage key="work" onCardClick={setModalProject} onNavigate={setPage} />}
+        {page === "work" && <WorkPage key="work" onCardClick={setModalProject} />}
         {page === "about" && <AboutPage key="about" />}
         {page === "contact" && <ContactPage key="contact" />}
       </AnimatePresence>
@@ -2510,7 +2426,7 @@ function WorkParticles({ base, emit }: { base: string; emit: string }) {
 /* ─────────────────────────────────────────────────────────────
    WORK PAGE
 ───────────────────────────────────────────────────────────── */
-function WorkPage({ onCardClick, onNavigate }: { onCardClick: (p: Project) => void; onNavigate: (p: Page) => void }) {
+function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const hover = useCursorHover();
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
 
@@ -2733,15 +2649,6 @@ function WorkPage({ onCardClick, onNavigate }: { onCardClick: (p: Project) => vo
 ───────────────────────────────────────────────────────────── */
 function AboutPage() {
   const [photoLoaded, setPhotoLoaded] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 640);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   return (
     <motion.div key="about" {...fade}
@@ -2871,7 +2778,7 @@ function AboutPage() {
 function ContactPage() {
   const hover = useCursorHover();
 
-  const links = [
+  const links: { href: string; label: string; value: string; target?: string; icon: React.ReactNode }[] = [
     {
       href: "mailto:shyon2001@gmail.com", label: "Email Me", value: "shyon2001@gmail.com",
       icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 8l9 6 9-6M3 8v10a1 1 0 001 1h16a1 1 0 001-1V8M3 8a1 1 0 011-1h16a1 1 0 011 1" /></svg>,
@@ -2956,8 +2863,8 @@ function ContactPage() {
             <a
               key={l.label}
               href={l.href}
-              target={(l as any).target}
-              rel={(l as any).target ? "noopener noreferrer" : undefined}
+              target={l.target}
+              rel={l.target ? "noopener noreferrer" : undefined}
               style={{
                 display: "flex", alignItems: "center", gap: window.innerWidth <= 640 ? 16 : 28,
                 padding: window.innerWidth <= 640 ? "16px 8px" : "26px 8px", textDecoration: "none",
@@ -2982,7 +2889,7 @@ function ContactPage() {
                 {l.label}
               </span>
               <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: window.innerWidth <= 640 ? 14 : 20, color: "var(--mid)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {(l as any).value}
+                {l.value}
               </span>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 18, color: "var(--sky)", flexShrink: 0 }}>→</span>
             </a>
