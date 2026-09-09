@@ -541,8 +541,9 @@ scrap in the corner), and the content is packed from 430px down rather than cent
 the shipped `strongColor()` returns **#14313e**, the blue glow averaged down to a murky teal.
 LEGO Black is what the page itself is, and it matches About beside it. `c` went from the old
 green `#2ee078` to `#38bdf8`, which is only the pre-load plastic but should still be the
-site's accent. The desc is now the page's own line, "Open to freelance, collaborations, and
-full-time roles."
+site's accent. The desc is the page's own line, and it is kept in step with it BY HAND:
+both now read "Open to freelance, collaborations & full-time roles." (user,
+2026-09-09, who changed the Realm's copy to match the page's).
 Verified IN ENGINE, not as a flat JPEG (`scratchpad/contactcard/realm_shot.cjs`): teleport to
 the porch, `enterPortal('about')`, step the carousel, photograph the panel. Note the entry is
 a rAF-driven camera animation and SwiftShader runs this scene at a few frames a second, so
@@ -1254,6 +1255,59 @@ that NAMES it, not just the JSX.** A CSS rule whose selector matches nothing fai
 directions, and neither tsc nor eslint can see it. `scratchpad/deadcss.cjs` lists every `ss-*`
 class defined in `GLOBAL_CSS` that no `className` ever carries; it found these two plus 16 rules
 that really were dead. Re-run it after any rename.
+
+**THE EM DASH RULE WAS BEING BROKEN BY THE SITE ITSELF, IN 17 PLACES** (2026-09-09). Rule 1 of
+this file is the oldest and most reinforced rule the project has, and it had never been enforced
+on the copy that ships. `src/App.tsx` carried twelve project TITLES built around one
+(`Radar — Front View`, `UI/UX — minasech.net`, `Real Estate Marketing — Luning Dr`,
+`Compass × Real Estate Experts — Morning Star Dr`, `Moskowite Corner — Concept Visualization`
+and their pairs), `index.html` four more in the `<title>`, the description and both social
+titles, and `realm-unsupported.html` one. `public/lego.html`'s visible copy was already clean:
+its 36 are all in comments.
+**THE REPLACEMENTS WERE NOT INVENTED, THEY WERE TAKEN FROM THE REALM**, which already ships the
+same items under shorter names, so the fix closed a cross-surface naming drift at the same time:
+`UI/UX, minasech.net`, `Luning Dr Flyer`, `Colleen Dr Flyer`, `Morning Star Dr Flyer`. Where a
+title is a base plus a qualifier the connector is now a COMMA everywhere, which is the connector
+`UI/UX, minasech.net` already used: `Radar, Front View`, `RGB Box, Back View`,
+`Moskowite Corner, Concept Visualization`. Dropping "Compass ×" loses nothing, the description
+already says the flyer is co-branded with Compass.
+**A TITLE IS A FOREIGN KEY HERE.** `relatedItems` holds title STRINGS and `MediaViewer` resolves
+them with `find(m => m.title === relatedTitle)`, so a rename that misses one entry is a dead
+button, not a type error: `tsc` cannot see it and neither can eslint. All 32 references were
+re-pointed and are asserted to resolve.
+The head's separator is `·`, matching `lego.html`'s own `My Lego Realm · Shyon Shiri`.
+
+**AND THREE THINGS WERE CALLED THREE THINGS EACH.**
+· **NABU** was a `Clothing Brand` on the Work card, a `streetwear brand` in the modal and a
+  `clothing label` on the town map. STREETWEAR wins, because the modal's line is the only one of
+  the three that says anything (it carries the Persian and Assyrian heritage).
+· **The role noun.** The meta description said "graphic designer and maker" while About says
+  "graphic designer and developer". The meta is PROSE and now matches About. `Designer & Maker`
+  is deliberately KEPT in the `<title>`, both social titles and the About eyebrow: that is a
+  TAGLINE, a different register from a sentence, and it is already consistent across all four
+  places it appears. Do not "unify" the two, they are not the same string doing the same job.
+· **The availability line** was written twice, `...collaborations & full-time roles.` on the
+  Contact page against `...collaborations, and full-time roles.` in the Realm's Contact panel.
+  The AMPERSAND form wins and it is not a coin toss: `assets/contact_preview.jpg`, the image
+  the panel is drawn on, was rendered from `scratchpad/contactcard/card.html`, which carries the
+  ampersand. The panel's own `desc` was disagreeing with the picture above it.
+**`scratchpad/verify_copy.cjs` is the check**, 35 assertions in real headless Chrome, and it
+reads the RENDERED page rather than grepping the source: no em dash survives in `body.innerText`
+on any of the four pages, in any of the three Work modals, in the media viewer, in the town map's
+cards, or in the head's own tags. Two traps it is built around. A modal that silently fails to
+open makes every "no em dash" assertion under it pass on an EMPTY STRING, so each one first
+asserts the modal really opened and has content. And the related-item buttons are
+`text-transform: uppercase`, so `innerText` gives them back capitalised and any assertion on
+their text has to be case insensitive.
+STILL OPEN from the same review, deliberately not done because it was not asked for: descriptions
+that only restate their title (`Studio Photography`, `Candid Studio Portrait`, both NABU
+collections), titles that are categories rather than names (`Rendered 3D Model`, `Campaign
+Project`, `Video Game Demo`), `Custom Airpod Case` (Apple writes AirPods), the hyphenation split
+(`Full stack` on the town map against `Full-stack` two screens away, plus `real time`,
+`3D printed`, `front end`, `stop motion` unhyphenated as modifiers), the Realm's About panel
+still carrying the six-discipline copy the About page retired, the deck rail's static `Try it`
+label on a slide whose title correctly swaps to "The finished build", and a live `: "testing"`
+fallback string in the modal's descriptor ternary.
 
 **Naming trap:** the Work category displays as "Personal Projects" but its internal id is still
 `creative-projects`, which keys the theme map, modal branches and portal lookups. Never rename the id.
