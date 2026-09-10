@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────
@@ -727,6 +727,11 @@ const GLOBAL_CSS = `
   .ss-map-pin:hover .ss-map-stud, .ss-map-pin.on .ss-map-stud {
     transform: scale(1.25); background: var(--sky);
   }
+  /* the card is standing on this one, so it is taken away rather than left with its end
+     showing from under a corner. Solved in the component, since only it knows where the
+     card landed; it has to come AFTER the two rules above, which match on as many classes
+     as it does. */
+  .ss-map-pin.hushed.on .ss-map-tag { opacity: 0; }
   /* the mansion sits at 95% of the frame, so its label opens to the LEFT or it runs off
      the picture. Driven by the data and not by :nth-child, which would re-point at the
      wrong building the moment the four are reordered. */
@@ -737,12 +742,20 @@ const GLOBAL_CSS = `
   .ss-map-pin.flip:hover .ss-map-tag,
   .ss-map-pin.flip:focus-visible .ss-map-tag,
   .ss-map-pin.flip.on .ss-map-tag { transform: translateY(-50%) translateX(0); }
-  /* the card sits bottom right, the one quarter of this aerial with no building in it */
+  /* THE CARD OPENS BESIDE THE PIN IT BELONGS TO, not in a fixed corner (user, 2026-09-09:
+     they all show up in the right hand corner and it is not user friendly). All four
+     structures shared one slot bottom right, so opening the Coffee Shop, which sits top
+     left, put its picture and its name as far from the building as the frame allows and
+     made every card look like the same card. The offset is solved in JS against the pin's
+     own point in the fitted image, since only the component knows where that landed, and
+     it is clamped so a card can never hang off the stage. This rule keeps the bottom right
+     placement as the FALLBACK for the frame before it has been measured. */
   .ss-map-frame { position: relative; }
   .ss-map-card {
     position: absolute; right: 2.6%; bottom: 3.6%; width: min(28%, 306px);
     background: rgba(8,9,12,.9); backdrop-filter: blur(12px);
     border: 1px solid rgba(245,242,237,.18);
+    box-shadow: 0 18px 40px rgba(0,0,0,.5);
   }
   .ss-map-card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
   .ss-map-card-body { padding: 12px 13px 14px; display: flex; flex-direction: column; gap: 5px; }
@@ -2504,7 +2517,11 @@ const sbCard: Variants = {                        // and the card settles up und
 
 function RealmMap() {
   const stage = useRef<HTMLDivElement>(null);
+  const cardEl = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState({ left: 0, top: 0, w: 0, h: 0 });
+  const [box, setBox] = useState({ w: 0, h: 0 });   // the stage itself, for the clamp
+  const [bleed, setBleed] = useState({ l: 0, r: 0 }); // and how far past it a card may go
+  const [cardH, setCardH] = useState(0);
   const [open, setOpen] = useState<string | null>(null);
   const [pinned, setPinned] = useState(false);
 
@@ -2518,6 +2535,32 @@ function RealmMap() {
       const sc = Math.min(r.width / IW, r.height / IH);
       const w = IW * sc, h = IH * sc;
       setFit({ left: (r.width - w) / 2, top: (r.height - h) / 2, w, h });
+      /* HOW FAR A CARD MAY HANG OFF THE PICTURE (user, 2026-09-09: the modals can be out
+         of the frame of the map, it doesn't have to be within its boundaries). The map is
+         capped at 58vh of 16/9, so on a wide window it leaves a band of empty page either
+         side of itself, and that band is the best room on the slide: nothing is drawn in
+         it. Measured in the stage's OWN coordinates so the clamp can use it directly.
+         Vertically there is no bleed at all: the chapter copy is directly above the stage
+         and the hint line directly under it, and both are text.
+         THE LIMIT IS THE CLIPPING ANCESTOR, NOT THE WINDOW, and a rect check cannot see
+         the difference. `.ss-slide` is `overflow: hidden` on purpose (the watermark numeral
+         is laid out to bleed, and a slide that scrolls by 36px is a broken snap point), and
+         it sits inside the story's own 8vw gutters: at 1024 that edge is x 82, so a card
+         allowed out to the window was cut off mid word while every bounding box still
+         reported it on screen. So the walk collects every clipping ancestor and the card is
+         held inside the tightest of them, less 8. The right hand limit also answers to the
+         deck rail, which is fixed to the WINDOW rather than to the slide. */
+      const vw = document.documentElement.clientWidth;
+      let clipL = 0, clipR = vw;
+      for (let n: HTMLElement | null = el; n && n !== document.documentElement; n = n.parentElement) {
+        const cs = getComputedStyle(n);
+        if (cs.overflowX !== "visible") {
+          const q = n.getBoundingClientRect();
+          clipL = Math.max(clipL, q.left); clipR = Math.min(clipR, q.right);
+        }
+      }
+      setBleed({ l: clipL + 8 - r.left, r: Math.min(clipR - 8, vw - 64) - r.left });
+      setBox({ w: r.width, h: r.height });
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -2525,7 +2568,20 @@ function RealmMap() {
     return () => ro.disconnect();
   }, []);
 
+  /* THE CARD'S REAL HEIGHT IS MEASURED, NOT ESTIMATED, because it is what decides whether
+     a card opening below its pin still fits on the stage, and the four descriptions are
+     different lengths so the same width is not the same height. It is read in a LAYOUT
+     effect, before the browser paints, so the one frame it takes to correct an estimate is
+     never on screen; the estimate below is only ever used for the very first frame of the
+     very first card. */
+  useLayoutEffect(() => {
+    if (!open) return;
+    const el = cardEl.current;
+    if (el) setCardH(el.offsetHeight);
+  }, [open, box.w]);
+
   const shown = REALM_MAP.find((b) => b.id === open) || null;
+  const place = shown ? cardPos(shown) : undefined;
   return (
     <div className="ss-map-frame">
     <motion.div className="ss-map-stage" ref={stage} variants={sbRise}>
@@ -2540,7 +2596,8 @@ function RealmMap() {
           <motion.button
             key={b.id}
             variants={sbPin}
-            className={`ss-map-pin${b.flip ? " flip" : ""}${open === b.id ? " on" : ""}`}
+            className={`ss-map-pin${b.flip ? " flip" : ""}${open === b.id ? " on" : ""}`
+              + (open === b.id && place?.covered ? " hushed" : "")}
             style={{ left: b.x + "%", top: b.y + "%", x: "-50%", y: "-50%" }}
             onMouseEnter={() => { if (!pinned) setOpen(b.id); }}
             onMouseLeave={() => { if (!pinned) setOpen(null); }}
@@ -2569,13 +2626,86 @@ function RealmMap() {
      the same element is absolutely positioned over the map on a wide window and drops to a
      plain block underneath it on a narrow one, where the deck is not snapped and the extra
      height costs nothing. */
+  /* WHERE A CARD OPENS. It hangs off its own pin's point in the FITTED image (the picture
+     is letterboxed inside the stage on an off aspect window, so a percentage of the stage
+     is not a percentage of the map), on the side of the pin with the most room: outward
+     from the middle horizontally, downward from a pin in the top half and upward from one
+     in the bottom half. Both axes are then clamped inside the stage, so a card never hangs
+     off the picture however small the window is.
+     Anchoring by LEFT/TOP in pixels rather than by percentages is what makes the clamp
+     honest: the card's width tracks the frame and its height tracks its own copy, and
+     neither is expressible in the percentage the other axis is measured in.
+     Returns nothing until the frame has been measured, which leaves the stylesheet's
+     bottom right fallback in place for that first frame. */
+  function cardPos(b: (typeof REALM_MAP)[number]) {
+    if (!box.w || !fit.w) return undefined;
+    /* NEAR is the clearance a pin needs, measured off the pin and not guessed: the stud is
+       15px across and carries a 4px dark ring, so 16 from its CENTRE is the card edge just
+       clear of the drawn dot. It was 24 first, and that is too much to spend: at 1512 it
+       rejected the one placement that puts the Ruins card above its pin, over a Coffee Shop
+       stud 5px outside its own ring, and sent the card down onto its own label instead. */
+    const PAD = 10, GAP = 20, NEAR = 16;
+    const w = Math.min(box.w * 0.28, 306);
+    const h = cardH || w * 9 / 16 + 104;
+    const at = (q: (typeof REALM_MAP)[number]) =>
+      ({ x: fit.left + fit.w * q.x / 100, y: fit.top + fit.h * q.y / 100 });
+    const p = at(b);
+    const others = REALM_MAP.filter((q) => q.id !== b.id).map(at);
+    /* FOUR CORNERS, TRIED IN ORDER, AND THE ORDER IS THE PREFERENCE. Outward from the
+       middle of the map horizontally and away from the nearer edge vertically is the
+       first choice, because that is the quadrant with the most room; the other three are
+       the fallbacks, most similar first. */
+    const outX = b.x < 50, downY = b.y < 55;
+    const corners: [boolean, boolean][] =
+      [[outX, downY], [outX, !downY], [!outX, downY], [!outX, !downY]];
+    let best: { left: number; top: number; hits: number; tag: boolean } | null = null;
+    for (const [right, down] of corners) {
+      const L = Math.min(PAD, bleed.l), R = Math.max(box.w - PAD, bleed.r);
+      const left = Math.max(L, Math.min(right ? p.x + GAP : p.x - GAP - w, R - w));
+      const top = Math.max(PAD, Math.min(down ? p.y + GAP : p.y - GAP - h, box.h - h - PAD));
+      /* A CARD MAY NOT SIT ON ANOTHER STRUCTURE'S PIN. Clamping keeps a card on the stage
+         and can slide it back across the map while doing it, so the corners are scored
+         AFTER the clamp, not before: at 1024 the Ruins card opened upward and landed
+         squarely on the Coffee Shop, which is a pin you can then neither see nor click. */
+      /* SCORED, NOT JUST TESTED, because on a small stage the clamp can leave every
+         corner covering something. A pin another structure is opened by counts TEN and its
+         own label ONE: a hidden pin costs the visitor a whole building, a hidden category
+         costs three words that the card is standing next to. */
+      let hits = 10 * others.filter((q) => q.x > left - NEAR && q.x < left + w + NEAR
+        && q.y > top - NEAR && q.y < top + h + NEAR).length;
+      /* AND NOT ON ITS OWN PIN'S LABEL EITHER. The card gave up printing the category
+         yesterday precisely because the pin already carries it, so covering that tag would
+         take the category off the screen altogether. The tag's width is ESTIMATED rather
+         than measured (14px of padding plus 7.6 a character, against the 6.8 to 7.9 the
+         four real labels measure at 10px), which is deliberately generous: this is a test
+         for clear air, so erring wide only ever moves a card that could have stayed. */
+      const tw = 14 + 7.6 * b.cat.length, tx = b.flip ? p.x - 10 - tw : p.x + 10;
+      const tag = tx < left + w + 4 && tx + tw > left - 4
+        && p.y - 11 < top + h + 4 && p.y + 11 > top - 4;
+      if (tag) hits++;
+      const c = { left, top, hits, tag };
+      if (!hits) { best = c; break; }
+      if (!best || hits < best.hits) best = c;
+    }
+    /* `tag` IS REPORTED BACK, and it is the tag's own hit and not the score, because a
+       corner can be chosen for covering a label while covering no pin and the other way
+       round. A label the card lands on is HIDDEN rather than left with its end poking out
+       from under the corner: on a short stage the Ruins card cannot fit above its own pin
+       and there is nowhere clear to put the label, and a card standing on a legible name
+       and a full sentence is a better label than three words half behind it. */
+    return { style: { left: best!.left, top: best!.top, right: "auto", bottom: "auto" },
+      covered: best!.tag };
+  }
+
   function card() {
     return (
       <AnimatePresence>
         {shown && (
           <motion.div
             key={shown.id}
+            ref={cardEl}
             className="ss-map-card"
+            style={place?.style}
             variants={sbCard}
             initial="hidden" animate="show"
             exit={{ opacity: 0, transition: { duration: 0.16 } }}

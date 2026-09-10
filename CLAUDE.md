@@ -923,6 +923,53 @@ above the structure's name was the same word twice in one glance in the loudest 
 the page. `cat` STAYS in `REALM_MAP`: it feeds `.ss-map-tag` and half the pin's
 `aria-label`. The rule went with the markup, per the dead-CSS trap in section 7.
 
+**AND THE CARD NOW OPENS BESIDE THE PIN IT BELONGS TO** (user, 2026-09-09: they all show up
+in the right hand corner and it is not user friendly or efficient at all). All four cards
+shared one slot bottom right, so opening the Coffee Shop, which sits top left, put its
+picture and its name as far from the building as the frame allows, and all four looked like
+the same card arriving in the same place. `cardPos` solves the offset per structure against
+the pin's point in the FITTED image (the picture is letterboxed inside the stage on an off
+aspect window, so a percentage of the stage is not a percentage of the map) and hands it to
+the card as `left` / `top` in pixels.
+· **It is a scored search over four corners, not a formula.** Outward from the middle
+  horizontally and away from the nearer edge vertically is the preference; the other three
+  corners are the fallbacks. Each is scored AFTER the clamp, because clamping a card back
+  onto the stage can slide it across the map while doing it: at 1024 the Ruins card opened
+  upward and landed squarely on the Coffee Shop's pin, which is then neither visible nor
+  clickable. Another structure's pin costs **10** and the open pin's own category label
+  **1**, so a card gives up a label before it gives up a building.
+· **A LABEL THE CARD LANDS ON IS HIDDEN, not left with its end poking out.** On a short
+  stage the Ruins card cannot fit above its own pin and there is nowhere clear to put the
+  label, and hiding it is what `.ss-map-pin.hushed` does. The tag's width is estimated
+  (14px plus 7.6 a character, against the 6.8 to 7.9 the four real labels measure) and
+  deliberately generous: the test is for clear air, so erring wide only moves a card that
+  could have stayed.
+· **`NEAR` is 16 and that is measured**, the 15px stud plus its 4px ring, from the pin's
+  CENTRE. It was 24, which is too much to spend: at 1512 it rejected the one corner that
+  puts the Ruins card above its pin, over a Coffee Shop stud 5px outside its own ring.
+· **THE CARD MAY HANG OFF THE MAP, AND THE LIMIT IS THE CLIPPING ANCESTOR, NOT THE WINDOW**
+  (user, 2026-09-09: the modals can be out of the frame of the map, it doesn't have to be
+  within its boundaries, just not covering any text). `.ss-slide` is `overflow: hidden` on
+  purpose and sits inside the story's own 8vw gutters, so at 1024 that edge is x **82**: a
+  card allowed out to the window was cut off mid word while every bounding box still
+  reported it on screen. **A rect check cannot see clipping.** The measure walks the
+  ancestors, keeps the tightest clip, and also holds the right hand limit off the deck
+  rail, which is fixed to the WINDOW rather than to the slide. Vertically there is no bleed
+  at all: the chapter copy is directly above the stage and the hint line directly under it,
+  and both are text. In practice every common size has room on the picture, so the bleed is
+  the safety valve rather than the look.
+· **The card's own height is MEASURED in a layout effect**, since it is what decides whether
+  a card opening below its pin still fits and the four descriptions are different lengths.
+  The estimate (`w * 9/16 + 104`) is only ever the first frame of the first card, and the
+  card fades in over .45s, so the correcting frame is never seen.
+· **The narrow layout is untouched.** Under 900px the card is `position: static` and drops
+  below the map, so every inline `left` / `top` / `right` / `bottom` is ignored by the
+  browser rather than needing to be overridden.
+`scratchpad/map_card_near.cjs` is the check, eight window sizes x four pins: the card is
+within a third of the stage's diagonal of its own pin, nothing of it is clipped by any
+ancestor, it covers no other pin and no copy, hint, nav or rail, it shows its own name, and
+its category label is either readable or hidden, never half covered.
+
 **`scratchpad/no_backticks.cjs` EXISTS BECAUSE THIS FILE'S OLDEST TRAP KEPT WINNING.** One
 backtick anywhere inside `GLOBAL_CSS` ends the template literal and breaks the file with
 syntax errors far from the edit. It happened **six times in the 2026-09-09 pass alone**,
