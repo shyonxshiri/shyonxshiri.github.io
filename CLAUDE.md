@@ -760,7 +760,11 @@ is ever explained: run on the ground, descend only once flying.
 ever DRAGS out in the world, so the arrow is noise. `enterPortal` puts it back (`'default'`) and
 `exitPortal` takes it away again, because the portal panels are really clicked.
 **The cursor is a LITTLE GLASS BUBBLE** (`#cur`), 9px and round, riding the pointer with no easing.
-It began as the main site's own circle dot (`#ss-cursor-dot` in `src/App.tsx`), which itself
+It began as the main site's own circle dot (`#ss-cursor-dot` in `src/App.tsx`), and as of
+2026-09-09 THAT SITE WEARS THIS SHAPE TOO, so the two surfaces now share one pointer: the main
+site's `difference` dot was measured inverting to magenta over its own Work cards and fading to
+26.8 dLum on mid tones, and the bubble was ported back over it (see the pointer entry in §6,
+which also carries the three defects that came out from under it). The dot itself
 REVERSED an earlier decision (user, 2026-08-31): two stand-ins, a four-tick cross and then a LEGO
 stud, were built and removed with the note "don't rebuild it". The solid white fill then went to
 glass at Shyon's request (2026-09-01), and it is three things rather than one. The middle is EMPTY,
@@ -1013,7 +1017,11 @@ behind it.
 **THE DEAD SPACE WAS MEASURED BEFORE ANYTHING WAS BUILT**, off 1512x900 captures: Contact
 26% empty below the last row, About 21% under the copy, Work 17% under the cards. The
 spec band (`REALM_FIGS`, the closer's own figures, so the two cannot drift) filled
-Contact's; the bento fills About's.
+Contact's; the bento filled About's. **BOTH ARE GONE AGAIN, ON THE SAME DAY, AND THAT IS
+THE ENTRY THAT MATTERS HERE.** A measurement of empty pixels is a good reason to LOOK at a
+page and never a reason to put something on it, so the dead-space numbers below are kept as
+history rather than as a brief. Contact's 26% and About's 21% are both open, and the next
+pass that finds them should leave them open unless it has something to say.
 **THE SPEC BAND IS GONE FROM CONTACT** (user, 2026-09-09, asking why the Realm's full day
 cycle was on the contact page). It was the right answer to the wrong question. Filling
 measured dead space is a LAYOUT reason, and a number needs an EDITORIAL one. On the closer
@@ -1033,7 +1041,26 @@ three link rows do. Note its own trap, hit on the first run: an assertion counti
 rows by guessing at `mailto` / `linkedin` / `github` selectors PASSED at 2 of an expected 3,
 because the third row is a resume PDF and there is no github row at all. It counts the three
 real labels now.
-**AND THE BENTO IS THE TOOLS AND NOTHING ELSE** (user, 2026-09-09: most of this is not needed
+**AND THEN THE BENTO WENT TOO** (user, 2026-09-09, the same day and one message after the
+spec band: get rid of the Blender / After Effects tiles at the bottom of About). The history
+below is kept, because the argument that took it from eight tiles to four is the argument
+that finishes it at zero, and the pass that made it stopped one step short.
+Four tiles reading `3D / Blender`, `Engine / Three.js`, `Front end / React`,
+`Motion / After Effects` are a tool list, and a tool list is a CV appendix rather than
+something a portfolio has to assert: the Work page shows the output of every one of them and
+About's own paragraph already says he takes a project from identity to a deployed site.
+The tiles were also the last thing on the page, so the page ended on its tooling rather than
+on the person the portrait is of. `.ss-bento` and all its rules, `bentoStagger`, `bentoTile`,
+the four tiles and the four-track override inside the stacked-About query all went; the two
+paragraphs, the eyebrow, the heading, the rule and the portrait are untouched, and the
+stacked layout's other overrides still stand on their own.
+`scratchpad/bento_gone.cjs` asserts at eight viewports that no `.ss-bento` and none of the
+five tile words survive on About, while both paragraphs, the heading and the portrait do,
+with no sideways scroll and no overflow of the text column. Note it tests on the ABOUT page
+specifically: "Blender" and "After Effects" both appear in Work's project descriptions, so a
+site-wide grep for those words proves nothing. `about_docw.cjs` still reports all ten sizes
+clean afterwards.
+**THE HISTORY: THE BENTO WAS THE TOOLS AND NOTHING ELSE** (user, 2026-09-09: most of this is not needed
 on About, and the page said "running in this browser" twice). It shipped as eight tiles and
 four of them were restatement, three word for word. `Based in / San Jose, California` and
 `Degree / BA 2025` are both in the FIRST SENTENCE of the paragraph directly above them
@@ -1045,15 +1072,79 @@ both drew it from `REALM_FIGS`, and one number on three pages means less on each
 it up; the closer earns it (it is the payoff of a slide about the build). Contact was excused
 here on the grounds that nothing else filled its last quarter, and that excuse did not survive
 the day: see the spec band note above.
-What is left, Blender / Three.js / React / After Effects, is the only fact set on the page that
-no paragraph here states and no other page duplicates. Tiles are equal now (all `b-wide`, so
-2 x 2 at 480px and one column under 900) because four peers ARE equal; the unevenness the old
-note defended was the 15.9M tile, and `.v.big` / `.b-tall` were deleted with it.
-Measured after, on the rendered page rather than the source (`scratchpad/bento_check.cjs`, three
-viewports): "running in this browser" 2 -> 1, "san jose" 2 -> 1, "15.9" and "full-time" gone
-from About, no sideways scroll. The block is 145px against the old 220, so a little of the
-21% opens back up. Nothing was invented to refill it: naming a tool he does not use to pad a
-grid is the failure mode this whole edit is against.
+What was left, Blender / Three.js / React / After Effects, was the only fact set on the page
+that no paragraph there states and no other page duplicates, which is why that pass stopped
+at four rather than at none. Tiles were made equal (all `b-wide`, 2 x 2 at 480px and one
+column under 900) because four peers ARE equal, and `.v.big` / `.b-tall` were deleted with
+the 15.9M tile the unevenness had been carrying. Measured after, on the rendered page rather
+than the source (`scratchpad/bento_check.cjs`, three viewports): "running in this browser"
+2 -> 1, "san jose" 2 -> 1, "15.9" and "full-time" gone from About, no sideways scroll, the
+block 145px against the old 220. **`bento_check.cjs` NO LONGER HAS A SUBJECT** and is
+superseded by `bento_gone.cjs`; keep it only as the record of that pass.
+Nothing was invented to refill the space then and nothing should be now: naming a tool he
+does not use to pad a grid is the failure mode that whole edit was against, and shipping a
+grid at all turned out to be the same mistake one step earlier.
+**THE MAIN SITE'S POINTER IS THE REALM'S GLASS BUBBLE NOW, AND FOUR SEPARATE DEFECTS WERE
+UNDER IT** (user, 2026-09-09: the cursor does not look right entirely, and sometimes glitches
+to the original mouse). Every one was found by measurement. Do not tune any of this by eye.
+· **A DESKTOP WINDOW UNDER 768px HAD NO POINTER AT ALL.** The dot was hidden by the 768 and
+  640 LAYOUT breakpoints while the native arrow was suppressed by `* { cursor: none
+  !important }`, and the `html, body { cursor: grab }` those blocks carried to put it back
+  was DEAD, because a star rule with `!important` outranks it. Measured at 760 / 700 / 640 /
+  500: dot `display:none`, body cursor `none`, nothing on screen. This is the type-cascade
+  trap in §7 arriving on another property, and the fix is the same shape: `cursor` is an
+  INHERITED property, so it is one declaration on `html` plus `cursor: inherit` on the few
+  elements the UA sheet gives a cursor of their own (a, button, input, textarea, select,
+  label, summary, [role=button]). No `!important` anywhere.
+  **AND THE GATE IS NOW `(hover: none), (pointer: coarse)`, NOT A WIDTH**, which is the same
+  correction the Realm's support gate already documents: a finger is a property of the
+  DEVICE, and a narrow desktop window is still a mouse.
+· **THE "ORIGINAL MOUSE" IS A NATIVE HTML5 DRAG.** Every image and video on the site was
+  natively draggable (measured: 13 on Home, 3 on Work, 1 on About, none carrying
+  `draggable=false` or `-webkit-user-drag: none`), and a native drag is the one state where
+  the browser paints its OWN cursor over the page and ignores `cursor: none` entirely: the
+  arrow comes back with a translucent ghost of the picture under it until the button is
+  released. The Work coverflow is dragged ACROSS CARD ARTWORK, so it fired on the most-used
+  gesture on the site. Fixed in CSS and, for Firefox, by cancelling `dragstart` on the
+  document; nothing here uses the drag-and-drop API, so that costs nothing. The coverflow row
+  also takes `user-select: none`, because a drag across it was starting a text selection
+  (measured: `selectstart` fires on the row). Only that surface, so copy stays selectable.
+  Note what was RULED OUT first: every element on all four pages computes `cursor: none`, so
+  this was never a gap in the stylesheet's coverage.
+· **THE BUBBLE REPLACES `mix-blend-mode: difference`, ON THIS SITE'S OWN MEASUREMENTS.** A
+  difference dot over backdrop B composites to `B + a*(255-2B)`, so it INVERTS: it rendered
+  MAGENTA over the green card artwork and cyan over the studio wall, i.e. it was a different
+  colour on every ground rather than one object. And it cancels exactly at B=127.5, so it
+  faded on mid tones: **26.8 dLum** over the Work card art against 200+ on the flat page
+  grounds, and Work is the one page made entirely of mid-tone imagery. The shape is ported
+  from the Realm rather than invented, which is where it was designed and approved and where
+  its own note carries the full history. After: separation 53.5 on the studio wall, 57.8 on
+  the cream column, 137 on the sky glow, 179.9 on the card art that used to be the worst
+  case. `scratchpad/cursor_shot.cjs` renders the sheet of it at 11x over every ground,
+  because nine pixels cannot be judged at actual size in a screenshot.
+· **THE HOVER STATE WAS WIRED EVERYWHERE AND STYLED NOWHERE.** `useCursorHover` puts
+  `.ss-hover` on the body from links, cards, nav items and buttons across all four pages, and
+  ZERO rules named it, so the pointer never reacted to anything it was over. It now swells
+  and its rim softens. The shape does not change, so it still reads as the same object.
+**AND THE FIX FOR THE LOAD FLASH FOUND A REAL TRAP IN HOW THIS SHEET IS DELIVERED.**
+`GLOBAL_CSS` is injected by a `useEffect`, so it lands AFTER the first paint: the dot renders
+at the UA default `opacity: 1` before its own rule exists. With a `transition` declared in
+that rule, the arrival of `opacity: 0` was ANIMATED, and the bubble faded out of the top left
+corner over .18s on EVERY load. Measured at 0.739 opacity a second after a settled load with
+**no pointer event having fired at all**, which is what proves it was the stylesheet and not
+the cursor logic. The transitions are therefore held on a `.ss-cursor-ready` class added on
+the frame after mount. **Any first-paint transition added to this sheet needs the same
+treatment**, and the Realm needs none of it because its CSS is a style block in the head.
+The dot is also revealed only by a real DELTA between two pointer positions, since a load-time
+`mousemove` in a fresh tab arrives at 0,0 and would otherwise park it in the corner. The delta
+is tracked in the handler and NOT read off `movementX`/`movementY`: a synthetic move over CDP
+reports 0 for both, so a guard written on those never showed the cursor at all.
+`scratchpad/cursor_check.cjs` is the check, 30 assertions. Two of its own traps are worth
+keeping: an exact `opacity === '1'` read 150ms into a .18s transition is a RACE and flaked
+twice, and a reveal gated on a delta needs a SWEEP of dispatched moves rather than two, since
+the first can land before the effect has attached its listener. Real mouse motion delivers a
+stream at 60/s; a check that delivers one event is not testing the same thing.
+
 **AND THE DECK'S COPY IS SCROLL DRIVEN, WHICH THE SNAP MAKES POSSIBLE RATHER THAN
 IMPOSSIBLE.** The deck is snap locked, so there is no scrolling WITHIN a slide to scrub
 against, which is what made scroll-scrubbing look inapplicable here. But a snap ANIMATES
@@ -1465,8 +1556,8 @@ wide-layout special case together. The "known and not fixed" mid-grey failure we
 
 **AND THE ABOUT PAGE STACKS UNDER 768** (user, 2026-09-09: fix the About page layout on mobile).
 The grid was a flat `1fr 1fr` at EVERY width, so the copy column is half the window less its own
-`8vw + 60px` gutters. Measured at 390 that is **172px**: the two paragraphs, the h2 and the bento
-were all rendering into about 25 characters a line. Three separate media blocks had answered that
+`8vw + 60px` gutters. Measured at 390 that is **172px**: the two paragraphs, the h2 and the tile
+grid then under them were all rendering into about 25 characters a line. Three separate media blocks had answered that
 by shrinking the words, 15px at 768, then 13px on a 1.4 line at 640, with the eyebrow taken down to
 **6px** and the h2 to 42. **That is not a fix. A narrow measure is not made readable by setting it
 smaller.** All three blocks are deleted rather than re-tuned.
@@ -1502,20 +1593,20 @@ in the DOM, so the source order stays the wide layout's reading order.
   About's jacket is now carried by the light halo on the type instead, re-measured over the
   same sweep at 41/41. The mid-grey trap this bullet documents is still the reason that
   sweep exists, so keep running it.
-· **The bento is held at four tracks here**, overriding the 900px rule that takes it to two: with
-  every tile spanning two tracks, two tracks is one tile per row and four tall boxes down a phone.
 · **THE LANDSCAPE PHONE IS THE SECOND QUERY, and it was clipping worse than the portrait one.**
   A turned phone is WIDER than 768, so it misses a width-only breakpoint entirely, while being far
   too short for a full-height column. Measured before the change, the copy overran its own box by
-  **230px at 844x390** and 140 at 932x430, with the bento's bottom edge 198px past the column at the
+  **230px at 844x390** and 140 at 932x430, with the tile grid's bottom edge 198px past the column at the
   first of them, all of it invisible: the column is `overflow:hidden` and the page above it did not
   scroll. The trigger is `(max-width: 1100px) and (max-height: 620px)` alongside the 768 one, where
   620 is the same short-screen height the homepage deck already stands down at and the 1100 keeps it
   off a laptop. The photo's `min-height` came 300 -> 220 for the same reason, since 300 is most of a
   390-tall screen. All three landscape sizes now report 0 over and a scrollable page.
 Verified in real headless Chrome at 390 / 430 / 768 / 844x390 / 932x430 / 1024 / 1512: `scratchpad/about_stack.cjs`
-(geometry, computed sizes, scrollability, no sideways scroll), `about_scrolled.cjs` (the bento is
-reachable and fully visible, zero console errors) and `nav_contrast_mobile.cjs`, which is
+(geometry, computed sizes, scrollability, no sideways scroll), `about_scrolled.cjs` (which checked
+that the tile grid was reachable and fully visible, and so lost its subject when the grid went, the
+way `bento_check.cjs` did; its console-error assertion is the half still worth running) and
+`nav_contrast_mobile.cjs`, which is
 `nav_contrast.cjs` retargeted at the narrow About and samples the bar both at rest and scrolled.
 1024 and 1512 are byte for byte what they were.
 `scratchpad/about_docw.cjs` is the one to re-run after any About layout work: it drives all TEN of
@@ -1722,6 +1813,16 @@ scrollbar. Confirmed IN ENGINE at a 660px window too (`scratchpad/about_panel.cj
   page each element lives on, and that zero `font-family` rules are still `!important`.
 - **`GLOBAL_CSS` is a TEMPLATE LITERAL, so one backtick in a CSS comment ends the string** and
   breaks the file with syntax errors far from the edit. Same trap the shaders in `lego.html` carry.
+  `scratchpad/no_backticks.cjs` names the exact line; tsc only names where the garbage stops
+  parsing. It caught 16 in one edit on 2026-09-09, all of them property names typed in backticks
+  out of markdown habit. **Run it before tsc after touching GLOBAL_CSS.**
+- **`GLOBAL_CSS` IS ALSO INJECTED BY A `useEffect`, SO IT LANDS AFTER THE FIRST PAINT.** Anything
+  it styles renders at UA defaults for a beat first, which means a `transition` declared in one of
+  its rules ANIMATES THE INITIAL STATE. The cursor's `opacity: 0` was arriving as a .18s fade out
+  of the top left corner on every load, measured at 0.739 opacity a second after a settled load
+  with no pointer event having fired. Hold such transitions behind a class added on the frame
+  after mount, the way `.ss-cursor-ready` does. This applies to any first-paint transition added
+  to this sheet, and is why the Realm needs no equivalent: its CSS is a style block in the head.
 - **The in-app preview pane has NO WebGL** (`getContext('webgl')` returns null for webgl, webgl2
   and experimental-webgl). `lego.html` cannot be seen there at all. Run a dev server for Shyon.
 - When WebGL did work, the hidden pane throttled rAF AND setTimeout, so use `__D.step(dt)` frame

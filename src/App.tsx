@@ -152,10 +152,35 @@ const GLOBAL_CSS = `
     background: var(--black);
     color: var(--white);
     -webkit-font-smoothing: antialiased;
-    cursor: none !important;
   }
 
-  * { cursor: none !important; }
+  /* ── THE POINTER ───────────────────────────────────────────────────────────────────
+     cursor is an INHERITED property, so hiding it is one declaration on html plus an
+     explicit inherit on the few elements the UA sheet gives a cursor of their own. It
+     was a star rule carrying !important, which is the same anti-pattern the type cascade
+     already documents: a universal selector beats INHERITANCE, and an !important in a
+     stylesheet beats an inline style, so nothing downstream could ever put the pointer
+     back. Two rules were silently dead because of it, and one of them mattered. */
+  html { cursor: none; }
+  a, button, input, textarea, select, label, summary, [role="button"] { cursor: inherit; }
+
+  /* THE POINTER IS HIDDEN FOR A MOUSE, NOT FOR A NARROW WINDOW. This used to ride the
+     768px and 640px layout breakpoints, which asks the wrong question exactly as the old
+     innerWidth gate on the Realm did: a desktop browser dragged under 768 got the dot
+     hidden by the media query AND the native arrow suppressed by the star rule above, so
+     it had NO POINTER AT ALL. Measured before the fix at 760 / 700 / 640 / 500. A finger
+     is a property of the DEVICE, so ask about the device. */
+  @media (hover: none), (pointer: coarse) {
+    html { cursor: auto; }
+    #ss-cursor-dot { display: none !important; }
+  }
+
+  /* A picture is natively draggable, and an HTML5 drag is the one state where the browser
+     draws its OWN cursor over the page and ignores cursor:none entirely: the arrow comes
+     back, with a translucent ghost of the image under it, until the button is released.
+     The Work coverflow is dragged across card artwork, so that was the most-used gesture
+     on the site. dragstart is cancelled in JS as well, which is what covers Firefox. */
+  img, video { -webkit-user-drag: none; user-drag: none; }
 
   html::-webkit-scrollbar,
   body::-webkit-scrollbar,
@@ -191,16 +216,57 @@ const GLOBAL_CSS = `
     .ss-contact-description { font-size: clamp(12px, 1.5vw, 14px) !important; }
   }
 
-  /* cursor */
+  /* ── THE CURSOR IS A LITTLE GLASS BUBBLE ────────────────────────────────────────────
+     Ported from the Realm, which is where this shape was designed and approved (user,
+     2026-09-09; the Realm's own note carries the full history). It is three things rather
+     than one: the middle is EMPTY so the page really shows through it, a thin lit wall is
+     drawn just inside the rim by the second radial gradient, which is the glass having
+     thickness, and one small hard specular sits up and to the left, which is the only
+     thing that says "sphere" rather than "ring" at nine pixels.
+     WHAT IT REPLACES IS mix-blend-mode: difference, and the reason is measured on this
+     site's own pages rather than inherited. A difference dot over backdrop B composites to
+     B + a*(255-2B), so it INVERTS: it rendered magenta over the green card artwork and
+     cyan over the studio wall, i.e. it was a different colour on every ground rather than
+     one object. And it cancels exactly at B=127.5, so it faded as the ground approached
+     mid grey: 26.8 dLum over the Work card art against 200+ on the flat page grounds,
+     which is the one page made entirely of mid-tone imagery.
+     THE 1px RIM IS LOAD BEARING, NOT DECORATION. An empty middle has to be paid for at the
+     edge, and the drop shadow carries the bright end the way the fill used to. A
+     borderless version was built for the Realm and rejected for exactly that. box-sizing
+     comes from the reset at the top of this sheet, which is what lets the rim be a real
+     border without growing the dot past 9px. */
   #ss-cursor-dot {
     position: fixed; top: 0; left: 0; z-index: 99999;
     width: 9px; height: 9px;
-    background: #ffffff;
     border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.85);
+    background:
+      radial-gradient(circle at 31% 27%, rgba(255,255,255,.95) 0 10%, rgba(255,255,255,0) 34%),
+      radial-gradient(circle at 50% 52%, rgba(255,255,255,0) 50%, rgba(255,255,255,.34) 80%, rgba(255,255,255,.10) 100%);
+    filter: drop-shadow(0 0 1.4px rgba(0,0,0,.85));
     pointer-events: none;
-    transform: translate(-50%,-50%);
-    opacity: 1;
-    mix-blend-mode: difference; /* always contrasts — visible on white or dark */
+    transform: translate(-50%,-50%) scale(1);
+    opacity: 0;   /* shown on the first real pointer move, see the Cursor component */
+  }
+  /* THE TRANSITIONS ARE HELD BACK UNTIL AFTER THE FIRST PAINT, and that is not a nicety.
+     This whole sheet is injected by a useEffect, so it lands AFTER the dot has already
+     rendered at the UA default opacity of 1: with the transition declared in the rule
+     above, the arrival of opacity:0 was ANIMATED, and the bubble faded out of the top
+     left corner over .18s on every single load. Measured at 0.739 opacity a second after
+     a settled load, with no pointer event having fired at all. The class is added on the
+     frame after mount, so the first application of opacity:0 snaps and everything after
+     it eases. The Realm has no such rule because its CSS is a style block in the head,
+     parsed before its cursor element exists. */
+  #ss-cursor-dot.ss-cursor-ready {
+    transition: opacity .18s ease, transform .28s var(--ease-out), border-color .28s var(--ease-out);
+  }
+  /* THE HOVER STATE WAS WIRED EVERYWHERE AND STYLED NOWHERE. useCursorHover puts this class
+     on the body from links, cards, nav items and buttons across all four pages, and not one
+     rule named it, so the pointer never reacted to anything it was over. The bubble swells
+     and its rim softens: the shape is unchanged, so it still reads as the same object. */
+  body.ss-hover #ss-cursor-dot {
+    transform: translate(-50%,-50%) scale(2.2);
+    border-color: rgba(255,255,255,.55);
   }
 
   /* modal / viewer scrollbar hide */
@@ -1091,8 +1157,6 @@ const GLOBAL_CSS = `
   }
 
   @media (max-width: 768px) {
-    html, body { cursor: grab; }
-    #ss-cursor-dot, #ss-cursor-ring { display: none !important; }
     .ss-hero-bg { object-position: 78% 5% !important; }
     /* close button fix on mobile */
     .ss-media-viewer > button:first-child {
@@ -1140,8 +1204,6 @@ const GLOBAL_CSS = `
 
   @media (max-width: 640px) {
     .ss-hero-bg { object-position: 75% 5% !important; }
-    html, body { cursor: grab; }
-    #ss-cursor-dot, #ss-cursor-ring { display: none !important; }
     /* homepage content positioning on mobile */
     .ss-home-page > div > div { bottom: 18vh !important; }
     /* navigation hint on mobile */
@@ -1195,53 +1257,16 @@ const GLOBAL_CSS = `
      (they carry their own, 4px and 5px) and Bebas ships one weight, so 700 bought
      nothing and the negative tracking ran the letters into each other. Removed rather
      than retuned, because each heading already states what it wants inline. */
-  /* ── ABOUT BENTO ── Apple's spec-page tile grid. Four columns so a 2-wide tile reads as
-     wide rather than as half the row, and a fixed row height so the tiles are a GRID and not
-     a set of boxes that each shrink to their own text. It sits on the cream ground, so its
-     surfaces are a shade off it rather than the dark page's raised greys. */
-  .ss-bento {
-    margin-top: clamp(20px, 3.4vh, 34px);
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: clamp(58px, 8vh, 74px); gap: 8px;
-    max-width: 480px;   /* the same measure the paragraphs above it are set to */
-  }
-  .ss-bento > div {
-    background: rgba(6,6,6,.035);
-    border: 1px solid rgba(6,6,6,.10);
-    border-radius: 12px; padding: 10px 12px;
-    display: flex; flex-direction: column; justify-content: space-between;
-    transition: transform .5s var(--ease-out), border-color .5s var(--ease-out),
-                background .5s var(--ease-out);
-  }
-  .ss-bento > div:hover {
-    transform: translateY(-3px);
-    border-color: rgba(6,6,6,.2); background: rgba(6,6,6,.055);
-  }
-  .ss-bento .k {
-    font-size: 9.5px; font-weight: 600; letter-spacing: .06em;
-    text-transform: uppercase; color: rgba(6,6,6,.45);
-  }
-  .ss-bento .v {
-    font-size: 14px; font-weight: 600; letter-spacing: -.015em; color: #060606;
-    line-height: 1.2;
-  }
-  /* The tiles are all b-wide now, i.e. two of the four tracks, so the tools lay out
-     2 x 2. The .v.big and .b-tall rules went with the 15.9M tile they were written for.
-     No backticks in here: GLOBAL_CSS is a template literal and one ends the string. */
-  .ss-bento .b-wide { grid-column: span 2; }
-  /* Under 900 the About page stacks and the column narrows past four tracks. */
-  @media (max-width: 900px) { .ss-bento { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-height: 780px) { .ss-bento { grid-auto-rows: 54px; gap: 6px; } }
 
   /* == ABOUT STACKS UNDER 768, AND THAT REPLACES SHRINKING THE TYPE ==================
      The grid was a flat 1fr 1fr at EVERY width, so the copy column is half the window
      less its own 8vw + 60px gutters, and on a phone that is nothing: measured at 390 the
-     paragraphs, the h2 and the bento were all rendering 172px wide, about 25 characters
-     a line. Three separate media blocks had answered that by shrinking the words, 15px
-     at 768, then 13px on a 1.4 line at 640, with the eyebrow taken down to 6px and the
-     h2 to 42. That is not a fix. A narrow measure is not made readable by setting it
-     smaller, it is made worse, and 6px is not a size any type is read at. All three
-     blocks are deleted rather than re-tuned.
+     paragraphs, the h2 and the tile grid then under them were all rendering 172px wide,
+     about 25 characters a line. Three separate media blocks had answered that by
+     shrinking the words, 15px at 768, then 13px on a 1.4 line at 640, with the eyebrow
+     taken down to 6px and the h2 to 42. That is not a fix. A narrow measure is not made
+     readable by setting it smaller, it is made worse, and 6px is not a size any type is
+     read at. All three blocks are deleted rather than re-tuned.
      Stacked, the portrait takes the top of the screen and the copy runs the full width
      beneath it, bounded by the 480px maxWidth the paragraphs already carry. The measure
      goes 172 -> 342 at 390, and the body goes back to the 17px the desktop page sets, so
@@ -1258,13 +1283,10 @@ const GLOBAL_CSS = `
      min-height, and the text column gives up both its overflow:hidden and its
      justify-content:center, since there is now more copy than screen and centring it
      would push the top of it off. All four are INLINE styles, hence the !important.
-     The bento is held at four tracks here, overriding the 900px rule directly above:
-     that rule takes it to two, which with every tile spanning two tracks is one tile per
-     row and four tall boxes down the phone. Four tracks keeps the 2 x 2.
      THE SECOND QUERY IS THE LANDSCAPE PHONE, and it clips worse than the portrait one
      ever did. A turned phone is wider than 768 and so misses the first query entirely,
      while being far too SHORT for a full height column: measured, the copy overran its
-     own box by 230px at 844x390 and 140 at 932x430, with the bento's bottom edge 198px
+     own box by 230px at 844x390 and 140 at 932x430, with the tile grid's bottom edge 198px
      past the column at the first of them, all of it silently cut because the column is
      overflow:hidden and the page above it does not scroll. 620 is the same short screen
      height the homepage deck already stands down at; the 1100 keeps it off a laptop. */
@@ -1288,7 +1310,6 @@ const GLOBAL_CSS = `
        48 at 390 up to 72 at 768, and "About Me" sets about 220px into 342 and 330 into 720,
        so it fills its measure at both ends without ever wrapping. */
     .ss-about-page h2 { font-size: clamp(48px, 11vw, 72px) !important; }
-    .ss-bento { grid-template-columns: repeat(4, 1fr) !important; }
   }
 
   /* smooth, rounded surfaces instead of sharp corners */
@@ -1359,14 +1380,50 @@ function Cursor() {
   const dotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const dot = dotRef.current;
+    if (!dot) return;
+
+    /* see the note on .ss-cursor-ready: the sheet is injected after first paint, so the
+       transitions may only be armed once opacity:0 has actually been applied. */
+    const armed = requestAnimationFrame(() => dot.classList.add("ss-cursor-ready"));
+
+    /* THE DOT STARTS HIDDEN. `left`/`top` are unset until the first move, so the element
+       resolves at 0,0 and its own -50% translate parks it at (-4.5, -4.5): a white speck
+       in the top left corner of every fresh load, half off the screen, until the pointer
+       is moved. Measured. It is shown on the first real move and hidden again whenever
+       the pointer leaves the window, so it never sits stranded where the mouse left. */
+    /* REVEALED BY REAL MOVEMENT, NOT BY THE FIRST EVENT. Chrome dispatches a mousemove
+       when a page loads under the pointer, and in a fresh tab the pointer has no position
+       yet, so that event arrives at 0,0 and flashed the bubble in the top left corner,
+       which is the bug this guard exists to kill. Measured: opacity 0.74 at rest on two
+       runs in three. The delta is tracked HERE rather than read off the event's own
+       movementX/movementY, which is not populated by every source (a synthetic move over
+       CDP reports 0 for both, so a guard written on it never showed the cursor at all). */
+    let px = -1, py = -1;
     const onMove = (e: MouseEvent) => {
-      if (dotRef.current) {
-        dotRef.current.style.left = e.clientX + "px";
-        dotRef.current.style.top = e.clientY + "px";
-      }
+      dot.style.left = e.clientX + "px";
+      dot.style.top = e.clientY + "px";
+      if (px >= 0 && (e.clientX !== px || e.clientY !== py)) dot.style.opacity = "1";
+      px = e.clientX; py = e.clientY;
     };
+    const onLeave = () => { dot.style.opacity = "0"; };
+
+    /* A native HTML5 drag is the one state where the browser paints its own cursor over
+       the page and `cursor: none` is ignored, so the arrow reappears mid gesture with a
+       ghost of the picture under it. Nothing here uses the drag-and-drop API (the
+       coverflow is pointer events), so cancelling it outright costs nothing and is what
+       covers Firefox, where the CSS `user-drag` property does not exist. */
+    const onDragStart = (e: DragEvent) => e.preventDefault();
+
     window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
+    document.addEventListener("mouseleave", onLeave);
+    document.addEventListener("dragstart", onDragStart);
+    return () => {
+      cancelAnimationFrame(armed);
+      window.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseleave", onLeave);
+      document.removeEventListener("dragstart", onDragStart);
+    };
   }, []);
 
   return <div id="ss-cursor-dot" ref={dotRef} />;
@@ -2912,6 +2969,10 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
           top: 0, bottom: 0,
           display: "flex", alignItems: "center", justifyContent: "center",
           perspective: 1800, touchAction: "pan-y",
+          /* a drag across the cards was starting a text selection under the pointer
+             (measured: `selectstart` fires on the row). Only this surface gives it up,
+             so the copy on every other page stays selectable. */
+          userSelect: "none",
         }}
         onPointerDown={(e) => { startX.current = e.clientX; moved.current = false; }}
         onPointerMove={(e) => { if (Math.abs(e.clientX - startX.current) > 8) moved.current = true; }}
@@ -3143,46 +3204,6 @@ function AboutPage() {
               Most of what I design ends up physical or interactive rather than sitting on a page. That is why the same portfolio holds 3D-printed hardware enclosures, a welded steel sculpture, and a LEGO world running in this browser.
             </p>
           </motion.div>
-
-          {/* ── THE BENTO ── fills the space measured empty under the copy, and it is CONTENT
-              rather than padding: the page can now say WHAT HE WORKS IN without another
-              paragraph, which is the one thing the copy above deliberately stopped doing.
-              IT IS THE TOOLS AND NOTHING ELSE (user, 2026-09-09: most of this is not needed
-              on About, and the page said "running in this browser" twice). It shipped as
-              eight tiles and four of them were restatement, three of the four word for word:
-              · Based in / San Jose, California   -> paragraph 1, "in the Bay Area" and
-                "San Jose State" in the same sentence.
-              · Degree / BA 2025                 -> paragraph 1, "a BA in Graphic Design from
-                San Jose State, 2025".
-              · Open to / Full-time              -> the CONTACT page's availability line,
-                which is where an availability claim belongs.
-              · Running in this browser / 15.9M  -> the phrase ends paragraph 2 directly
-                above it, AND the figure was on two other pages: the deck's closer and, for
-                one day, Contact's spec band, both drawing it from `REALM_FIGS`. Three pages
-                carrying one number is the number meaning less on each, so About gave it up.
-                CONTACT HAS SINCE GIVEN IT UP TOO (user, 2026-09-09), so the closer is now
-                the only place any of the four figures appears, which is where they read:
-                they sit on an aerial of the town, on a slide about building it. On Contact
-                they sat under an email address with nothing naming the Realm, so "7 MIN /
-                FULL DAY CYCLE" was a statistic with no subject. That band existed to fill
-                a measured 26% of dead space below the last link row, and filling space is
-                not a reason for a number to be on a page. Its `SpecBand`, its `CountUp`
-                and the whole `.ss-spec` rule went with it; `REALM_FIGS` stays, one user.
-                The 26% is open again, and nothing should be invented to refill it.
-              What is left is the only fact set on this page that no paragraph here states
-              and no other page duplicates. Tiles are equal now because four peers ARE equal;
-              the unevenness was carrying the 15.9M tile and left with it. */}
-          <motion.div
-            className="ss-bento"
-            variants={bentoStagger}
-            initial="hidden"
-            animate="show"
-          >
-            <motion.div className="b-wide" variants={bentoTile}><span className="k">3D</span><span className="v">Blender</span></motion.div>
-            <motion.div className="b-wide" variants={bentoTile}><span className="k">Engine</span><span className="v">Three.js</span></motion.div>
-            <motion.div className="b-wide" variants={bentoTile}><span className="k">Front end</span><span className="v">React</span></motion.div>
-            <motion.div className="b-wide" variants={bentoTile}><span className="k">Motion</span><span className="v">After Effects</span></motion.div>
-          </motion.div>
         </div>
 
         {/* Photo column. Second in the DOM because that is the reading order on a wide
@@ -3214,17 +3235,6 @@ function AboutPage() {
 /* ─────────────────────────────────────────────────────────────
    CONTACT PAGE
 ───────────────────────────────────────────────────────────── */
-
-/* The tiles land one after another rather than as a block, on the site's one ease. The
-   delay clears the two paragraphs above them, which finish at 0.55 + 0.8. */
-const bentoStagger: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.045, delayChildren: 0.75 } },
-};
-const bentoTile: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: APPLE_EASE } },
-};
 
 function ContactPage() {
   const hover = useCursorHover();
