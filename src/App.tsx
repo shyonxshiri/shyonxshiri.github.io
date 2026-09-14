@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+import AboutPage from "./components/AboutPage";
+import SelectedWork from "./components/SelectedWork";
 
 /* ─────────────────────────────────────────────────────────────
    TYPES
@@ -53,7 +55,7 @@ const PROJECTS: Project[] = [
     media: [
       { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
       { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", aspectRatio: "16/9", relatedItems: ["Custom AirPods Case", "Custom Phone Case"] },
-      { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
+      { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Retro Driving Animation", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
       { type: "image", src: "/assets/Venom.PNG", title: "Creature Head Sculpt", year: 2024, desc: "A movie creature's head, sculpted and rendered in Blender. A wet, high gloss skin shader over the sculpt, lit with a single key against black.", aspectRatio: "16/9" },
       { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "The finished case, printed in a metallic blue. An organic lattice replaces the flat back, its apertures shaped around the camera array and the side buttons.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Prototypes"] },
       { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom AirPods Case", year: 2026, desc: "The finished sleeve, printed in purple. The same melted lattice wraps an AirPods Pro case, left open at the status light and along the hinge.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Prototypes"] },
@@ -65,7 +67,7 @@ const PROJECTS: Project[] = [
       { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "Caught mid laugh on a gelled teal backdrop, with the background light hot behind the head so the subject separates from it.", aspectRatio: "2/3" },
       { type: "image", src: "/assets/Photography_1.jpg", title: "Shiri Wordmark", year: 2024, desc: "A hand drawn wordmark set over a cropped apparel shot, chains and acid washed corduroy, framed close so the type sits on the garment rather than beside it.", aspectRatio: "1/1" },
       { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D-printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar, Front View", "Radar, Back View", "Radar and RGB Controller"] },
-      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "Functional system built from scratch. 3D-printed geometric casing housing the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box, Front View", "RGB Box, Back View", "Radar and RGB Controller"] },
+      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "A working LED controller with physical controls and a custom 3D-printed enclosure for the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box, Front View", "RGB Box, Back View", "Radar and RGB Controller"] },
       { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
       { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Ultron Shaver Campaign", year: 2024, desc: "A spec print advertisement for a fictional shaver brand. The rotary shaver is lit as the hero and its shadow runs back to the bloodied cartridge razor it replaces.", aspectRatio: "16/9" },
     ],
@@ -77,11 +79,11 @@ const PROJECTS: Project[] = [
     img: "/assets/Everly_Cover_Image.png",
     size: "wide",
     media: [
-      { type: "image", src: "/assets/Mina_Website.png", title: "UI/UX, minasech.net", year: 2025, desc: "Full-stack website design including React frontend and responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Everly_Cover_Image.png", title: "Everly Care Home", year: 2026, desc: "Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Mina_Website.png", title: "UI/UX, minasech.net", year: 2025, desc: "Website design and React development, with a responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Everly_Cover_Image.png", title: "Everly Care Home", year: 2026, desc: "Brand identity, responsive website design, development, and deployment for a senior care community.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
       { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Luning Dr Flyer", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
       { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Colleen Dr Flyer", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
-      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.png", title: "Morning Star Dr Flyer", year: 2022, desc: "A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.", aspectRatio: "4/5" },
+      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.png", title: "Morning Star Dr Flyer", year: 2022, desc: "A listing announcement co-branded with Compass, combining pricing, property specifications, and sales highlights.", aspectRatio: "4/5" },
       { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner, Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner, Existing Site"] },
       { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.png", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner, Concept Visualization"] },
     ],
@@ -94,7 +96,7 @@ const PROJECTS: Project[] = [
     size: "tall",
     media: [
       { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Promotional video for NABU clothing, animated in Adobe After Effects.", wide: true },
-      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "Cut in 2025 to trail the 2026 puffer jacket collection.", relatedItems: ["NABU Puffer Front", "NABU Puffer Back"] },
+      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "A teaser edited in 2025 for the 2026 puffer jacket collection.", relatedItems: ["NABU Puffer Front", "NABU Puffer Back"] },
       { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Promotional video for the summer drop, camp collar shirts and rug pattern shorts, shot as a flat lay on white." },
       { type: "image", src: "/assets/Stevie_Pic.JPG", title: "NABU 2023 Spring Collection", year: 2022, desc: "Shot in 2022 for the 2023 spring collection. Two looks on a white cyclorama, the graphic tees worn over the Persian rug trousers, with the raw fringed seams left showing down the leg." },
       { type: "image", src: "/assets/NABU_Puffer_Front.jpg", title: "NABU Puffer Front", year: 2025, desc: "Studio still from the puffer collection shoot. Woven bandana panelling across the body, sleeves, and hood, shot on a white cyclorama.", aspectRatio: "9/16", hidden: true, relatedItems: ["NABU Puffer Back", "NABU 2026 Teaser"] },
@@ -216,58 +218,49 @@ const GLOBAL_CSS = `
     .ss-contact-description { font-size: clamp(12px, 1.5vw, 14px) !important; }
   }
 
-  /* ── THE CURSOR IS A LITTLE GLASS BUBBLE ────────────────────────────────────────────
-     Ported from the Realm, which is where this shape was designed and approved (user,
-     2026-09-09; the Realm's own note carries the full history). It is three things rather
-     than one: the middle is EMPTY so the page really shows through it, a thin lit wall is
-     drawn just inside the rim by the second radial gradient, which is the glass having
-     thickness, and one small hard specular sits up and to the left, which is the only
-     thing that says "sphere" rather than "ring" at nine pixels.
-     WHAT IT REPLACES IS mix-blend-mode: difference, and the reason is measured on this
-     site's own pages rather than inherited. A difference dot over backdrop B composites to
-     B + a*(255-2B), so it INVERTS: it rendered magenta over the green card artwork and
-     cyan over the studio wall, i.e. it was a different colour on every ground rather than
-     one object. And it cancels exactly at B=127.5, so it faded as the ground approached
-     mid grey: 26.8 dLum over the Work card art against 200+ on the flat page grounds,
-     which is the one page made entirely of mid-tone imagery.
-     THE 1px RIM IS LOAD BEARING, NOT DECORATION. An empty middle has to be paid for at the
-     edge, and the drop shadow carries the bright end the way the fill used to. A
-     borderless version was built for the Realm and rejected for exactly that. box-sizing
-     comes from the reset at the top of this sheet, which is what lets the rim be a real
-     border without growing the dot past 9px. */
+  /* ── THE CURSOR IS THE PLAIN WHITE DOT AGAIN ────────────────────────────────────────
+     Reverted at Shyon's request (2026-09-10). It wore the Realm's glass bubble for a day,
+     ported across on 2026-09-09; the Realm still wears that shape, this surface goes back
+     to the solid difference dot it had before.
+     WHAT COMES BACK WITH IT is the mix-blend-mode: difference trade, and it is accepted
+     rather than overlooked. Over a backdrop B a difference dot composites to B + a*(255-2B),
+     so it INVERTS (magenta over the green card artwork, cyan over the studio wall) and it
+     cancels exactly at B=127.5, measured at 26.8 dLum over the Work card art against 200+
+     on the flat page grounds. Work is the one page made entirely of mid-tone imagery, so
+     that is where it is thinnest. Do not "fix" this by adding a rim or a shadow: a
+     difference dot with either is neither thing. Put the bubble back instead, it is in
+     the Realm and in git.
+     NONE OF THE FOUR DEFECTS THAT PASS FIXED COMES BACK, because not one of them was the
+     dot's appearance: the pointer is still gated on (hover: none) rather than on a width
+     breakpoint, images and video still refuse a native HTML5 drag, the transition is still
+     held behind .ss-cursor-ready so the injected sheet cannot animate the first paint, and
+     the dot is still revealed by real movement rather than parking in the top left corner
+     of a fresh load. */
   #ss-cursor-dot {
     position: fixed; top: 0; left: 0; z-index: 99999;
     width: 9px; height: 9px;
+    background: #ffffff;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,.85);
-    background:
-      radial-gradient(circle at 31% 27%, rgba(255,255,255,.95) 0 10%, rgba(255,255,255,0) 34%),
-      radial-gradient(circle at 50% 52%, rgba(255,255,255,0) 50%, rgba(255,255,255,.34) 80%, rgba(255,255,255,.10) 100%);
-    filter: drop-shadow(0 0 1.4px rgba(0,0,0,.85));
     pointer-events: none;
-    transform: translate(-50%,-50%) scale(1);
+    transform: translate(-50%,-50%);
     opacity: 0;   /* shown on the first real pointer move, see the Cursor component */
+    mix-blend-mode: difference; /* always contrasts, on white or on dark */
   }
-  /* THE TRANSITIONS ARE HELD BACK UNTIL AFTER THE FIRST PAINT, and that is not a nicety.
+  /* THE TRANSITION IS HELD BACK UNTIL AFTER THE FIRST PAINT, and that is not a nicety.
      This whole sheet is injected by a useEffect, so it lands AFTER the dot has already
      rendered at the UA default opacity of 1: with the transition declared in the rule
-     above, the arrival of opacity:0 was ANIMATED, and the bubble faded out of the top
-     left corner over .18s on every single load. Measured at 0.739 opacity a second after
-     a settled load, with no pointer event having fired at all. The class is added on the
+     above, the arrival of opacity:0 was ANIMATED, and the dot faded out of the top left
+     corner over .18s on every single load. Measured at 0.739 opacity a second after a
+     settled load, with no pointer event having fired at all. The class is added on the
      frame after mount, so the first application of opacity:0 snaps and everything after
      it eases. The Realm has no such rule because its CSS is a style block in the head,
      parsed before its cursor element exists. */
-  #ss-cursor-dot.ss-cursor-ready {
-    transition: opacity .18s ease, transform .28s var(--ease-out), border-color .28s var(--ease-out);
-  }
-  /* THE HOVER STATE WAS WIRED EVERYWHERE AND STYLED NOWHERE. useCursorHover puts this class
-     on the body from links, cards, nav items and buttons across all four pages, and not one
-     rule named it, so the pointer never reacted to anything it was over. The bubble swells
-     and its rim softens: the shape is unchanged, so it still reads as the same object. */
-  body.ss-hover #ss-cursor-dot {
-    transform: translate(-50%,-50%) scale(2.2);
-    border-color: rgba(255,255,255,.55);
-  }
+  #ss-cursor-dot.ss-cursor-ready { transition: opacity .18s ease; }
+  /* NO HOVER RULE, and that is the revert too: the prior pointer did not react to what it
+     was over. useCursorHover still puts .ss-hover on the body (it always did, and nothing
+     styled it then either), so a hover state is one rule away if it is ever wanted. A
+     scale on a difference dot is the one thing not to reach for: 2.2x of pure inversion
+     is a blob rather than a pointer. */
 
   /* modal / viewer scrollbar hide */
   .ss-modal-grid { scrollbar-width: none; }
@@ -311,13 +304,6 @@ const GLOBAL_CSS = `
   }
   .ss-tile:hover img, .ss-tile:hover video { transform: scale(1); }
 
-  /* about photo */
-  .ss-about-photo {
-    transform: scale(1.12);
-    transition: transform 10s ease;
-  }
-  .ss-about-photo-active { transform: scale(1) !important; }
-
   /* hero bg */
   .ss-hero-bg {
     transform: scale(1.06);
@@ -347,6 +333,42 @@ const GLOBAL_CSS = `
      this the spans are inline boxes and every transform is silently dropped. */
   .ss-hero-name .ss-hero-ch { display: inline-block; will-change: transform, opacity, filter; }
   .ss-hero-name .ss-hero-line { display: block; white-space: nowrap; }
+  .ss-home-hero { min-height: 620px; }
+  .ss-hero-intro { max-width: 570px; }
+  .ss-hero-kicker {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 22px; color: rgba(245,242,237,.82);
+    font-size: 12px; font-weight: 600; letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+  .ss-hero-kicker::before {
+    content: ''; width: 27px; height: 1px; background: var(--sky);
+  }
+  .ss-hero-description {
+    margin-top: 24px; max-width: 435px; font-size: 16px; line-height: 1.55;
+    color: rgba(245,242,237,.82);
+  }
+  .ss-hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 22px; margin-top: 24px; }
+  .ss-hero-actions button {
+    min-height: 46px; font-size: 13px; font-weight: 600;
+    transition: background .22s var(--ease-out), color .22s var(--ease-out), transform .22s var(--ease-out);
+  }
+  .ss-hero-primary { background: var(--white); color: #060606; padding: 0 23px; border: 0; border-radius: 999px; }
+  /* The legacy button reset clears backgrounds and focus with !important. */
+  #root .ss-hero-primary { background: var(--white) !important; }
+  .ss-hero-secondary { background: none; color: var(--white); padding: 0 2px; border: 0; text-decoration: underline; text-underline-offset: 5px; text-decoration-color: rgba(245,242,237,.35); }
+  .ss-hero-primary:hover { background: #dbeef5; transform: translateY(-2px); }
+  #root .ss-hero-primary:hover { background: #dbeef5 !important; }
+  .ss-hero-secondary:hover { color: var(--sky); }
+  .ss-hero-actions button:focus-visible, .ss-story-cue:focus-visible { outline: 2px solid var(--sky); outline-offset: 5px; }
+  #root button:focus-visible { outline: 2px solid var(--sky) !important; outline-offset: 5px; }
+  .ss-contact-entry:hover, .ss-contact-entry:focus-visible { background: rgba(56,189,248,.06); }
+  @media (max-width: 640px) {
+    .ss-home-hero { min-height: 560px; }
+    .ss-hero-kicker { margin-bottom: 16px; font-size: 10px; }
+    .ss-hero-description { margin-top: 18px; }
+    .ss-hero-actions { gap: 4px 16px; margin-top: 18px; }
+  }
 
   /* ── Lego Realm storyboard (home page scroll) ── */
   .ss-home-scroll {
@@ -450,7 +472,7 @@ const GLOBAL_CSS = `
      carries a vh cap (cropping at the cap rather than distorting, hence object-fit)
      and the whole mechanism stands down to free scrolling on a narrow or a short
      window, where the cap would have to eat most of the picture to fit. */
-  .ss-home-scroll { scroll-snap-type: y mandatory; }
+  .ss-home-scroll { scroll-snap-type: y proximity; }
   .ss-snap { scroll-snap-align: start; scroll-snap-stop: always; }
   .ss-slide {
     position: relative;
@@ -1106,7 +1128,7 @@ const GLOBAL_CSS = `
       max-width: 100% !important;
       max-height: 65dvh !important;
     }
-    .ss-modal-grid { 
+    .ss-modal-grid {
       display: flex !important;
       flex-direction: row !important;
       gap: 16px;
@@ -1131,8 +1153,8 @@ const GLOBAL_CSS = `
       align-items: stretch !important;
       justify-content: flex-start !important;
       gap: 20px !important;
-      maxHeight: 95dvh !important;
-      maxWidth: 100vw !important;
+      max-height: 92dvh !important;
+      max-width: 100vw !important;
       padding: 20px !important;
       overflow-y: auto !important;
       overflow-x: hidden !important;
@@ -1144,17 +1166,17 @@ const GLOBAL_CSS = `
       align-self: flex-start !important;
     }
     .ss-media-viewer > div:nth-child(2) {
-      order: 2 !important;
+      order: 1 !important;
       flex-shrink: 0 !important;
       width: 100% !important;
     }
     .ss-media-viewer > div:nth-child(3) {
-      order: 1 !important;
+      order: 2 !important;
       flex-shrink: 0 !important;
       width: 100% !important;
-      padding-right: 12px !important;
+      padding-right: 4px !important;
       padding-top: 20px !important;
-      padding-left: 16px !important;
+      padding-left: 4px !important;
     }
     .ss-media-viewer > div:nth-child(2) > div {
       width: 100% !important;
@@ -1167,6 +1189,7 @@ const GLOBAL_CSS = `
       width: auto !important;
       height: auto !important;
     }
+    .ss-media-viewer .ss-asset-title { font-size: 34px !important; margin-bottom: 16px !important; }
   }
 
   @media (max-width: 768px) {
@@ -1185,32 +1208,6 @@ const GLOBAL_CSS = `
     }
   }
 
-  /* A SHORT SCREEN BUYS ITS LAST LINE OUT OF THE GAP, NOT OUT OF THE COPY. At 1280x720 the
-     column still ran 14px over once the AI evaluation clause said what the job actually is,
-     and 14px is under half a 35px line, so there was nothing to trim in the text that would
-     not have cost a whole line of meaning. The headline and the rule carry 48px of air
-     between them (16 under the H2, 16 either side of the rule), which is right on a full
-     display and is the first thing that should give on a laptop that is 720 tall. 26px back,
-     none of it from the words. 760 is the same short-height breakpoint the homepage deck
-     already uses. Both margins are INLINE styles, hence !important. */
-  @media (max-height: 760px) {
-    .ss-about-page h2 { margin-bottom: 2px !important; }
-    .ss-about-rule { margin-top: 6px !important; margin-bottom: 6px !important; }
-  }
-
-  /* THE 769 TO 1100 BAND IS THE NARROWEST MEASURE ON THE PAGE, and it is the only place the
-     About copy still overran its own box after the padding was made viewport relative. The
-     grid is a flat 1fr 1fr, so at 1024 the text column is 512 wide and the 8vw + 60px gutters
-     leave 370 of it; at 20px Cormorant that is about 38 characters a line, which is under the
-     45 to 75 a paragraph wants and wrapped 95 words into 14 lines and 475px of height. This
-     is therefore a typographic fix and a fitting fix at once: 17px takes the measure to about
-     50 characters and the block to 9 lines. It sits between the 20px the wide layout uses and
-     the 15px the 768 rule already steps down to, so the page reads as one progression.
-     It needs !important because the size is written as an INLINE style on the paragraphs. */
-  @media (min-width: 769px) and (max-width: 1100px) {
-    .ss-about-page p { font-size: 17px !important; }
-  }
-
   @media (max-width: 700px) {
     .ss-hero-bg { object-position: 82% 5% !important; }
   }
@@ -1218,7 +1215,7 @@ const GLOBAL_CSS = `
   @media (max-width: 640px) {
     .ss-hero-bg { object-position: 75% 5% !important; }
     /* homepage content positioning on mobile */
-    .ss-home-page > div > div { bottom: 18vh !important; }
+    .ss-home-page .ss-hero-intro { bottom: 17vh !important; }
     /* navigation hint on mobile */
     /* modal close button positioning */
     .ss-modal-close { top: 20px !important; }
@@ -1271,60 +1268,6 @@ const GLOBAL_CSS = `
      nothing and the negative tracking ran the letters into each other. Removed rather
      than retuned, because each heading already states what it wants inline. */
 
-  /* == ABOUT STACKS UNDER 768, AND THAT REPLACES SHRINKING THE TYPE ==================
-     The grid was a flat 1fr 1fr at EVERY width, so the copy column is half the window
-     less its own 8vw + 60px gutters, and on a phone that is nothing: measured at 390 the
-     paragraphs, the h2 and the tile grid then under them were all rendering 172px wide,
-     about 25 characters a line. Three separate media blocks had answered that by
-     shrinking the words, 15px at 768, then 13px on a 1.4 line at 640, with the eyebrow
-     taken down to 6px and the h2 to 42. That is not a fix. A narrow measure is not made
-     readable by setting it smaller, it is made worse, and 6px is not a size any type is
-     read at. All three blocks are deleted rather than re-tuned.
-     Stacked, the portrait takes the top of the screen and the copy runs the full width
-     beneath it, bounded by the 480px maxWidth the paragraphs already carry. The measure
-     goes 172 -> 342 at 390, and the body goes back to the 17px the desktop page sets, so
-     the phone reads the same text at the same size as the laptop instead of a squinting
-     version of it.
-     PHOTO FIRST, and by grid order rather than by moving it in the DOM: an About page
-     should open on the person, while the source order stays the wide layout's reading
-     order (copy left, portrait right) for anything reading the document linearly.
-     THE PAGE HAS TO BE ABLE TO SCROLL, and this is the half that would have failed
-     silently. Every page root here is position:absolute inset:0 with overflow:hidden,
-     which is right while the layout is two full-height columns and truncates the moment
-     it is not: stacked content taller than the viewport is not scrolled to, it is cut
-     off. So the root takes overflow-y:auto, the grid gives up height:100% for a
-     min-height, and the text column gives up both its overflow:hidden and its
-     justify-content:center, since there is now more copy than screen and centring it
-     would push the top of it off. All four are INLINE styles, hence the !important.
-     THE SECOND QUERY IS THE LANDSCAPE PHONE, and it clips worse than the portrait one
-     ever did. A turned phone is wider than 768 and so misses the first query entirely,
-     while being far too SHORT for a full height column: measured, the copy overran its
-     own box by 230px at 844x390 and 140 at 932x430, with the tile grid's bottom edge 198px
-     past the column at the first of them, all of it silently cut because the column is
-     overflow:hidden and the page above it does not scroll. 620 is the same short screen
-     height the homepage deck already stands down at; the 1100 keeps it off a laptop. */
-  @media (max-width: 768px), (max-width: 1100px) and (max-height: 620px) {
-    .ss-about-page { overflow-y: auto !important; overflow-x: hidden !important; }
-    .ss-about-grid {
-      grid-template-columns: 1fr !important;
-      grid-auto-rows: min-content;
-      height: auto !important; min-height: 100%;
-    }
-    .ss-about-photo-col { order: -1; height: 46vh; min-height: 220px; }
-    .ss-about-photo { object-position: center 0% !important; }
-    .ss-about-text-column {
-      justify-content: flex-start !important;
-      overflow: visible !important;
-      padding: 34px 24px 72px 24px !important;
-    }
-    .ss-about-page p { font-size: 17px !important; line-height: 1.55 !important; }
-    /* The base clamp is 5.2vw, which is tuned for a HALF width column and pins to its 44px
-       floor everywhere under 846. Against the full width column that is small: 11vw runs
-       48 at 390 up to 72 at 768, and "About Me" sets about 220px into 342 and 330 into 720,
-       so it fills its measure at both ends without ever wrapping. */
-    .ss-about-page h2 { font-size: clamp(48px, 11vw, 72px) !important; }
-  }
-
   /* smooth, rounded surfaces instead of sharp corners */
   .ss-card {
     border-radius: 22px !important;
@@ -1358,9 +1301,69 @@ const GLOBAL_CSS = `
   .ss-media-viewer img,
   .ss-media-viewer video { border-radius: 22px !important; }
   .ss-contact-btn { border-radius: 980px !important; }
-  .ss-about-photo { border-radius: 20px !important; }
 
   /* Work page: hover "View" cue on cards + CTA link */
+
+  .ss-contact-page { overflow-y: auto !important; justify-content: flex-start !important; overscroll-behavior: contain; }
+  .ss-contact-content { flex-shrink: 0; margin: auto 0; padding: 120px max(24px, 8vw) 72px !important; }
+  @media (max-width: 640px) {
+    .ss-contact-page .ss-contact-heading { font-size: clamp(42px, 11vw, 64px) !important; }
+    .ss-contact-page .ss-contact-description { font-size: 16px !important; text-align: left !important; }
+    .ss-contact-content > div:first-child { align-items: flex-start !important; flex-direction: column; gap: 18px !important; }
+  }
+
+  .ss-work-page [role="button"]:focus-visible { outline: 2px solid var(--sky); outline-offset: 5px; }
+  .ss-home-hero { min-height: max(620px, 100svh); }
+  @media (max-height: 560px) and (min-width: 641px) {
+    .ss-home-page .ss-hero-intro { bottom: 85px !important; }
+    .ss-hero-name { font-size: 70px !important; }
+  }
+  @media (pointer: coarse) {
+    button, a, [role="button"] { touch-action: manipulation; }
+  }
+  @media (max-width: 400px) {
+    .ss-media-viewer .ss-asset-title { font-size: 28px !important; overflow-wrap: anywhere; }
+  }
+
+  .ss-scell, .ss-tile { display: block; width: 100%; text-align: left; padding: 0; font: inherit; }
+  .ss-tile:focus-visible .ss-tile-info { opacity: 1; }
+  @media (hover: none) { .ss-tile-info { opacity: 1 !important; } }
+  .ss-work-modal { max-height: calc(100dvh - 32px) !important; overflow-y: auto; padding: 20px; }
+  .ss-work-modal .ss-modal-close { position: static !important; display: block; align-self: flex-end; min-height: 44px; margin: 0 0 20px auto; flex-shrink: 0; }
+  @media (max-width: 1023px), (max-height: 600px) {
+    .ss-work-modal { display: block !important; width: calc(100vw - 32px) !important; }
+    .ss-work-modal .ss-scroll { overflow: visible !important; }
+    .ss-work-modal .ss-modal-grid { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; overflow: visible !important; max-height: none !important; gap: 16px !important; }
+    .ss-work-modal .ss-modal-grid > * { width: 100% !important; min-width: 0; }
+    .ss-work-modal .ss-scroll-fade { display: none; }
+  }
+  @media (max-width: 640px) {
+    .ss-home-hero { min-height: max(760px,100svh); }
+    .ss-home-page .ss-hero-intro { bottom: 60px !important; }
+    .ss-home-hero .ss-hero-bg { height: 62% !important; object-position: 75% 5% !important; mask-image: linear-gradient(#000 60%,transparent); }
+    .ss-work-modal { padding: 14px; }
+    .ss-work-modal .ss-tile { min-height: 160px !important; }
+  }
+
+  /* Chapter titles must fit their actual column, including intermediate window widths. */
+  .ss-chapter-head > * { min-width: 0; }
+  .ss-chapter-head .ss-story-kicker { overflow-wrap: anywhere; }
+  .ss-chapter-head .ss-story-kicker .ss-w { max-width: 100%; line-height: inherit; }
+  .ss-slide-map .ss-chapter-head { row-gap: 24px; }
+  @media (max-width: 1099px) {
+    .ss-chapter-head, .ss-slide-map .ss-chapter-head {
+      grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start;
+    }
+    .ss-chapter-head .ss-story-kicker { font-size: clamp(32px, 5.3vw, 58px); line-height: 1.05; }
+    .ss-chapter-head .ss-chapter-body { max-width: 68ch; }
+  }
+  /* Contact sizing follows CSS breakpoints even when the window changes without remounting. */
+  .ss-contact-entry > span:nth-child(2) { white-space: normal !important; overflow-wrap: anywhere; }
+  @media (max-width: 640px) {
+    .ss-contact-entry { gap: 16px !important; padding: 16px 8px !important; }
+    .ss-contact-entry > span:first-child { width: auto !important; font-size: 16px !important; }
+    .ss-contact-entry > span:nth-child(2) { font-size: 13.5px !important; }
+  }
 
   /* asset titles: rounded "iPhone bubble" font (SF Pro Rounded) */
   /* was SF Pro Rounded, the iMessage bubble face. One family means one family. */
@@ -1381,6 +1384,7 @@ const GLOBAL_CSS = `
        the letters are the name, and a visitor who asked for less motion still has to
        be able to read it. */
     .ss-hero-name, .ss-hero-name * { opacity: 1 !important; transform: none !important; filter: none !important; }
+    .ss-hero-bg { transform: none !important; }
     /* and the deck itself: snapping is motion the visitor did not ask for */
     .ss-home-scroll { scroll-snap-type: none !important; }
   }
@@ -1407,7 +1411,7 @@ function Cursor() {
        the pointer leaves the window, so it never sits stranded where the mouse left. */
     /* REVEALED BY REAL MOVEMENT, NOT BY THE FIRST EVENT. Chrome dispatches a mousemove
        when a page loads under the pointer, and in a fresh tab the pointer has no position
-       yet, so that event arrives at 0,0 and flashed the bubble in the top left corner,
+       yet, so that event arrives at 0,0 and flashed the dot in the top left corner,
        which is the bug this guard exists to kill. Measured: opacity 0.74 at rest on two
        runs in three. The delta is tracked HERE rather than read off the event's own
        movementX/movementY, which is not populated by every source (a synthetic move over
@@ -1451,17 +1455,8 @@ function useCursorHover() {
 /* ─────────────────────────────────────────────────────────────
    PAGE TRANSITION VARIANTS
 ───────────────────────────────────────────────────────────── */
-/* The four page roots are all `position:absolute; inset:0`, so they already occupy the
-   same box and AnimatePresence can run them CONCURRENTLY. It used to be mode="wait",
-   which unmounts the outgoing page in full before mounting the incoming one, so every
-   navigation went through a beat of bare root background: a black flash between pages.
-   They now overlap.
-   OPACITY IS LINEAR ON PURPOSE. Two opaque layers crossfading on an eased curve are not
-   the inverse of each other, so their combined coverage dips below 1 in the middle and
-   the root shows through as a grey wash. Linear on both is the only pairing that holds.
-   THE SCALE ONLY EVER SHRINKS TOWARD 1, never below it. A page that scaled under 1 would
-   reveal its own edges (About is cream on a dark root, so that reads as a hairline frame);
-   starting at 1.012 and settling means the layer over-covers for the whole move. */
+/* Page roots overlap during a short crossfade. Content keeps its natural scale,
+   and each page supplies a dark background so navigation never exposes the root. */
 const APPLE_EASE = [0.32, 0.72, 0, 1] as const;
 
 /* Read ONCE at module load. The reduced-motion block in GLOBAL_CSS kills CSS animations
@@ -1472,23 +1467,12 @@ const REDUCE = typeof window !== "undefined"
   && typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const fade = REDUCE
-  ? {
-      initial: { opacity: 0 },
-      animate: { opacity: 1, transition: { duration: 0.001 } },
-      exit: { opacity: 0, transition: { duration: 0.001 } },
-    }
-  : {
-      initial: { opacity: 0, scale: 1.012 },
-      animate: {
-        opacity: 1, scale: 1,
-        transition: {
-          duration: 0.62, ease: APPLE_EASE,
-          opacity: { duration: 0.42, ease: "linear" as const },
-        },
-      },
-      exit: { opacity: 0, transition: { duration: 0.42, ease: "linear" as const } },
-    };
+const fade = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+  transition: { duration: REDUCE ? 0.001 : 0.28, ease: "linear" as const },
+};
 
 /* ─────────────────────────────────────────────────────────────
    ROOT
@@ -1499,7 +1483,7 @@ export default function App() {
   const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const pageIdx = PAGE_ORDER.indexOf(page);
-  /* About is the one page on a light ground, so its bar frosts light with dark type. */
+  // Every top-level introduction uses a dark ground.
   const lightPage = page === "about";
   const cooldown = useRef(false);
   const hover = useCursorHover();
@@ -1524,7 +1508,7 @@ export default function App() {
 
   /* bg color sync */
   useEffect(() => {
-    const bg = page === "about" ? "#ede8e0" : "#060606";
+    const bg = page === "about" ? "#f1eff2" : "#060606";
     document.documentElement.style.backgroundColor = bg;
     document.body.style.backgroundColor = bg;
   }, [page]);
@@ -1545,6 +1529,11 @@ export default function App() {
     setPage(next);
   }, [page]);
 
+  const openMediaByTitle = useCallback((title: string) => {
+    const item = PROJECTS.flatMap(project => project.media).find(media => media.title === title);
+    if (item) setViewerItem(item);
+  }, []);
+
   /* wheel nav — skip on modals and work page */
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
@@ -1552,9 +1541,9 @@ export default function App() {
       if (modalOpenRef.current) return;
       if (cooldown.current) return;
       // Home scrolls natively into the Lego Realm storyboard, so the wheel never flips pages there
-      if (currentPageRef.current === "home") return;
+      if (currentPageRef.current === "home" || currentPageRef.current === "about" || currentPageRef.current === "contact") return;
       // Skip page navigation on work page for mobile/tablet (screen < 1024px)
-      if (currentPageRef.current === "work" && window.innerWidth < 1024) return;
+      if (currentPageRef.current === "work") return;
       // Skip if over a scrollable element
       const target = e.target as HTMLElement;
       if (target.closest(".ss-modal-grid") || target.closest(".ss-media-viewer")) return;
@@ -1584,7 +1573,7 @@ export default function App() {
       if (modalOpenRef.current) return;
       if (cooldown.current) return;
       // Home scrolls natively into the Lego Realm storyboard
-      if (currentPageRef.current === "home") return;
+      if (currentPageRef.current === "home" || currentPageRef.current === "about" || currentPageRef.current === "contact") return;
       // Skip page navigation on work page (use buttons only)
       if (currentPageRef.current === "work") return;
       const target = e.target as HTMLElement;
@@ -1624,7 +1613,7 @@ export default function App() {
         return;
       }
       // On home the arrows scroll the storyboard natively instead of flipping pages
-      if (page === "home") return;
+      if (page === "home" || page === "about" || page === "contact" || page === "work") return;
       // Otherwise page navigation
       if (e.key === "ArrowDown" || e.key === "ArrowRight")
         setPage(PAGE_ORDER[Math.min(PAGE_ORDER.length - 1, pageIdx + 1)]);
@@ -1692,39 +1681,9 @@ export default function App() {
         </ul>
       </nav>
 
-      {/* ── PAGE INDICATOR ───────────────────────────────────── */}
-      <div
-        style={{
-          position: "fixed", right: "max(32px, calc(32px + env(safe-area-inset-right)))", top: "50%",
-          transform: "translateY(-50%)",
-          zIndex: 400,
-          display: "flex", flexDirection: "column", gap: 12,
-        }}
-      >
-        {PAGE_ORDER.map((p) => (
-          <button
-            key={p}
-            onClick={() => navigate(p)}
-            className="ss-tap"
-            aria-label={p}
-            style={{
-              width: 10, height: 10, borderRadius: "50%",
-              // the dots lost the blend with the nav, so they take the page's own tone
-              border: `1px solid ${lightPage ? "rgba(20,17,11,.42)" : "rgba(245,242,237,.4)"}`,
-              background: page === p ? (lightPage ? "#14110b" : "var(--white)") : "transparent",
-              transform: page === p ? "scale(1.5)" : "scale(1)",
-              transition: "all 0.4s ease",
-              cursor: "none",
-              position: "relative",
-            }}
-            {...hover}
-          />
-        ))}
-      </div>
-
 {/* ── PAGES ────────────────────────────────────────────── */}
       <AnimatePresence>
-        {page === "home" && <HomePage key="home" onNavigate={navigate} />}
+        {page === "home" && <HomePage key="home" onNavigate={navigate} onMediaClick={openMediaByTitle} />}
         {page === "work" && <WorkPage key="work" onCardClick={setModalProject} />}
         {page === "about" && <AboutPage key="about" />}
         {page === "contact" && <ContactPage key="contact" />}
@@ -1802,7 +1761,7 @@ function NavLink({ label, active, onClick, onLight }: { label: string; active: b
           height: 1, background: "var(--sky)",
           width: active ? "100%" : 0,
           transition: "width 0.4s var(--ease-out)",
-          display: "none",
+          display: "block",
         }}
       />
     </button>
@@ -1935,7 +1894,7 @@ function HeroName({ isMobile }: { isMobile: boolean }) {
   );
 }
 
-function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
+function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void; onMediaClick: (title: string) => void }) {
   const [loaded, setLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
   // read once: none of its inputs change while the page is open, and it must not
@@ -1952,9 +1911,48 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const scrollToStory = () => {
-    const el = scrollRef.current;
-    if (el) el.scrollTo({ top: el.clientHeight, behavior: "smooth" });
+  const scrollAnimation = useRef<(() => void) | null>(null);
+  useEffect(() => () => scrollAnimation.current?.(), []);
+  const scrollToSection = (id: string) => {
+    scrollAnimation.current?.();
+    const root = scrollRef.current;
+    const section = root?.querySelector<HTMLElement>(`[data-slide="${id}"]`);
+    if (!root || !section) return;
+    const start = root.scrollTop;
+    const target = Math.min(root.scrollHeight - root.clientHeight,
+      start + section.getBoundingClientRect().top - root.getBoundingClientRect().top);
+    if (REDUCE) { root.scrollTo({ top: target, behavior: "instant" }); return; }
+    const distance = target - start;
+    const duration = Math.min(2600, 1200 + Math.abs(distance) * .45);
+    const started = performance.now();
+    const oldSnap = root.style.scrollSnapType;
+    const oldBehavior = root.style.scrollBehavior;
+    root.style.scrollSnapType = "none";
+    root.style.scrollBehavior = "auto";
+    let frame = 0;
+    const stop = () => {
+      cancelAnimationFrame(frame);
+      root.style.scrollSnapType = oldSnap;
+      root.style.scrollBehavior = oldBehavior;
+      root.removeEventListener("wheel", stop);
+      root.removeEventListener("touchstart", stop);
+      root.removeEventListener("pointerdown", stop);
+      window.removeEventListener("keydown", stop);
+      scrollAnimation.current = null;
+    };
+    scrollAnimation.current = stop;
+    root.addEventListener("wheel", stop, { passive: true });
+    root.addEventListener("touchstart", stop, { passive: true });
+    root.addEventListener("pointerdown", stop, { passive: true });
+    window.addEventListener("keydown", stop);
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - started) / duration);
+      const eased = (1 - Math.cos(Math.PI * progress)) / 2;
+      root.scrollTop = start + distance * eased;
+      if (progress < 1) frame = requestAnimationFrame(step);
+      else stop();
+    };
+    frame = requestAnimationFrame(step);
   };
 
   return (
@@ -1964,7 +1962,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       style={{ position: "absolute", inset: 0, background: "#060606" }}
     >
       {/* ── HERO (first viewport) ── */}
-      <div className="ss-snap" data-slide="hero" data-label="Top" style={{ position: "relative", height: "100dvh", overflow: "hidden" }}>
+      <div className="ss-home-hero ss-snap" data-slide="hero" data-label="Top" style={{ position: "relative", height: "100dvh", overflow: "hidden" }}>
         {/* BG image */}
         <img
           src="/assets/New_Shiri_Site_Pic.jpg"
@@ -1987,44 +1985,46 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         }} />
 
         {/* Content */}
-        <div style={{ position: "absolute", bottom: isMobile ? "14vh" : "24vh", left: "8vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
+        <div className="ss-hero-intro" style={{ position: "absolute", bottom: isMobile ? "14vh" : "24vh", left: "8vw", right: "8vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
+          <motion.p className="ss-hero-kicker"
+            initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: REDUCE ? 0 : 0.4, delay: REDUCE ? 0 : 0.2, ease: APPLE_EASE }}>
+            Designer &amp; developer
+          </motion.p>
           <HeroName isMobile={isMobile} />
 
-          <motion.p
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.58, ease: APPLE_EASE }}
-            style={{ marginTop: 16, maxWidth: 460, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}
-          >
-            Click{" "}
-            <span
-              role="button" tabIndex={0}
-              onClick={() => onNavigate("work")}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onNavigate("work"); }}
-              {...hover}
-              style={{ color: "#38bdf8", textDecoration: "underline", textUnderlineOffset: "3px", textDecorationThickness: "1.5px", fontWeight: 600, cursor: "none" }}
-            >
-              here
-            </span>{" "}
-            {/* THE WHOLE SENTENCE, ON EVERY DEVICE (user, 2026-09-02). The tail used to be cut
-                to a full stop under 640px, so a phone was never told the 3D environment existed
-                at all. Whether you can ENTER it is a separate question, answered at the end of
-                the storyboard; being able to read about it is not gated on anything. */}
-            to browse my site, or scroll down for the interactive 3D environment built into it.
-          </motion.p>
+          <motion.div className="ss-hero-summary"
+            initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.38, delay: REDUCE ? 0 : 0.5, ease: APPLE_EASE }}>
+            <p className="ss-hero-description">
+              Brand identity, web development, and 3D design. Based in the Bay Area.
+            </p>
+            <div className="ss-hero-actions">
+              <button type="button" className="ss-hero-primary" onClick={() => onNavigate("work")} {...hover}>
+                View my work
+              </button>
+              <button type="button" className="ss-hero-secondary" onClick={() => scrollToSection("open")} {...hover}>
+                Explore the Lego Realm
+              </button>
+            </div>
+          </motion.div>
         </div>
 
         {/* Scroll cue into the storyboard */}
         <motion.button
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.15 }}
+          initial={REDUCE ? false : { opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ duration: 0.35, delay: REDUCE ? 0 : 0.7 }}
           className="ss-story-cue"
-          onClick={scrollToStory}
+          onClick={() => scrollToSection("selected")}
+          aria-label="Scroll to selected work"
           {...hover}
           style={{ cursor: "none" }}
         >
           <span className="ss-cue-arrow">▼</span>
         </motion.button>
       </div>
+
+      <SelectedWork onOpen={onMediaClick} onAllWork={() => onNavigate("work")} />
 
       {/* ── STORYBOARD, AS A DECK ──
           One chapter or one frame row per screen, each locking in place and staging
@@ -2042,8 +2042,8 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <motion.img
               className="ss-open-img"
               variants={sbOpen}
-              src="/assets/story/story_aerial_town.jpg"
-              alt="The town from above: the Ruins, the Coffee Shop, the Cottage across the river, and the Modern House with a car on its driveway."
+              src="/assets/story/story_sunset.jpg"
+              alt="The cottage and footbridge beside the river at sunset."
               decoding="async"
             />
             <div className="ss-open-veil" aria-hidden />
@@ -2052,7 +2052,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <Words className="ss-open-title" text="My Lego Realm" variant={sbWordUp} stagger={0.07} />
             <Words
               className="ss-open-line"
-              text="An interactive real-time 3D environment, built brick by brick in Blender. Walk the town and step inside any building to see the work it holds."
+              text="A real-time 3D environment you can walk through in your browser. Cross the river, climb the ruins, and find projects inside the buildings."
               variant={sbWordIn}
               stagger={0.018}
             />
@@ -2070,7 +2070,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               So the same shot comes back, close, with the four buildings pinned on it and
               a card that opens on whichever one you pick. Its four payloads are the four
               stills those two slides were showing anyway. */}
-          <Slide id="map" label="The town" className="ss-slide-map" stagger={0.18}>
+          <Slide id="map" label="Navigation" className="ss-slide-map" stagger={0.18}>
             {/* A SLIM HEADER OVER A WIDE MAP, never a type column beside a small one. Side
                 by side the map came out 778 wide and the card covered 40% of it, so two of
                 the four buildings were hidden the moment you opened one; and the title, at
@@ -2086,36 +2086,11 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <div className="ss-map-col">
               <StoryChapter
                 pair
-                kicker="What it is"
-                body="A small town built on a LEGO-inspired baseplate. Each structure holds a different branch of the work, and walking into one is how you open it."
+                kicker="Navigation"
+                body="The coffee shop opens client work, the cottage holds personal projects, and the house leads to About. NABU is at the crystal above the ruins."
               />
               <RealmMap />
-              <div className="ss-map-hint">Pick a structure to see what it holds</div>
-            </div>
-          </Slide>
-
-          {/* WHY: THE QUIET ONE. Every screen either side of it is loud, the map before it
-              and the workshop after, so this one is deliberately the least furnished thing
-              on the deck: a title, the paragraph, and one picture with no border, no head
-              strip and no caption box. Its still is the last in-engine frame that is not
-              the town itself, and the figure IS the subject of the copy. */}
-          <Slide id="why" label="Why I made it" className="ss-slide-why" stagger={0.2}>
-            <div className="ss-quiet">
-              {/* STILL `pair`. The stacking that the two column layout needs is done in CSS
-                  at the same breakpoint, NOT by dropping this prop: a stacked chapter is
-                  taller than a side by side one, and dropping it here made the slide 793px
-                  tall inside a 700px viewport at 1024 x 700, which under mandatory snapping
-                  is a screen whose bottom cannot be reached. See .ss-quiet. */}
-              <StoryChapter
-                pair
-                kicker={"Why I\nmade it"}
-                body="The environment is a work sample in its own right. Building it took the same disciplines the rest of the portfolio presents, hard-surface modeling and UV work in Blender, real-time rendering and collision in the browser, and the front-end engineering that ties the two together. It also goes back to where my work started, stop-motion films built from LEGO, and to the technologies I have taken on since."
-              />
-              <Plate
-                scene="The player figure"
-                src="/assets/story/story_figure_front.jpg"
-                caption="A younger me by design. Assembled from separate parts rather than one mesh: each was modeled and textured on its own, then measured into place and bound to the rig at load time."
-              />
+              <div className="ss-map-hint">Select a building to preview it</div>
             </div>
           </Slide>
 
@@ -2127,11 +2102,11 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               The caption is not lost with the frames, it is MOVED: one line under the sheet
               that answers to whichever cell you are on, so seven captions cost the height of
               one and the sheet stays a sheet. */}
-          <Slide id="shop" label="How I made it" className="ss-slide-shop" stagger={0.18}>
+          <Slide id="shop" label="Development" className="ss-slide-shop" stagger={0.18}>
             <StoryChapter
               pair
-              kicker={"How I\nmade it"}
-              body="Every structure was assembled from individual bricks in Blender. Most are my own builds, with some free assets worked in and modified to fit. Each model is exported as glTF, Draco compressed, and loaded by a custom Three.js engine that runs directly in the browser. The world uses the exact LEGO stud pitch as its grid, collision is rasterized per brick rather than per bounding box, stair climbing runs on a walkable heightmap, and the lighting completes a full day cycle every seven minutes."
+              kicker="Development"
+              body="Blender handles the modeling and materials; Three.js handles the real-time scene. Compressed glTF files keep the models manageable. Collision follows the brick geometry, terrain controls each step, and the lighting changes as you explore. Most builds are my own, alongside a few modified free assets."
             />
             <WorkSheet />
           </Slide>
@@ -2144,7 +2119,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             FIGURES sit above the title. They are the one thing the page can say that the
             pictures cannot, they are all real (scratchpad/realm_cost.cjs and CLAUDE.md),
             and they cost no screen of their own here. */}
-        <Slide id="close" label={realm.ok ? "Try it" : "The finished build"} className="ss-slide-close" stagger={0.16}>
+        <Slide id="close" label="Enter the Realm" className="ss-slide-close" stagger={0.16}>
           <div className="ss-open-bg">
             <motion.img
               className="ss-open-img"
@@ -2165,16 +2140,10 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               ))}
             </motion.dl>
             <Words
-              className="ss-open-title ss-close-title"
-              text={realm.ok ? "Walk it yourself" : "The finished build"}
-              variant={sbWordUp}
-              stagger={0.07}
-            />
-            <Words
               className="ss-open-line"
               text={realm.ok
-                ? "The full version runs on this site, with the day cycle and all four portals active."
-                : "The full version runs on this site on a desktop or laptop, with the day cycle and all four portals active."}
+                ? "Controls are displayed on entry."
+                : "Open this page on a supported desktop or laptop to explore the environment. All portfolio projects are also available in Work."}
               variant={sbWordIn}
               stagger={0.018}
             />
@@ -2195,7 +2164,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   fontSize: 13, fontWeight: 600, cursor: "none",
                 }}
               >
-                <span>Enter My Lego Realm</span><span>→</span>
+                <span>Enter the Realm</span><span>→</span>
               </a>
             ) : (
               <p
@@ -2243,41 +2212,27 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   );
 }
 
-/* ── DECK MOTION ─────────────────────────────────────────────────────────────────────
-   The deck's rule: A SLIDE IS ONE ORCHESTRATOR AND NOTHING BELOW IT TRIGGERS ITSELF.
-   `Slide` is the only thing carrying `whileInView`; every part under it declares
-   `variants` alone and inherits when it runs. That is what makes a slide arrive as a
-   sequence, label then heading then body then the picture then the caption, instead of
-   as four independent blocks that happen to be near each other. Variant inheritance in
-   framer-motion is React CONTEXT, not the DOM, so a plain grid <div> between a slide
-   and its two frames does not break the chain and both frames still stagger off the
-   slide.
-   And it re-runs. `once` is deliberately NOT set: on a deck the slide you left is
-   fully off screen, so coming back up should replay rather than show you a finished
-   still. */
-// The storyboard rides the site's one ease. `as const` keeps the four control points a
-// TUPLE: widened to number[] framer-motion's Easing type rejects it.
+/* Story slides reveal once with a short group entrance. Headings and paragraphs
+   arrive as complete units; the individual spans only preserve the established wraps. */
 const SB_EASE = APPLE_EASE;
 
 const sbSlide: Variants = {                       // a whole slide: paces its parts
   hidden: {},
-  show: { transition: { staggerChildren: 0.14, delayChildren: 0.06 } },
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0 } },
 };
 const sbGroup: Variants = {                       // a nested group (a frame's own parts)
   hidden: {},
-  show: { transition: { staggerChildren: 0.11, delayChildren: 0.04 } },
+  show: { transition: { staggerChildren: 0.03, delayChildren: 0 } },
 };
 
-/* ── TEXT ──
-   Words, not blocks. A heading and a paragraph are the two things on a slide with no
-   picture, so a single fade would leave those slides doing nothing at all. */
-const sbWordUp: Variants = {                      // kicker: each word tips up off its baseline
-  hidden: { opacity: 0, y: "0.55em", rotateX: -68, transformPerspective: 700 },
-  show: { opacity: 1, y: "0em", rotateX: 0, transition: { duration: 0.66, ease: SB_EASE } },
+/* Text uses one short entrance per heading or paragraph. */
+const sbWordUp: Variants = {                      // heading: a small grouped arrival
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.36, ease: SB_EASE } },
 };
-const sbWordIn: Variants = {                      // body: a quick, quiet ripple across the lines
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: SB_EASE } },
+const sbWordIn: Variants = {                      // body: a short grouped arrival
+  hidden: { opacity: 0, y: 5 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: SB_EASE } },
 };
 const sbRise: Variants = {                        // anything that just rises
   hidden: { opacity: 0, y: 22 },
@@ -2299,7 +2254,7 @@ const sbBox: Variants = {                         // the frame CHROME, drawn bef
   },
 };
 const sbOpen: Variants = {                        // the opener's picture: a slow settle out of scale
-  hidden: { opacity: 0, scale: 1.09 },
+  hidden: { opacity: 0, scale: 1.015 },
   show: { opacity: 1, scale: 1, transition: { duration: 1.9, ease: SB_EASE } },
 };
 
@@ -2320,7 +2275,7 @@ const sbOpen: Variants = {                        // the opener's picture: a slo
    inline-block, and an ordinary trailing space inside one is collapsed away at the end of
    the box: retyped as " " this renders every paragraph on the page as one unbroken run,
    "Theenvironmentisasmalltown". It is a real character in the source, not an escape. */
-function Words({ text, variant, stagger = 0.03, className, style }: {
+function Words({ text, variant, className, style }: {
   text: string; variant: Variants; stagger?: number; className?: string; style?: React.CSSProperties;
 }) {
   const nodes: React.ReactNode[] = [];
@@ -2328,16 +2283,16 @@ function Words({ text, variant, stagger = 0.03, className, style }: {
     if (li > 0) nodes.push(<br key={"br" + li} />);
     const words = line.split(" ");
     words.forEach((w, i) => nodes.push(
-      <motion.span key={li + "-" + i} className="ss-w" variants={variant} style={{ display: "inline-block", willChange: "transform" }}>
+      <span key={li + "-" + i} className="ss-w" style={{ display: "inline-block" }}>
         {w}{i < words.length - 1 ? " " : ""}
-      </motion.span>
+      </span>
     ));
   });
   return (
     <motion.p
       className={className}
       style={style}
-      variants={{ hidden: {}, show: { transition: { staggerChildren: stagger } } }}
+      variants={variant}
     >
       {nodes}
     </motion.p>
@@ -2395,19 +2350,19 @@ function Plate({ scene, src, caption }: { scene: string; src: string; caption: s
    every time the pointer crossed one. */
 const WORK_SHEET = [
   { scene: "Assembly", src: "/assets/story/story_blender_shop_assembly.jpg",
-    caption: "The Coffee Shop part way up: walls built to the halfway course, the roof and awning not yet placed, the umbrella pole still bare. Every piece is a separate modeled brick that snaps to the same stud grid the engine uses." },
+    caption: "The coffee shop in progress, assembled from individual bricks on the same stud grid used by the engine." },
   { scene: "Mesh editing", src: "/assets/story/story_blender_ruins_edit.jpg",
-    caption: "The ruins in Edit Mode, built up to the doorway arch with the upper storey still to come. The highlighted course is the one going on next." },
+    caption: "Building the ruins in Edit Mode. The highlighted brick course forms the next section above the doorway." },
   { scene: "Sculpting", src: "/assets/story/story_blender_hair_sculpt.jpg",
     caption: "The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." },
   { scene: "UV and texturing", src: "/assets/story/story_blender_skull_uv.jpg",
-    caption: "The skull prop in the UV Editing workspace. On the left the mesh is unwrapped flat over its painted texture, on the right the same texture is shown mapped onto the model. Every printed detail in the world is applied this way." },
+    caption: "The skull’s UV layout on the left and its mapped texture on the right. Printed details are applied through the same workflow." },
   { scene: "Figure assembly", src: "/assets/story/story_blender_figure_exploded.jpg",
     caption: "The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." },
   { scene: "Materials", src: "/assets/story/story_blender_house_nodes.jpg",
-    caption: "The Modern House with the ground floor closed and the upper storey just started. The node graph under the viewport defines the tinted window glass: fully metallic, zero roughness, reduced alpha." },
+    caption: "The house during construction, with the node graph for its tinted window material below the viewport." },
   { scene: "Render preview", src: "/assets/story/story_blender_cottage_render.jpg",
-    caption: "The Cottage with its walls finished and the roof not yet on, in a rendered viewport under a warm sun. Renders like this were used to check color and lighting before export." },
+    caption: "Checking the cottage’s materials and lighting in Blender before export." },
 ];
 
 function WorkSheet() {
@@ -2736,7 +2691,7 @@ function Slide({ id, label, className, stagger, children }: {
   id: string; label: string; className?: string; stagger?: number; children: React.ReactNode;
 }) {
   const pace: Variants = stagger
-    ? { hidden: {}, show: { transition: { staggerChildren: stagger, delayChildren: 0.06 } } }
+    ? { hidden: {}, show: { transition: { staggerChildren: 0.04, delayChildren: 0 } } }
     : sbSlide;
   return (
     <motion.section
@@ -2746,7 +2701,7 @@ function Slide({ id, label, className, stagger, children }: {
       variants={pace}
       initial="hidden"
       whileInView="show"
-      viewport={{ amount: 0.35 }}
+      viewport={{ amount: 0.2, once: true }}
     >
       <div className="ss-slide-inner">{children}</div>
     </motion.section>
@@ -2916,7 +2871,7 @@ function DeckRail({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement> })
     if (!root || !el) return;
     root.scrollTo({
       top: root.scrollTop + el.getBoundingClientRect().top - root.getBoundingClientRect().top,
-      behavior: "smooth",
+      behavior: REDUCE ? "auto" : "smooth",
     });
   };
 
@@ -3002,11 +2957,12 @@ function WorkParticles({ base, emit }: { base: string; emit: string }) {
 ───────────────────────────────────────────────────────────── */
 function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const hover = useCursorHover();
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const [size, setSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const isDesktop = size.width >= 1024;
 
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
+      setSize({ width: window.innerWidth, height: window.innerHeight });
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -3017,23 +2973,19 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const n = PROJECTS.length;
   const startX = useRef(0);
   const moved = useRef(false);
-  useEffect(() => {
-    const t = setTimeout(() => setActive((a) => (a + 1) % n), 30000); // auto-advance, resets on any change
-    return () => clearTimeout(t);
-  }, [active, n]);
   const go = (dir: number) => setActive((a) => (a + dir + n) % n);
-  const isMob = window.innerWidth <= 640;
+  const isMob = size.width <= 640;
   // Cards a step smaller and pushed further apart (user, 2026-09-03). The gap is a
   // function of BOTH numbers: a side card sits at sideX and is drawn at 0.82, so the
   // clear air between it and the centre card is sideX - cardW*(0.5 + 0.41). At 420/0.98
   // that was 29px; at 380/1.12 it is 79px, and the neighbours still peek in at 1024.
-  const cardW = isDesktop ? 380 : Math.min(window.innerWidth * 0.70, 330);
-  const cardH = Math.min(cardW * 1.32, window.innerHeight * 0.56);
+  const cardW = isDesktop ? 380 : Math.min(size.width * 0.70, 330);
+  const cardH = Math.min(cardW * 1.32, Math.max(290, size.height * 0.50));
   const sideX = cardW * (isDesktop ? 1.12 : 0.70);
 
   // per-slide identity: base colour + the colour the particles emit
   const WORK_BG_THEME: Record<string, { base: string; emit: string }> = {
-    "creative-projects":     { base: "#030b05", emit: "46,224,120" },   // neon green
+    "creative-projects":     { base: "#030b05", emit: "65,119,86" },   // neon green
     "professional-services": { base: "#ffffff", emit: "150,152,158" },  // grey on white
     "nabu":                  { base: "#0d1015", emit: "84,168,255" },   // electric blue
   };
@@ -3045,14 +2997,16 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const bgt = WORK_BG_THEME[activeId] || WORK_BG_THEME["creative-projects"];
 
   return (
-    <motion.div key="work" {...fade}
+    <motion.div key="work" {...fade} className="ss-work-page"
       style={{
-        position: "absolute", inset: 0, overflow: "hidden",
+        position: "absolute", inset: 0, overflowX: "hidden", overflowY: "auto",
         background: "#0c0d0f",
       }}
     >
+      <div className="ss-work-layout" style={{ position: "relative", minHeight: "max(730px, 100dvh)", overflow: "hidden" }}>
       {/* slow, continuous particle flow; particles emit the active project's colour */}
-      <WorkParticles base={bgt.base} emit={bgt.emit} />
+      {REDUCE ? <div aria-hidden style={{ position: "absolute", inset: 0, background: bgt.base }} />
+        : <WorkParticles base={bgt.base} emit={bgt.emit} />}
 
       {/* faint grain for atmosphere — sits behind the grid */}
       <div aria-hidden style={{
@@ -3065,38 +3019,25 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
       {/* Header (left-aligned, clear of the top-right nav) */}
       <div style={{
         position: "absolute", top: 0, left: 0,
-        padding: "44px 5vw 0",
+        padding: "115px 5vw 0",
         zIndex: 10, maxWidth: 780,
       }}>
         <motion.h2
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: APPLE_EASE }}
-          style={{ fontSize: "clamp(38px,5vw,84px)", letterSpacing: "-0.02em", fontWeight: 700, lineHeight: 1, color: titleColor, textShadow, transition: "color 0.7s ease" }}
+          initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.34, delay: 0.04, ease: APPLE_EASE }}
+          style={{ fontSize: "clamp(38px,5vw,64px)", letterSpacing: "-0.02em", fontWeight: 700, lineHeight: 1, color: titleColor, textShadow, transition: "color 0.7s ease" }}
         >
           Work
         </motion.h2>
 
-        {/* The blurb under the heading is desktop only: that is a space decision, and the
-            phone layout was built without it. The "Let's talk" CTA that used to sit under it
-            was removed at Shyon's request (2026-09-03); the nav is the route to Contact. */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.35, ease: APPLE_EASE }}
-          style={{ marginTop: 10, maxWidth: 640 }}
-        >
-          {isDesktop && (
-            <p style={{ fontSize: 15, lineHeight: 1.45, color: midColor, textShadow, transition: "color 0.7s ease" }}>
-              Commissioned client work, plus personal and academic projects across various mediums.
-            </p>
-          )}
-        </motion.div>
+
       </div>
 
       {/* Coverflow carousel: one focused card, two visible on the sides */}
       <div
         style={{
           position: "absolute", left: 0, right: 0,
-          top: 0, bottom: 0,
+          top: 220, bottom: 65,
           display: "flex", alignItems: "center", justifyContent: "center",
           perspective: 1800, touchAction: "pan-y",
           /* a drag across the cards was starting a text selection under the pointer
@@ -3123,8 +3064,10 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
             return (
               <motion.div
                 key={proj.id}
+                role="button" tabIndex={0} aria-label={`${rel === 0 ? "Open" : "Select"} ${proj.title}`}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0) onCardClick(proj); else setActive(i); } }}
                 animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
-                transition={{ duration: 0.6, ease: APPLE_EASE }}
+                transition={{ duration: REDUCE ? 0 : 0.45, ease: APPLE_EASE }}
                 onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
                 {...hover}
                 style={{
@@ -3157,9 +3100,11 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
           return (
             <motion.div
               key={proj.id}
+                role="button" tabIndex={0} aria-label={`${rel === 0 ? "Open" : "Select"} ${proj.title}`}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0) onCardClick(proj); else setActive(i); } }}
               className="ss-card"
               animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
-              transition={{ duration: 0.6, ease: APPLE_EASE }}
+              transition={{ duration: REDUCE ? 0 : 0.45, ease: APPLE_EASE }}
               onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
               {...hover}
               style={{
@@ -3201,23 +3146,18 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
         })}
       </div>
 
-      {/* Carousel indicators */}
-      <div style={{ position: "absolute", bottom: isMob ? 22 : 30, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 9, zIndex: 20 }}>
-        {PROJECTS.map((_, i) => (
-          <div
-            key={i}
-            onClick={() => setActive(i)}
-            {...hover}
-            style={{
-              width: i === active ? 26 : 8, height: 8, borderRadius: 980,
-              background: i === active ? "#38bdf8" : (light ? "rgba(20,17,11,.3)" : "rgba(245,242,237,.28)"),
-              cursor: "none", transition: "all .45s var(--ease-out)",
-            }}
-          />
+      <div className="ss-work-controls" style={{ position: "absolute", bottom: isMob ? 20 : 28, left: 0, right: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, zIndex: 20 }}>
+        <button type="button" aria-label="Previous category" onClick={() => go(-1)} style={{ color: titleColor, width: 44, height: 44 }}>←</button>
+        {PROJECTS.map((project, i) => (
+          <button type="button" key={project.id} aria-label={`Show ${project.title}`} aria-pressed={i === active} onClick={() => setActive(i)} style={{ width: 44, height: 44, display: "grid", placeItems: "center" }}>
+            <span style={{ display: "block", width: i === active ? 26 : 8, height: 8, borderRadius: 980, background: i === active ? "#38bdf8" : (light ? "#777" : "#aaa"), transition: "width .3s ease" }} />
+          </button>
         ))}
+        <button type="button" aria-label="Next category" onClick={() => go(1)} style={{ color: titleColor, width: 44, height: 44 }}>→</button>
       </div>
 
 
+      </div>
     </motion.div>
   );
 }
@@ -3225,143 +3165,6 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
 /* ─────────────────────────────────────────────────────────────
    ABOUT PAGE
 ───────────────────────────────────────────────────────────── */
-function AboutPage() {
-  const [photoLoaded, setPhotoLoaded] = useState(false);
-
-  return (
-    <motion.div key="about" {...fade}
-      style={{ position: "absolute", inset: 0, background: "var(--cream)", overflow: "hidden" }}
-      className="ss-about-page"
-    >
-      <div className="ss-about-grid" style={{
-        display: "grid", gridTemplateColumns: "1fr 1fr",
-        height: "100%", width: "100%",
-      }}>
-        {/* Text column */}
-        <div className="ss-about-text-column" style={{
-          display: "flex", flexDirection: "column", justifyContent: "center",
-          /* THE VERTICAL PADDING HAS TO GIVE WAY, because this column is justify-content:
-             center AND overflow:hidden, so copy that outgrows it is not scrolled to, it is
-             silently cut in half. A flat 80px was affordable when the headline was one word
-             on one line; measured after the name and the longer copy went in, the column ran
-             6px over its own box at 1280x800, 46 at 1280x720 and 55 at 1024x768. (1024x700
-             was ALREADY 30px over before any of this, which nothing had caught.) 6vh gives
-             the copy back 64 to 76px exactly where the screen is short, and resolves to the
-             original 80px at 1333px of height and up, so nothing changes on a full display. */
-          /* The narrow padding used to be an inline `window.innerWidth <= 640` ternary, which
-             is read ONCE at render and never again, so a rotate or a resize kept whichever
-             branch happened to be true at mount. It lives in the stylesheet now, where the
-             browser re-evaluates it, and the stacked layout under 768 sets its own. */
-          padding: "clamp(32px, 6vh, 80px) 60px clamp(32px, 6vh, 80px) 8vw",
-          overflow: "hidden",
-        }}>
-          <motion.div
-            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.1, ease: APPLE_EASE }}
-            className="ss-about-subtitle"
-            style={{ fontFamily: "var(--sf)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 14 }}
-          >
-            Designer &amp; Maker
-          </motion.div>
-
-          {/* "ABOUT ME", NOT THE NAME (user, 2026-09-09), which REVERSES the note that
-              stood here: this heading read "Shyon Shiri" on two hand set lines, on the
-              argument that a page should not spend its largest object on the same word as
-              the nav item just clicked. That is overruled. The heading is the label now.
-              ONE LINE, and the old two line break goes with the name. It existed because
-              "Shyon Shiri" is 11 characters and measured wider than the text column at
-              every width the page is built for. "About Me" is 8, and at the widest size
-              here (5.2vw, so 78.6px at 1512) it sets about 346px into a column of roughly
-              575px, so it fits unbroken. It still carries its own space, so a viewport
-              narrow enough to need it wraps to "About" / "Me" on its own rather than
-              overflowing. It needs NO narrow override any more: the 768 and 640 rules that
-              took it to 56 and then 42 were paying for a 172px column, and the stacked
-              layout gives it the full width, where the clamp floor of 44px sets about 200px
-              into 342 at a 390 phone.
-              NOTE this leaves "Shyon Shiri" out of the rendered text of the About page
-              again, which the old note flagged. It is still in the document title, the
-              hero on the homepage and the photo's alt text. */}
-          <motion.h2
-            initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: APPLE_EASE }}
-            style={{ fontFamily: "var(--sf)", fontSize: "clamp(44px,5.2vw,88px)", fontWeight: 700, letterSpacing: "-0.035em", lineHeight: 1.03, color: "#060606", marginBottom: 18 }}
-          >
-            About Me
-          </motion.h2>
-
-          <motion.div
-            className="ss-about-rule"
-            initial={{ width: 0 }} animate={{ width: 80 }}
-            transition={{ duration: 1, delay: 0.5, ease: APPLE_EASE }}
-            style={{ height: 1, background: "#060606", margin: "16px 0" }}
-          />
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.55, ease: APPLE_EASE }}
-          >
-            {/* WHAT THIS PAGE IS FOR, and it is the one job no other page does. Home carries
-                the narrative (the "Why I made it" slide already tells the stop motion and
-                LEGO origin, in context and against a picture), and Work carries the evidence.
-                About was carrying neither: it ran a six discipline list and then two
-                unfalsifiable lines about craft and standards, which is the one mode that
-                gives a reviewer nothing, since no designer claims the opposite.
-                So this is the FACTS page now, in the order a recruiter scans for them: what
-                he is, where he is, the credential and its date, the scope he works at, and
-                what he does today.
-                NO CLIENT AND NO EMPLOYER IS NAMED HERE, deliberately (user, 2026-09-03, in
-                two passes). A draft called out Everly Care Home and minasech.net with the
-                scope of each spelled out, which is the right move on a STANDALONE about page
-                where prose is the only evidence a reader will ever get. It is the wrong move
-                on this site: Work is one click away and carries both of them with images,
-                descriptions and live links, so naming them here is the same evidence twice in
-                the weaker format, it goes stale the moment a better project ships, and a
-                reader takes a list of exactly two clients as the complete list. Handshake
-                came out on the same principle in the pass after.
-                The AI evaluation FACT stays, because it is the one thing on this page that
-                the rest of the site cannot show: there is no Work entry for it, so unlike the
-                client sites it is not duplicated anywhere. Unattributed it needs to say what
-                the job actually IS or it reads as a vague claim, hence the rubric and ground
-                truth clause, which is the resume's own description of the role.
-                Proof lives on Work. About states the scope.
-                The second paragraph is the only biography kept, and it earns its line by
-                explaining the thing the work would otherwise look scattered for: why a
-                graphic designer's portfolio also holds welding, hardware and a game engine. */}
-            <p style={{ fontFamily: "var(--sf)", fontSize: 17, fontWeight: 400, lineHeight: 1.55, letterSpacing: "-0.005em", color: "#3a3a3a", maxWidth: 480 }}>
-              I'm a graphic designer and developer in the Bay Area, with a BA in Graphic Design from San Jose State, 2025. I take a project from identity through to a deployed site, so design, front end, and deployment are one job rather than three handoffs. I also evaluate multimodal AI systems against rubrics, writing the corrected ground truth where models fail.
-            </p>
-            <p style={{ fontFamily: "var(--sf)", fontSize: 17, fontWeight: 400, lineHeight: 1.55, letterSpacing: "-0.005em", color: "#3a3a3a", maxWidth: 480, marginTop: 20 }}>
-              Most of what I design ends up physical or interactive rather than sitting on a page. That is why the same portfolio holds 3D-printed hardware enclosures, a welded steel sculpture, and a LEGO world running in this browser.
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Photo column. Second in the DOM because that is the reading order on a wide
-            screen (copy left, portrait right); the stacked layout puts it FIRST with a grid
-            `order`, so the source order does not have to be fought over. */}
-        <motion.div
-          className="ss-about-photo-col"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          transition={{ duration: 0.9, delay: 0.1 }}
-          style={{ position: "relative", overflow: "hidden", background: "#1a1a1a" }}
-        >
-          <img
-            src="/assets/Shyon_About.png"
-            alt="Shyon Shiri"
-            onLoad={() => setPhotoLoaded(true)}
-            className={photoLoaded ? "ss-about-photo ss-about-photo-active" : "ss-about-photo"}
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 10%", filter: "grayscale(20%) contrast(1.05)" }}
-          />
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(to right, rgba(237,232,224,.2) 0%, transparent 30%), linear-gradient(to bottom, rgba(6,6,6,.35) 0%, transparent 30%, transparent 60%, rgba(6,6,6,.18) 100%)",
-          }} />
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-}
-
 /* ─────────────────────────────────────────────────────────────
    CONTACT PAGE
 ───────────────────────────────────────────────────────────── */
@@ -3385,9 +3188,10 @@ function ContactPage() {
   ];
 
   return (
-    <motion.div key="contact" {...fade}
+    <motion.div key="contact" {...fade} className="ss-contact-page"
       style={{ position: "absolute", inset: 0, background: "#060606", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}
     >
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
       {/* giant ghost word */}
       <div style={{
         position: "absolute", left: -30, bottom: "-12vh",
@@ -3414,8 +3218,10 @@ function ContactPage() {
         filter: "blur(75px)", zIndex: 1, pointerEvents: "none",
       }} />
 
+      </div>
+
       {/* content */}
-      <div style={{ position: "relative", zIndex: 10, padding: window.innerWidth <= 640 ? "0 18px" : "0 9vw", width: "100%" }}>
+      <div className="ss-contact-content" style={{ position: "relative", zIndex: 10, width: "100%" }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: window.innerWidth <= 640 ? 20 : 40, flexWrap: "wrap", marginBottom: window.innerWidth <= 640 ? 24 : 44 }}>
           <div>
             {/* The "AVAILABLE FOR PROJECTS" eyebrow was removed here (user, 2026-09-03). The
@@ -3426,8 +3232,8 @@ function ContactPage() {
                 user. NOTE the heading's own entrance delay is deliberately left at 0.35: the
                 sequence still staggers against the description at 0.5 beside it. */}
             <motion.h2
-              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.35, ease: APPLE_EASE }}
+              initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.34, delay: 0.04, ease: APPLE_EASE }}
               className="ss-contact-heading"
               style={{ fontFamily: "var(--sf)", fontSize: "clamp(46px,6.2vw,96px)", fontWeight: 700, letterSpacing: "-0.038em", lineHeight: 1.02, color: "var(--white)" }}
             >
@@ -3435,8 +3241,8 @@ function ContactPage() {
             </motion.h2>
           </div>
           <motion.p
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
+            initial={REDUCE ? false : { opacity: 0 }} animate={{ opacity: 1 }}
+            transition={{ duration: 0.34, delay: 0.04 }}
             className="ss-contact-description"
             style={{ fontFamily: "var(--sf)", fontWeight: 400, fontSize: "clamp(15px,1.5vw,18px)", lineHeight: 1.5, letterSpacing: "-0.005em", color: "var(--mid)", maxWidth: 300, textAlign: "right", marginBottom: 8 }}
           >
@@ -3444,15 +3250,16 @@ function ContactPage() {
           </motion.p>
         </div>
 
-        {/* indexed contact list */}
+        {/* Contact links */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.65, ease: APPLE_EASE }}
+          initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.34, delay: 0.04, ease: APPLE_EASE }}
           style={{ display: "flex", flexDirection: "column", borderTop: "1px solid rgba(245,242,237,.14)" }}
         >
-          {links.map((l, i) => (
+          {links.map((l) => (
             <a
               key={l.label}
+              className="ss-contact-entry"
               href={l.href}
               target={l.target}
               rel={l.target ? "noopener noreferrer" : undefined}
@@ -3463,19 +3270,8 @@ function ContactPage() {
                 transition: "background 0.3s ease, padding-left 0.3s ease",
                 cursor: "none",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(56,189,248,.07)";
-                e.currentTarget.style.paddingLeft = "24px";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.paddingLeft = "8px";
-              }}
               {...hover}
             >
-              <span style={{ fontFamily: "var(--sf)", fontSize: window.innerWidth <= 640 ? 11 : 12.5, fontWeight: 600, letterSpacing: "0.02em", fontVariantNumeric: "tabular-nums", color: "var(--sky)", width: 34, flexShrink: 0 }}>
-                {String(i + 1).padStart(2, "0")}
-              </span>
               <span style={{ fontFamily: "var(--sf)", fontSize: window.innerWidth <= 640 ? "clamp(15px,2.4vw,21px)" : "clamp(21px,2.8vw,30px)", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--white)", width: window.innerWidth <= 640 ? "auto" : 240, flexShrink: 0 }}>
                 {l.label}
               </span>
@@ -3514,7 +3310,33 @@ function WorkModal({ project, onClose, onMediaClick }: {
   onMediaClick: (item: MediaItem) => void;
 }) {
   const hover = useCursorHover();
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+    dialog?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !dialog) return;
+      const controls = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'button, a[href], video[controls], [tabindex="0"]'
+      )).filter(element => element.getClientRects().length > 0);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first?.focus();
+      }
+    };
+    dialog?.addEventListener("keydown", trapFocus);
+    return () => {
+      dialog?.removeEventListener("keydown", trapFocus);
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+    };
+  }, []);
+
+
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
+  const isDesktop = viewportWidth >= 1024;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -3523,7 +3345,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
+      setViewportWidth(window.innerWidth);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -3531,11 +3353,12 @@ function WorkModal({ project, onClose, onMediaClick }: {
 
   return (
     <motion.div
+      ref={dialogRef} role="dialog" aria-modal="true" aria-label={project.title}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       transition={{ duration: REDUCE ? 0.001 : 0.4 }}
       onClick={onClose}
       style={{
-        position: "fixed", inset: 0, zIndex: 2000,
+        position: "fixed", inset: 0, zIndex: 11000,
         background: "rgba(6,6,6,.93)",
         backdropFilter: "blur(20px)",
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -3558,7 +3381,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
         {/* Close */}
         <button
           onClick={onClose}
-          className="ss-modal-close"
+          className="ss-modal-close" aria-label="Close project gallery"
           style={{
             position: "absolute", top: 60, right: 20,
             background: "none", border: "none", cursor: "none",
@@ -3585,7 +3408,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
               {project.title}
             </div>
             <div style={{ fontFamily: "var(--sf)", fontSize: 15, fontWeight: 400, lineHeight: 1.5, letterSpacing: "-0.005em", color: "var(--sky)", marginTop: 10 }}>
-              {project.id === "creative-projects" ? "A selection of projects that demonstrate my range across various creative disciplines and mediums." : project.id === "professional-services" ? "Client-focused work including UI/UX, web development, branding and marketing assets." : project.id === "nabu" ? "Design and creative direction for NABU, a streetwear brand that draws from Persian and Assyrian heritage." : ""}
+              {project.id === "creative-projects" ? "Personal projects in 3D, photography, electronics, and physical materials." : project.id === "professional-services" ? "Websites, identities, and print work made for clients." : project.id === "nabu" ? "Design and creative direction for NABU, a streetwear brand that draws from Persian and Assyrian heritage." : ""}
             </div>
           </div>
         </div>
@@ -3596,7 +3419,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
             <div className="ss-scroll" style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingRight: 8, display: "flex", gap: 14, alignItems: "flex-start" }}>
               {(() => {
                 const items = project.media.filter(item => !item.hidden);
-                const colCount = window.innerWidth <= 640 ? 2 : window.innerWidth <= 1023 ? 3 : 4;
+                const colCount = viewportWidth <= 640 ? 2 : viewportWidth <= 1023 ? 3 : 4;
                 const cols: MediaItem[][] = Array.from({ length: colCount }, () => []);
                 items.forEach((item, i) => cols[i % colCount].push(item));
                 return cols.map((col, ci) => (
@@ -3641,7 +3464,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
             color: "var(--mid)",
             textTransform: "uppercase",
           }}>
-            ↻ Swipe to explore
+            Scroll to browse
           </div>
         )}
       </motion.div>
@@ -3658,7 +3481,7 @@ function StudioAssetCard({ item, onClick }: { item: MediaItem; onClick: () => vo
   const hover = useCursorHover();
   const ar = item.aspectRatio || "4/3";
   return (
-    <div className="ss-scell" onClick={onClick} {...hover}>
+    <button type="button" aria-label={`View ${item.title}`}  className="ss-scell" onClick={onClick} {...hover}>
       <div className="ss-sthumb" style={{ aspectRatio: ar }}>
         <img src={item.type === "video" ? item.poster : item.src} alt={item.title} loading="lazy" />
         {item.type === "video" && (
@@ -3675,7 +3498,7 @@ function StudioAssetCard({ item, onClick }: { item: MediaItem; onClick: () => vo
         <div className="ss-asset-title" style={{ fontSize: 13, fontWeight: 600, color: "var(--white)", lineHeight: 1.25 }}>{item.title}</div>
         <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--mid)", marginTop: 4 }}>{item.year}</div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -3683,7 +3506,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
   const hover = useCursorHover();
 
   return (
-    <div
+    <button type="button" aria-label={`View ${item.title}`}
       className="ss-tile"
       onClick={onClick}
       style={{
@@ -3731,7 +3554,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
         <div className="ss-asset-title" style={{ fontSize: 14, color: "var(--white)", fontWeight: 600 }}>{item.title}</div>
         <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--sky)", marginTop: 2 }}>{item.year}</div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -3741,25 +3564,50 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
 function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose: () => void; onItemClick?: (item: MediaItem) => void }) {
   const hover = useCursorHover();
   
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+    dialog?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !dialog) return;
+      const controls = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'button, a[href], video[controls], [tabindex="0"]'
+      )).filter(element => element.getClientRects().length > 0);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first?.focus();
+      }
+    };
+    dialog?.addEventListener("keydown", trapFocus);
+    return () => {
+      dialog?.removeEventListener("keydown", trapFocus);
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+    };
+  }, []);
+
   // Single-asset view. No prev/next arrows (they interrupted assets that have
   // their own arrow/button controls). Related items open via the named links.
   const displayedItem = item;
 
   return (
     <motion.div
+      ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="ss-viewer-title"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      transition={{ duration: 0.35 }}
+      transition={{ duration: REDUCE ? 0.001 : 0.25 }}
       onClick={onClose}
       style={{
-        position: "fixed", inset: 0, zIndex: 3000,
+        position: "fixed", inset: 0, zIndex: 12000,
         background: "rgba(6,6,6,.97)",
         backdropFilter: "blur(30px)",
         display: "flex", alignItems: "center", justifyContent: "center",
       }}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
-        transition={{ duration: 0.35, ease: APPLE_EASE }}
+        initial={{ opacity: 0, scale: REDUCE ? 1 : 0.985 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1 }}
+        transition={{ duration: REDUCE ? 0.001 : 0.25, ease: APPLE_EASE }}
         onClick={e => e.stopPropagation()}
         className="ss-media-viewer"
         style={{
@@ -3835,7 +3683,7 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
 
         {/* Info */}
         <div style={{ flex: 1, minWidth: 200, maxWidth: 340, paddingTop: 140 }}>
-          <div className="ss-asset-title" style={{ fontSize: 64, letterSpacing: 0.5, lineHeight: 1.02, color: "var(--white)", marginBottom: 24, fontWeight: 600 }}>
+          <div id="ss-viewer-title" className="ss-asset-title" style={{ fontSize: 64, letterSpacing: 0.5, lineHeight: 1.02, color: "var(--white)", marginBottom: 24, fontWeight: 600 }}>
             {item.title}
           </div>
           <div style={{ fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--sky)", textTransform: "uppercase", marginBottom: 20 }}>
