@@ -3246,7 +3246,7 @@ function ContactPage() {
               className="ss-contact-heading"
               style={{ fontFamily: "var(--sf)", fontSize: "clamp(46px,6.2vw,96px)", fontWeight: 700, letterSpacing: "-0.038em", lineHeight: 1.02, color: "var(--white)" }}
             >
-              Let's Work<span style={{ color: "var(--white)" }}>.</span>
+              Get in touch<span style={{ color: "var(--white)" }}>.</span>
             </motion.h2>
           </div>
           <motion.p
