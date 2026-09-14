@@ -1,7 +1,7 @@
 .ss-about-view{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;background:#f1eff2;color:#232326;font-family:var(--sf);scrollbar-width:thin;scrollbar-color:#999 #f1eff2}
 .ss-about-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:1fr 1fr;min-height:max(720px,100svh);background:#f1eff2}
 .ss-about-photo{grid-column:2;grid-row:1;position:relative;margin:0;min-width:0;overflow:hidden;mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.35) 4%,rgba(0,0,0,.8) 9%,#000 15%)}
-.ss-about-photo img{position:absolute;width:100%;height:100%;object-fit:cover;object-position:50% 26%;display:block}
+.ss-about-photo img{position:absolute;width:100%;height:100%;object-fit:cover;object-position:50% 26%;display:block;filter:url(#ss-portrait-detail)}
 .ss-about-intro{grid-column:1;grid-row:1;align-self:center;position:relative;z-index:1;padding:145px 4vw 90px max(28px,8vw);max-width:760px}
 .ss-about-intro h2{font-size:clamp(60px,7.2vw,112px);letter-spacing:-.065em;line-height:1;margin:0 0 40px;font-weight:550;color:#232326}
 .ss-about-intro p{font-size:17px;line-height:1.65;color:#55535a;max-width:43ch;margin:22px 0 0;text-wrap:pretty}

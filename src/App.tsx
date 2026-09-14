@@ -1639,6 +1639,15 @@ export default function App() {
         background: "#060606",
       }}
     >
+      <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: "absolute", pointerEvents: "none" }}>
+        <defs>
+          {/* Mild unsharp mask. Preserves the original photo and its flat backdrop. */}
+          <filter id="ss-portrait-detail" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="0.65" edgeMode="duplicate" result="soft" />
+            <feComposite in="SourceGraphic" in2="soft" operator="arithmetic" k1="0" k2="1.35" k3="-0.35" k4="0" />
+          </filter>
+        </defs>
+      </svg>
       <Cursor />
 
       {/* ── NAV ─────────────────────────────────────────────── */}
@@ -1973,7 +1982,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
             position: "absolute", inset: 0,
             width: "100%", height: "100%",
             objectFit: "cover", objectPosition: "65% 5%",
-            filter: "brightness(0.62) contrast(1.1)",
+            filter: "url(#ss-portrait-detail) brightness(0.62) contrast(1.1)",
             zIndex: 1,
           }}
         />
