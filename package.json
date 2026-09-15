@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "deploy": "vite build && git add docs && git commit -m \"Deploy update\" && git push",
+    "check": "tsc --noEmit && node scripts/check-assets.mjs",
+    "deploy": "npm run check && npm run build && git add src public docs index.html && git commit -m \"Deploy update\" && git push",
     "preview": "vite preview"
   },
   "dependencies": {

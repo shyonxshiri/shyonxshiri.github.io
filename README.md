@@ -1,73 +1,44 @@
-# React + TypeScript + Vite
+# Shyon Shiri portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Personal portfolio at https://www.shyonshiri.com. React 18, TypeScript and Vite, with a separate Three.js Lego Realm. GitHub Pages serves the committed `docs/` directory from `main`.
 
-Currently, two official plugins are available:
+## Preview and validation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm ci
+npm run dev -- --host 127.0.0.1 --port 5173
+npm run check
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Preview: http://127.0.0.1:5173/. The check command validates TypeScript and local image, model, script and résumé references. The build regenerates `docs/`; edit source files, never generated files in `docs/`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Where to make updates
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `src/App.tsx`: navigation, Home, Work, Contact, project data and media viewer. Add portfolio work in `PROJECTS`.
+- `src/components/SelectedWork.tsx`: the three homepage project previews.
+- `src/components/AboutPage.tsx` and `.css`: biography and portrait layout.
+- `src/index.css`: shared base styles. Most page styles remain in `GLOBAL_CSS` in App.tsx.
+- `public/assets/`: current images, videos and 3D models. Keep full-resolution project media; use smaller preview variants where appropriate.
+- `public/lego.html`: desktop Lego Realm. `realm-support.js` protects unsupported devices; `realm-unsupported.html` provides a lightweight fallback.
+- `scripts/check-assets.mjs`: asset-reference validation. Add explicitly generated filename patterns to its small dynamic-reference list when introducing new patterns.
+
+## Publish an approved site update
+
+Review the changes first, then run `npm run deploy`. It checks the source, builds the site, stages `src/`, `public/`, `docs/` and `index.html`, commits and pushes. If you changed configuration, documentation or scripts, stage those specific files before running deploy. Confirm that GitHub Pages is serving the new JavaScript filename from `docs/index.html` before considering publication complete.
+
+Do not commit secrets, generated diagnostics or unrelated files. Keep the source and production build in the same commit.
+
+## Final maintenance baseline
+
+The approved visual design and copy should remain unchanged unless requested. Test Home, Work, About and Contact on narrow phones, phone landscape, tablets and desktop before publishing. Check project galleries, media playback, close controls, keyboard focus and reduced motion. The full 3D Realm is intentionally limited to supported computers; the portfolio remains available on phones.
+
+Seven original PNG assets were replaced by pixel-identical lossless WebP copies. Everly's homepage preview has smaller responsive variants; its full image remains available in the project viewer. The original portraits remain intact, with a mild display-time sharpening filter. About includes its full-resolution source for high-density screens.
+
+## Desktop archive
+
+Retired pages, unused media, original PNG files and past development scripts were moved to:
+
+`/Users/shyonshiri/Desktop/Shyon Website Archive - 2026-09-14`
+
+The archive contains `README.txt` and `FILE-MANIFEST.json` with paths, sizes and checksums. Nothing was permanently deleted. Historic references to `scratchpad/` in the project handoff documents now refer to this archive; restore a script to its original project-relative location before running it. Keep `AGENTS.md`, `CLAUDE.md` and the car/hero companion documents for maintenance context.

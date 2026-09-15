@@ -11,7 +11,8 @@ const selectedProjects = [
     mediaTitle: "Everly Care Home",
     role: "Branding & web development",
     description: "Designed the identity and built the website for a senior care community.",
-    image: "/assets/Everly_Cover_Image.png",
+    image: "/assets/Everly_Cover_Image.webp",
+    preview: "/assets/Everly_Cover_Image",
     alt: "The Everly Care Home website, with a pale blue identity and a welcoming introduction.",
     width: 2560,
     height: 1382,
@@ -72,6 +73,8 @@ export default function SelectedWork({ onOpen, onAllWork }: SelectedWorkProps) {
                 <span className="ss-selected-media">
                   <img
                     src={project.image}
+                    srcSet={project.preview ? `${project.preview}-640.webp 640w, ${project.preview}-1280.webp 1280w` : undefined}
+                    sizes="(max-width: 640px) calc(100vw - 48px), (max-width: 1024px) 50vw, 40vw"
                     alt={project.alt}
                     width={project.width}
                     height={project.height}

@@ -56,7 +56,7 @@ const PROJECTS: Project[] = [
       { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
       { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", aspectRatio: "16/9", relatedItems: ["Custom AirPods Case", "Custom Phone Case"] },
       { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Retro Driving Animation", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Venom.PNG", title: "Creature Head Sculpt", year: 2024, desc: "A movie creature's head, sculpted and rendered in Blender. A wet, high gloss skin shader over the sculpt, lit with a single key against black.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Venom.webp", title: "Creature Head Sculpt", year: 2024, desc: "A movie creature's head, sculpted and rendered in Blender. A wet, high gloss skin shader over the sculpt, lit with a single key against black.", aspectRatio: "16/9" },
       { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "The finished case, printed in a metallic blue. An organic lattice replaces the flat back, its apertures shaped around the camera array and the side buttons.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Prototypes"] },
       { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom AirPods Case", year: 2026, desc: "The finished sleeve, printed in purple. The same melted lattice wraps an AirPods Pro case, left open at the status light and along the hinge.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Prototypes"] },
       { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar, Front View", year: 2024, desc: "Front of the radar enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D-printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar, Back View", "Radar and RGB Controller", "HMI Sensor System"] },
@@ -76,23 +76,23 @@ const PROJECTS: Project[] = [
     id: "professional-services",
     title: "Professional Services",
     tag: "Web & Design",
-    img: "/assets/Everly_Cover_Image.png",
+    img: "/assets/Everly_Cover_Image-1280.webp",
     size: "wide",
     media: [
-      { type: "image", src: "/assets/Mina_Website.png", title: "UI/UX, minasech.net", year: 2025, desc: "Website design and React development, with a responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Everly_Cover_Image.png", title: "Everly Care Home", year: 2026, desc: "Brand identity, responsive website design, development, and deployment for a senior care community.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Mina_Website.webp", title: "UI/UX, minasech.net", year: 2025, desc: "Website design and React development, with a responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Everly_Cover_Image.webp", title: "Everly Care Home", year: 2026, desc: "Brand identity, responsive website design, development, and deployment for a senior care community.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
       { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Luning Dr Flyer", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
       { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Colleen Dr Flyer", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
-      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.png", title: "Morning Star Dr Flyer", year: 2022, desc: "A listing announcement co-branded with Compass, combining pricing, property specifications, and sales highlights.", aspectRatio: "4/5" },
+      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.webp", title: "Morning Star Dr Flyer", year: 2022, desc: "A listing announcement co-branded with Compass, combining pricing, property specifications, and sales highlights.", aspectRatio: "4/5" },
       { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner, Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner, Existing Site"] },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.png", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner, Concept Visualization"] },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.webp", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner, Concept Visualization"] },
     ],
   },
   {
     id: "nabu",
     title: "NABU",
     tag: "Streetwear Brand",
-    img: "/assets/New_NABU_Cover_Card.png",
+    img: "/assets/New_NABU_Cover_Card.webp",
     size: "tall",
     media: [
       { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Promotional video for NABU clothing, animated in Adobe After Effects.", wide: true },
@@ -1481,12 +1481,8 @@ export default function App() {
   const [page, setPage] = useState<Page>("home");
   const [modalProject, setModalProject] = useState<Project | null>(null);
   const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
-  const pageIdx = PAGE_ORDER.indexOf(page);
   // Every top-level introduction uses a dark ground.
   const lightPage = page === "about";
-  const cooldown = useRef(false);
-  const hover = useCursorHover();
 
   /* inject global styles once */
   useEffect(() => {
@@ -1497,30 +1493,12 @@ export default function App() {
     document.head.appendChild(s);
   }, []);
 
-  /* track device size */
-  useEffect(() => {
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   /* bg color sync */
   useEffect(() => {
     const bg = page === "about" ? "#f1eff2" : "#060606";
     document.documentElement.style.backgroundColor = bg;
     document.body.style.backgroundColor = bg;
   }, [page]);
-
-  const pageIdxRef = useRef(pageIdx);
-  useEffect(() => { pageIdxRef.current = pageIdx; }, [pageIdx]);
-  const currentPageRef = useRef(page);
-  useEffect(() => { currentPageRef.current = page; }, [page]);
-  // track whether a project modal or media viewer is open, so page navigation
-  // (wheel/touch) is fully disabled while one is — the modal scrolls instead
-  const modalOpenRef = useRef(false);
-  useEffect(() => { modalOpenRef.current = !!modalProject || !!viewerItem; }, [modalProject, viewerItem]);
 
   const navigate = useCallback((next: Page) => {
     if (next === page) return;
@@ -1532,71 +1510,6 @@ export default function App() {
   const openMediaByTitle = useCallback((title: string) => {
     const item = PROJECTS.flatMap(project => project.media).find(media => media.title === title);
     if (item) setViewerItem(item);
-  }, []);
-
-  /* wheel nav — skip on modals and work page */
-  useEffect(() => {
-    const onWheel = (e: WheelEvent) => {
-      // No page navigation while a project modal / media viewer is open
-      if (modalOpenRef.current) return;
-      if (cooldown.current) return;
-      // Home scrolls natively into the Lego Realm storyboard, so the wheel never flips pages there
-      if (currentPageRef.current === "home" || currentPageRef.current === "about" || currentPageRef.current === "contact") return;
-      // Skip page navigation on work page for mobile/tablet (screen < 1024px)
-      if (currentPageRef.current === "work") return;
-      // Skip if over a scrollable element
-      const target = e.target as HTMLElement;
-      if (target.closest(".ss-modal-grid") || target.closest(".ss-media-viewer")) return;
-      // Only navigate if movement is clearly vertical (horizontal must be < 50% of vertical)
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) * 0.5) return;
-      const dir = e.deltaY > 0 ? 1 : -1;
-      const next = Math.max(0, Math.min(PAGE_ORDER.length - 1, pageIdxRef.current + dir));
-      if (next === pageIdxRef.current) return;
-      cooldown.current = true;
-      setPage(PAGE_ORDER[next]);
-      setTimeout(() => { cooldown.current = false; }, 1100);
-    };
-    window.addEventListener("wheel", onWheel, { passive: true });
-    return () => window.removeEventListener("wheel", onWheel);
-  }, []);
-
-  /* touch nav */
-  const touchY = useRef(0);
-  const touchX = useRef(0);
-  useEffect(() => {
-    const start = (e: TouchEvent) => {
-      touchY.current = e.touches[0].clientY;
-      touchX.current = e.touches[0].clientX;
-    };
-    const end = (e: TouchEvent) => {
-      // No page navigation while a project modal / media viewer is open
-      if (modalOpenRef.current) return;
-      if (cooldown.current) return;
-      // Home scrolls natively into the Lego Realm storyboard
-      if (currentPageRef.current === "home" || currentPageRef.current === "about" || currentPageRef.current === "contact") return;
-      // Skip page navigation on work page (use buttons only)
-      if (currentPageRef.current === "work") return;
-      const target = e.target as HTMLElement;
-      // Skip if on a scrollable rail or modal grid
-      if (target.closest(".ss-modal-grid")) return;
-      const dy = touchY.current - e.changedTouches[0].clientY;
-      const dx = touchX.current - e.changedTouches[0].clientX;
-      // Require significant vertical movement (120px) and vertical > horizontal by 3x to prevent accidental triggers
-      if (Math.abs(dy) < 120 || Math.abs(dy) < Math.abs(dx) * 3) return;
-      const dir = dy > 0 ? 1 : -1;
-      const next = Math.max(0, Math.min(PAGE_ORDER.length - 1, pageIdxRef.current + dir));
-      if (next !== pageIdxRef.current) {
-        cooldown.current = true;
-        setPage(PAGE_ORDER[next]);
-        setTimeout(() => { cooldown.current = false; }, 1100);
-      }
-    };
-    window.addEventListener("touchstart", start, { passive: true });
-    window.addEventListener("touchend", end, { passive: true });
-    return () => {
-      window.removeEventListener("touchstart", start);
-      window.removeEventListener("touchend", end);
-    };
   }, []);
 
   /* keyboard nav */
@@ -1612,17 +1525,10 @@ export default function App() {
         if (e.key === "Escape") setModalProject(null);
         return;
       }
-      // On home the arrows scroll the storyboard natively instead of flipping pages
-      if (page === "home" || page === "about" || page === "contact" || page === "work") return;
-      // Otherwise page navigation
-      if (e.key === "ArrowDown" || e.key === "ArrowRight")
-        setPage(PAGE_ORDER[Math.min(PAGE_ORDER.length - 1, pageIdx + 1)]);
-      if (e.key === "ArrowUp" || e.key === "ArrowLeft")
-        setPage(PAGE_ORDER[Math.max(0, pageIdx - 1)]);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [pageIdx, viewerItem, modalProject]);
+  }, [viewerItem, modalProject]);
 
   return (
     <div
@@ -1975,6 +1881,9 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
         {/* BG image */}
         <img
           src="/assets/New_Shiri_Site_Pic.jpg"
+          decoding="async"
+          width="1920"
+          height="1080"
           alt=""
           onLoad={() => setLoaded(true)}
           className={loaded ? "ss-hero-bg ss-hero-bg-active" : "ss-hero-bg"}
@@ -2053,6 +1962,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
               variants={sbOpen}
               src="/assets/story/story_sunset.jpg"
               alt="The cottage and footbridge beside the river at sunset."
+              loading="lazy"
               decoding="async"
             />
             <div className="ss-open-veil" aria-hidden />
@@ -2135,6 +2045,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
               variants={sbOpen}
               src="/assets/story/story_aerial_sunset.jpg"
               alt="The town from above at sunset, the lampposts coming on."
+              loading="lazy"
               decoding="async"
             />
             <div className="ss-open-veil" aria-hidden />
@@ -2247,10 +2158,6 @@ const sbRise: Variants = {                        // anything that just rises
   hidden: { opacity: 0, y: 22 },
   show: { opacity: 1, y: 0, transition: { duration: 0.72, ease: SB_EASE } },
 };
-const sbHead: Variants = {                        // the frame's head strip: wipes open left to right
-  hidden: { opacity: 0, clipPath: "inset(0% 100% 0% 0%)" },
-  show: { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 0.62, ease: SB_EASE } },
-};
 const sbCap: Variants = {                         // the caption: unmasks upward off its own rule line
   hidden: { opacity: 0, y: 14, clipPath: "inset(0% 0% 100% 0%)" },
   show: { opacity: 1, y: 0, clipPath: "inset(0% 0% -6% 0%)", transition: { duration: 0.7, ease: SB_EASE } },
@@ -2333,22 +2240,6 @@ const shotReveal: Variants = {
   hidden: { opacity: 0, y: 22 },
   show: { opacity: 1, y: 0, transition: { duration: 0.85, ease: APPLE_EASE } },
 };
-
-/* A PLATE: a still with no border, no head strip and no caption box. The frame chrome was
-   right when every picture on the deck was one of thirteen specimens in a catalogue; it is
-   wrong now that the world shots are full bleed and the Blender captures are a contact
-   sheet. A label over it, the picture, a caption under it, all in the open. */
-function Plate({ scene, src, caption }: { scene: string; src: string; caption: string }) {
-  return (
-    <motion.figure className="ss-plate" variants={sbBox}>
-      <motion.span className="ss-plate-label" variants={sbHead}>{scene}</motion.span>
-      <motion.div className="ss-plate-shot" variants={shotReveal}>
-        <img src={src} alt={scene} loading="lazy" decoding="async" />
-      </motion.div>
-      <motion.figcaption variants={sbCap}>{caption}</motion.figcaption>
-    </motion.figure>
-  );
-}
 
 /* ── THE WORKSHOP SHEET ──────────────────────────────────────────────────────────────
    The seven Blender captures as one contact sheet. The cell you are on is answered by a
@@ -2551,9 +2442,9 @@ function RealmMap() {
     <motion.div className="ss-map-stage" ref={stage} variants={sbRise}>
       {/* a blurred bed behind, so the letterbox on an off aspect window is the world out
           of focus rather than two black bars */}
-      <img className="ss-map-bed" src="/assets/story/story_aerial_town.jpg" alt="" aria-hidden decoding="async" />
+      <img className="ss-map-bed" src="/assets/story/story_aerial_town.jpg" alt="" aria-hidden loading="lazy" decoding="async" />
       <div className="ss-map-fit" style={{ left: fit.left, top: fit.top, width: fit.w, height: fit.h }}>
-        <img className="ss-map-img" src="/assets/story/story_aerial_town.jpg"
+        <img className="ss-map-img" src="/assets/story/story_aerial_town.jpg" loading="lazy"
           alt="The town from above: the Coffee Shop, the Cottage, the Modern House and the Ruins."
           decoding="async" />
         {REALM_MAP.map((b) => (
@@ -2955,8 +2846,17 @@ function WorkParticles({ base, emit }: { base: string; emit: string }) {
       }
       raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+    const onVisibility = () => {
+      cancelAnimationFrame(raf);
+      if (!document.hidden) { last = performance.now(); raf = requestAnimationFrame(draw); }
+    };
+    onVisibility();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, []);
   return <canvas ref={ref} aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", zIndex: 0 }} />;
 }
@@ -3001,7 +2901,6 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const activeId = PROJECTS[active]?.id;
   const light = activeId === "professional-services";  // white slide → black UI text
   const titleColor = light ? "#14110b" : "var(--white)";
-  const midColor = titleColor;  // whole header block: white on the dark slides, black on the white slide
   const textShadow = light ? "0 1px 12px rgba(255,255,255,.6)" : "0 1px 14px rgba(0,0,0,.6)"; // stays legible over the moving particles
   const bgt = WORK_BG_THEME[activeId] || WORK_BG_THEME["creative-projects"];
 
@@ -3363,7 +3262,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
   return (
     <motion.div
       ref={dialogRef} role="dialog" aria-modal="true" aria-label={project.title}
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1, pointerEvents: "auto" }} exit={{ opacity: 0, pointerEvents: "none" }}
       transition={{ duration: REDUCE ? 0.001 : 0.4 }}
       onClick={onClose}
       style={{
@@ -3604,7 +3503,7 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
   return (
     <motion.div
       ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="ss-viewer-title"
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1, pointerEvents: "auto" }} exit={{ opacity: 0, pointerEvents: "none" }}
       transition={{ duration: REDUCE ? 0.001 : 0.25 }}
       onClick={onClose}
       style={{
