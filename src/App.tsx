@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { motion, AnimatePresence, animate, useMotionValue, useTransform, type MotionValue, type Variants } from "framer-motion";
 import AboutPage from "./components/AboutPage";
-import SelectedWork from "./components/SelectedWork";
 
 /* ─────────────────────────────────────────────────────────────
    TYPES
@@ -15,6 +14,7 @@ type MediaItem = {
   title?: string;
   desc?: string;
   year?: number;
+  credit?: string;
   link?: string;
   wide?: boolean;
   objectPosition?: string;
@@ -41,7 +41,7 @@ type Project = {
 const PROJECTS: Project[] = [
   {
     id: "creative-projects",
-    title: "Personal Projects",
+    title: "Selected Projects",
     tag: "Design, 3D & Craft",
     img: "/assets/3D_Models_Cover_Pic.jpg",
     size: "tall",
@@ -53,39 +53,39 @@ const PROJECTS: Project[] = [
     // nothing can fit. X is inert: the card can never be taller than the file.
     objectPosition: "50% 37%",
     media: [
-      { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
-      { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Prototypes", year: 2024, desc: "3D designed Apple product case prototypes developed using Blender.", aspectRatio: "16/9", relatedItems: ["Custom AirPods Case", "Custom Phone Case"] },
-      { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Retro Driving Animation", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Venom.webp", title: "Creature Head Sculpt", year: 2024, desc: "A movie creature's head, sculpted and rendered in Blender. A wet, high gloss skin shader over the sculpt, lit with a single key against black.", aspectRatio: "16/9" },
-      { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", year: 2025, desc: "The finished case, printed in a metallic blue. An organic lattice replaces the flat back, its apertures shaped around the camera array and the side buttons.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Prototypes"] },
-      { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom AirPods Case", year: 2026, desc: "The finished sleeve, printed in purple. The same melted lattice wraps an AirPods Pro case, left open at the status light and along the hinge.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Prototypes"] },
-      { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Radar, Front View", year: 2024, desc: "Front of the radar enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D-printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar, Back View", "Radar and RGB Controller", "HMI Sensor System"] },
-      { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Radar, Back View", year: 2024, desc: "Back of the radar enclosure, showing the access panel, wiring routing, and the power and control cutouts.", aspectRatio: "4/3", hidden: true, relatedItems: ["Radar, Front View", "Radar and RGB Controller", "HMI Sensor System"] },
-      { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box, Front View", year: 2024, desc: "Front of the RGB controller. A faceted 3D-printed shell with the addressable LED strip seated in a chamfered channel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Back View", "Radar and RGB Controller", "Custom RGB Controller"] },
-      { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box, Back View", year: 2024, desc: "Back of the RGB controller, with the potentiometer, mode button, and toggle switch mounted through the top panel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Front View", "Radar and RGB Controller", "Custom RGB Controller"] },
-      { type: "image", src: "/assets/Programming_Cover_Pic.jpg", title: "Radar and RGB Controller", year: 2024, desc: "Both enclosures side by side. Each was modeled around its own board, display and controls, then 3D printed and finished by hand.", aspectRatio: "4/3", hidden: true, relatedItems: ["HMI Sensor System", "Custom RGB Controller"] },
-      { type: "image", src: "/assets/Max_Pic.JPG", title: "Candid Studio Portrait", year: 2024, desc: "Caught mid laugh on a gelled teal backdrop, with the background light hot behind the head so the subject separates from it.", aspectRatio: "2/3" },
-      { type: "image", src: "/assets/Photography_1.jpg", title: "Shiri Wordmark", year: 2024, desc: "A hand drawn wordmark set over a cropped apparel shot, chains and acid washed corduroy, framed close so the type sits on the garment rather than beside it.", aspectRatio: "1/1" },
-      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", year: 2024, desc: "Interactive radar module converting ultrasonic data into real-time feedback. Custom 3D-printed enclosure with LCD and speaker.", aspectRatio: "4/3", relatedItems: ["Radar, Front View", "Radar, Back View", "Radar and RGB Controller"] },
-      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "Custom RGB Controller", year: 2024, desc: "A working LED controller with physical controls and a custom 3D-printed enclosure for the microcontroller.", aspectRatio: "4/3", relatedItems: ["RGB Box, Front View", "RGB Box, Back View", "Radar and RGB Controller"] },
-      { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
-      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Ultron Shaver Campaign", year: 2024, desc: "A spec print advertisement for a fictional shaver brand. The rotary shaver is lit as the hero and its shadow runs back to the bloodied cartridge razor it replaces.", aspectRatio: "16/9" },
+      { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
+      { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Concepts", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "Concept designs for Apple accessory cases, modeled and rendered in Blender.", aspectRatio: "16/9", relatedItems: ["Custom AirPods Case", "Custom Phone Case"] },
+      { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", credit: "SJSU · ART 105 · Advanced Digital Video", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Venom.webp", title: "Movie Character Adaptation", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A movie creature's head, sculpted and rendered in Blender. A wet, high gloss skin shader over the sculpt, lit with a single key against black.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", credit: "Started at SJSU · Independently developed", year: 2025, desc: "An accessory design developed beyond its original coursework into a finished 3D-printed case. An open lattice wraps around the camera and side buttons.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Concepts"] },
+      { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom AirPods Case", credit: "Started at SJSU · Independently developed", year: 2026, desc: "An accessory design developed beyond its original coursework into a finished 3D-printed sleeve. An open lattice wraps an AirPods Pro case, leaving the status light and hinge accessible.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Concepts"] },
+      { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Ultrasonic Sensor, Front View", year: 2024, desc: "Front of the ultrasonic sensor enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D-printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Ultrasonic Sensor, Back View", "Ultrasonic Sensor and RGB Controller", "HMI Sensor System"] },
+      { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Ultrasonic Sensor, Back View", year: 2024, desc: "Back of the ultrasonic sensor enclosure, showing the access panel, wiring routing, and the power and control cutouts.", aspectRatio: "4/3", hidden: true, relatedItems: ["Ultrasonic Sensor, Front View", "Ultrasonic Sensor and RGB Controller", "HMI Sensor System"] },
+      { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box, Front View", year: 2024, desc: "Front of the RGB controller. A faceted 3D-printed shell with the addressable LED strip seated in a chamfered channel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Back View", "Ultrasonic Sensor and RGB Controller", "RGB Controller"] },
+      { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box, Back View", year: 2024, desc: "Back of the RGB controller, with the potentiometer, mode button, and toggle switch mounted through the top panel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Front View", "Ultrasonic Sensor and RGB Controller", "RGB Controller"] },
+      { type: "image", src: "/assets/Programming_Cover_Pic.jpg", title: "Ultrasonic Sensor and RGB Controller", year: 2024, desc: "Both enclosures side by side. Each was modeled around its own board, display and controls, then 3D printed and finished by hand.", aspectRatio: "4/3", hidden: true, relatedItems: ["HMI Sensor System", "RGB Controller"] },
+      { type: "image", src: "/assets/Max_Pic.JPG", title: "Studio Portrait", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "Caught mid laugh on a gelled teal backdrop, with the background light hot behind the head so the subject separates from it.", aspectRatio: "2/3" },
+      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "A hand drawn wordmark set over a cropped apparel shot, chains and acid washed corduroy, framed close so the type sits on the garment rather than beside it.", aspectRatio: "1/1" },
+      { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "An ultrasonic sensing device with an LCD, speaker, and 3D-printed enclosure that translates sensor readings into visual and audio feedback.", aspectRatio: "4/3", relatedItems: ["Ultrasonic Sensor, Front View", "Ultrasonic Sensor, Back View", "Ultrasonic Sensor and RGB Controller"] },
+      { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "RGB Controller", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "An LED controller with physical controls and a 3D-printed enclosure, designed around the electronics inside.", aspectRatio: "4/3", relatedItems: ["RGB Box, Front View", "RGB Box, Back View", "Ultrasonic Sensor and RGB Controller"] },
+      { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", credit: "SJSU · ART 68 · Beginning Sculpture", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
+      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Advertisement Project", year: 2024, desc: "A spec print advertisement for a fictional shaver brand. The rotary shaver is lit as the hero and its shadow runs back to the bloodied cartridge razor it replaces.", aspectRatio: "16/9" },
     ],
   },
   {
     id: "professional-services",
-    title: "Professional Services",
+    title: "Client Work",
     tag: "Web & Design",
     img: "/assets/Everly_Cover_Image-1280.webp",
     size: "wide",
     media: [
-      { type: "image", src: "/assets/Mina_Website.webp", title: "UI/UX, minasech.net", year: 2025, desc: "Website design and React development, with a responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Mina_Website.webp", title: "minasech.net", year: 2025, desc: "Website design and React development, with a responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
       { type: "image", src: "/assets/Everly_Cover_Image.webp", title: "Everly Care Home", year: 2026, desc: "Brand identity, responsive website design, development, and deployment for a senior care community.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
-      { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Luning Dr Flyer", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
-      { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Colleen Dr Flyer", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
-      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.webp", title: "Morning Star Dr Flyer", year: 2022, desc: "A listing announcement co-branded with Compass, combining pricing, property specifications, and sales highlights.", aspectRatio: "4/5" },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner, Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner, Existing Site"] },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.webp", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner, Concept Visualization"] },
+      { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Luning Drive Listing", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
+      { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Colleen Drive Listing", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
+      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.webp", title: "Morning Star Drive Listing", year: 2022, desc: "A listing announcement co-branded with Compass, combining pricing, property specifications, and sales highlights.", aspectRatio: "4/5" },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner Redevelopment", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner, Existing Site"] },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.webp", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner Redevelopment"] },
     ],
   },
   {
@@ -95,13 +95,13 @@ const PROJECTS: Project[] = [
     img: "/assets/New_NABU_Cover_Card.webp",
     size: "tall",
     media: [
-      { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "NABU Promotional Video", year: 2023, desc: "Promotional video for NABU clothing, animated in Adobe After Effects.", wide: true },
-      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "NABU 2026 Teaser", year: 2025, desc: "A teaser edited in 2025 for the 2026 puffer jacket collection.", relatedItems: ["NABU Puffer Front", "NABU Puffer Back"] },
-      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "NABU 2025 Summer Collection", year: 2025, desc: "Promotional video for the summer drop, camp collar shirts and rug pattern shorts, shot as a flat lay on white." },
-      { type: "image", src: "/assets/Stevie_Pic.JPG", title: "NABU 2023 Spring Collection", year: 2022, desc: "Shot in 2022 for the 2023 spring collection. Two looks on a white cyclorama, the graphic tees worn over the Persian rug trousers, with the raw fringed seams left showing down the leg." },
-      { type: "image", src: "/assets/NABU_Puffer_Front.jpg", title: "NABU Puffer Front", year: 2025, desc: "Studio still from the puffer collection shoot. Woven bandana panelling across the body, sleeves, and hood, shot on a white cyclorama.", aspectRatio: "9/16", hidden: true, relatedItems: ["NABU Puffer Back", "NABU 2026 Teaser"] },
-      { type: "image", src: "/assets/NABU_Puffer_Back.jpg", title: "NABU Puffer Back", year: 2025, desc: "Back of the same puffer, showing how the bandana medallion is centered and mirrored across the shoulders and hem.", aspectRatio: "2/3", hidden: true, relatedItems: ["NABU Puffer Front", "NABU 2026 Teaser"] },
-      { type: "image", src: "/assets/Digital_Media_Cover.jpg", title: "NABU 2024 Rerelease Promotion", year: 2024, desc: "Promotional campaign for the 2024 rerelease of NABU's Persian rug pants.", aspectRatio: "3/4" },
+      { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "Brand Film", year: 2023, desc: "Promotional video for NABU clothing, animated in Adobe After Effects.", wide: true },
+      { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "Puffer Collection Teaser", year: 2025, desc: "A teaser edited in 2025 for the 2026 puffer jacket collection.", relatedItems: ["Puffer Jacket, Front", "Puffer Jacket, Back"] },
+      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "Summer 2025", year: 2025, desc: "Promotional video for the summer drop, camp collar shirts and rug pattern shorts, shot as a flat lay on white." },
+      { type: "image", src: "/assets/Stevie_Pic.JPG", title: "Spring 2023", year: 2022, desc: "Shot in 2022 for the 2023 spring collection. Two looks on a white cyclorama, the graphic tees worn over the Persian rug trousers, with the raw fringed seams left showing down the leg." },
+      { type: "image", src: "/assets/NABU_Puffer_Front.jpg", title: "Puffer Jacket, Front", year: 2025, desc: "Studio still from the puffer collection shoot. Woven bandana panelling across the body, sleeves, and hood, shot on a white cyclorama.", aspectRatio: "9/16", hidden: true, relatedItems: ["Puffer Jacket, Back", "Puffer Collection Teaser"] },
+      { type: "image", src: "/assets/NABU_Puffer_Back.jpg", title: "Puffer Jacket, Back", year: 2025, desc: "Back of the same puffer, showing how the bandana medallion is centered and mirrored across the shoulders and hem.", aspectRatio: "2/3", hidden: true, relatedItems: ["Puffer Jacket, Front", "Puffer Collection Teaser"] },
+      { type: "image", src: "/assets/Digital_Media_Cover.jpg", title: "Persian Rug Pants Relaunch", year: 2024, desc: "Promotional campaign for the 2024 rerelease of NABU's Persian rug pants.", aspectRatio: "3/4" },
     ],
   },
 ];
@@ -211,7 +211,6 @@ const GLOBAL_CSS = `
 
     /* Work Page - Cards. The floor comes down with the card itself (360 -> 330 wide),
        or a short phone draws a card taller than the desktop proportion. */
-    .ss-card { min-height: 385px !important; }
 
     /* Contact Page */
     .ss-contact-heading { font-size: clamp(32px, 6vw, 64px) !important; }
@@ -344,21 +343,12 @@ const GLOBAL_CSS = `
   .ss-hero-kicker::before {
     content: ''; width: 27px; height: 1px; background: var(--sky);
   }
-  .ss-hero-description {
-    margin-top: 24px; max-width: 435px; font-size: 16px; line-height: 1.55;
-    color: rgba(245,242,237,.82);
-  }
   .ss-hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 22px; margin-top: 24px; }
   .ss-hero-actions button {
     min-height: 46px; font-size: 13px; font-weight: 600;
     transition: background .22s var(--ease-out), color .22s var(--ease-out), transform .22s var(--ease-out);
   }
-  .ss-hero-primary { background: var(--white); color: #060606; padding: 0 23px; border: 0; border-radius: 999px; }
-  /* The legacy button reset clears backgrounds and focus with !important. */
-  #root .ss-hero-primary { background: var(--white) !important; }
   .ss-hero-secondary { background: none; color: var(--white); padding: 0 2px; border: 0; text-decoration: underline; text-underline-offset: 5px; text-decoration-color: rgba(245,242,237,.35); }
-  .ss-hero-primary:hover { background: #dbeef5; transform: translateY(-2px); }
-  #root .ss-hero-primary:hover { background: #dbeef5 !important; }
   .ss-hero-secondary:hover { color: var(--sky); }
   .ss-hero-actions button:focus-visible, .ss-story-cue:focus-visible { outline: 2px solid var(--sky); outline-offset: 5px; }
   #root button:focus-visible { outline: 2px solid var(--sky) !important; outline-offset: 5px; }
@@ -366,7 +356,6 @@ const GLOBAL_CSS = `
   @media (max-width: 640px) {
     .ss-home-hero { min-height: 560px; }
     .ss-hero-kicker { margin-bottom: 16px; font-size: 10px; }
-    .ss-hero-description { margin-top: 18px; }
     .ss-hero-actions { gap: 4px 16px; margin-top: 18px; }
   }
 
@@ -1274,7 +1263,7 @@ const GLOBAL_CSS = `
     overflow: hidden !important;
   }
   .ss-tile { border-radius: 18px !important; }
-  .ss-work-modal { border-radius: 26px !important; overflow: hidden !important; }
+  .ss-work-modal { border-radius: 26px !important; overflow-x: hidden; }
   /* masonry gallery (Work modal: creative + professional) — packs mixed
      aspect ratios tightly with no ragged gaps, shows every image uncropped */
   .ss-scell { position: relative; border-radius: 14px; overflow: hidden; background: #111214; border: 1px solid rgba(245,242,237,.1); cursor: none; transition: transform .5s var(--ease-out), border-color .4s var(--ease-out), box-shadow .5s var(--ease-out); }
@@ -1290,14 +1279,20 @@ const GLOBAL_CSS = `
   .ss-scroll::-webkit-scrollbar-thumb { background: rgba(245,242,237,.22); border-radius: 8px; }
   .ss-scroll::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,.55); }
   .ss-scroll-fade { position: absolute; left: 0; right: 8px; bottom: 0; height: 54px; background: linear-gradient(to top, rgba(6,6,6,.92), transparent); pointer-events: none; }
-  /* Work page background: ONE continuous drift; only the colours change per slide
-     (registered custom props so the colours interpolate; motion never resets) */
-  @property --wbc1 { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0); }
-  @property --wbc2 { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0); }
-  @property --wbc3 { syntax: "<color>"; inherits: true; initial-value: rgba(0,0,0,0); }
-  @keyframes ssFloatA { 0%,100% { transform: translate(-10%,-6%) scale(1); } 33% { transform: translate(9%,11%) scale(1.16); } 66% { transform: translate(15%,-8%) scale(1.08); } }
-  @keyframes ssFloatB { 0%,100% { transform: translate(12%,9%) scale(1.1); } 33% { transform: translate(-10%,-7%) scale(1); } 66% { transform: translate(-15%,11%) scale(1.15); } }
-  @keyframes ssFloatC { 0%,100% { transform: translate(3%,-12%) scale(1.05); } 33% { transform: translate(-12%,7%) scale(1.17); } 66% { transform: translate(11%,13%) scale(1); } }
+  .ss-project-card { border-radius: 22px; transition: translate .22s ease, scale .16s ease; }
+  .ss-project-card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; border: 1px solid transparent; pointer-events: none; z-index: 4; transition: border-color .22s ease; }
+  .ss-project-card-nabu::after { display: none; }
+  .ss-project-card[data-active="true"]::after { border-color: rgba(245,242,237,.25); }
+  @media (hover: hover) and (pointer: fine) {
+    .ss-project-card[data-active="true"]:hover { translate: 0 -4px; }
+    .ss-project-card[data-active="true"]:hover::after { border-color: rgba(245,242,237,.55); }
+  }
+  .ss-project-card[data-active="true"]:active { scale: .985; translate: 0 0; }
+  .ss-project-card[data-active="true"]:active::after { border-color: rgba(245,242,237,.65); }
+  @media (prefers-reduced-motion: reduce) {
+    .ss-project-card { transition: none; translate: none !important; scale: none !important; }
+    .ss-project-card::after { transition: none; }
+  }
   .ss-media-viewer img,
   .ss-media-viewer video { border-radius: 22px !important; }
   .ss-contact-btn { border-radius: 980px !important; }
@@ -1328,7 +1323,8 @@ const GLOBAL_CSS = `
   .ss-scell, .ss-tile { display: block; width: 100%; text-align: left; padding: 0; font: inherit; }
   .ss-tile:focus-visible .ss-tile-info { opacity: 1; }
   @media (hover: none) { .ss-tile-info { opacity: 1 !important; } }
-  .ss-work-modal { max-height: calc(100dvh - 32px) !important; overflow-y: auto; padding: 20px; }
+  .ss-work-modal { max-height: calc(100dvh - 32px) !important; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; padding: 20px; }
+  .ss-work-modal .ss-modal-grid > * { min-width: 0; }
   .ss-work-modal .ss-modal-close { position: static !important; display: block; align-self: flex-end; min-height: 44px; margin: 0 0 20px auto; flex-shrink: 0; }
   @media (max-width: 1023px), (max-height: 600px) {
     .ss-work-modal { display: block !important; width: calc(100vw - 32px) !important; }
@@ -1338,7 +1334,7 @@ const GLOBAL_CSS = `
     .ss-work-modal .ss-scroll-fade { display: none; }
   }
   @media (max-width: 640px) {
-    .ss-home-hero { min-height: max(760px,100svh); }
+    .ss-home-hero { min-height: max(620px,100svh); }
     .ss-home-page .ss-hero-intro { bottom: 60px !important; }
     .ss-home-hero .ss-hero-bg { height: 62% !important; object-position: 75% 5% !important; mask-image: linear-gradient(#000 60%,transparent); }
     .ss-work-modal { padding: 14px; }
@@ -1363,6 +1359,13 @@ const GLOBAL_CSS = `
     .ss-contact-entry { gap: 16px !important; padding: 16px 8px !important; }
     .ss-contact-entry > span:first-child { width: auto !important; font-size: 16px !important; }
     .ss-contact-entry > span:nth-child(2) { font-size: 13.5px !important; }
+  }
+
+  /* Keep the full-width portrait treatment; constrain only the supporting copy. */
+  .ss-home-hero .ss-hero-summary { width: min(100%, 30vw, 36ch); }
+  .ss-home-hero .ss-hero-summary p { text-wrap: pretty; }
+  @media (max-width: 640px) {
+    .ss-home-hero .ss-hero-summary { width: 100%; max-width: 36ch; }
   }
 
   /* asset titles: rounded "iPhone bubble" font (SF Pro Rounded) */
@@ -1507,11 +1510,6 @@ export default function App() {
     setPage(next);
   }, [page]);
 
-  const openMediaByTitle = useCallback((title: string) => {
-    const item = PROJECTS.flatMap(project => project.media).find(media => media.title === title);
-    if (item) setViewerItem(item);
-  }, []);
-
   /* keyboard nav */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -1598,7 +1596,7 @@ export default function App() {
 
 {/* ── PAGES ────────────────────────────────────────────── */}
       <AnimatePresence>
-        {page === "home" && <HomePage key="home" onNavigate={navigate} onMediaClick={openMediaByTitle} />}
+        {page === "home" && <HomePage key="home" onNavigate={navigate} />}
         {page === "work" && <WorkPage key="work" onCardClick={setModalProject} />}
         {page === "about" && <AboutPage key="about" />}
         {page === "contact" && <ContactPage key="contact" />}
@@ -1638,10 +1636,11 @@ function NavLink({ label, active, onClick, onLight }: { label: string; active: b
   return (
     <button
       onClick={onClick}
+      aria-current={active ? "page" : undefined}
       className="ss-tap"
       style={{
         fontFamily: "var(--sf)",
-        fontSize: 12, fontWeight: 590, letterSpacing: "0.05em", textTransform: "uppercase",
+        fontSize: 12, fontWeight: active ? 650 : 500, letterSpacing: "0.05em", textTransform: "uppercase",
         color: onLight ? "#14110b" : "var(--white)", background: "none", border: "none",
         /* 0.72 AND NOT THE 0.55 THE BLEND USED, and the number is measured rather than
            chosen. Against a produced colour the old value was as dim as it could be; against
@@ -1670,15 +1669,6 @@ function NavLink({ label, active, onClick, onLight }: { label: string; active: b
       {...hover}
     >
       {label}
-      <span
-        style={{
-          position: "absolute", bottom: -4, left: 0,
-          height: 1, background: "var(--sky)",
-          width: active ? "100%" : 0,
-          transition: "width 0.4s var(--ease-out)",
-          display: "block",
-        }}
-      />
     </button>
   );
 }
@@ -1809,7 +1799,7 @@ function HeroName({ isMobile }: { isMobile: boolean }) {
   );
 }
 
-function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void; onMediaClick: (title: string) => void }) {
+function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [loaded, setLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
   // read once: none of its inputs change while the page is open, and it must not
@@ -1838,7 +1828,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
       start + section.getBoundingClientRect().top - root.getBoundingClientRect().top);
     if (REDUCE) { root.scrollTo({ top: target, behavior: "instant" }); return; }
     const distance = target - start;
-    const duration = Math.min(2600, 1200 + Math.abs(distance) * .45);
+    const duration = Math.min(2600, 1200 + Math.abs(distance) * .45) * (id === "open" ? 0.75 : 1);
     const started = performance.now();
     const oldSnap = root.style.scrollSnapType;
     const oldBehavior = root.style.scrollBehavior;
@@ -1904,25 +1894,17 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
 
         {/* Content */}
         <div className="ss-hero-intro" style={{ position: "absolute", bottom: isMobile ? "14vh" : "24vh", left: "8vw", right: "8vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
-          <motion.p className="ss-hero-kicker"
-            initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: REDUCE ? 0 : 0.4, delay: REDUCE ? 0 : 0.2, ease: APPLE_EASE }}>
-            Designer &amp; developer
-          </motion.p>
           <HeroName isMobile={isMobile} />
 
           <motion.div className="ss-hero-summary"
             initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.38, delay: REDUCE ? 0 : 0.5, ease: APPLE_EASE }}>
-            <p className="ss-hero-description">
-              Brand identity, web development, and 3D design. Based in the Bay Area.
+            <p style={{ marginTop: 20, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}>
+              Browse the site using the navigation buttons or view it in LEGO form.
             </p>
             <div className="ss-hero-actions">
-              <button type="button" className="ss-hero-primary" onClick={() => onNavigate("work")} {...hover}>
-                View my work
-              </button>
               <button type="button" className="ss-hero-secondary" onClick={() => scrollToSection("open")} {...hover}>
-                Explore the Lego Realm
+                View My LEGO Portfolio
               </button>
             </div>
           </motion.div>
@@ -1933,16 +1915,14 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
           initial={REDUCE ? false : { opacity: 0 }} animate={{ opacity: 1 }}
           transition={{ duration: 0.35, delay: REDUCE ? 0 : 0.7 }}
           className="ss-story-cue"
-          onClick={() => scrollToSection("selected")}
-          aria-label="Scroll to selected work"
+          onClick={() => scrollToSection("open")}
+          aria-label="Scroll to my LEGO Portfolio"
           {...hover}
           style={{ cursor: "none" }}
         >
           <span className="ss-cue-arrow">▼</span>
         </motion.button>
       </div>
-
-      <SelectedWork onOpen={onMediaClick} onAllWork={() => onNavigate("work")} />
 
       {/* ── STORYBOARD, AS A DECK ──
           One chapter or one frame row per screen, each locking in place and staging
@@ -1955,7 +1935,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
             than with a viewport unit (see `.ss-slide-open`). The type is put back on the
             deck's column by the inner, so the title starts on the same left edge every
             chapter below it does. */}
-        <Slide id="open" label="My Lego Realm" className="ss-slide-open" stagger={0.14}>
+        <Slide id="open" label="My LEGO Portfolio" className="ss-slide-open" stagger={0.14}>
           <div className="ss-open-bg">
             <motion.img
               className="ss-open-img"
@@ -1968,10 +1948,10 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
             <div className="ss-open-veil" aria-hidden />
           </div>
           <div className="ss-open-copy">
-            <Words className="ss-open-title" text="My Lego Realm" variant={sbWordUp} stagger={0.07} />
+            <Words className="ss-open-title" text="My LEGO Portfolio" variant={sbWordUp} stagger={0.07} />
             <Words
               className="ss-open-line"
-              text="A real-time 3D environment you can walk through in your browser. Cross the river, climb the ruins, and find projects inside the buildings."
+              text="My portfolio, built in LEGO. Walk between buildings to browse projects and learn about me."
               variant={sbWordIn}
               stagger={0.018}
             />
@@ -2006,7 +1986,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
               <StoryChapter
                 pair
                 kicker="Navigation"
-                body="The coffee shop opens client work, the cottage holds personal projects, and the house leads to About. NABU is at the crystal above the ruins."
+                body="The coffee shop opens client work, the cottage holds selected projects, and the house leads to About. NABU is at the crystal above the ruins."
               />
               <RealmMap />
               <div className="ss-map-hint">Select a building to preview it</div>
@@ -2025,7 +2005,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
             <StoryChapter
               pair
               kicker="Development"
-              body="Blender handles the modeling and materials; Three.js handles the real-time scene. Compressed glTF files keep the models manageable. Collision follows the brick geometry, terrain controls each step, and the lighting changes as you explore. Most builds are my own, alongside a few modified free assets."
+              body="Built in Blender and brought into the browser with Three.js. Compressed models, collision detection, and a day-night cycle make the portfolio a place you can move through. Most builds are my own, alongside a few modified free assets."
             />
             <WorkSheet />
           </Slide>
@@ -2038,7 +2018,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
             FIGURES sit above the title. They are the one thing the page can say that the
             pictures cannot, they are all real (scratchpad/realm_cost.cjs and CLAUDE.md),
             and they cost no screen of their own here. */}
-        <Slide id="close" label="Enter the Realm" className="ss-slide-close" stagger={0.16}>
+        <Slide id="close" label="View My LEGO Portfolio" className="ss-slide-close" stagger={0.16}>
           <div className="ss-open-bg">
             <motion.img
               className="ss-open-img"
@@ -2063,7 +2043,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
               className="ss-open-line"
               text={realm.ok
                 ? "Controls are displayed on entry."
-                : "Open this page on a supported desktop or laptop to explore the environment. All portfolio projects are also available in Work."}
+                : "View my LEGO Portfolio on a supported desktop or laptop. You can browse the same projects in Work on this device."}
               variant={sbWordIn}
               stagger={0.018}
             />
@@ -2084,7 +2064,7 @@ function HomePage({ onNavigate, onMediaClick }: { onNavigate: (p: Page) => void;
                   fontSize: 13, fontWeight: 600, cursor: "none",
                 }}
               >
-                <span>Enter the Realm</span><span>→</span>
+                <span>View My LEGO Portfolio</span><span>→</span>
               </a>
             ) : (
               <p
@@ -2344,12 +2324,12 @@ const sbFig: Variants = {                         // a figure rises into place
    and only the name is capitalised, "the Cottage", because "The Cottage" mid sentence
    reads as a broken sentence rather than as a proper noun. */
 const REALM_MAP = [
-  { id: "shop", name: "The Coffee Shop", cat: "Professional Services", x: 18.2, y: 26.0, flip: false,
+  { id: "shop", name: "The Coffee Shop", cat: "Client Work", x: 18.2, y: 26.0, flip: false,
     src: "/assets/story/story_shop_evening.jpg",
     line: "Commissioned client work. Full-stack websites, brand and print for small businesses, and concept visualization." },
-  { id: "cottage", name: "The Cottage", cat: "Personal Projects", x: 53.5, y: 25.0, flip: false,
+  { id: "cottage", name: "The Cottage", cat: "Selected Projects", x: 53.5, y: 25.0, flip: false,
     src: "/assets/story/story_sunset.jpg",
-    line: "Self-directed work. 3D modeling and rendering, product prototypes, custom hardware, photography and fabrication." },
+    line: "Coursework and independent projects in 3D, physical objects, electronics, and image-making." },
   { id: "house", name: "The Modern House", cat: "About", x: 93.5, y: 38.0, flip: true,
     src: "/assets/story/story_lamp_night.jpg",
     line: "Background and training, and how the disciplines across the rest of the site fit together." },
@@ -2801,69 +2781,22 @@ function DeckRail({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement> })
   );
 }
 
-/* Work page background: slow, clean particle flow. Particles emit the active
-   project's colour; a single canvas runs continuously (motion never resets),
-   and the base + emit colours lerp when the slide changes. */
-function WorkParticles({ base, emit }: { base: string; emit: string }) {
-  const ref = useRef<HTMLCanvasElement>(null);
-  const target = useRef({ base, emit });
-  useEffect(() => { target.current = { base, emit }; }, [base, emit]);
-  useEffect(() => {
-    const canvas = ref.current; if (!canvas) return;
-    const ctx = canvas.getContext("2d"); if (!ctx) return;
-    const DPR = Math.min(window.devicePixelRatio || 1, 2);
-    let w = 0, h = 0, raf = 0, last = performance.now();
-    const resize = () => {
-      w = canvas.clientWidth; h = canvas.clientHeight;
-      canvas.width = Math.max(1, Math.floor(w * DPR)); canvas.height = Math.max(1, Math.floor(h * DPR));
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    };
-    resize(); window.addEventListener("resize", resize);
-    const P = Array.from({ length: 12 }, () => ({
-      x: Math.random(), y: Math.random(), r: 110 + Math.random() * 280,      // fewer, bigger, varied sizes
-      vx: (Math.random() - 0.5) * 0.024, vy: (Math.random() - 0.5) * 0.024,  // slow but visible drift
-      ph: Math.random() * Math.PI * 2, sp: 0.07 + Math.random() * 0.12,
-      a: 0.14 + Math.random() * 0.12,
-    }));
-    const hexToRgb = (hx: string) => { const s = hx.replace("#", ""); const n = parseInt(s.length === 3 ? s.split("").map(c => c + c).join("") : s, 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }; };
-    const emitRgb = (e: string) => { const m = e.split(",").map(Number); return { r: m[0], g: m[1], b: m[2] }; };
-    const cur = hexToRgb(base); const curE = emitRgb(emit);
-    const draw = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000); last = now;
-      const tb = hexToRgb(target.current.base); const te = emitRgb(target.current.emit); const k = Math.min(1, dt * 1.3);
-      cur.r += (tb.r - cur.r) * k; cur.g += (tb.g - cur.g) * k; cur.b += (tb.b - cur.b) * k;
-      curE.r += (te.r - curE.r) * k; curE.g += (te.g - curE.g) * k; curE.b += (te.b - curE.b) * k;
-      ctx.fillStyle = `rgb(${cur.r | 0},${cur.g | 0},${cur.b | 0})`; ctx.fillRect(0, 0, w, h);
-      const er = curE.r | 0, eg = curE.g | 0, eb = curE.b | 0;
-      for (const p of P) {
-        p.x += p.vx * dt; p.y += p.vy * dt; p.ph += p.sp * dt;
-        if (p.x < -0.2) p.x = 1.2; if (p.x > 1.2) p.x = -0.2;
-        if (p.y < -0.2) p.y = 1.2; if (p.y > 1.2) p.y = -0.2;
-        const px = (p.x + Math.sin(p.ph) * 0.02) * w, py = (p.y + Math.cos(p.ph * 0.8) * 0.02) * h;
-        const g = ctx.createRadialGradient(px, py, 0, px, py, p.r);
-        g.addColorStop(0, `rgba(${er},${eg},${eb},${p.a})`); g.addColorStop(1, `rgba(${er},${eg},${eb},0)`);
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, p.r, 0, Math.PI * 2); ctx.fill();
-      }
-      raf = requestAnimationFrame(draw);
-    };
-    const onVisibility = () => {
-      cancelAnimationFrame(raf);
-      if (!document.hidden) { last = performance.now(); raf = requestAnimationFrame(draw); }
-    };
-    onVisibility();
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  }, []);
-  return <canvas ref={ref} aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", zIndex: 0 }} />;
-}
-
 /* ─────────────────────────────────────────────────────────────
    WORK PAGE
 ───────────────────────────────────────────────────────────── */
+// Derive card transforms directly from one motion value, without a React render per frame.
+function OrbitCard({ index, orbit, radius, style, ...props }: React.ComponentProps<typeof motion.div> & {
+  index: number; orbit: MotionValue<number>; radius: number;
+}) {
+  const angle = useTransform(orbit, value => (index - value) * 2 * Math.PI / PROJECTS.length);
+  const x = useTransform(angle, value => Math.sin(value) * radius / Math.sin(2 * Math.PI / PROJECTS.length));
+  const z = useTransform(angle, value => (Math.cos(value) - 1) * 220);
+  const scale = useTransform(angle, value => .9 + .1 * Math.cos(value));
+  const rotateY = useTransform(angle, value => -Math.sin(value) * 34);
+  const zIndex = useTransform(angle, value => Math.round((Math.cos(value) + 1) * 100) + 1);
+  return <motion.div {...props} style={{ ...style, x, z, scale, rotateY, zIndex, backfaceVisibility: "hidden" }} />;
+}
+
 function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const hover = useCursorHover();
   const [size, setSize] = useState({ width: window.innerWidth, height: window.innerHeight });
@@ -2878,51 +2811,67 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   }, []);
 
   // ── coverflow carousel: one focused card, two visible on the sides ──
-  const [active, setActive] = useState(0);
   const n = PROJECTS.length;
-  const startX = useRef(0);
+  const [step, setStep] = useState(0);
+  const active = ((step % n) + n) % n;
+  const orbit = useMotionValue(0);
+  const settle = (destination: number) => {
+    orbit.stop();
+    setStep(destination);
+    animate(orbit, destination, { duration: REDUCE ? 0 : .62, ease: APPLE_EASE });
+  };
+  useEffect(() => () => orbit.stop(), [orbit]);
+  const selectCard = (index: number) => {
+    // Pick the nearest equivalent angle from the actual position, even mid-animation.
+    settle(index + Math.round((orbit.get() - index) / n) * n);
+  };
+  const gesture = useRef<{ id: number; x: number; y: number; dragging: boolean; orbitStart: number } | null>(null);
   const moved = useRef(false);
-  const go = (dir: number) => setActive((a) => (a + dir + n) % n);
+  const go = (dir: number) => settle(Math.round(orbit.get()) + dir);
   const isMob = size.width <= 640;
-  // Cards a step smaller and pushed further apart (user, 2026-09-03). The gap is a
-  // function of BOTH numbers: a side card sits at sideX and is drawn at 0.82, so the
-  // clear air between it and the centre card is sideX - cardW*(0.5 + 0.41). At 420/0.98
-  // that was 29px; at 380/1.12 it is 79px, and the neighbours still peek in at 1024.
-  const cardW = isDesktop ? 380 : Math.min(size.width * 0.70, 330);
-  const cardH = Math.min(cardW * 1.32, Math.max(290, size.height * 0.50));
-  const sideX = cardW * (isDesktop ? 1.12 : 0.70);
+  // Recess the side cards in perspective, leaving visible swipe targets on phones.
+  const cardW = isDesktop ? 380 : Math.min(size.width * (isMob ? 0.64 : 0.70), isMob ? 290 : 330);
+  const cardH = Math.min(cardW * 1.32, Math.max(isMob ? 230 : 290, size.height * (isMob ? 0.42 : 0.50)));
+  const sideX = cardW * (isDesktop ? 1.40 : isMob ? 1.08 : 1.24);
 
-  // per-slide identity: base colour + the colour the particles emit
-  const WORK_BG_THEME: Record<string, { base: string; emit: string }> = {
-    "creative-projects":     { base: "#030b05", emit: "65,119,86" },   // neon green
-    "professional-services": { base: "#ffffff", emit: "150,152,158" },  // grey on white
-    "nabu":                  { base: "#0d1015", emit: "84,168,255" },   // electric blue
+  // Cover-derived hues: skeleton green, Everly's purple CTA, and NABU's blue chrome.
+  const WORK_BG_THEME: Record<string, { base: string; glow: string }> = {
+    "creative-projects": {
+      base: "#041007",
+      glow: "radial-gradient(ellipse 70% 72% at 46% 43%, rgba(30,154,35,.34) 0%, rgba(18,120,21,.17) 40%, transparent 78%)",
+    },
+    "professional-services": {
+      base: "#d9d2df",
+      glow: "radial-gradient(ellipse 80% 85% at 72% 58%, rgba(125,78,164,.36) 0%, rgba(125,78,164,.14) 48%, transparent 85%), radial-gradient(ellipse 62% 70% at 18% 22%, rgba(246,242,247,.75) 0%, transparent 85%)",
+    },
+    "nabu": {
+      base: "#0a1020",
+      glow: "radial-gradient(ellipse 76% 70% at 42% 40%, rgba(84,120,157,.29) 0%, rgba(43,53,105,.16) 45%, transparent 80%)",
+    },
   };
   const activeId = PROJECTS[active]?.id;
   const light = activeId === "professional-services";  // white slide → black UI text
   const titleColor = light ? "#14110b" : "var(--white)";
-  const textShadow = light ? "0 1px 12px rgba(255,255,255,.6)" : "0 1px 14px rgba(0,0,0,.6)"; // stays legible over the moving particles
+  const textShadow = light ? "0 1px 12px rgba(255,255,255,.6)" : "0 1px 14px rgba(0,0,0,.6)"; // maintains separation from the softly lit background
   const bgt = WORK_BG_THEME[activeId] || WORK_BG_THEME["creative-projects"];
 
   return (
     <motion.div key="work" {...fade} className="ss-work-page"
       style={{
-        position: "absolute", inset: 0, overflowX: "hidden", overflowY: "auto",
+        position: "absolute", inset: 0, overflowX: "hidden", overflowY: "auto", overscrollBehaviorY: "none",
         background: "#0c0d0f",
       }}
     >
-      <div className="ss-work-layout" style={{ position: "relative", minHeight: "max(730px, 100dvh)", overflow: "hidden" }}>
-      {/* slow, continuous particle flow; particles emit the active project's colour */}
-      {REDUCE ? <div aria-hidden style={{ position: "absolute", inset: 0, background: bgt.base }} />
-        : <WorkParticles base={bgt.base} emit={bgt.emit} />}
-
-      {/* faint grain for atmosphere — sits behind the grid */}
-      <div aria-hidden style={{
-        position: "absolute", inset: 0, pointerEvents: "none",
-        opacity: 0.03,
-        backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='wn'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23wn)'/%3E%3C/svg%3E\")",
-        backgroundSize: "180px",
-      }} />
+      <div className="ss-work-layout" style={{ position: "relative", minHeight: isMob ? "max(580px, 100dvh)" : "max(660px, 100dvh)", overflow: "hidden" }}>
+      <motion.div aria-hidden="true"
+        animate={{ backgroundColor: bgt.base }} transition={{ duration: REDUCE ? 0 : .65 }}
+        style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
+      {Object.entries(WORK_BG_THEME).map(([id, theme]) => (
+        <motion.div key={id} aria-hidden="true"
+          animate={{ opacity: id === activeId ? 1 : 0 }} transition={{ duration: REDUCE ? 0 : .65 }}
+          style={{ position: "absolute", inset: 0, pointerEvents: "none",
+            background: theme.glow }} />
+      ))}
 
       {/* Header (left-aligned, clear of the top-right nav) */}
       <div style={{
@@ -2933,7 +2882,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
         <motion.h2
           initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.34, delay: 0.04, ease: APPLE_EASE }}
-          style={{ fontSize: "clamp(38px,5vw,64px)", letterSpacing: "-0.02em", fontWeight: 700, lineHeight: 1, color: titleColor, textShadow, transition: "color 0.7s ease" }}
+          style={{ fontFamily: "var(--sf)", fontSize: "clamp(38px,5vw,64px)", letterSpacing: "-0.065em", fontWeight: 550, lineHeight: 1, color: titleColor, textShadow, transition: "color 0.7s ease" }}
         >
           Work
         </motion.h2>
@@ -2943,44 +2892,74 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
 
       {/* Coverflow carousel: one focused card, two visible on the sides */}
       <div
+        className="ss-work-carousel" role="region" aria-label="Work categories" aria-roledescription="carousel"
         style={{
           position: "absolute", left: 0, right: 0,
-          top: 220, bottom: 65,
+          top: "50%", height: cardH + 64, transform: "translateY(-50%)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          perspective: 1800, touchAction: "pan-y",
+          perspective: 1100, touchAction: "pinch-zoom",
           /* a drag across the cards was starting a text selection under the pointer
              (measured: `selectstart` fires on the row). Only this surface gives it up,
              so the copy on every other page stays selectable. */
           userSelect: "none",
         }}
-        onPointerDown={(e) => { startX.current = e.clientX; moved.current = false; }}
-        onPointerMove={(e) => { if (Math.abs(e.clientX - startX.current) > 8) moved.current = true; }}
+        onPointerDown={(e) => {
+          if (!e.isPrimary || e.button !== 0) return;
+          gesture.current = { id: e.pointerId, x: e.clientX, y: e.clientY, dragging: false, orbitStart: orbit.get() };
+          moved.current = false;
+        }}
+        onPointerMove={(e) => {
+          const g = gesture.current;
+          if (!g || g.id !== e.pointerId) return;
+          const dx = e.clientX - g.x, dy = e.clientY - g.y;
+          if (Math.hypot(dx, dy) > 8) moved.current = true;
+          if (!g.dragging && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+            g.dragging = true;
+            orbit.stop();
+            g.orbitStart = orbit.get();
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }
+          if (g.dragging) orbit.set(g.orbitStart - Math.max(-.65, Math.min(.65, dx * .65 / cardW)));
+        }}
         onPointerUp={(e) => {
-          const dx = e.clientX - startX.current;
-          if (dx < -48) go(1); else if (dx > 48) go(-1);
+          const g = gesture.current;
+          if (!g || g.id !== e.pointerId) return;
+          const dx = e.clientX - g.x, dy = e.clientY - g.y;
+          if (g.dragging && Math.abs(dx) >= Math.max(28, cardW * 0.12) && Math.abs(dx) > Math.abs(dy) * 1.25) settle(Math.round(g.orbitStart) + (dx < 0 ? 1 : -1));
+          else if (g.dragging) settle(Math.round(orbit.get()));
+          gesture.current = null;
+          if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+        }}
+        onPointerCancel={() => { gesture.current = null; moved.current = true; settle(Math.round(orbit.get())); }}
+        onLostPointerCapture={(e) => {
+          if (gesture.current?.id === e.pointerId) { gesture.current = null; moved.current = true; settle(Math.round(orbit.get())); }
+        }}
+        onClickCapture={(e) => { if (moved.current && e.detail !== 0) { e.preventDefault(); e.stopPropagation(); } }}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            e.preventDefault();
+            const next = (active + (e.key === "ArrowRight" ? 1 : -1) + n) % n;
+            const carousel = e.currentTarget;
+            selectCard(next);
+            requestAnimationFrame(() => carousel.querySelectorAll<HTMLElement>('[role="button"]')[next]?.focus({ preventScroll: true }));
+          }
         }}
       >
         {PROJECTS.map((proj, i) => {
           const rel = (i - active + n) % n; // 0 = center, 1 = right, 2 = left
-          const target =
-            rel === 0 ? { x: 0, scale: 1, rotateY: 0, opacity: 1, z: 3 }
-            : rel === 1 ? { x: sideX, scale: 0.82, rotateY: -14, opacity: 1, z: 2 }
-            : { x: -sideX, scale: 0.82, rotateY: 14, opacity: 1, z: 2 };
-
-          // NABU: bare PNG (transparent, no card box/outline), name + tag below it
+          // NABU: transparent artwork, with its name below.
           if (proj.id === "nabu") {
             return (
-              <motion.div
+              <OrbitCard index={i} orbit={orbit} radius={sideX}
                 key={proj.id}
+                className="ss-project-card ss-project-card-nabu" data-active={rel === 0}
                 role="button" tabIndex={0} aria-label={`${rel === 0 ? "Open" : "Select"} ${proj.title}`}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0) onCardClick(proj); else setActive(i); } }}
-                animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
-                transition={{ duration: REDUCE ? 0 : 0.45, ease: APPLE_EASE }}
-                onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0) onCardClick(proj); else selectCard(i); } }}
+                onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else selectCard(i); }}
                 {...hover}
                 style={{
-                  position: "absolute", width: cardW, height: cardH, zIndex: target.z,
-                  cursor: "none", transformStyle: "preserve-3d",
+                  position: "absolute", width: cardW, height: cardH,
+                  cursor: "none", transformStyle: "flat",
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                 }}
               >
@@ -2988,6 +2967,9 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
                   src={proj.img} alt={proj.title}
                   style={{
                     width: "100%", height: "78%", objectFit: "contain", objectPosition: "center",
+                    // The visible artwork bounds are (177,182)..(954,930) in a 1080px square.
+                    // Offset the unequal transparent padding at the actual contained image size.
+                    transform: `translate(${-Math.min(cardW, cardH * .78) * 25.5 / 1080}px, ${-Math.min(cardW, cardH * .78) * 16 / 1080}px)`,
                     display: "block", pointerEvents: "none",
                     filter: rel === 0 ? "drop-shadow(0 26px 55px rgba(0,0,0,.55))" : "none",
                     transition: "filter .5s ease",
@@ -2997,32 +2979,26 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
                   <div style={{ fontSize: 24, letterSpacing: -0.3, color: titleColor, lineHeight: 1.05, fontWeight: 600, transition: "color 0.7s ease" }}>
                     {proj.title}
                   </div>
-                  <div style={{ fontSize: 12, letterSpacing: 1.5, color: "var(--sky)", textTransform: "uppercase", fontWeight: 500, marginTop: 7 }}>
-                    {proj.tag}
-                  </div>
                 </div>
-              </motion.div>
+              </OrbitCard>
             );
           }
 
           return (
-            <motion.div
+            <OrbitCard index={i} orbit={orbit} radius={sideX}
               key={proj.id}
                 role="button" tabIndex={0} aria-label={`${rel === 0 ? "Open" : "Select"} ${proj.title}`}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0) onCardClick(proj); else setActive(i); } }}
-              className="ss-card"
-              animate={{ x: target.x, scale: target.scale, rotateY: target.rotateY, opacity: target.opacity }}
-              transition={{ duration: REDUCE ? 0 : 0.45, ease: APPLE_EASE }}
-              onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else setActive(i); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0) onCardClick(proj); else selectCard(i); } }}
+              className="ss-card ss-project-card" data-active={rel === 0}
+              onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else selectCard(i); }}
               {...hover}
               style={{
                 position: "absolute",
                 width: cardW, height: cardH,
-                zIndex: target.z,
                 borderRadius: 22, overflow: "hidden",
                 background: "#111", cursor: "none",
                 boxShadow: rel === 0 ? "0 40px 90px rgba(0,0,0,.6)" : "0 20px 50px rgba(0,0,0,.5)",
-                transformStyle: "preserve-3d",
+                transformStyle: "flat",
               }}
             >
               <img
@@ -3037,19 +3013,15 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
                 position: "absolute", inset: 0,
                 background: "linear-gradient(to top, rgba(6,6,6,.92) 0%, rgba(6,6,6,.4) 42%, rgba(6,6,6,0) 78%)",
                 display: "flex", flexDirection: "column", justifyContent: "flex-end",
-                padding: "24px 22px", pointerEvents: "none",
+                padding: isMob ? "18px 16px" : "24px 22px", pointerEvents: "none",
               }}>
-                <div style={{ fontSize: 12, letterSpacing: 1.5, color: "var(--sky)", textTransform: "uppercase", fontWeight: 500, marginBottom: 6 }}>
-                  {proj.tag}
-                </div>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
                   <div style={{ fontSize: 24, letterSpacing: -0.3, color: "var(--white)", lineHeight: 1.05, fontWeight: 600 }}>
                     {proj.title}
                   </div>
-                  {rel === 0 && <span style={{ fontSize: 13, color: "var(--white)", whiteSpace: "nowrap", fontWeight: 500 }}>View →</span>}
                 </div>
               </div>
-            </motion.div>
+            </OrbitCard>
           );
         })}
       </div>
@@ -3057,7 +3029,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
       <div className="ss-work-controls" style={{ position: "absolute", bottom: isMob ? 20 : 28, left: 0, right: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 8, zIndex: 20 }}>
         <button type="button" aria-label="Previous category" onClick={() => go(-1)} style={{ color: titleColor, width: 44, height: 44 }}>←</button>
         {PROJECTS.map((project, i) => (
-          <button type="button" key={project.id} aria-label={`Show ${project.title}`} aria-pressed={i === active} onClick={() => setActive(i)} style={{ width: 44, height: 44, display: "grid", placeItems: "center" }}>
+          <button type="button" key={project.id} aria-label={`Show ${project.title}`} aria-pressed={i === active} onClick={() => selectCard(i)} style={{ width: 44, height: 44, display: "grid", placeItems: "center" }}>
             <span style={{ display: "block", width: i === active ? 26 : 8, height: 8, borderRadius: 980, background: i === active ? "#38bdf8" : (light ? "#777" : "#aaa"), transition: "width .3s ease" }} />
           </button>
         ))}
@@ -3143,7 +3115,7 @@ function ContactPage() {
               initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.34, delay: 0.04, ease: APPLE_EASE }}
               className="ss-contact-heading"
-              style={{ fontFamily: "var(--sf)", fontSize: "clamp(46px,6.2vw,96px)", fontWeight: 700, letterSpacing: "-0.038em", lineHeight: 1.02, color: "var(--white)" }}
+              style={{ fontFamily: "var(--sf)", fontSize: "clamp(46px,6.2vw,96px)", fontWeight: 550, letterSpacing: "-0.065em", lineHeight: 1, color: "var(--white)" }}
             >
               Get in touch<span style={{ color: "var(--white)" }}>.</span>
             </motion.h2>
@@ -3316,7 +3288,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
               {project.title}
             </div>
             <div style={{ fontFamily: "var(--sf)", fontSize: 15, fontWeight: 400, lineHeight: 1.5, letterSpacing: "-0.005em", color: "var(--sky)", marginTop: 10 }}>
-              {project.id === "creative-projects" ? "Personal projects in 3D, photography, electronics, and physical materials." : project.id === "professional-services" ? "Websites, identities, and print work made for clients." : project.id === "nabu" ? "Design and creative direction for NABU, a streetwear brand that draws from Persian and Assyrian heritage." : ""}
+              {project.id === "creative-projects" ? "Coursework and independent projects in 3D, physical objects, electronics, and image-making." : project.id === "professional-services" ? "Websites, identities, and print work made for clients." : project.id === "nabu" ? "Design and creative direction for NABU, a streetwear brand that draws from Persian and Assyrian heritage." : ""}
             </div>
           </div>
         </div>
@@ -3346,7 +3318,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
             className="ss-modal-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: project.id === "3d-rendering" ? "repeat(3, 240px)" : project.id === "fabrication" ? "repeat(1, 420px)" : ["3d-modelling", "programming"].includes(project.id) ? "repeat(2, 300px)" : "repeat(4, 220px)",
+              gridTemplateColumns: project.id === "3d-rendering" ? "repeat(3, 240px)" : project.id === "fabrication" ? "repeat(1, 420px)" : ["3d-modelling", "programming"].includes(project.id) ? "repeat(2, 300px)" : "repeat(4, minmax(0, 220px))",
               gap: 38,
               overflowY: "auto",
               overflowX: "hidden",
@@ -3404,7 +3376,7 @@ function StudioAssetCard({ item, onClick }: { item: MediaItem; onClick: () => vo
       </div>
       <div className="ss-sbody">
         <div className="ss-asset-title" style={{ fontSize: 13, fontWeight: 600, color: "var(--white)", lineHeight: 1.25 }}>{item.title}</div>
-        <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--mid)", marginTop: 4 }}>{item.year}</div>
+        <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--mid)", marginTop: 4 }}>{item.year}{item.credit && <span style={{ display: "block", lineHeight: 1.5 }}>{item.credit}</span>}</div>
       </div>
     </button>
   );
@@ -3460,7 +3432,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
         className="ss-tile-info"
       >
         <div className="ss-asset-title" style={{ fontSize: 14, color: "var(--white)", fontWeight: 600 }}>{item.title}</div>
-        <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--sky)", marginTop: 2 }}>{item.year}</div>
+        <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--sky)", marginTop: 2 }}>{item.year}{item.credit && <span style={{ display: "block", lineHeight: 1.5 }}>{item.credit}</span>}</div>
       </div>
     </button>
   );
@@ -3596,6 +3568,7 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
           </div>
           <div style={{ fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--sky)", textTransform: "uppercase", marginBottom: 20 }}>
             {item.year}
+            {item.credit && <div style={{ marginTop: 8, textTransform: "none", letterSpacing: 0, lineHeight: 1.5, color: "var(--mid)" }}>{item.credit}</div>}
           </div>
           {item.desc && (
             <p style={{ fontFamily: "var(--sf)", fontSize: 16, lineHeight: 1.55, letterSpacing: "-0.005em", color: "rgba(245,242,237,.75)", fontWeight: 400, marginBottom: 32 }}>

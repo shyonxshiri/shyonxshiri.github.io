@@ -68,7 +68,7 @@ Design direction: dark, minimal, editorial. Custom cursor, restrained motion, sy
 ## 3. Hard rules
 
 1. **Never use em dashes in copy.** Periods and commas. (Durable, repeatedly reinforced.)
-2. **The 3D space is the "Lego Realm"** ("My Lego Realm"). Never "the studio" or "3D space".
+2. **The public title is "My LEGO Portfolio"**, with "View My LEGO Portfolio" as the entry button. This replaces the former "Lego Realm" name.
    Descriptive copy must NOT lean on the name; state what it is (an interactive real-time 3D
    environment, Blender to browser). See the `site-copy-tone` memory.
 3. **Everything in the Realm snaps to the stud grid**, `PITCH = 0.36945`. Pieces pop into place.
@@ -167,8 +167,8 @@ with a sine-wandering width; `RV_CORE` are the rectangles the big water plates a
 must be re-derived if the plate list changes. Shoreline is the same 1x1 mosaic. The bridge is the
 only crossing. 175 MOC plant kits are instanced through the whole channel.
 
-**Structures and their portals.** Coffee shop → **Professional Services**; run-down cottage →
-**Personal Projects**; modern house (mansion) → **About**; the blue crystal on the ruins balcony →
+**Structures and their portals.** Coffee shop → **Client Work**; run-down cottage →
+**Selected Projects**; modern house (mansion) → **About**; the blue crystal on the ruins balcony →
 **NABU**. The ruins itself has no ground-floor portal: you climb its stairs to reach the crystal
 (the doorway teleporter that used to shortcut that climb is disabled behind `RUINS_TP=false`;
 its zones and targets are intact if it is ever wanted back).
@@ -1456,7 +1456,7 @@ takes the place of what were the "What it is" chapter (over the figure and the n
 and a "Portals" frame row (the shop and the crystal). The copy on that chapter was already
 describing a legend, four structures and the category of work each one stands for, and the
 deck opens on an aerial with all four in it, so the shot comes back close with the buildings
-pinned on it. `REALM_MAP` carries the four: shop → Professional Services, cottage → Personal
+pinned on it. `REALM_MAP` carries the four: shop → Client Work, cottage → Personal
 Projects, mansion → About, ruins → NABU, each with the in-engine still those two slides were
 showing anyway. `story_aerial_town.jpg` is the ONLY aerial with all four in frame;
 `story_aerial_sunset.jpg` has no coffee shop in it and cannot be substituted.
@@ -1626,12 +1626,17 @@ headings such as “Under the hood” or generic designer slogans.
 The remaining Realm sections cover the environment, destinations, implementation, and entry.
 Home CTA scrolling remains cancellable with a 1.2–2.6 second ease and a 1.015 arrival scale.
 
-**Responsive behavior follows available space.** All four pages use native scrolling; global
-wheel/touch/arrow page-switch handlers return early for every page. Duplicate page dots were
+**Responsive behavior follows available space.** All four pages use native scrolling; obsolete
+global wheel/touch page-switch handlers were removed. Duplicate page dots were
 removed because their invisible hit areas intercepted content on narrow screens; the top nav
 shows the active page with an underline. Work has a minimum-height
 scrolling canvas on short screens, reacts to every resize, and has 44px category controls plus
-keyboard-operable cards. On phones, the Home portrait sits above the copy, with a fade at its
+keyboard-operable cards. The Work carousel is vertically centered, with smaller phone cards.
+Its drag surface uses pointer capture after horizontal intent, suppresses post-drag clicks,
+allows pinch zoom, and leaves vertical scrolling available outside that surface. Arrow keys
+select and focus the next card. Do not restore the old 385px minimum card height or 220px top offset.
+Home's hero now has the name, profession kicker and Realm link only; its description and redundant
+View my work button were removed. On phones, the Home portrait sits above the name, with a fade at its
 lower edge. About uses responsive image sources. Contact background art remains clipped.
 Verified page overflow at phone, tablet, short landscape, and desktop widths, including 959,
 1023, 1099, and 1100px. Chapter headings stack below 1100px; their word spans inherit line-height
@@ -1643,6 +1648,10 @@ and restore it on close. Gallery cards are native buttons; galleries scroll full
 narrow screens. MediaViewer remains above the gallery and navigation. On phones the image comes
 before its description. Preserve related-media links and external website links. The Realm's
 existing device capability gate is unchanged; its project previews remain available on mobile.
+The gallery shell must keep overflow-y:auto. An old overflow:hidden!important rule silently
+overrode this and blocked all scrolling on mobile, even though scrollHeight looked correct.
+Verify actual scrolling reaches the bottom, not just content dimensions. Desktop NABU columns
+use minmax(0,220px) so every asset fits at intermediate widths such as 1024px.
 
 **`responsive_audit.cjs` USED TO REPORT A DEAD SERVER AS A CLEAN SITE, and that is fixed**
 (2026-09-09). It carried `http://localhost:5701/` hardcoded in TWO places, the initial open and
@@ -1806,7 +1815,7 @@ card holds 650px at every height, nothing is cut, and both ends stay reachable w
 container's own 40px padding intact at each. Tall windows are untouched, still centred with no
 scrollbar. Confirmed IN ENGINE at a 660px window too (`scratchpad/about_panel.cjs`).
 
-**Naming trap:** the Work category displays as "Personal Projects" but its internal id is still
+**Naming trap:** the Work category displays as "Selected Projects" but its internal id is still
 `creative-projects`, which keys the theme map, modal branches and portal lookups. Never rename the id.
 
 ---

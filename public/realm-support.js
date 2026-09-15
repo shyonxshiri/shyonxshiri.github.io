@@ -102,9 +102,9 @@
   window.__realmSupportMessage = function () {
     var r = window.__realmSupported();
     if (r.ok) return '';
-    if (r.why === 'webgl') return 'My Lego Realm needs WebGL, which this browser has turned off or does not support.';
-    if (r.why === 'gpu') return 'My Lego Realm needs more graphics memory than this device makes available to a browser.';
-    if (r.why === 'memory') return 'My Lego Realm needs more memory than this device makes available to a browser.';
-    return 'My Lego Realm is built for a desktop or laptop. It holds about 283MB of 3D data and draws close to 16 million triangles a frame, which is more than a phone or tablet browser will carry.';
+    if (r.why === 'webgl') return 'My LEGO Portfolio needs WebGL, which this browser has turned off or does not support.';
+    if (r.why === 'gpu') return 'My LEGO Portfolio needs more graphics memory than this device makes available to a browser.';
+    if (r.why === 'memory') return 'My LEGO Portfolio needs more memory than this device makes available to a browser.';
+    return 'My LEGO Portfolio requires a supported desktop or laptop. You can browse the same projects on the main site with this device.';
   };
 })();

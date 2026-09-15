@@ -20,7 +20,7 @@ const selectedProjects = [
   },
   {
     title: "NABU",
-    mediaTitle: "NABU Puffer Front",
+    mediaTitle: "Puffer Jacket, Front",
     role: "Clothing & creative direction",
     description: "A streetwear brand drawing on my Persian and Assyrian heritage.",
     image: "/assets/NABU_Puffer_Front.jpg",
@@ -30,7 +30,7 @@ const selectedProjects = [
     style: "clothing",
   },
   {
-    title: "RGB controller",
+    title: "RGB Controller",
     mediaTitle: "RGB Box, Front View",
     role: "Hardware & 3D design",
     description: "Built the controller and its custom 3D-printed enclosure from scratch.",
