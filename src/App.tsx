@@ -23,6 +23,8 @@ type MediaItem = {
   relatedItems?: string[];
   hidden?: boolean;
   aspectRatio?: string;
+  pages?: string[];
+  pageLabels?: string[];
 };
 
 type Project = {
@@ -53,9 +55,9 @@ const PROJECTS: Project[] = [
     // nothing can fit. X is inert: the card can never be taller than the file.
     objectPosition: "50% 37%",
     media: [
-      { type: "image", src: "/assets/DSGD_Resume_Design.png", title: "Résumé Design", credit: "SJSU · DSGD", year: 2022, aspectRatio: "1069/796" },
-      { type: "image", src: "/assets/DSGD_Procrastination_Booklet.png", title: "Procrastination Booklet", credit: "SJSU · DSGD", year: 2022, aspectRatio: "6855/737" },
-      { type: "image", src: "/assets/DSGD_Beta_Theta_Pi.png", title: "Beta Theta Pi Illustration", credit: "SJSU · DSGD", year: 2022, aspectRatio: "364/556" },
+      { type: "image", src: "/assets/DSGD_Resume_Design.png", title: "Résumé Design", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "1069/795", desc: "A unique résumé and coordinating business card designed from scratch, with a consistent visual identity across both pieces.", pages: ["/assets/resume-design/resume.png", "/assets/resume-design/business-card-front.png", "/assets/resume-design/business-card-back.png"], pageLabels: ["Résumé", "Business card, front", "Business card, back"] },
+      { type: "image", src: "/assets/procrastination-booklet/page-01.png", title: "Procrastination Booklet", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "1786/2200", desc: "A final project for my 2022 DSGD course at SJSU. I drew and developed the entire booklet from scratch in Adobe Illustrator, combining original illustrations, typography, and page layouts.", pages: Array.from({ length: 10 }, (_, i) => `/assets/procrastination-booklet/page-${String(i + 1).padStart(2, "0")}.png`) },
+      { type: "image", src: "/assets/Beta_Theta_Pi_Rush.svg", title: "Rush Event Illustration", credit: "Independent project · Beta Theta Pi", year: 2023, desc: "An illustration drawn from scratch for a Beta Theta Pi rush event in 2023, using the Lyrical Lemonade logo as a visual reference.", aspectRatio: "364/556" },
       { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
       { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Concepts", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "Concept designs for Apple accessory cases, modeled and rendered in Blender.", aspectRatio: "16/9", relatedItems: ["Custom AirPods Case", "Custom Phone Case"] },
       { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", credit: "SJSU · ART 105 · Advanced Digital Video", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
@@ -72,7 +74,7 @@ const PROJECTS: Project[] = [
       { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "An ultrasonic sensing device with an LCD, speaker, and 3D-printed enclosure that translates sensor readings into visual and audio feedback.", aspectRatio: "4/3", relatedItems: ["Ultrasonic Sensor, Front View", "Ultrasonic Sensor, Back View", "Ultrasonic Sensor and RGB Controller"] },
       { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "RGB Controller", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "An LED controller with physical controls and a 3D-printed enclosure, designed around the electronics inside.", aspectRatio: "4/3", relatedItems: ["RGB Box, Front View", "RGB Box, Back View", "Ultrasonic Sensor and RGB Controller"] },
       { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", credit: "SJSU · ART 68 · Beginning Sculpture", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
-      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Advertisement Project", year: 2024, desc: "A spec print advertisement for a fictional shaver brand. The rotary shaver is lit as the hero and its shadow runs back to the bloodied cartridge razor it replaces.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Advertisement Project", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "A spec print advertisement for a fictional shaver brand. The rotary shaver is lit as the hero and its shadow runs back to the bloodied cartridge razor it replaces.", aspectRatio: "16/9" },
     ],
   },
   {
@@ -1148,67 +1150,36 @@ const GLOBAL_CSS = `
     }
   }
 
-  /* media viewer responsive */
+  .ss-booklet-reader { width: 100%; height: 100%; display: flex; flex-direction: column; min-height: 0; }
+  .ss-booklet-track { display: flex; flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; }
+  .ss-booklet-page { flex: 0 0 100%; min-width: 0; height: 100%; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
+  .ss-media-viewer .ss-booklet-reader .ss-booklet-page img { width: 100% !important; height: 100% !important; max-height: 100% !important; object-fit: contain; border-radius: 0 !important; }
+  .ss-booklet-controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 12px; font-size: 13px; }
+  .ss-booklet-controls button { min-width: 44px; min-height: 44px; color: var(--white); background: #202020; border: 1px solid #555; border-radius: 50%; cursor: inherit; }
+  .ss-booklet-controls button:disabled { opacity: .3; cursor: inherit; }
+  .ss-media-viewer { width: min(1100px, 92vw); max-height: calc(100dvh - 144px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+    padding: 16px 12px 24px;
+    display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); gap: clamp(24px, 3vw, 40px); align-items: center; }
+  .ss-media-viewer-close { position: absolute; top: max(16px, env(safe-area-inset-top)); right: max(20px, env(safe-area-inset-right));
+    z-index: 3; width: 48px; height: 48px; border-radius: 50%; background: #202020; border: 1px solid #666;
+    color: #fff; display: grid; place-items: center; cursor: inherit; }
+  .ss-media-viewer-close:hover { background: #343434; }
+  .ss-media-viewer-close:focus-visible { outline: 2px solid var(--sky); outline-offset: 4px; }
+  .ss-viewer-media { min-width: 0; }
+  .ss-viewer-canvas { width: 100%; height: min(60dvh, 560px); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .ss-viewer-info { min-width: 0; max-width: 480px; padding: 12px 0; }
+  .ss-viewer-info .ss-asset-title { font-size: clamp(28px, 2.5vw, 36px); line-height: 1.08; letter-spacing: -.035em; font-weight: 600; margin-bottom: 22px; overflow-wrap: anywhere; }
   @media (max-width: 1023px) {
-    .ss-media-viewer {
-      position: relative !important;
-      flex-direction: column !important;
-      align-items: stretch !important;
-      justify-content: flex-start !important;
-      gap: 20px !important;
-      max-height: 92dvh !important;
-      max-width: 100vw !important;
-      padding: 20px !important;
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-    }
-    .ss-media-viewer > button:first-child {
-      position: static !important;
-      order: -1 !important;
-      margin-bottom: 12px !important;
-      align-self: flex-start !important;
-    }
-    .ss-media-viewer > div:nth-child(2) {
-      order: 1 !important;
-      flex-shrink: 0 !important;
-      width: 100% !important;
-    }
-    .ss-media-viewer > div:nth-child(3) {
-      order: 2 !important;
-      flex-shrink: 0 !important;
-      width: 100% !important;
-      padding-right: 4px !important;
-      padding-top: 20px !important;
-      padding-left: 4px !important;
-    }
-    .ss-media-viewer > div:nth-child(2) > div {
-      width: 100% !important;
-      height: auto !important;
-      max-height: 35dvh !important;
-    }
-    .ss-media-viewer > div:nth-child(2) video,
-    .ss-media-viewer > div:nth-child(2) img {
-      max-height: 35dvh !important;
-      width: auto !important;
-      height: auto !important;
-    }
-    .ss-media-viewer .ss-asset-title { font-size: 34px !important; margin-bottom: 16px !important; }
+    .ss-media-viewer { display: block; width: min(600px, calc(100vw - 40px)); max-height: calc(100dvh - 112px); padding: 8px 0 24px; }
+    .ss-viewer-canvas { height: auto; aspect-ratio: var(--asset-ratio, 4/3); max-height: 44dvh; }
+    .ss-viewer-canvas.ss-booklet-media { height: 48dvh; max-height: 460px; aspect-ratio: auto; }
+    .ss-viewer-info { max-width: 600px; padding: 24px 0 8px; margin: 0 auto; }
+    .ss-viewer-info .ss-asset-title { font-size: clamp(26px, 5vw, 32px); margin-bottom: 18px; }
   }
 
   @media (max-width: 768px) {
     .ss-hero-bg { object-position: 78% 5% !important; }
-    /* close button fix on mobile */
-    .ss-media-viewer > button:first-child {
-      position: static !important;
-      top: auto !important;
-      right: auto !important;
-      order: -1 !important;
-      margin-bottom: 12px !important;
-      align-self: flex-start !important;
-      padding: 12px 16px !important;
-      width: fit-content !important;
-      pointer-events: auto !important;
-    }
+
   }
 
   @media (max-width: 700px) {
@@ -1222,8 +1193,6 @@ const GLOBAL_CSS = `
     /* navigation hint on mobile */
     /* modal close button positioning */
     .ss-modal-close { top: 20px !important; }
-    /* media viewer close button positioned above title on all devices */
-    .ss-media-viewer-close { top: 100px !important; }
     /* contact page text sizing on mobile */
     .ss-contact-heading { font-size: clamp(90px,12vw,200px) !important; }
     .ss-contact-description { font-size: clamp(22px,4vw,36px) !important; }
@@ -3509,6 +3478,36 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
 /* ─────────────────────────────────────────────────────────────
    MEDIA VIEWER (fullscreen single item)
 ───────────────────────────────────────────────────────────── */
+function BookletReader({ pages, title, labels }: { pages: string[]; title?: string; labels?: string[] }) {
+  const track = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+  const pageIndex = useRef(0);
+  const reduced = useReducedMotion();
+  const go = (next: number) => {
+    const el = track.current;
+    if (el) el.scrollTo({ left: Math.max(0, Math.min(pages.length - 1, next)) * el.clientWidth, behavior: reduced ? "instant" : "smooth" });
+  };
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => el.scrollTo({ left: pageIndex.current * el.clientWidth, behavior: "instant" }));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return <div className="ss-booklet-reader">
+    <div ref={track} className="ss-booklet-track" tabIndex={0} role="region" aria-label={`${title}, scroll through ${labels ? "pieces" : "pages"}`}
+      onScroll={e => { pageIndex.current = Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth); setIndex(pageIndex.current); }}
+      onKeyDown={e => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); go(index + (e.key === "ArrowRight" ? 1 : -1)); } }}>
+      {pages.map((src, i) => <figure key={src} className="ss-booklet-page"><img src={src} alt={labels?.[i] ? `${title}, ${labels[i]}` : `${title}, page ${i + 1} of ${pages.length}`} loading={i ? "lazy" : "eager"} /></figure>)}
+    </div>
+    <div className="ss-booklet-controls">
+      <button onClick={() => go(index - 1)} disabled={index === 0} aria-label={labels ? "Previous piece" : "Previous booklet page"}>←</button>
+      <span aria-live="polite">{labels ? `${labels[index]} · ${index + 1} of ${pages.length}` : `Page ${index + 1} of ${pages.length}`}</span>
+      <button onClick={() => go(index + 1)} disabled={index === pages.length - 1} aria-label={labels ? "Next piece" : "Next booklet page"}>→</button>
+    </div>
+  </div>;
+}
+
 function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose: () => void; onItemClick?: (item: MediaItem) => void }) {
   const hover = useCursorHover();
   
@@ -3553,53 +3552,16 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
         display: "flex", alignItems: "center", justifyContent: "center",
       }}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: REDUCE ? 1 : 0.985 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1 }}
-        transition={{ duration: REDUCE ? 0.001 : 0.25, ease: APPLE_EASE }}
-        onClick={e => e.stopPropagation()}
-        className="ss-media-viewer"
-        style={{
-          position: "relative",
-          maxWidth: "92vw", maxHeight: "88dvh",
-          display: "flex", alignItems: "flex-start", gap: 48,
-        }}
-      >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="ss-media-viewer-close"
-          style={{
-            position: "absolute", top: 100, right: 20,
-            background: "none", border: "none", cursor: "none",
-            fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
-            letterSpacing: "0.06em", textTransform: "uppercase",
-            color: "var(--mid)", transition: "color 0.3s ease",
-            padding: "4px 8px",
-            zIndex: 3001,
-          }}
-          {...hover}
-        >
-          ✕ Close
-        </button>
-
+      <button onClick={onClose} className="ss-media-viewer-close" aria-label="Close asset viewer" {...hover}>
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+      </button>
+      <div onClick={e => e.stopPropagation()} className="ss-media-viewer">
         {/* Media & Navigation */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, flexShrink: 0 }}>
+        <div className="ss-viewer-media">
           {/* Media */}
-          <div
-            style={{
-              width: "60vw",
-              height: "80dvh",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              borderRadius: 20,
-              flexShrink: 0,
-              backgroundColor: displayedItem.removeBackground ? "transparent" : "inherit",
-              position: "relative",
-            }}
-          >
-            {displayedItem.type === "video" ? (
+          <div className={`ss-viewer-canvas${displayedItem.pages ? " ss-booklet-media" : ""}`}
+            style={{ "--asset-ratio": displayedItem.aspectRatio || "4/3" } as React.CSSProperties}>
+            {displayedItem.pages ? <BookletReader key={displayedItem.src} pages={displayedItem.pages} title={displayedItem.title} labels={displayedItem.pageLabels} /> : displayedItem.type === "video" ? (
               <video
                 src={displayedItem.src}
                 poster={displayedItem.poster}
@@ -3630,8 +3592,8 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
         </div>
 
         {/* Info */}
-        <div style={{ flex: 1, minWidth: 200, maxWidth: 340, paddingTop: 140 }}>
-          <div id="ss-viewer-title" className="ss-asset-title" style={{ fontSize: 64, letterSpacing: 0.5, lineHeight: 1.02, color: "var(--white)", marginBottom: 24, fontWeight: 600 }}>
+        <div className="ss-viewer-info">
+          <div id="ss-viewer-title" className="ss-asset-title">
             {item.title}
           </div>
           <div style={{ fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--sky)", textTransform: "uppercase", marginBottom: 20 }}>
@@ -3690,7 +3652,7 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
             </a>
           )}
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
