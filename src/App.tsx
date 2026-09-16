@@ -365,6 +365,7 @@ const GLOBAL_CSS = `
     scrollbar-width: none; -ms-overflow-style: none;
     overscroll-behavior: contain;
   }
+  .ss-home-scroll[data-locked="true"] .ss-story { display: none; }
   .ss-home-scroll::-webkit-scrollbar { display: none; }
   /* ── A FINGER-SIZED TAP TARGET THAT MOVES NOTHING (user, 2026-09-02).
      The site's controls are drawn as small type: measured across ten viewports,
@@ -1807,6 +1808,8 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [realm] = useState(readRealmSupport);
   const hover = useCursorHover();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [portfolioUnlocked, setPortfolioUnlocked] = useState(false);
+  const leftHero = useRef(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -1821,6 +1824,10 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const scrollToSection = (id: string) => {
     scrollAnimation.current?.();
     const root = scrollRef.current;
+    if (root && id === "open") {
+      root.dataset.locked = "false";
+      setPortfolioUnlocked(true);
+    }
     const section = root?.querySelector<HTMLElement>(`[data-slide="${id}"]`);
     if (!root || !section) return;
     const start = root.scrollTop;
@@ -1864,6 +1871,18 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     <motion.div key="home" {...fade}
       ref={scrollRef}
       className="ss-home-page ss-home-scroll"
+      data-locked={!portfolioUnlocked}
+      onScroll={(event) => {
+        const root = event.currentTarget;
+        if (!portfolioUnlocked) return;
+        if (root.scrollTop > 4) leftHero.current = true;
+        if (leftHero.current && root.scrollTop <= 1) {
+          scrollAnimation.current?.();
+          leftHero.current = false;
+          root.dataset.locked = "true";
+          setPortfolioUnlocked(false);
+        }
+      }}
       style={{ position: "absolute", inset: 0, background: "#060606" }}
     >
       {/* ── HERO (first viewport) ── */}
@@ -1910,18 +1929,6 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           </motion.div>
         </div>
 
-        {/* Scroll cue into the storyboard */}
-        <motion.button
-          initial={REDUCE ? false : { opacity: 0 }} animate={{ opacity: 1 }}
-          transition={{ duration: 0.35, delay: REDUCE ? 0 : 0.7 }}
-          className="ss-story-cue"
-          onClick={() => scrollToSection("open")}
-          aria-label="Scroll to my LEGO Portfolio"
-          {...hover}
-          style={{ cursor: "none" }}
-        >
-          <span className="ss-cue-arrow">▼</span>
-        </motion.button>
       </div>
 
       {/* ── STORYBOARD, AS A DECK ──
@@ -2107,7 +2114,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
       </div>
 
-      <DeckRail scrollRef={scrollRef} />
+      {portfolioUnlocked && <DeckRail scrollRef={scrollRef} />}
     </motion.div>
   );
 }
