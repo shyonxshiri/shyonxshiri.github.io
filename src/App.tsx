@@ -2162,7 +2162,7 @@ function HomePage({ onNavigate, intro }: { onNavigate: (p: Page) => void; intro:
               }}
             >
               {/* the "or" only makes sense standing next to the button */}
-              {realm.ok ? "or browse the work" : "Browse the work"}
+              {realm.ok ? "or browse my work" : "Browse my work"}
             </span>
             </motion.div>
           </div>
