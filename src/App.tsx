@@ -2795,13 +2795,16 @@ function DeckRail({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement> })
 function OrbitCard({ index, orbit, radius, style, ...props }: React.ComponentProps<typeof motion.div> & {
   index: number; orbit: MotionValue<number>; radius: number;
 }) {
-  const angle = useTransform(orbit, value => (index - value) * 2 * Math.PI / PROJECTS.length);
-  const x = useTransform(angle, value => Math.sin(value) * radius / Math.sin(2 * Math.PI / PROJECTS.length));
-  const z = useTransform(angle, value => (Math.cos(value) - 1) * 220);
-  const scale = useTransform(angle, value => .9 + .1 * Math.cos(value));
-  const rotateY = useTransform(angle, value => -Math.sin(value) * 34);
-  const zIndex = useTransform(angle, value => Math.round((Math.cos(value) + 1) * 100) + 1);
-  return <motion.div {...props} style={{ ...style, x, z, scale, rotateY, zIndex, backfaceVisibility: "hidden" }} />;
+  // A single transform write keeps depth, position, scale and tilt in the same frame.
+  const transform = useTransform(orbit, value => {
+    const angle = (index - value) * 2 * Math.PI / PROJECTS.length;
+    const x = Math.sin(angle) * radius / Math.sin(2 * Math.PI / PROJECTS.length);
+    const z = (Math.cos(angle) - 1) * 220;
+    return `translate3d(${x}px,0,${z}px) rotateY(${-Math.sin(angle) * 34}deg) scale(${.9 + .1 * Math.cos(angle)})`;
+  });
+  const zIndex = useTransform(orbit, value => Math.round((Math.cos((index - value) * 2 * Math.PI / PROJECTS.length) + 1) * 100) + 1);
+  return <motion.div {...props} draggable={false} onDragStart={event => event.preventDefault()}
+    style={{ ...style, transform, zIndex, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }} />;
 }
 
 function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
@@ -2822,10 +2825,11 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const [step, setStep] = useState(0);
   const active = ((step % n) + n) % n;
   const orbit = useMotionValue(0);
+  const [rotating, setRotating] = useState(false);
   const settle = (destination: number) => {
     orbit.stop();
-    setStep(destination);
-    animate(orbit, destination, { duration: REDUCE ? 0 : .62, ease: APPLE_EASE });
+    setRotating(true);
+    animate(orbit, destination, { duration: REDUCE ? 0 : .62, ease: APPLE_EASE, onComplete: () => { setStep(destination); setRotating(false); } });
   };
   useEffect(() => () => orbit.stop(), [orbit]);
   const selectCard = (index: number) => {
@@ -2923,6 +2927,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
           if (!g.dragging && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.25) {
             g.dragging = true;
             orbit.stop();
+            setRotating(true);
             g.orbitStart = orbit.get();
             e.currentTarget.setPointerCapture(e.pointerId);
           }
@@ -2959,10 +2964,10 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
             return (
               <OrbitCard index={i} orbit={orbit} radius={sideX}
                 key={proj.id}
-                className="ss-project-card ss-project-card-nabu" data-active={rel === 0}
+                className="ss-project-card ss-project-card-nabu" data-active={rel === 0 && !rotating}
                 role="button" tabIndex={0} aria-label={`${rel === 0 ? "Open" : "Select"} ${proj.title}`}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0) onCardClick(proj); else selectCard(i); } }}
-                onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else selectCard(i); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0 && !rotating) onCardClick(proj); else selectCard(i); } }}
+                onClick={() => { if (moved.current) return; if (rel === 0 && !rotating) onCardClick(proj); else selectCard(i); }}
                 {...hover}
                 style={{
                   position: "absolute", width: cardW, height: cardH,
@@ -2978,7 +2983,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
                     // Offset the unequal transparent padding at the actual contained image size.
                     transform: `translate(${-Math.min(cardW, cardH * .78) * 25.5 / 1080}px, ${-Math.min(cardW, cardH * .78) * 16 / 1080}px)`,
                     display: "block", pointerEvents: "none",
-                    filter: rel === 0 ? "drop-shadow(0 26px 55px rgba(0,0,0,.55))" : "none",
+                    filter: "drop-shadow(0 26px 55px rgba(0,0,0,.55))",
                     transition: "filter .5s ease",
                   }}
                 />
@@ -2995,16 +3000,16 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
             <OrbitCard index={i} orbit={orbit} radius={sideX}
               key={proj.id}
                 role="button" tabIndex={0} aria-label={`${rel === 0 ? "Open" : "Select"} ${proj.title}`}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0) onCardClick(proj); else selectCard(i); } }}
-              className="ss-card ss-project-card" data-active={rel === 0}
-              onClick={() => { if (moved.current) return; if (rel === 0) onCardClick(proj); else selectCard(i); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (rel === 0 && !rotating) onCardClick(proj); else selectCard(i); } }}
+              className="ss-card ss-project-card" data-active={rel === 0 && !rotating}
+              onClick={() => { if (moved.current) return; if (rel === 0 && !rotating) onCardClick(proj); else selectCard(i); }}
               {...hover}
               style={{
                 position: "absolute",
                 width: cardW, height: cardH,
                 borderRadius: 22, overflow: "hidden",
                 background: "#111", cursor: "none",
-                boxShadow: rel === 0 ? "0 40px 90px rgba(0,0,0,.6)" : "0 20px 50px rgba(0,0,0,.5)",
+                boxShadow: "0 30px 65px rgba(0,0,0,.5)",
                 transformStyle: "flat",
               }}
             >
