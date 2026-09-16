@@ -1,11 +1,8 @@
-import { motion, useReducedMotion } from "framer-motion";
 import "./AboutPage.css";
 
 export default function AboutPage() {
-  const reduced = useReducedMotion();
   return (
-    <motion.section className="ss-about-view" aria-labelledby="ss-bio-heading"
-      initial={reduced ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduced ? 0 : .3 }}>
+    <section className="ss-about-view" aria-labelledby="ss-bio-heading">
       <div className="ss-about-hero">
         <figure className="ss-about-photo">
           <img src="/assets/Shyon_Studio_3298.jpg" srcSet="/assets/Shyon_Studio_1000.jpg 662w, /assets/Shyon_Studio_1800.jpg 1192w, /assets/Shyon_Studio_3298.jpg 2184w" sizes="(max-width: 640px) 100vw, (max-width: 900px) max(48vw, 464px), max(50vw, 47.7vh, 477px)" width="2184" height="3298" alt="Shyon Shiri seated in a black jacket against a studio backdrop" decoding="async" />
@@ -17,6 +14,6 @@ export default function AboutPage() {
           <p className="ss-about-education">BA in Graphic Design<br />San Jose State University, 2025</p>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence, animate, useMotionValue, useTransform, type MotionValue, type Variants } from "framer-motion";
+import { motion, AnimatePresence, animate, useMotionValue, useTransform, useReducedMotion, type MotionValue, type Variants } from "framer-motion";
 import AboutPage from "./components/AboutPage";
 
 /* ─────────────────────────────────────────────────────────────
@@ -53,6 +53,9 @@ const PROJECTS: Project[] = [
     // nothing can fit. X is inert: the card can never be taller than the file.
     objectPosition: "50% 37%",
     media: [
+      { type: "image", src: "/assets/DSGD_Resume_Design.png", title: "Résumé Design", credit: "SJSU · DSGD", year: 2022, aspectRatio: "1069/796" },
+      { type: "image", src: "/assets/DSGD_Procrastination_Booklet.png", title: "Procrastination Booklet", credit: "SJSU · DSGD", year: 2022, aspectRatio: "6855/737" },
+      { type: "image", src: "/assets/DSGD_Beta_Theta_Pi.png", title: "Beta Theta Pi Illustration", credit: "SJSU · DSGD", year: 2022, aspectRatio: "364/556" },
       { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
       { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Concepts", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "Concept designs for Apple accessory cases, modeled and rendered in Blender.", aspectRatio: "16/9", relatedItems: ["Custom AirPods Case", "Custom Phone Case"] },
       { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", credit: "SJSU · ART 105 · Advanced Digital Video", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
@@ -1092,6 +1095,16 @@ const GLOBAL_CSS = `
     }
   }
 
+  /* Keep the complete mansion portrait visible on portrait screens. */
+  @media (max-aspect-ratio: 1/1) {
+    .ss-slide-open { min-height: auto; padding-top: 84px; }
+    .ss-slide-open .ss-slide-inner { width: 100%; padding: 0; }
+    .ss-slide-open .ss-open-bg { position: relative; width: 100%; aspect-ratio: 16 / 9; }
+    .ss-slide-open .ss-open-img { object-fit: contain; }
+    .ss-slide-open .ss-open-veil { display: none; }
+    .ss-slide-open .ss-open-copy { padding: 28px 8vw 0; }
+  }
+
   /* Responsive modal sizing before mobile breakpoint */
   @media (max-width: 1200px) {
     .ss-work-modal {
@@ -1280,15 +1293,13 @@ const GLOBAL_CSS = `
   .ss-scroll::-webkit-scrollbar-thumb { background: rgba(245,242,237,.22); border-radius: 8px; }
   .ss-scroll::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,.55); }
   .ss-scroll-fade { position: absolute; left: 0; right: 8px; bottom: 0; height: 54px; background: linear-gradient(to top, rgba(6,6,6,.92), transparent); pointer-events: none; }
-  .ss-project-card { border-radius: 22px; transition: translate .22s ease, scale .16s ease; }
+  .ss-project-card { border-radius: 22px; }
   .ss-project-card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; border: 1px solid transparent; pointer-events: none; z-index: 4; transition: border-color .22s ease; }
   .ss-project-card-nabu::after { display: none; }
   .ss-project-card[data-active="true"]::after { border-color: rgba(245,242,237,.25); }
   @media (hover: hover) and (pointer: fine) {
-    .ss-project-card[data-active="true"]:hover { translate: 0 -4px; }
     .ss-project-card[data-active="true"]:hover::after { border-color: rgba(245,242,237,.55); }
   }
-  .ss-project-card[data-active="true"]:active { scale: .985; translate: 0 0; }
   .ss-project-card[data-active="true"]:active::after { border-color: rgba(245,242,237,.65); }
   @media (prefers-reduced-motion: reduce) {
     .ss-project-card { transition: none; translate: none !important; scale: none !important; }
@@ -1459,8 +1470,8 @@ function useCursorHover() {
 /* ─────────────────────────────────────────────────────────────
    PAGE TRANSITION VARIANTS
 ───────────────────────────────────────────────────────────── */
-/* Page roots overlap during a short crossfade. Content keeps its natural scale,
-   and each page supplies a dark background so navigation never exposes the root. */
+/* Keep the outgoing page opaque beneath the incoming fade. Fading both layers
+   exposes the black root halfway through, rather than blending page into page. */
 const APPLE_EASE = [0.32, 0.72, 0, 1] as const;
 
 /* Read ONCE at module load. The reduced-motion block in GLOBAL_CSS kills CSS animations
@@ -1471,18 +1482,60 @@ const REDUCE = typeof window !== "undefined"
   && typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const fade = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-  transition: { duration: REDUCE ? 0.001 : 0.28, ease: "linear" as const },
-};
+
 
 /* ─────────────────────────────────────────────────────────────
    ROOT
 ───────────────────────────────────────────────────────────── */
+function PageTransition({ page, children }: { page: Page; children: (page: Page) => React.ReactNode }) {
+  const reduced = useReducedMotion();
+  const [shown, setShown] = useState(page);
+  const [incoming, setIncoming] = useState<Page | null>(null);
+  const [ready, setReady] = useState(false);
+  const incomingLayer = useRef<HTMLDivElement>(null);
+
+  // Finish the current blend before handling the latest requested destination.
+  useEffect(() => {
+    if (!incoming && page !== shown) {
+      setReady(false);
+      setIncoming(page);
+    }
+  }, [page, shown, incoming]);
+
+  useEffect(() => {
+    if (!incoming) return;
+    let cancelled = false;
+    const images = Array.from(incomingLayer.current?.querySelectorAll("img") || []);
+    Promise.all(images.filter(img => img.loading !== "lazy").map(img => img.decode().catch(() => {})))
+      .then(() => { if (!cancelled) setReady(true); });
+    return () => { cancelled = true; };
+  }, [incoming]);
+
+  return <>{[shown, ...(incoming ? [incoming] : [])].map(visiblePage => {
+    const entering = visiblePage === incoming;
+    return <motion.div key={visiblePage} data-page={visiblePage}
+      ref={entering ? incomingLayer : undefined}
+      aria-hidden={incoming && !entering ? true : undefined}
+      initial={{ opacity: entering ? 0 : 1 }}
+      animate={{ opacity: entering && !ready ? 0 : 1 }}
+      transition={{ duration: reduced || !entering ? 0 : 0.38, ease: [0.4, 0, 0.2, 1] }}
+      onAnimationComplete={(definition) => {
+        if (entering && ready && typeof definition === "object" && "opacity" in definition && definition.opacity === 1) {
+          setShown(visiblePage);
+          setIncoming(null);
+        }
+      }}
+      style={{ position: "absolute", inset: 0, zIndex: entering ? 2 : 1,
+        isolation: "isolate", background: "#060606",
+        pointerEvents: incoming ? "none" : "auto" }}>
+      {children(visiblePage)}
+    </motion.div>;
+  })}</>;
+}
+
 export default function App() {
   const [page, setPage] = useState<Page>("home");
+  const hasNavigated = useRef(false);
   const [modalProject, setModalProject] = useState<Project | null>(null);
   const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
   // Every top-level introduction uses a dark ground.
@@ -1506,6 +1559,7 @@ export default function App() {
 
   const navigate = useCallback((next: Page) => {
     if (next === page) return;
+    hasNavigated.current = true;
     setModalProject(null);
     setViewerItem(null);
     setPage(next);
@@ -1596,12 +1650,14 @@ export default function App() {
       </nav>
 
 {/* ── PAGES ────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {page === "home" && <HomePage key="home" onNavigate={navigate} />}
-        {page === "work" && <WorkPage key="work" onCardClick={setModalProject} />}
-        {page === "about" && <AboutPage key="about" />}
-        {page === "contact" && <ContactPage key="contact" />}
-      </AnimatePresence>
+      <PageTransition page={page}>
+        {visiblePage => <>
+          {visiblePage === "home" && <HomePage onNavigate={navigate} intro={!hasNavigated.current} />}
+          {visiblePage === "work" && <WorkPage onCardClick={setModalProject} />}
+          {visiblePage === "about" && <AboutPage />}
+          {visiblePage === "contact" && <ContactPage />}
+        </>}
+      </PageTransition>
 
       {/* ── WORK MODAL ───────────────────────────────────────── */}
       <AnimatePresence>
@@ -1772,13 +1828,13 @@ const nameChar: Variants = {
   },
 };
 
-function HeroName({ isMobile }: { isMobile: boolean }) {
+function HeroName({ isMobile, intro }: { isMobile: boolean; intro: boolean }) {
   return (
     <motion.h1
       className="ss-hero-name"
       aria-label={NAME_LINES.join(" ")}
       variants={nameStagger}
-      initial="hidden"
+      initial={intro && !REDUCE ? "hidden" : false}
       animate="show"
       style={{
         // SF is NOT condensed and it has descenders, so the Bebas sizes do not carry
@@ -1800,7 +1856,7 @@ function HeroName({ isMobile }: { isMobile: boolean }) {
   );
 }
 
-function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
+function HomePage({ onNavigate, intro }: { onNavigate: (p: Page) => void; intro: boolean }) {
   const [loaded, setLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
   // read once: none of its inputs change while the page is open, and it must not
@@ -1868,7 +1924,7 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   };
 
   return (
-    <motion.div key="home" {...fade}
+    <motion.div key="home"
       ref={scrollRef}
       className="ss-home-page ss-home-scroll"
       data-locked={!portfolioUnlocked}
@@ -1913,11 +1969,11 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
         {/* Content */}
         <div className="ss-hero-intro" style={{ position: "absolute", bottom: isMobile ? "14vh" : "24vh", left: "8vw", right: "8vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
-          <HeroName isMobile={isMobile} />
+          <HeroName isMobile={isMobile} intro={intro} />
 
           <motion.div className="ss-hero-summary"
-            initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.38, delay: REDUCE ? 0 : 0.5, ease: APPLE_EASE }}>
+            initial={REDUCE || !intro ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.38, delay: REDUCE || !intro ? 0 : 0.5, ease: APPLE_EASE }}>
             <p style={{ marginTop: 20, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}>
               Browse the site using the navigation buttons or view it in LEGO form.
             </p>
@@ -1947,8 +2003,8 @@ function HomePage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <motion.img
               className="ss-open-img"
               variants={sbOpen}
-              src="/assets/story/story_sunset.jpg"
-              alt="The cottage and footbridge beside the river at sunset."
+              src="/assets/story/story_mansion_portrait.jpg"
+              alt="My LEGO character facing the camera, with the mansion, upstairs balcony, and four cars behind him."
               loading="lazy"
               decoding="async"
             />
@@ -2829,7 +2885,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const settle = (destination: number) => {
     orbit.stop();
     setRotating(true);
-    animate(orbit, destination, { duration: REDUCE ? 0 : .62, ease: APPLE_EASE, onComplete: () => { setStep(destination); setRotating(false); } });
+    animate(orbit, destination, { duration: REDUCE ? 0 : .72, ease: [0.42, 0, 0.22, 1], onComplete: () => { setStep(destination); setRotating(false); } });
   };
   useEffect(() => () => orbit.stop(), [orbit]);
   const selectCard = (index: number) => {
@@ -2867,7 +2923,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const bgt = WORK_BG_THEME[activeId] || WORK_BG_THEME["creative-projects"];
 
   return (
-    <motion.div key="work" {...fade} className="ss-work-page"
+    <motion.div key="work" className="ss-work-page"
       style={{
         position: "absolute", inset: 0, overflowX: "hidden", overflowY: "auto", overscrollBehaviorY: "none",
         background: "#0c0d0f",
@@ -2891,7 +2947,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
         zIndex: 10, maxWidth: 780,
       }}>
         <motion.h2
-          initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          initial={false} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.34, delay: 0.04, ease: APPLE_EASE }}
           style={{ fontFamily: "var(--sf)", fontSize: "clamp(38px,5vw,64px)", letterSpacing: "-0.065em", fontWeight: 550, lineHeight: 1, color: titleColor, textShadow, transition: "color 0.7s ease" }}
         >
@@ -3080,7 +3136,7 @@ function ContactPage() {
   ];
 
   return (
-    <motion.div key="contact" {...fade} className="ss-contact-page"
+    <motion.div key="contact" className="ss-contact-page"
       style={{ position: "absolute", inset: 0, background: "#060606", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}
     >
       <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
@@ -3124,7 +3180,7 @@ function ContactPage() {
                 user. NOTE the heading's own entrance delay is deliberately left at 0.35: the
                 sequence still staggers against the description at 0.5 beside it. */}
             <motion.h2
-              initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              initial={false} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.34, delay: 0.04, ease: APPLE_EASE }}
               className="ss-contact-heading"
               style={{ fontFamily: "var(--sf)", fontSize: "clamp(46px,6.2vw,96px)", fontWeight: 550, letterSpacing: "-0.065em", lineHeight: 1, color: "var(--white)" }}
@@ -3133,7 +3189,7 @@ function ContactPage() {
             </motion.h2>
           </div>
           <motion.p
-            initial={REDUCE ? false : { opacity: 0 }} animate={{ opacity: 1 }}
+            initial={false} animate={{ opacity: 1 }}
             transition={{ duration: 0.34, delay: 0.04 }}
             className="ss-contact-description"
             style={{ fontFamily: "var(--sf)", fontWeight: 400, fontSize: "clamp(15px,1.5vw,18px)", lineHeight: 1.5, letterSpacing: "-0.005em", color: "var(--mid)", maxWidth: 300, textAlign: "right", marginBottom: 8 }}
@@ -3144,7 +3200,7 @@ function ContactPage() {
 
         {/* Contact links */}
         <motion.div
-          initial={REDUCE ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          initial={false} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.34, delay: 0.04, ease: APPLE_EASE }}
           style={{ display: "flex", flexDirection: "column", borderTop: "1px solid rgba(245,242,237,.14)" }}
         >
