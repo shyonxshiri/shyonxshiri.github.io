@@ -8,6 +8,6 @@
 .ss-about-intro .ss-about-lead{font-size:clamp(23px,2vw,30px);line-height:1.4;letter-spacing:-.025em;color:#29282c;margin-bottom:28px}
 @media(min-width:1800px){.ss-about-intro{margin-left:auto;padding-left:40px;padding-right:65px}.ss-about-photo img{object-position:50% 25%}}
 @media(max-width:900px){.ss-about-hero{grid-template-columns:1.1fr 1fr;min-height:700px}.ss-about-intro{padding-left:36px;padding-right:24px}.ss-about-intro h2{font-size:68px}}
-@media(max-width:640px){.ss-about-hero{display:flex;flex-direction:column;min-height:0}.ss-about-intro{order:0;padding:128px 25px 38px;width:100%;max-width:none}.ss-about-intro h2{font-size:clamp(60px,15vw,84px);margin-bottom:28px}.ss-about-intro .ss-about-lead{font-size:25px}.ss-about-intro p{font-size:16px;max-width:38ch}.ss-about-photo{order:1;mask-image:linear-gradient(180deg,transparent,#000 12%);flex:none;width:100%;height:clamp(360px,115vw,570px)}.ss-about-photo img{object-position:center 45%}}
+@media(max-width:640px){.ss-about-hero{display:flex;flex-direction:column;min-height:0}.ss-about-intro{order:0;padding:128px 25px 38px;width:100%;max-width:none}.ss-about-intro h2{font-size:clamp(60px,15vw,84px);margin-bottom:28px}.ss-about-intro .ss-about-lead{font-size:25px}.ss-about-intro p{font-size:16px;max-width:38ch}.ss-about-photo{order:1;mask-image:linear-gradient(180deg,transparent,#000 5%);flex:none;width:100%;height:clamp(360px,115vw,570px)}.ss-about-photo img{object-position:center top}}
 
 .ss-about-intro .ss-about-education{font-size:13px;line-height:1.6;color:#68656b;margin-top:36px}
