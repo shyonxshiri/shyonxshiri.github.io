@@ -2863,6 +2863,28 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   };
   const gesture = useRef<{ id: number; x: number; y: number; dragging: boolean; orbitStart: number } | null>(null);
   const moved = useRef(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  // A trackpad sends wheel events rather than pointer drags. One turn per swipe
+  // burst prevents its momentum from racing through all three categories.
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    let total = 0, turned = false, last = 0;
+    const wheel = (event: WheelEvent) => {
+      if (event.ctrlKey || Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+      event.preventDefault();
+      const now = performance.now();
+      if (now - last > 180) { total = 0; turned = false; }
+      last = now;
+      total += event.deltaX * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? el.clientWidth : 1);
+      if (!turned && Math.abs(total) >= 32) {
+        turned = true;
+        settle(Math.round(orbit.get()) + Math.sign(total));
+      }
+    };
+    el.addEventListener("wheel", wheel, { passive: false });
+    return () => el.removeEventListener("wheel", wheel);
+  }, [orbit]);
   const go = (dir: number) => settle(Math.round(orbit.get()) + dir);
   const isMob = size.width <= 640;
   // Recess the side cards in perspective, leaving visible swipe targets on phones.
@@ -2898,7 +2920,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
         background: "#0c0d0f",
       }}
     >
-      <div className="ss-work-layout" style={{ position: "relative", minHeight: isMob ? "max(580px, 100dvh)" : "max(660px, 100dvh)", overflow: "hidden" }}>
+      <div className="ss-work-layout" style={{ position: "relative", minHeight: isMob ? "max(660px, 100dvh)" : "max(660px, 100dvh)", overflow: "hidden" }}>
       <motion.div aria-hidden="true"
         animate={{ backgroundColor: bgt.base }} transition={{ duration: REDUCE ? 0 : .65 }}
         style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
@@ -2922,25 +2944,27 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
         >
           Work
         </motion.h2>
-
-
+        <p id="ss-work-hint" style={{ marginTop: 14, maxWidth: 290, fontSize: 14, lineHeight: 1.5,
+          color: titleColor, opacity: .75, transition: "color .7s ease" }}>
+          Swipe or drag to browse. Select a project to view.
+        </p>
       </div>
 
       {/* Coverflow carousel: one focused card, two visible on the sides */}
       <div
-        className="ss-work-carousel" role="region" aria-label="Work categories" aria-roledescription="carousel"
+        ref={carouselRef} className="ss-work-carousel" aria-describedby="ss-work-hint" role="region" aria-label="Work categories" aria-roledescription="carousel"
         style={{
           position: "absolute", left: 0, right: 0,
-          top: "50%", height: cardH + 64, transform: "translateY(-50%)",
+          top: isMob ? `max(${230 + cardH / 2}px, 50%)` : "50%", height: cardH + 64, transform: "translateY(-50%)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          perspective: 1100, touchAction: "pinch-zoom",
+          perspective: 1100, touchAction: "pan-y pinch-zoom",
           /* a drag across the cards was starting a text selection under the pointer
              (measured: `selectstart` fires on the row). Only this surface gives it up,
              so the copy on every other page stays selectable. */
           userSelect: "none",
         }}
         onPointerDown={(e) => {
-          if (!e.isPrimary || e.button !== 0) return;
+          if (!e.isPrimary || e.button !== 0 || gesture.current) return;
           gesture.current = { id: e.pointerId, x: e.clientX, y: e.clientY, dragging: false, orbitStart: orbit.get() };
           moved.current = false;
         }}
@@ -2949,7 +2973,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
           if (!g || g.id !== e.pointerId) return;
           const dx = e.clientX - g.x, dy = e.clientY - g.y;
           if (Math.hypot(dx, dy) > 8) moved.current = true;
-          if (!g.dragging && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+          if (!g.dragging && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.15) {
             g.dragging = true;
             orbit.stop();
             setRotating(true);
@@ -2962,7 +2986,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
           const g = gesture.current;
           if (!g || g.id !== e.pointerId) return;
           const dx = e.clientX - g.x, dy = e.clientY - g.y;
-          if (g.dragging && Math.abs(dx) >= Math.max(28, cardW * 0.12) && Math.abs(dx) > Math.abs(dy) * 1.25) settle(Math.round(g.orbitStart) + (dx < 0 ? 1 : -1));
+          if (g.dragging && Math.abs(dx) >= Math.max(22, cardW * 0.08) && Math.abs(dx) > Math.abs(dy) * 1.15) settle(Math.round(g.orbitStart) + (dx < 0 ? 1 : -1));
           else if (g.dragging) settle(Math.round(orbit.get()));
           gesture.current = null;
           if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
