@@ -57,10 +57,6 @@ export default function AboutPage({ realmSupported, onViewOverview }: {
             <source src="/assets/my-first-lego-movie.mp4" type="video/mp4" />
             <a href="/assets/my-first-lego-movie.mp4">Watch LEGO stop motion</a>
           </video>
-          <details className="ss-about-film-description">
-            <summary>Film description</summary>
-            <p>LEGO figures move and tumble across a grey baseplate in a series of stop-motion scenes. A handwritten “Part 2” card introduces a second sequence of figures facing off and falling over. The film has no sound.</p>
-          </details>
           {realmSupported ? (
             <a className="ss-about-film-link" href="/lego.html">View My LEGO Portfolio</a>
           ) : (
