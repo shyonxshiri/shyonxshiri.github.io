@@ -67,7 +67,7 @@ Design direction: dark, minimal, editorial. Custom cursor, restrained motion, sy
 
 ## 3. Hard rules
 
-1. **Never use em dashes in copy.** Periods and commas. (Durable, repeatedly reinforced.)
+1. **Never use em dashes in copy.** Periods and commas. (Durable, repeatedly reinforced.) Use consistent title case for headings and button labels, sentence case and complete punctuation for prose. The About introduction is “I am a Graphic Designer and Developer.” Preserve official brand names and acronyms.
 2. **The public title is "My LEGO Portfolio"**, with "View My LEGO Portfolio" as the entry button. This replaces the former "Lego Realm" name.
    Descriptive copy must NOT lean on the name; state what it is (an interactive real-time 3D
    environment, Blender to browser). See the `site-copy-tone` memory.

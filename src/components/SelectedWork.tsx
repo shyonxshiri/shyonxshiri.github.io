@@ -9,7 +9,7 @@ const selectedProjects = [
   {
     title: "Everly Care Home",
     mediaTitle: "Everly Care Home",
-    role: "Branding & web development",
+    role: "Branding and Web Development",
     description: "Designed the identity and built the website for a senior care community.",
     image: "/assets/Everly_Cover_Image.webp",
     preview: "/assets/Everly_Cover_Image",
@@ -21,7 +21,7 @@ const selectedProjects = [
   {
     title: "NABU",
     mediaTitle: "Puffer Jacket, Front",
-    role: "Clothing & creative direction",
+    role: "Clothing and Creative Direction",
     description: "A streetwear brand drawing on my Persian and Assyrian heritage.",
     image: "/assets/NABU_Puffer_Front.jpg",
     alt: "A woven bandana-pattern puffer jacket from the NABU collection.",
@@ -32,10 +32,10 @@ const selectedProjects = [
   {
     title: "RGB Controller",
     mediaTitle: "RGB Box, Front View",
-    role: "Hardware & 3D design",
+    role: "Hardware and 3D Design",
     description: "Built the controller and its custom 3D-printed enclosure from scratch.",
     image: "/assets/New_LED_Box_Front.jpg",
-    alt: "A hand-built RGB controller with a black geometric enclosure, toggle, button and dial.",
+    alt: "A hand-built RGB controller with a black geometric enclosure, toggle, button, and dial.",
     // The JPEG's orientation metadata rotates its stored 2560 × 1920 pixels.
     width: 1920,
     height: 2560,
@@ -49,15 +49,15 @@ export default function SelectedWork({ onOpen, onAllWork }: SelectedWorkProps) {
       className="ss-selected-work"
       aria-labelledby="ss-selected-heading"
       data-slide="selected"
-      data-label="Selected work"
+      data-label="Selected Work"
     >
       <div className="ss-selected-inner">
         <div className="ss-selected-header">
           <div>
-            <h2 id="ss-selected-heading">Selected work.</h2>
+            <h2 id="ss-selected-heading">Selected Work.</h2>
           </div>
           <button className="ss-selected-all" type="button" onClick={onAllWork}>
-            All work
+            All Work
           </button>
         </div>
 
@@ -81,7 +81,7 @@ export default function SelectedWork({ onOpen, onAllWork }: SelectedWorkProps) {
                     loading="lazy"
                     decoding="async"
                   />
-                  <span className="ss-selected-view" aria-hidden="true">View project</span>
+                  <span className="ss-selected-view" aria-hidden="true">View Project</span>
                 </span>
                 <span className="ss-selected-title">{project.title}</span>
                 <span className="ss-selected-role">{project.role}</span>

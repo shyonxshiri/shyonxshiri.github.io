@@ -208,7 +208,7 @@
       stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/>
       <g class="w"><path d="M15.6 9.2a4 4 0 0 1 0 5.6"/><path d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8"/></g>
       <g class="x"><path d="M16.5 9.5l5 5"/><path d="M21.5 9.5l-5 5"/></g></svg></button>
-    <a id="leave" href="/">Back to main site</a>
+    <a id="leave" href="/">Back to Main Site</a>
   </div>
   <div class="hint"><b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; drag to look &nbsp;·&nbsp; <b>R</b> leave</div>
   <div id="cur"></div>
@@ -218,10 +218,10 @@
     <div class="row"><span>Move</span><b>WASD / Arrows</b></div>
     <div class="row"><span>Run</span><b>Shift</b></div>
     <div class="row"><span>Jump</span><b>Space</b></div>
-    <div class="row"><span>Look around</span><b>Drag mouse</b></div>
-    <div class="row"><span>Enter a building</span><b>E</b></div>
+    <div class="row"><span>Look Around</span><b>Drag mouse</b></div>
+    <div class="row"><span>Enter a Building</span><b>E</b></div>
     <div class="row"><span>Sound</span><b>M</b></div>
-    <div class="row"><span>Back to main site</span><b>R</b></div>
+    <div class="row"><span>Back to Main Site</span><b>R</b></div>
     <button class="go" id="startBtn">Enter</button>
   </div></div>
   <div id="fade"></div>
@@ -5300,23 +5300,23 @@
   // Real site projects (mirrors PROJECTS in src/App.tsx). Panels show the cover/poster image,
   // clicking one opens the real image or video in the viewer with title, year, description, links.
   const CREATIVE=[
-    {t:'Résumé Design', credit:'SJSU · DSGD 83 · Digital Applications: Basics', c:'#f4c430', img:'./assets/resume-design/resume.png', year:2022, desc:'A unique résumé and coordinating business card designed from scratch, with a consistent visual identity across both pieces.', mainLabel:'Résumé', extras:[{img:'./assets/resume-design/business-card-front.png',label:'Business card, front'},{img:'./assets/resume-design/business-card-back.png',label:'Business card, back'}]},
+    {t:'Résumé Design', credit:'SJSU · DSGD 83 · Digital Applications: Basics', c:'#f4c430', img:'./assets/resume-design/resume.png', year:2022, desc:'A unique résumé and coordinating business card designed from scratch, with a consistent visual identity across both pieces.', mainLabel:'Résumé', extras:[{img:'./assets/resume-design/business-card-front.png',label:'Business Card, Front'},{img:'./assets/resume-design/business-card-back.png',label:'Business Card, Back'}]},
     {t:'Procrastination Booklet', credit:'SJSU · DSGD 83 · Digital Applications: Basics', c:'#f4c430', img:'./assets/procrastination-booklet/page-01.png', year:2022, desc:'A final project for my 2022 DSGD course at SJSU. I drew and developed the entire booklet from scratch in Adobe Illustrator, combining original illustrations, typography, and page layouts.', mainLabel:'Page 1', extras:Array.from({length:9},(_,i)=>({img:'./assets/procrastination-booklet/page-'+String(i+2).padStart(2,'0')+'.png',label:'Page '+(i+2)}))},
     {t:'Rush Event Illustration', credit:'Independent project · Beta Theta Pi', c:'#f4c430', img:'./assets/Beta_Theta_Pi_Rush.svg', year:2023, desc:'An illustration drawn from scratch for a Beta Theta Pi rush event in 2023, using the Lyrical Lemonade logo as a visual reference.'},
     {t:'The Broken NPC', credit:'SJSU · ART 102 · 3D Modeling and Printing', c:'#2ee078', img:'./assets/Broken_NPC.jpg', video:'./assets/Broken_NPC.MP4', year:2024, desc:'A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.'},
     {t:'Apple Accessory Concepts', credit:'SJSU · ART 102 · 3D Modeling and Printing', c:'#38bdf8', img:'./assets/Blender_Case.jpg', video:'./assets/Blender_Case_Video.mp4', year:2024, desc:'Concept designs for Apple accessory cases, modeled and rendered in Blender.'},
     {t:'Video Game Demo', credit:'SJSU · ART 105 · Advanced Digital Video', c:'#f4c430', img:'./assets/Shiri_VIdeo_Game.jpg', video:'./assets/Shiri_Video_Game.mp4', year:2024, desc:'A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.'},
-    {t:'Movie Character Adaptation', credit:'SJSU · ART 102 · 3D Modeling and Printing', c:'#ff7ac2', img:'./assets/Venom.webp', year:2024, desc:'A movie creature\'s head, sculpted and rendered in Blender. A wet, high gloss skin shader over the sculpt, lit with a single key against black.'},
+    {t:'Movie Character Adaptation', credit:'SJSU · ART 102 · 3D Modeling and Printing', c:'#ff7ac2', img:'./assets/Venom.webp', year:2024, desc:'A movie creature\'s head, sculpted and rendered in Blender. A wet, high-gloss skin shader over the sculpt, lit with a single key against black.'},
     {t:'Custom Phone Case', credit:'Started at SJSU · Independently developed', c:'#8b5cf6', img:'./assets/My_Case.jpg', year:2025, desc:'An accessory design developed beyond its original coursework into a finished 3D-printed case. An open lattice wraps around the camera and side buttons.'},
     {t:'Custom AirPods Case', credit:'Started at SJSU · Independently developed', c:'#f97316', img:'./assets/Airpod_Case.JPG', year:2026, desc:'An accessory design developed beyond its original coursework into a finished 3D-printed sleeve. An open lattice wraps an AirPods Pro case, leaving the status light and hinge accessible.'},
     {t:'HMI Sensor System', credit:'SJSU · ART 106 · The Human Machine Interface', c:'#2ee078', img:'./assets/New_Radar_Sensor_front.jpg', video:'./assets/New_Radar_Sensor.mp4', year:2024, desc:'An ultrasonic sensing device with an LCD, speaker, and 3D-printed enclosure that translates sensor readings into visual and audio feedback.',
-      mainLabel:'Demo', extras:[{img:'./assets/New_Radar_Sensor_front.jpg', label:'Front'},{img:'./assets/New_Radar_Sensor_Back.jpg', label:'Back'},{img:'./assets/Programming_Cover_Pic.jpg', label:'Both builds'}]},
+      mainLabel:'Demo', extras:[{img:'./assets/New_Radar_Sensor_front.jpg', label:'Front'},{img:'./assets/New_Radar_Sensor_Back.jpg', label:'Back'},{img:'./assets/Programming_Cover_Pic.jpg', label:'Both Builds'}]},
     {t:'RGB Controller', credit:'SJSU · ART 106 · The Human Machine Interface', c:'#38bdf8', img:'./assets/New_LED_Box_Front.jpg', video:'./assets/New_LED_Box.mp4', year:2024, desc:'An LED controller with physical controls and a 3D-printed enclosure, designed around the electronics inside.',
-      mainLabel:'Demo', extras:[{img:'./assets/New_LED_Box_Front.jpg', label:'Front'},{img:'./assets/New_LED_Box_Back.jpg', label:'Back'},{img:'./assets/Programming_Cover_Pic.jpg', label:'Both builds'}]},
-    {t:'Product, not Consumer', credit:'SJSU · ART 68 · Beginning Sculpture', c:'#f4c430', img:'./assets/Shyon_Sculpture.jpg', year:2024, desc:'Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.'},
+      mainLabel:'Demo', extras:[{img:'./assets/New_LED_Box_Front.jpg', label:'Front'},{img:'./assets/New_LED_Box_Back.jpg', label:'Back'},{img:'./assets/Programming_Cover_Pic.jpg', label:'Both Builds'}]},
+    {t:'Product, Not Consumer', credit:'SJSU · ART 68 · Beginning Sculpture', c:'#f4c430', img:'./assets/Shyon_Sculpture.jpg', year:2024, desc:'Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded, and finished.'},
     {t:'Advertisement Project', credit:'SJSU · PHOT 125 · Advanced Photographic Media', c:'#ff7ac2', img:'./assets/Adverstisement_Project.jpg', year:2024, desc:'A spec print advertisement for a fictional shaver brand. The rotary shaver is lit as the hero and its shadow runs back to the bloodied cartridge razor it replaces.'},
-    {t:'Studio Portrait', credit:'SJSU · PHOT 125 · Advanced Photographic Media', c:'#8b5cf6', img:'./assets/Max_Pic.JPG', year:2024, desc:'Caught mid laugh on a gelled teal backdrop, with the background light hot behind the head so the subject separates from it.'},
-    {t:'Studio Photography', credit:'SJSU · PHOT 125 · Advanced Photographic Media', c:'#f97316', img:'./assets/Photography_1.jpg', year:2024, desc:'A hand drawn wordmark set over a cropped apparel shot, chains and acid washed corduroy, framed close so the type sits on the garment rather than beside it.'} ];
+    {t:'Studio Portrait', credit:'SJSU · PHOT 125 · Advanced Photographic Media', c:'#8b5cf6', img:'./assets/Max_Pic.JPG', year:2024, desc:'Caught mid-laugh on a gelled teal backdrop, with the background light hot behind the head so the subject separates from it.'},
+    {t:'Studio Photography', credit:'SJSU · PHOT 125 · Advanced Photographic Media', c:'#f97316', img:'./assets/Photography_1.jpg', year:2024, desc:'A hand-drawn wordmark set over a cropped apparel shot, chains and acid-washed corduroy, framed close so the type sits on the garment rather than beside it.'} ];
   const PROFESSIONAL=[
     {t:'minasech.net', c:'#38bdf8', img:'./assets/Mina_Website.webp', year:2025, desc:'Full-stack website design including React frontend and responsive interface.', links:[{label:'Visit minasech.net', href:'https://minasech.net'}]},
     {t:'Everly Care Home', c:'#f4c430', img:'./assets/Everly_Cover_Image.webp', year:2026, desc:'Full-stack website design and development including branding, responsive interface, and complete deployment for a senior care community business.', links:[{label:'Visit everlycarehome.com', href:'https://everlycarehome.com'}]},
@@ -5324,7 +5324,7 @@
     {t:'Colleen Drive Listing', c:'#8b5cf6', img:'./assets/RealEstate_Colleen_Flyer.jpg', year:2022, desc:'A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.'},
     {t:'Morning Star Drive Listing', c:'#ff7ac2', img:'./assets/RealEstate_MorningStar_Flyer.webp', year:2022, desc:'A premium listing announcement co-branded with Compass, layering sales highlights, pricing, and property specs over a bold editorial layout.'},
     {t:'Moskowite Corner', c:'#f97316', img:'./assets/RealEstate_MoskowiteCorner_Concept.jpg', year:2026, desc:'An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.',
-      mainLabel:'Concept', extras:[{img:'./assets/RealEstate_MoskowiteCorner_Before.webp', label:'Existing site'}]} ];
+      mainLabel:'Concept', extras:[{img:'./assets/RealEstate_MoskowiteCorner_Before.webp', label:'Existing Site'}]} ];
   // THE ABOUT PANEL IS THE ABOUT PAGE'S OWN COPY, and it has to stay that way (2026-09-09).
   // It used to run the six-discipline list ("3D design, motion graphics, UI/UX, fabrication,
   // cinematography, and code") plus two lines about learning tools properly. src/App.tsx's
@@ -5339,13 +5339,13 @@
   // paragraph as well took it to 4 lines and 669px, moving the clip threshold from a 730px
   // viewport to 749px, so that clause was left out on purpose. scratchpad/capfit.cjs.
   const ABOUT=[
-    {t:'About Me', c:'#38bdf8', frame:'#05131D', img:'./assets/Shyon_About.webp', desc:'I\'m a graphic designer and developer in the Bay Area, with a BA in Graphic Design from San Jose State, 2025. I take a project from identity through to a deployed site, so design, front end, and deployment are one job rather than three handoffs. I also evaluate multimodal AI systems against rubrics, writing the corrected ground truth where models fail.'},
+    {t:'About Me', c:'#38bdf8', frame:'#05131D', img:'./assets/Shyon_About.webp', desc:'I am a Graphic Designer and Developer. I am based in the Bay Area and earned a BA in Graphic Design from San Jose State University in 2025. I take a project from identity through to a deployed site, so design, front end, and deployment are one job rather than three handoffs. I also evaluate multimodal AI systems against rubrics, writing the corrected ground truth where models fail.'},
     // These two used to be the only imageless panels in any portal, so they showed as a bare
     // coloured tile with a title. The resume preview is the PDF's own first page rendered out and
     // padded to the panel's exact 2.15:2.70 so nothing is cropped; the contact card is drawn to
     // match (dark ground, stud grid, the Realm's yellow). The resume keeps its link, so opening
     // the viewer still gets you to the actual PDF.
-    {t:'Resume', c:'#f4c430', img:'./assets/resume_preview.jpg', desc:'My full resume, with experience and skills.', links:[{label:'Open My Resume', href:'./My Resume.pdf'}]},
+    {t:'Résumé', c:'#f4c430', img:'./assets/resume_preview.jpg', desc:'My full résumé, with experience and skills.', links:[{label:'Open My Résumé', href:'./My Resume.pdf'}]},
     // THE CONTACT CARD IS DRAWN IN THE MAIN SITE'S LANGUAGE (user, 2026-09-03: make it look
     // more like the one on the main site). It used to be the Realm's own: navy ground, stud
     // grid, Fredoka, the Realm's yellow. It is now ContactPage from src/App.tsx redrawn at the
@@ -5356,12 +5356,12 @@
     // THE FRAME IS PINNED for the same reason the About panel's is: run against this image the
     // shipped strongColor() returns #14313e, the blue glow averaged down to a murky teal. LEGO
     // Black is what the page itself is, and it matches About beside it.
-    {t:'Contact', c:'#38bdf8', frame:'#05131D', img:'./assets/contact_preview.jpg', desc:'Open to freelance, collaborations & full-time roles.', links:[{label:'Email shyon2001@gmail.com', href:'mailto:shyon2001@gmail.com'},{label:'LinkedIn in/shyonshiri', href:'https://www.linkedin.com/in/shyonshiri/'}]} ];
+    {t:'Contact', c:'#38bdf8', frame:'#05131D', img:'./assets/contact_preview.jpg', desc:'Open to freelance work, collaborations, and full-time roles.', links:[{label:'Email shyon2001@gmail.com', href:'mailto:shyon2001@gmail.com'},{label:'LinkedIn in/shyonshiri', href:'https://www.linkedin.com/in/shyonshiri/'}]} ];
   const NABU=[
     {t:'Brand Film', c:'#38bdf8', img:'./assets/Nabu_Poster_Banner.jpg', video:'./assets/Nabu_Poster_Banner.mp4', year:2023, desc:'Promotional video for NABU clothing, animated in Adobe After Effects.'},
     {t:'Puffer Collection Teaser', c:'#2ee078', img:'./assets/NABU_Puffer_AD.jpg', video:'./assets/NABU_PUFFER_AD.mp4', year:2025, desc:'Cut in 2025 to trail the 2026 puffer jacket collection.',
       mainLabel:'Teaser', extras:[{img:'./assets/NABU_Puffer_Front.jpg', label:'Puffer Jacket, Front'},{img:'./assets/NABU_Puffer_Back.jpg', label:'Puffer Jacket, Back'}]},
-    {t:'Summer 2025', c:'#f4c430', img:'./assets/NABU_SALE_AD.jpg', video:'./assets/NABU_SALE_AD.mp4', year:2025, desc:'Promotional video for the summer drop, camp collar shirts and rug pattern shorts, shot as a flat lay on white.'},
+    {t:'Summer 2025', c:'#f4c430', img:'./assets/NABU_SALE_AD.jpg', video:'./assets/NABU_SALE_AD.mp4', year:2025, desc:'Promotional video for the summer drop, camp-collar shirts and rug-pattern shorts, shot as a flat lay on white.'},
     {t:'Spring 2023', c:'#ff7ac2', img:'./assets/Stevie_Pic.JPG', year:2022, desc:'Shot in 2022 for the 2023 spring collection. Two looks on a white cyclorama, the graphic tees worn over the Persian rug trousers, with the raw fringed seams left showing down the leg.'},
     {t:'Persian Rug Pants Relaunch', c:'#8b5cf6', img:'./assets/Digital_Media_Cover.jpg', year:2024, desc:'Promotional campaign for the 2024 rerelease of NABU\'s Persian rug pants.'} ];
   let mode='hub', fading=false, viewerOpen=false, nearPortal=null, activePortal=null, camAnim=null;
@@ -6603,9 +6603,9 @@
   // the two power pills are live on every device: they are the toggle for the outfit and for flight
   if(IS_TOUCH){
     document.body.classList.add('touch');
-    const touchRows=[['Move','Left stick'],['Run','Push stick far'],['Jump','JUMP button'],['Look around','Drag the screen'],['Enter a building','Tap ENTER'],
-      ['Change outfit','CHANGE button'],
-      ['Sound','Speaker button'],['Back to main site','Leave button']];   // touch keeps both buttons, so it names them
+    const touchRows=[['Move','Left stick'],['Run','Push stick far'],['Jump','JUMP button'],['Look Around','Drag the screen'],['Enter a Building','Tap ENTER'],
+      ['Change Outfit','CHANGE button'],
+      ['Sound','Speaker button'],['Back to Main Site','Leave button']];   // touch keeps both buttons, so it names them
     // The card ships SEVEN .row divs for the keyboard and this list is now eight, so the extras are
     // APPENDED rather than silently dropped: the old code only rewrote rows that already existed,
     // which would have thrown the outfit row away and shifted Sound and Leave up a line.

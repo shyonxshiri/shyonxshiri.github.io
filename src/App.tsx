@@ -55,25 +55,25 @@ const PROJECTS: Project[] = [
     // nothing can fit. X is inert: the card can never be taller than the file.
     objectPosition: "50% 37%",
     media: [
-      { type: "image", src: "/assets/DSGD_Resume_Design.png", title: "Résumé Design", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "1069/795", desc: "A unique résumé and coordinating business card designed from scratch, with a consistent visual identity across both pieces.", pages: ["/assets/resume-design/resume.png", "/assets/resume-design/business-card-front.png", "/assets/resume-design/business-card-back.png"], pageLabels: ["Résumé", "Business card, front", "Business card, back"] },
+      { type: "image", src: "/assets/DSGD_Resume_Design.png", title: "Résumé Design", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "1069/795", desc: "A unique résumé and coordinating business card designed from scratch, with a consistent visual identity across both pieces.", pages: ["/assets/resume-design/resume.png", "/assets/resume-design/business-card-front.png", "/assets/resume-design/business-card-back.png"], pageLabels: ["Résumé", "Business Card, Front", "Business Card, Back"] },
       { type: "image", src: "/assets/procrastination-booklet/page-01.png", title: "Procrastination Booklet", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "1786/2200", desc: "A final project for my 2022 DSGD course at SJSU. I drew and developed the entire booklet from scratch in Adobe Illustrator, combining original illustrations, typography, and page layouts.", pages: Array.from({ length: 10 }, (_, i) => `/assets/procrastination-booklet/page-${String(i + 1).padStart(2, "0")}.png`) },
       { type: "image", src: "/assets/Beta_Theta_Pi_Rush.svg", title: "Rush Event Illustration", credit: "Independent project · Beta Theta Pi", year: 2023, desc: "An illustration drawn from scratch for a Beta Theta Pi rush event in 2023, using the Lyrical Lemonade logo as a visual reference.", aspectRatio: "364/556" },
       { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A detailed 3D scene depicting in-game rendering errors from GTA San Andreas, created entirely using Blender.", aspectRatio: "16/9", relatedItems: [] },
       { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Concepts", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "Concept designs for Apple accessory cases, modeled and rendered in Blender.", aspectRatio: "16/9", relatedItems: ["Custom AirPods Case", "Custom Phone Case"] },
       { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", credit: "SJSU · ART 105 · Advanced Digital Video", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Venom.webp", title: "Movie Character Adaptation", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A movie creature's head, sculpted and rendered in Blender. A wet, high gloss skin shader over the sculpt, lit with a single key against black.", aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Venom.webp", title: "Movie Character Adaptation", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A movie creature's head, sculpted and rendered in Blender. A wet, high-gloss skin shader over the sculpt, lit with a single key against black.", aspectRatio: "16/9" },
       { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", credit: "Started at SJSU · Independently developed", year: 2025, desc: "An accessory design developed beyond its original coursework into a finished 3D-printed case. An open lattice wraps around the camera and side buttons.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Concepts"] },
       { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom AirPods Case", credit: "Started at SJSU · Independently developed", year: 2026, desc: "An accessory design developed beyond its original coursework into a finished 3D-printed sleeve. An open lattice wraps an AirPods Pro case, leaving the status light and hinge accessible.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Concepts"] },
       { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Ultrasonic Sensor, Front View", year: 2024, desc: "Front of the ultrasonic sensor enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D-printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Ultrasonic Sensor, Back View", "Ultrasonic Sensor and RGB Controller", "HMI Sensor System"] },
       { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Ultrasonic Sensor, Back View", year: 2024, desc: "Back of the ultrasonic sensor enclosure, showing the access panel, wiring routing, and the power and control cutouts.", aspectRatio: "4/3", hidden: true, relatedItems: ["Ultrasonic Sensor, Front View", "Ultrasonic Sensor and RGB Controller", "HMI Sensor System"] },
       { type: "image", src: "/assets/New_LED_Box_Front.jpg", title: "RGB Box, Front View", year: 2024, desc: "Front of the RGB controller. A faceted 3D-printed shell with the addressable LED strip seated in a chamfered channel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Back View", "Ultrasonic Sensor and RGB Controller", "RGB Controller"] },
       { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box, Back View", year: 2024, desc: "Back of the RGB controller, with the potentiometer, mode button, and toggle switch mounted through the top panel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Front View", "Ultrasonic Sensor and RGB Controller", "RGB Controller"] },
-      { type: "image", src: "/assets/Programming_Cover_Pic.jpg", title: "Ultrasonic Sensor and RGB Controller", year: 2024, desc: "Both enclosures side by side. Each was modeled around its own board, display and controls, then 3D printed and finished by hand.", aspectRatio: "4/3", hidden: true, relatedItems: ["HMI Sensor System", "RGB Controller"] },
-      { type: "image", src: "/assets/Max_Pic.JPG", title: "Studio Portrait", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "Caught mid laugh on a gelled teal backdrop, with the background light hot behind the head so the subject separates from it.", aspectRatio: "2/3" },
-      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "A hand drawn wordmark set over a cropped apparel shot, chains and acid washed corduroy, framed close so the type sits on the garment rather than beside it.", aspectRatio: "1/1" },
+      { type: "image", src: "/assets/Programming_Cover_Pic.jpg", title: "Ultrasonic Sensor and RGB Controller", year: 2024, desc: "Both enclosures side by side. Each was modeled around its own board, display, and controls, then 3D printed and finished by hand.", aspectRatio: "4/3", hidden: true, relatedItems: ["HMI Sensor System", "RGB Controller"] },
+      { type: "image", src: "/assets/Max_Pic.JPG", title: "Studio Portrait", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "Caught mid-laugh on a gelled teal backdrop, with the background light hot behind the head so the subject separates from it.", aspectRatio: "2/3" },
+      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "A hand-drawn wordmark set over a cropped apparel shot, chains and acid-washed corduroy, framed close so the type sits on the garment rather than beside it.", aspectRatio: "1/1" },
       { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "An ultrasonic sensing device with an LCD, speaker, and 3D-printed enclosure that translates sensor readings into visual and audio feedback.", aspectRatio: "4/3", relatedItems: ["Ultrasonic Sensor, Front View", "Ultrasonic Sensor, Back View", "Ultrasonic Sensor and RGB Controller"] },
       { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "RGB Controller", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "An LED controller with physical controls and a 3D-printed enclosure, designed around the electronics inside.", aspectRatio: "4/3", relatedItems: ["RGB Box, Front View", "RGB Box, Back View", "Ultrasonic Sensor and RGB Controller"] },
-      { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, not Consumer", credit: "SJSU · ART 68 · Beginning Sculpture", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded and finished.", aspectRatio: "5/4" },
+      { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, Not Consumer", credit: "SJSU · ART 68 · Beginning Sculpture", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded, and finished.", aspectRatio: "5/4" },
       { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Advertisement Project", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "A spec print advertisement for a fictional shaver brand. The rotary shaver is lit as the hero and its shadow runs back to the bloodied cartridge razor it replaces.", aspectRatio: "16/9" },
     ],
   },
@@ -90,7 +90,7 @@ const PROJECTS: Project[] = [
       { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Colleen Drive Listing", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
       { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.webp", title: "Morning Star Drive Listing", year: 2022, desc: "A listing announcement co-branded with Compass, combining pricing, property specifications, and sales highlights.", aspectRatio: "4/5" },
       { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner Redevelopment", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner, Existing Site"] },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.webp", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26 acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner Redevelopment"] },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.webp", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26-acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner Redevelopment"] },
     ],
   },
   {
@@ -102,7 +102,7 @@ const PROJECTS: Project[] = [
     media: [
       { type: "video", src: "/assets/Nabu_Poster_Banner.mp4", poster: "/assets/Nabu_Poster_Banner.jpg", title: "Brand Film", year: 2023, desc: "Promotional video for NABU clothing, animated in Adobe After Effects.", wide: true },
       { type: "video", src: "/assets/NABU_PUFFER_AD.mp4", poster: "/assets/NABU_Puffer_AD.jpg", title: "Puffer Collection Teaser", year: 2025, desc: "A teaser edited in 2025 for the 2026 puffer jacket collection.", relatedItems: ["Puffer Jacket, Front", "Puffer Jacket, Back"] },
-      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "Summer 2025", year: 2025, desc: "Promotional video for the summer drop, camp collar shirts and rug pattern shorts, shot as a flat lay on white." },
+      { type: "video", src: "/assets/NABU_SALE_AD.mp4", poster: "/assets/NABU_SALE_AD.jpg", title: "Summer 2025", year: 2025, desc: "Promotional video for the summer drop, camp-collar shirts and rug-pattern shorts, shot as a flat lay on white." },
       { type: "image", src: "/assets/Stevie_Pic.JPG", title: "Spring 2023", year: 2022, desc: "Shot in 2022 for the 2023 spring collection. Two looks on a white cyclorama, the graphic tees worn over the Persian rug trousers, with the raw fringed seams left showing down the leg." },
       { type: "image", src: "/assets/NABU_Puffer_Front.jpg", title: "Puffer Jacket, Front", year: 2025, desc: "Studio still from the puffer collection shoot. Woven bandana panelling across the body, sleeves, and hood, shot on a white cyclorama.", aspectRatio: "9/16", hidden: true, relatedItems: ["Puffer Jacket, Back", "Puffer Collection Teaser"] },
       { type: "image", src: "/assets/NABU_Puffer_Back.jpg", title: "Puffer Jacket, Back", year: 2025, desc: "Back of the same puffer, showing how the bandana medallion is centered and mirrored across the shoulders and hem.", aspectRatio: "2/3", hidden: true, relatedItems: ["Puffer Jacket, Front", "Puffer Collection Teaser"] },
@@ -2040,7 +2040,7 @@ function HomePage({ onNavigate, intro, initialSection }: {
                 body="The coffee shop opens client work, the cottage holds selected projects, and the house leads to About. NABU is at the crystal above the ruins."
               />
               <RealmMap />
-              <div className="ss-map-hint">Select a building to preview it</div>
+              <div className="ss-map-hint">Select a building to preview it.</div>
             </div>
           </Slide>
 
@@ -2094,7 +2094,7 @@ function HomePage({ onNavigate, intro, initialSection }: {
               className="ss-open-line"
               text={realm.ok
                 ? "Controls are displayed on entry."
-                : "View my LEGO Portfolio on a supported desktop or laptop. You can browse the same projects in Work on this device."}
+                : "View My LEGO Portfolio on a supported desktop or laptop. You can browse the same projects in Work on this device."}
               variant={sbWordIn}
               stagger={0.018}
             />
@@ -2130,7 +2130,7 @@ function HomePage({ onNavigate, intro, initialSection }: {
                   fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
                   letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--sky)",
                 }}>
-                  Desktop only
+                  Desktop Only
                 </span>
                 {realm.message}
               </p>
@@ -2150,7 +2150,7 @@ function HomePage({ onNavigate, intro, initialSection }: {
               }}
             >
               {/* the "or" only makes sense standing next to the button */}
-              {realm.ok ? "or browse my work" : "Browse my work"}
+              Browse My Work
             </span>
             </motion.div>
           </div>
@@ -2282,17 +2282,17 @@ const shotReveal: Variants = {
 const WORK_SHEET = [
   { scene: "Assembly", src: "/assets/story/story_blender_shop_assembly.jpg",
     caption: "The coffee shop in progress, assembled from individual bricks on the same stud grid used by the engine." },
-  { scene: "Mesh editing", src: "/assets/story/story_blender_ruins_edit.jpg",
+  { scene: "Mesh Editing", src: "/assets/story/story_blender_ruins_edit.jpg",
     caption: "Building the ruins in Edit Mode. The highlighted brick course forms the next section above the doorway." },
   { scene: "Sculpting", src: "/assets/story/story_blender_hair_sculpt.jpg",
     caption: "The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." },
-  { scene: "UV and texturing", src: "/assets/story/story_blender_skull_uv.jpg",
+  { scene: "UV and Texturing", src: "/assets/story/story_blender_skull_uv.jpg",
     caption: "The skull’s UV layout on the left and its mapped texture on the right. Printed details are applied through the same workflow." },
-  { scene: "Figure assembly", src: "/assets/story/story_blender_figure_exploded.jpg",
+  { scene: "Figure Assembly", src: "/assets/story/story_blender_figure_exploded.jpg",
     caption: "The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." },
   { scene: "Materials", src: "/assets/story/story_blender_house_nodes.jpg",
     caption: "The house during construction, with the node graph for its tinted window material below the viewport." },
-  { scene: "Render preview", src: "/assets/story/story_blender_cottage_render.jpg",
+  { scene: "Render Preview", src: "/assets/story/story_blender_cottage_render.jpg",
     caption: "Checking the cottage’s materials and lighting in Blender before export." },
 ];
 
@@ -2328,10 +2328,10 @@ function WorkSheet() {
    cost and the draw calls were counted in the live page by scratchpad/realm_cost.cjs, the
    file count with them, and the cycle is CYCLE_SECS. */
 const REALM_FIGS = [
-  { n: "15.9", unit: "M", label: "Triangles a frame" },
-  { n: "689", unit: "", label: "Draw calls" },
-  { n: "35", unit: "", label: "Models loaded" },
-  { n: "7", unit: "min", label: "Full day cycle" },
+  { n: "15.9", unit: "M", label: "Triangles per Frame" },
+  { n: "689", unit: "", label: "Draw Calls" },
+  { n: "35", unit: "", label: "Models Loaded" },
+  { n: "7", unit: "min", label: "Full Day Cycle" },
 ];
 const sbFig: Variants = {                         // a figure rises into place
   hidden: { opacity: 0, y: 14 },
@@ -2377,7 +2377,7 @@ const sbFig: Variants = {                         // a figure rises into place
 const REALM_MAP = [
   { id: "shop", name: "The Coffee Shop", cat: "Client Work", x: 18.2, y: 26.0, flip: false,
     src: "/assets/story/story_shop_evening.jpg",
-    line: "Commissioned client work. Full-stack websites, brand and print for small businesses, and concept visualization." },
+    line: "Commissioned client work. Full-stack websites, brand and print work for small businesses, and concept visualization." },
   { id: "cottage", name: "The Cottage", cat: "Selected Projects", x: 53.5, y: 25.0, flip: false,
     src: "/assets/story/story_sunset.jpg",
     line: "Coursework and independent projects in 3D, physical objects, electronics, and image-making." },
@@ -2386,7 +2386,7 @@ const REALM_MAP = [
     line: "Background and training, and how the disciplines across the rest of the site fit together." },
   { id: "ruins", name: "The Ruins", cat: "NABU", x: 13.0, y: 85.0, flip: false,
     src: "/assets/story/story_crystal_night.jpg",
-    line: "Art direction, promotional video and campaign photography for the NABU streetwear brand." },
+    line: "Art direction, promotional video, and campaign photography for the NABU streetwear brand." },
 ];
 
 /* The pin grows in rather than snapping on. It starts at 0.55 and not at 0: a dot that
@@ -3143,7 +3143,7 @@ function ContactPage() {
       icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.23 0H1.77C.8 0 0 .77 0 1.72v20.56C0 23.23.8 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.72V1.72C24 .77 23.2 0 22.23 0z" /></svg>,
     },
     {
-      href: "/My Resume.pdf", label: "Resume", value: "My Resume.pdf", target: "_blank",
+      href: "/My Resume.pdf", label: "Résumé", value: "My Resume.pdf", target: "_blank",
       icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>,
     },
   ];
@@ -3198,7 +3198,7 @@ function ContactPage() {
               className="ss-contact-heading"
               style={{ fontFamily: "var(--sf)", fontSize: "clamp(46px,6.2vw,96px)", fontWeight: 550, letterSpacing: "-0.065em", lineHeight: 1, color: "var(--white)" }}
             >
-              Get in touch<span style={{ color: "var(--white)" }}>.</span>
+              Get in Touch<span style={{ color: "var(--white)" }}>.</span>
             </motion.h2>
           </div>
           <motion.p
@@ -3207,7 +3207,7 @@ function ContactPage() {
             className="ss-contact-description"
             style={{ fontFamily: "var(--sf)", fontWeight: 400, fontSize: "clamp(15px,1.5vw,18px)", lineHeight: 1.5, letterSpacing: "-0.005em", color: "var(--mid)", maxWidth: 300, textAlign: "right", marginBottom: 8 }}
           >
-            Open to freelance, collaborations &amp; full-time roles.
+            Open to freelance work, collaborations, and full-time roles.
           </motion.p>
         </div>
 
@@ -3425,7 +3425,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
             color: "var(--mid)",
             textTransform: "uppercase",
           }}>
-            Scroll to browse
+            Scroll to browse.
           </div>
         )}
       </motion.div>
