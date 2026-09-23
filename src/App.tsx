@@ -208,11 +208,37 @@ const GLOBAL_CSS = `
     body::after { display: none; }
   }
 
+  /* Floating glass capsule, inset from the screen with a softly lit rim. */
+  .ss-site-header {
+    position: fixed; z-index: 10000;
+    top: calc(14px + env(safe-area-inset-top));
+    right: max(24px, env(safe-area-inset-right));
+    border-radius: 999px; padding: 5px 12px;
+    background: rgba(24,24,26,.9);
+    border: 1px solid rgba(255,255,255,.2);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 -1px 0 rgba(255,255,255,.04), 0 5px 20px rgba(0,0,0,.12);
+  }
+  .ss-site-header ul { display:flex; align-items:center; gap:8px; list-style:none; }
+  .ss-site-header button { display:block; min-height:44px; padding:0 14px; border-radius:999px; }
+  .ss-site-header-light {
+    background: rgba(241,239,242,.94);
+    border-color: rgba(255,255,255,.65);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 1px rgba(255,255,255,.3), 0 5px 20px rgba(35,35,38,.1);
+  }
+  @supports ((backdrop-filter: blur(18px)) or (-webkit-backdrop-filter: blur(18px))) {
+    .ss-site-header {
+      background: linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.035) 45%,rgba(255,255,255,.08)),rgba(20,20,22,.32);
+      -webkit-backdrop-filter: blur(18px) saturate(145%);
+      backdrop-filter: blur(18px) saturate(145%);
+    }
+    .ss-site-header-light { background: linear-gradient(160deg,rgba(255,255,255,.62),rgba(255,255,255,.15) 48%,rgba(255,255,255,.3)),rgba(241,239,242,.36); }
+  }
+
   /* ─ MOBILE RESPONSIVE (iPhone 17e & similar - max 640px) ─ */
   @media (max-width: 640px) {
-    /* Navigation */
-    nav ul { gap: 16px !important; }
-    nav { padding-left: max(16px, calc(16px + env(safe-area-inset-left))) !important; padding-right: max(16px, calc(16px + env(safe-area-inset-right))) !important; }
+    .ss-site-header { left:max(12px,env(safe-area-inset-left)); right:max(12px,env(safe-area-inset-right)); top:calc(10px + env(safe-area-inset-top)); padding:4px 8px; }
+    .ss-site-header ul { justify-content:space-between; gap:0; }
+    .ss-site-header button { padding:0 12px; }
 
     /* Work Page - Cards. The floor comes down with the card itself (360 -> 330 wide),
        or a short phone draws a card taller than the desktop proportion. */
@@ -1504,6 +1530,8 @@ function PageTransition({ page, children }: { page: Page; children: (page: Page)
 
 export default function App() {
   const [page, setPage] = useState<Page>("home");
+  const [homeSection, setHomeSection] = useState<"hero" | "open">("hero");
+  const [realm] = useState(readRealmSupport);
   const hasNavigated = useRef(false);
   const [modalProject, setModalProject] = useState<Project | null>(null);
   const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
@@ -1526,11 +1554,12 @@ export default function App() {
     document.body.style.backgroundColor = bg;
   }, [page]);
 
-  const navigate = useCallback((next: Page) => {
+  const navigate = useCallback((next: Page, section: "hero" | "open" = "hero") => {
     if (next === page) return;
     hasNavigated.current = true;
     setModalProject(null);
     setViewerItem(null);
+    setHomeSection(section);
     setPage(next);
   }, [page]);
 
@@ -1580,35 +1609,10 @@ export default function App() {
 
       {/* ── NAV ─────────────────────────────────────────────── */}
       <nav
-        /* ── NO BAR. THE LINKS FLOAT ON THE PAGE (user, 2026-09-09, who did not want the
-           header space at all). This deletes the frosted glass pane, the ground it painted,
-           its hairlines and its shadow, the `scrolled` / `frosted` state that switched it on
-           past the top of Home, and the `ss-nav-light` thickening the stacked About needed.
-           WHAT THAT GIVES BACK IS THE PROBLEM THE BAR EXISTED TO SOLVE: with no ground of its
-           own the type is legible only against whatever pixel happens to be under it, and
-           this site has four different grounds up there (a black portrait, a pale aerial, a
-           cream copy column and, stacked, a photograph of dark hair and a black jacket).
-           It is NOT solved by going back to `mix-blend-mode: difference`, which cancels
-           toward mid grey (exact at 127.5, the trap the Realm's cursor documents) and put
-           CONTACT at about 2.3:1 over the studio wall's vignette. It is solved by giving the
-           GLYPHS their own separation instead of the bar: see the halo on NavLink, which is
-           the only thing now standing between the type and the picture. */
-        style={{
-          position: "fixed", top: 0, left: 0, right: 0,
-          zIndex: 10000,
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          paddingTop: "max(28px, calc(28px + env(safe-area-inset-top)))",
-          paddingBottom: "28px",
-          paddingLeft: "max(48px, calc(48px + env(safe-area-inset-left)))",
-          paddingRight: "max(48px, calc(48px + env(safe-area-inset-right)))",
-          /* The bar is gone, so the element must not swallow clicks across the whole width of
-             the page: it is a full-width fixed box with nothing drawn in most of it, and the
-             deck under it is scrolled and dragged. Only the buttons take the pointer. */
-          pointerEvents: "none",
-        }}
+        className={`ss-site-header${lightPage ? " ss-site-header-light" : ""}`}
+        aria-label="Main navigation"
       >
-        <div style={{ visibility: "hidden" }} />
-        <ul style={{ display: "flex", gap: 40, listStyle: "none", pointerEvents: "auto" }}>
+        <ul>
           {PAGE_ORDER.map(p => (
             <li key={p}>
                 <NavLink label={p.charAt(0).toUpperCase() + p.slice(1)} active={page === p} onClick={() => navigate(p)}
@@ -1621,9 +1625,9 @@ export default function App() {
 {/* ── PAGES ────────────────────────────────────────────── */}
       <PageTransition page={page}>
         {visiblePage => <>
-          {visiblePage === "home" && <HomePage onNavigate={navigate} intro={!hasNavigated.current} />}
+          {visiblePage === "home" && <HomePage onNavigate={navigate} intro={!hasNavigated.current} initialSection={homeSection} />}
           {visiblePage === "work" && <WorkPage onCardClick={setModalProject} />}
-          {visiblePage === "about" && <AboutPage />}
+          {visiblePage === "about" && <AboutPage realmSupported={realm.ok} onViewOverview={() => navigate("home", "open")} />}
           {visiblePage === "contact" && <ContactPage />}
         </>}
       </PageTransition>
@@ -1825,7 +1829,11 @@ function HeroName({ isMobile, intro }: { isMobile: boolean; intro: boolean }) {
   );
 }
 
-function HomePage({ onNavigate, intro }: { onNavigate: (p: Page) => void; intro: boolean }) {
+function HomePage({ onNavigate, intro, initialSection }: {
+  onNavigate: (p: Page) => void;
+  intro: boolean;
+  initialSection: "hero" | "open";
+}) {
   const [loaded, setLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
   // read once: none of its inputs change while the page is open, and it must not
@@ -1833,8 +1841,19 @@ function HomePage({ onNavigate, intro }: { onNavigate: (p: Page) => void; intro:
   const [realm] = useState(readRealmSupport);
   const hover = useCursorHover();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [portfolioUnlocked, setPortfolioUnlocked] = useState(false);
+  const [portfolioUnlocked, setPortfolioUnlocked] = useState(initialSection === "open");
   const leftHero = useRef(false);
+
+  // Open the overview behind the page transition, without scrolling past the hero.
+  useLayoutEffect(() => {
+    if (initialSection !== "open") return;
+    const root = scrollRef.current;
+    const section = root?.querySelector<HTMLElement>('[data-slide="open"]');
+    if (!root || !section) return;
+    root.scrollTo({ top: root.scrollTop + section.getBoundingClientRect().top - root.getBoundingClientRect().top, behavior: "instant" });
+    leftHero.current = true;
+    section.focus({ preventScroll: true });
+  }, [initialSection]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -2610,6 +2629,7 @@ function Slide({ id, label, className, stagger, children }: {
       className={`ss-slide ss-snap${className ? " " + className : ""}`}
       data-slide={id}
       data-label={label}
+      tabIndex={id === "open" ? -1 : undefined}
       variants={pace}
       initial="hidden"
       whileInView="show"

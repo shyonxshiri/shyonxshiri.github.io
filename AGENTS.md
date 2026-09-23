@@ -1008,15 +1008,12 @@ re-tuned for it.
 **THE STEPPED REVEAL IS GONE** ("i still have that glitch effect style for pictures that
 load in"). See the note on `shotReveal`: `stepEase` quantized four animations into held
 jumps, and the WIPE went with the stepping, not just the stepping.
-**THE NAV HAS NO GROUND AT ALL. THE LINKS FLOAT ON THE PAGE** (user, 2026-09-09).
-There is no bar, no fill, no blur, no hairline and no shadow, and the `scrolled` /
-`frosted` state that used to switch a bar on past the top of Home is gone with them, as is
-the `ss-nav-light` rule that thickened it on the stacked About. **What the bar was doing is
-now done by the GLYPHS**, see the halo below. Note the `nav` element is `pointer-events:
-none` with the `ul` taking it back: it is a full-width fixed box with nothing drawn in most
-of it, and the deck underneath is scrolled and dragged.
-The history below is kept because its reasoning still applies to anything that tries to
-derive a bar from what sits behind it.
+**THE NAV IS A FLOATING GLASS CAPSULE.** The user rejected the full-width flat header.
+`.ss-site-header` is 54px tall on phones, inset 12px from the sides and 10px from the top
+plus safe area. On desktop it hugs the navigation at the top right. A rounded rim, layered
+translucent highlights, 18px backdrop blur, and a soft shadow give it depth. About uses light
+glass; the other pages use dark glass. Buttons retain 44px targets. No full-width bar.
+The notes below describe the earlier floating navigation and its contrast tuning.
 **IT WAS A FROSTED BAR FOR ONE DAY.** That deleted `mix-blend-mode: difference`, About's
 wide-layout special case, AND the opener's hand-solved nav band, all three of which existed
 only because the nav had no ground of its own and had to be derived from whatever pixel sat
@@ -1606,12 +1603,29 @@ cue gets real padding instead, being a lone glyph. The hero now uses two named b
 real 46px targets. Keyboard focus is restored by the scoped `#root button:focus-visible` rule;
 the old index.css reset otherwise removes it with `!important`.
 
-**About is a single light biographical page.** Studio portrait on #f1eff2 with dark text.
+**About is a light biographical page with a personal film below the portrait.** Studio portrait on #f1eff2 with dark text.
+The “LEGO stop motion” section presents the specific film as the starting point of Shyon’s
+development across creative mediums and technologies, leading to the work in this portfolio and
+the interactive LEGO environment. It was made out of enjoyment, but must not be reduced to
+“just for fun,” a minor experiment, or a nostalgic aside. Explain its significance in natural,
+professional first-person prose. Avoid poetic origin-story slogans, “my first creative work,”
+and repeated discipline lists. This is the dedicated place for that context, not a site-wide refrain.
+`my-first-lego-movie.mp4` is a lossless remux of Desktop/VIDEOS/My First Lego Movie.mov:
+54 seconds, 1920 × 1080, 3 fps, no audio. Its JPG poster is the opening frame.
+Keep the original pacing, click-to-play controls, and `preload="none"`; playback pauses off-screen
+and in hidden tabs. The film has an expandable visual description. Its confirmed date is October 15, 2013.
+The approved description begins “This LEGO stop-motion film was the starting point for the work
+I do today.” A small glass “View My LEGO Portfolio” button sits below the movie, not below the written
+description. It uses the shared
+capability gate: supported devices link to `/lego.html`; unsupported devices open Home directly
+at the unlocked LEGO overview, with keyboard focus moved to that section.
 Its responsive photo sources include the original 2184 × 3298 resolution for high-density screens,
 with smaller variants retained. Both portraits use the shared ss-portrait-detail SVG filter, a mild
 0.65px/35% unsharp mask applied at display time. Original faces and color treatments stay intact.
 Generative homepage enhancement was rejected because it altered facial detail; keep the original asset.
-The image edge fades over 15% of its width (12% vertically on phones); no dark shading overlay.
+The portrait keeps its left-edge fade on desktop. Its lower edge now blends into the page
+with a masked 6px blur and pale gradient. On phones, top, side, and bottom masks soften the
+rectangle. There is no divider before the film section and no dark shading overlay.
 The user rejected the duplicated “How I work” jump/heading and cross-page process/project summaries.
 About describes broad graphic design and technical experience, with education as a small supporting detail.
 Do not center any single project or AI evaluation job in this biography. NABU is on hold, not a current
