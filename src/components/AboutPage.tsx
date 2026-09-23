@@ -52,7 +52,6 @@ export default function AboutPage({ realmSupported, onViewOverview }: {
         </header>
         <div className="ss-about-film-stage">
           <div className="ss-about-film-meta">
-            <span>LEGO Stop Motion</span>
             <time dateTime="2013-10-15">October 15, 2013</time>
           </div>
           <figure className="ss-about-film-player">
