@@ -165,3 +165,6 @@ scratchpad/**/*.bak
 scratchpad/**/*.pass1
 scratchpad/**/*.new
 scratchpad/**/*.pre*
+
+# Local originals retained after importing desktop files into site assets.
+/source-archive/

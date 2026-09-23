@@ -67,7 +67,9 @@ Design direction: dark, minimal, editorial. Custom cursor, restrained motion, sy
 
 ## 3. Hard rules
 
-1. **Never use em dashes in copy.** Periods and commas. (Durable, repeatedly reinforced.) Use consistent title case for headings and button labels, sentence case and complete punctuation for prose. The About introduction is “I am a Graphic Designer and Developer.” Preserve official brand names and acronyms.
+1. **Keep project copy focused on the work, techniques, and purpose.** Background details
+   supplied in conversation are context, not automatically public copy. Omit unnecessary personal
+   details and do not repeat course metadata in descriptions. **Never use em dashes in copy.** Periods and commas. (Durable, repeatedly reinforced.) Use consistent title case for headings and button labels, sentence case and complete punctuation for prose. The About introduction is “I am a Graphic Designer and Developer.” Preserve official brand names and acronyms.
 2. **The public title is "My LEGO Portfolio"**, with "View My LEGO Portfolio" as the entry button. This replaces the former "Lego Realm" name.
    Descriptive copy must NOT lean on the name; state what it is (an interactive real-time 3D
    environment, Blender to browser). See the `site-copy-tone` memory.
@@ -83,6 +85,10 @@ Design direction: dark, minimal, editorial. Custom cursor, restrained motion, sy
 8. **Confirm before big or irreversible moves**: committing/pushing, deleting blend geometry,
    reshaping an approved look, switching what the homepage links to.
 9. **Deploy only when asked** (§4).
+10. **Clean up desktop source files after importing.** Once site assets are verified, move the
+    originals into `source-archive/` inside the project and verify the archived copies before
+    removing desktop copies. Keep this local archive out of the deployed assets and Git.
+    This is the standing workflow for files Shyon supplies for the site.
 
 ---
 
@@ -1656,6 +1662,45 @@ Verified page overflow at phone, tablet, short landscape, and desktop widths, in
 1023, 1099, and 1100px. Chapter headings stack below 1100px; their word spans inherit line-height
 and the Navigation row has explicit spacing. Check title/body rectangles, not only page overflow.
 Contact uses CSS overrides so resizing across 640px updates its links without remounting.
+
+**Masking coursework.** Masking and Color Grading Study is a 2024 ART 105, Advanced Digital
+Video project, matching Video Game Demo. The early-semester Premiere Pro/After Effects exercise
+combines three performances in Shyon’s former apartment. The supplied 6.5-second MOV has no
+audio; its site copy is H.264 MP4. Original: `source-archive/masking-project/Masking Project.mov`.
+Both portfolio lists include the project.
+
+**Electronics build comparisons.** HMI Sensor System and RGB Controller open with Original
+Build (IMG_4171.MOV and IMG_4174.MOV), then Redesigned Build, using arrow controls below
+the main-site video. `MediaItem.builds` defines the sequence; source-keyed selection resets
+when opening a different item, and closing/reopening resets to the original. Video source keys
+replace the player when switching builds. The Realm uses `builds` before its supporting extras.
+Gallery covers remain the finished builds. Originals are in `source-archive/electronics-development/`.
+
+**Electronics development media.** HMI Sensor System links to the speaker prototype demo
+from IMG_3322.MOV, compressed to H.264/AAC with audio preserved. RGB Controller links to
+IMG_3134.heic as Early Development. Both are hidden supporting entries in the main gallery
+and extras in the Realm. Originals live in `source-archive/electronics-development/`.
+IMG_2910.heic is also included at Shyon’s request as HMI Sensor System, Tools and Components,
+linked from HMI Sensor System and mirrored in the Realm. Its original is archived alongside
+the other electronics sources.
+
+**Glass coursework.** Both projects are from Spring 2023, ART 141, Topics in Advanced Glass
+(topic: Image Making), taught by Cassandra Straubing and confirmed by Shyon. Image 3130 is Wire-Framed Glass Vase: heated and blown within a
+wire frame Shyon made to constrain and guide its shape. Image 3127 is DNA-Inspired Kinetic Sculpture: liquid-metal-style tubular forms designed in
+Blender and 3D printed, connected by a DNA-inspired wire framework intended to guide a
+separately printed ball through the piece. Originals are archived in
+`source-archive/glass-projects/`. Both entries are mirrored in the Realm.
+
+**Apple accessory documentation.** Apple Accessory Concepts keeps its video as the primary
+asset, with two hidden supporting photo entries linked from its viewer: AirPods Max, In Blender
+and Phone and AirPods, In Blender. These document digital models on screen, not physical prints.
+The Realm carries the same photos as extras.
+
+**ART 102 progression.** Selected Projects includes Cow Abduction with three original renders,
+Venom Character Sculpt (the second-to-last assignment), and The Broken NPC (the GTA
+final animation). All share SJSU · ART 102 · 3D Modeling and Printing, 2024. Their descriptions
+connect the progression; the main site also links them through `relatedItems`. Keep the matching
+`CREATIVE` entries in `public/lego.html` in sync.
 
 **Project galleries and direct media previews are keyboard accessible.** Both contain focus
 and restore it on close. Gallery cards are native buttons; galleries scroll fully on short or
