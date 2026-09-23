@@ -49,12 +49,12 @@ export default function SelectedWork({ onOpen, onAllWork }: SelectedWorkProps) {
       className="ss-selected-work"
       aria-labelledby="ss-selected-heading"
       data-slide="selected"
-      data-label="Selected Work"
+      data-label="Selected Works"
     >
       <div className="ss-selected-inner">
         <div className="ss-selected-header">
           <div>
-            <h2 id="ss-selected-heading">Selected Work.</h2>
+            <h2 id="ss-selected-heading">Selected Works.</h2>
           </div>
           <button className="ss-selected-all" type="button" onClick={onAllWork}>
             All Work

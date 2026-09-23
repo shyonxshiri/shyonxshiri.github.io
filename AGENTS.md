@@ -173,8 +173,8 @@ with a sine-wandering width; `RV_CORE` are the rectangles the big water plates a
 must be re-derived if the plate list changes. Shoreline is the same 1x1 mosaic. The bridge is the
 only crossing. 175 MOC plant kits are instanced through the whole channel.
 
-**Structures and their portals.** Coffee shop → **Client Work**; run-down cottage →
-**Selected Projects**; modern house (mansion) → **About**; the blue crystal on the ruins balcony →
+**Structures and their portals.** Coffee shop → **Freelance Projects**; run-down cottage →
+**Selected Works**; modern house (mansion) → **About**; the blue crystal on the ruins balcony →
 **NABU**. The ruins itself has no ground-floor portal: you climb its stairs to reach the crystal
 (the doorway teleporter that used to shortcut that climb is disabled behind `RUINS_TP=false`;
 its zones and targets are intact if it is ever wanted back).
@@ -1358,11 +1358,11 @@ the paragraph, no sideways scroll), `heroname_rm.cjs` (reduced motion). `verify_
 **Homepage reference pass.** The approved portrait, font and name animation remain. The
 hero has named "View my work" and "Explore the Lego Realm" buttons, plus a full description of
 the interactive environment on every device. The latter scrolls to the Realm introduction;
-actual entry still uses the capability gate at the end. The down cue goes to Selected Work.
+actual entry still uses the capability gate at the end. The down cue goes to Selected Works.
 `SelectedWork.tsx` sits immediately after the hero and shows Everly, NABU and the RGB controller.
 Each opens an existing media item by its exact title, using `openMediaByTitle` in App.
 
-**Home has seven sections.** Hero, Selected Work, then the five existing Realm storyboard
+**Home has seven sections.** Hero, Selected Works, then the five existing Realm storyboard
 sections: opener, map, why, workshop and closer. The rail discovers `[data-slide]` elements, so
 its count follows automatically. Desktop snapping is proximity, with free scrolling on narrow
 or short screens; sections can grow beyond one viewport without clipping their content.
@@ -1459,7 +1459,7 @@ takes the place of what were the "What it is" chapter (over the figure and the n
 and a "Portals" frame row (the shop and the crystal). The copy on that chapter was already
 describing a legend, four structures and the category of work each one stands for, and the
 deck opens on an aerial with all four in it, so the shot comes back close with the buildings
-pinned on it. `REALM_MAP` carries the four: shop → Client Work, cottage → Personal
+pinned on it. `REALM_MAP` carries the four: shop → Freelance Projects, cottage → Personal
 Projects, mansion → About, ruins → NABU, each with the in-engine still those two slides were
 showing anyway. `story_aerial_town.jpg` is the ONLY aerial with all four in frame;
 `story_aerial_sunset.jpg` has no coffee shop in it and cannot be substituted.
@@ -1696,7 +1696,7 @@ asset, with two hidden supporting photo entries linked from its viewer: AirPods 
 and Phone and AirPods, In Blender. These document digital models on screen, not physical prints.
 The Realm carries the same photos as extras.
 
-**ART 102 progression.** Selected Projects includes Cow Abduction with three original renders,
+**ART 102 progression.** Selected Works includes Cow Abduction with three original renders,
 Venom Character Sculpt (the second-to-last assignment), and The Broken NPC (the GTA
 final animation). All share SJSU · ART 102 · 3D Modeling and Printing, 2024. Their descriptions
 connect the progression; the main site also links them through `relatedItems`. Keep the matching
@@ -1874,7 +1874,7 @@ card holds 650px at every height, nothing is cut, and both ends stay reachable w
 container's own 40px padding intact at each. Tall windows are untouched, still centred with no
 scrollbar. Confirmed IN ENGINE at a 660px window too (`scratchpad/about_panel.cjs`).
 
-**Naming trap:** the Work category displays as "Selected Projects" but its internal id is still
+**Naming trap:** the Work category displays as "Selected Works" but its internal id is still
 `creative-projects`, which keys the theme map, modal branches and portal lookups. Never rename the id.
 
 ---

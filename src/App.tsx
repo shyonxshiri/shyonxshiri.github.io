@@ -44,7 +44,7 @@ type Project = {
 const PROJECTS: Project[] = [
   {
     id: "creative-projects",
-    title: "Selected Projects",
+    title: "Selected Works",
     tag: "Design, 3D & Craft",
     img: "/assets/3D_Models_Cover_Pic.jpg",
     size: "tall",
@@ -89,7 +89,7 @@ const PROJECTS: Project[] = [
   },
   {
     id: "professional-services",
-    title: "Client Work",
+    title: "Freelance Projects",
     tag: "Web & Design",
     img: "/assets/Everly_Cover_Image-1280.webp",
     size: "wide",
@@ -2047,7 +2047,7 @@ function HomePage({ onNavigate, intro, initialSection }: {
               <StoryChapter
                 pair
                 kicker="Navigation"
-                body="The coffee shop opens client work, the cottage holds selected projects, and the house leads to About. NABU is at the crystal above the ruins."
+                body="The coffee shop opens freelance projects, the cottage holds selected works, and the house leads to About. NABU is at the crystal above the ruins."
               />
               <RealmMap />
               <div className="ss-map-hint">Select a building to preview it.</div>
@@ -2385,10 +2385,10 @@ const sbFig: Variants = {                         // a figure rises into place
    and only the name is capitalised, "the Cottage", because "The Cottage" mid sentence
    reads as a broken sentence rather than as a proper noun. */
 const REALM_MAP = [
-  { id: "shop", name: "The Coffee Shop", cat: "Client Work", x: 18.2, y: 26.0, flip: false,
+  { id: "shop", name: "The Coffee Shop", cat: "Freelance Projects", x: 18.2, y: 26.0, flip: false,
     src: "/assets/story/story_shop_evening.jpg",
-    line: "Commissioned client work. Full-stack websites, brand and print work for small businesses, and concept visualization." },
-  { id: "cottage", name: "The Cottage", cat: "Selected Projects", x: 53.5, y: 25.0, flip: false,
+    line: "Commissioned freelance projects. Full-stack websites, brand and print work for small businesses, and concept visualization." },
+  { id: "cottage", name: "The Cottage", cat: "Selected Works", x: 53.5, y: 25.0, flip: false,
     src: "/assets/story/story_sunset.jpg",
     line: "Coursework and independent projects in 3D, physical objects, electronics, and image-making." },
   { id: "house", name: "The Modern House", cat: "About", x: 93.5, y: 38.0, flip: true,

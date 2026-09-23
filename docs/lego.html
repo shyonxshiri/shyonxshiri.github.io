@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>My LEGO Portfolio · Shyon Shiri</title>
-<meta name="description" content="Shyon Shiri's portfolio, built in LEGO. Walk between buildings to view selected projects, client work, and NABU.">
+<meta name="description" content="Shyon Shiri's portfolio, built in LEGO. Walk between buildings to view selected works, freelance projects, and NABU.">
 <meta property="og:title" content="My LEGO Portfolio">
 <meta property="og:description" content="Shyon Shiri's portfolio, rebuilt in LEGO. Browse projects and learn about the designer through an interactive 3D site.">
 <meta property="og:type" content="website">
@@ -5545,10 +5545,10 @@
         if(g.userData.frameMat && !p.frame) g.userData.frameMat.color.copy(strongColor(tx.image));
       }, undefined, e=>console.warn('panel image failed', p.img)); }); }
   const PORTALS={
-    professional:{ label:'Client Work', projects:PROFESSIONAL, cells:shopCells, zone:(x,z)=>shopPad(x,z,0.2),   // the WHOLE grey pad prompts, patio included, not just arm's reach of a wall
+    professional:{ label:'Freelance Projects', projects:PROFESSIONAL, cells:shopCells, zone:(x,z)=>shopPad(x,z,0.2),   // the WHOLE grey pad prompts, patio included, not just arm's reach of a wall
       door:new THREE.Vector3(-19.95,0,-22.06), eye:new THREE.Vector3(-19.95,1.75,-21.86), look:new THREE.Vector3(-19.95,1.5,-26.56),
       exit:new THREE.Vector3(-19.95,0,-18.56), yaw:0 },          // step back out facing the world (+z)
-    creative:{ label:'Selected Projects', projects:CREATIVE, cells:null, doorR:2.6,   // front-door circle only: the house's wall cells would let you enter from the back
+    creative:{ label:'Selected Works', projects:CREATIVE, cells:null, doorR:2.6,   // front-door circle only: the house's wall cells would let you enter from the back
       door:new THREE.Vector3(20.69,0,-21.40), eye:new THREE.Vector3(20.69,1.75,-22.53), look:new THREE.Vector3(20.69,1.5,-27.43),
       exit:new THREE.Vector3(20.69,0,-19.43), yaw:0 },           // step back out onto the path (north of the bridge), facing the walk (+z)
     // ── THE MANSION PROMPTS AT ITS FRONT DOOR AND NOWHERE ELSE (user, 2026-09-02).
