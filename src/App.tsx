@@ -11,6 +11,7 @@ type MediaItem = {
   type: "image" | "video";
   src: string;
   poster?: string;
+  playbackRate?: number;
   title?: string;
   desc?: string;
   year?: number;
@@ -25,6 +26,7 @@ type MediaItem = {
   aspectRatio?: string;
   pages?: string[];
   pageLabels?: string[];
+  comparisonCredit?: string;
   builds?: { src: string; poster: string; label: string; aspectRatio: string }[];
 };
 
@@ -56,17 +58,17 @@ const PROJECTS: Project[] = [
     // nothing can fit. X is inert: the card can never be taller than the file.
     objectPosition: "50% 37%",
     media: [
-      { type: "image", src: "/assets/DSGD_Resume_Design.png", title: "Résumé Design", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "1069/795", desc: "A unique résumé and coordinating business card designed from scratch, with a consistent visual identity across both pieces.", pages: ["/assets/resume-design/resume.png", "/assets/resume-design/business-card-front.png", "/assets/resume-design/business-card-back.png"], pageLabels: ["Résumé", "Business Card, Front", "Business Card, Back"] },
+      { type: "image", src: "/assets/resume-design/business-card-mockup.jpg", title: "Résumé Design", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "2092/1392", desc: "A unique résumé and coordinating business card designed from scratch, with a consistent visual identity across both pieces. A Photoshop mockup presents the cards in a realistic setting.", pages: ["/assets/resume-design/resume.png", "/assets/resume-design/business-card-front.png", "/assets/resume-design/business-card-back.png", "/assets/resume-design/business-card-mockup.jpg"], pageLabels: ["Résumé", "Business Card, Front", "Business Card, Back", "Business Card Mockup"] },
       { type: "image", src: "/assets/procrastination-booklet/page-01.png", title: "Procrastination Booklet", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "1786/2200", desc: "A final project for my 2022 DSGD course at SJSU. I drew and developed the entire booklet from scratch in Adobe Illustrator, combining original illustrations, typography, and page layouts.", pages: Array.from({ length: 10 }, (_, i) => `/assets/procrastination-booklet/page-${String(i + 1).padStart(2, "0")}.png`) },
       { type: "image", src: "/assets/Beta_Theta_Pi_Rush.svg", title: "Rush Event Illustration", credit: "Independent project · Beta Theta Pi", year: 2023, desc: "An illustration drawn from scratch for a Beta Theta Pi rush event in 2023, using the Lyrical Lemonade logo as a visual reference.", aspectRatio: "364/556" },
-      { type: "image", src: "/assets/Cow_Abduction_1.jpg", title: "Cow Abduction", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "One of my first independently modeled 3D scenes: a cow suspended beneath a flying saucer. This early project marks the starting point of my progress in ART 102, from simple forms to my Venom sculpt, then to my final animation, The Broken NPC.", aspectRatio: "1/1", pages: ["/assets/Cow_Abduction_1.jpg", "/assets/Cow_Abduction_2.jpg", "/assets/Cow_Abduction_3.jpg"], pageLabels: ["Three-Quarter View", "Overhead View", "Front View"], relatedItems: ["Venom Character Sculpt", "The Broken NPC"] },
-      { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "My final project for ART 102: a 3D animation depicting in-game rendering errors from GTA San Andreas, created entirely in Blender. It brings together the modeling and rendering skills I developed through early work like Cow Abduction and the later Venom sculpt.", aspectRatio: "16/9", relatedItems: ["Cow Abduction", "Venom Character Sculpt"] },
+      { type: "image", src: "/assets/Cow_Abduction_1.jpg", title: "Cow Abduction", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A Blender scene of a cow suspended beneath a flying saucer, created as an opening exercise to demonstrate my existing 3D skills. The project established a baseline in modeling, composition, and lighting for the studies that followed.", aspectRatio: "1/1", pages: ["/assets/Cow_Abduction_1.jpg", "/assets/Cow_Abduction_2.jpg", "/assets/Cow_Abduction_3.jpg"], pageLabels: ["Three-Quarter View", "Overhead View", "Front View"], relatedItems: ["Venom Character Sculpt", "The Broken NPC"] },
+      { type: "video", src: "/assets/Broken_NPC.MP4", poster: "/assets/Broken_NPC.jpg", title: "The Broken NPC", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A final Blender animation depicting in-game rendering errors from GTA San Andreas. The project brings together the modeling foundations demonstrated in Cow Abduction, the detailed sculpting developed through Venom, and the camera animation and rendering explored in BMW Street Render.", aspectRatio: "16/9", relatedItems: ["Cow Abduction", "Venom Character Sculpt", "BMW Street Render"] },
       { type: "video", src: "/assets/Blender_Case_Video.mp4", poster: "/assets/Blender_Case.jpg", title: "Apple Accessory Concepts", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "Concept designs for Apple accessory cases, modeled and rendered in Blender.", aspectRatio: "16/9", relatedItems: ["AirPods Max, In Blender", "Phone and AirPods, In Blender", "Custom AirPods Case", "Custom Phone Case"] },
       { type: "image", src: "/assets/AirPods_Max_In_Blender.jpg", title: "AirPods Max, In Blender", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A photo I took of the AirPods Max accessory concept in Blender after designing it. The viewport shows the sculptural shell fitted around the ear cup.", aspectRatio: "3/4", hidden: true, relatedItems: ["Apple Accessory Concepts", "Phone and AirPods, In Blender"] },
       { type: "image", src: "/assets/Apple_Accessories_In_Blender.jpg", title: "Phone and AirPods, In Blender", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A classroom photo I took of the phone and AirPods accessory concepts in Blender after designing them. It documents the digital models in my workspace.", aspectRatio: "3/4", hidden: true, relatedItems: ["Apple Accessory Concepts", "AirPods Max, In Blender"] },
       { type: "video", src: "/assets/Masking_And_Color_Grading.mp4", poster: "/assets/Masking_And_Color_Grading.jpg", title: "Masking and Color Grading Study", credit: "SJSU · ART 105 · Advanced Digital Video", year: 2024, desc: "A compositing study combining three separate performances into one scene through masking and color grading in Adobe Premiere Pro and After Effects.", aspectRatio: "16/9" },
       { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", credit: "SJSU · ART 105 · Advanced Digital Video", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Venom.webp", title: "Venom Character Sculpt", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A detailed study of Venom’s head, sculpted and rendered in Blender with an emphasis on form, surface materials, and lighting. Completed as the penultimate project in ART 102, the sculpt bridges the early modeling exercises in Cow Abduction and the final animation, The Broken NPC.", aspectRatio: "16/9", relatedItems: ["Cow Abduction", "The Broken NPC"] },
+      { type: "image", src: "/assets/Venom.webp", title: "Venom Character Sculpt", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A sculpt of Venom’s head, modeled and rendered in Blender to develop greater detail and precision. Building on the opening Cow Abduction exercise, the project focused on more intricate forms, surface materials, and lighting.", aspectRatio: "16/9", relatedItems: ["Cow Abduction", "BMW Street Render", "The Broken NPC"] },
       { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", credit: "Started at SJSU · Independently developed", year: 2025, desc: "An accessory design developed beyond its original coursework into a finished 3D-printed case. An open lattice wraps around the camera and side buttons.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Concepts"] },
       { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom AirPods Case", credit: "Started at SJSU · Independently developed", year: 2026, desc: "An accessory design developed beyond its original coursework into a finished 3D-printed sleeve. An open lattice wraps an AirPods Pro case, leaving the status light and hinge accessible.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Concepts"] },
       { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Ultrasonic Sensor, Front View", year: 2024, desc: "Front of the ultrasonic sensor enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D-printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Ultrasonic Sensor, Back View", "Ultrasonic Sensor and RGB Controller", "HMI Sensor System"] },
@@ -75,7 +77,7 @@ const PROJECTS: Project[] = [
       { type: "image", src: "/assets/New_LED_Box_Back.jpg", title: "RGB Box, Back View", year: 2024, desc: "Back of the RGB controller, with the potentiometer, mode button, and toggle switch mounted through the top panel.", aspectRatio: "4/3", hidden: true, relatedItems: ["RGB Box, Front View", "Ultrasonic Sensor and RGB Controller", "RGB Controller"] },
       { type: "image", src: "/assets/Programming_Cover_Pic.jpg", title: "Ultrasonic Sensor and RGB Controller", year: 2024, desc: "Both enclosures side by side. Each was modeled around its own board, display, and controls, then 3D printed and finished by hand.", aspectRatio: "4/3", hidden: true, relatedItems: ["HMI Sensor System", "RGB Controller"] },
       { type: "image", src: "/assets/Max_Pic.JPG", title: "Studio Portrait", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "Caught mid-laugh on a gelled teal backdrop, with the background light hot behind the head so the subject separates from it.", aspectRatio: "2/3" },
-      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "A hand-drawn wordmark set over a cropped apparel shot, chains and acid-washed corduroy, framed close so the type sits on the garment rather than beside it.", aspectRatio: "1/1" },
+      { type: "image", src: "/assets/Photography_1.jpg", title: "Studio Photography", credit: "SJSU · PHOT 121 · Introduction to Studio Lighting", year: 2022, desc: "A hand-drawn wordmark set over a cropped apparel shot, chains and acid-washed corduroy, framed close so the type sits on the garment rather than beside it.", aspectRatio: "1/1" },
       { type: "video", src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", title: "HMI Sensor System", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "An ultrasonic sensing device with an LCD, speaker, and 3D-printed enclosure that translates sensor readings into visual and audio feedback.", aspectRatio: "4/3", builds: [{ src: "/assets/HMI_Sensor_Original_Build.mp4", poster: "/assets/HMI_Sensor_Original_Build.jpg", label: "Original Build", aspectRatio: "16/9" }, { src: "/assets/New_Radar_Sensor.mp4", poster: "/assets/New_Radar_Sensor_front.jpg", label: "Redesigned Build", aspectRatio: "4/3" }], relatedItems: ["HMI Sensor System, Tools and Components", "HMI Sensor System, Speaker Development", "Ultrasonic Sensor, Front View", "Ultrasonic Sensor, Back View", "Ultrasonic Sensor and RGB Controller"] },
       { type: "video", src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", title: "RGB Controller", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "An LED controller with physical controls and a 3D-printed enclosure, designed around the electronics inside.", aspectRatio: "4/3", builds: [{ src: "/assets/RGB_Controller_Original_Build.mp4", poster: "/assets/RGB_Controller_Original_Build.jpg", label: "Original Build", aspectRatio: "16/9" }, { src: "/assets/New_LED_Box.mp4", poster: "/assets/New_LED_Box_Front.jpg", label: "Redesigned Build", aspectRatio: "4/3" }], relatedItems: ["RGB Controller, Early Development", "RGB Box, Front View", "RGB Box, Back View", "Ultrasonic Sensor and RGB Controller"] },
       { type: "image", src: "/assets/Radar_Tools_And_Components.jpg", title: "HMI Sensor System, Tools and Components", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "Tools and electronic components used during development of the ultrasonic distance sensor system, including breadboards, soldering equipment, a multimeter, and wiring supplies.", aspectRatio: "3024/2266", hidden: true, relatedItems: ["HMI Sensor System", "HMI Sensor System, Speaker Development"] },
@@ -83,8 +85,13 @@ const PROJECTS: Project[] = [
       { type: "image", src: "/assets/RGB_Controller_Development.jpg", title: "RGB Controller, Early Development", credit: "SJSU · ART 106 · The Human Machine Interface", year: 2024, desc: "An early stage of the RGB controller project, showing the microcontroller and LED on a breadboard alongside wiring, components, and assembly tools.", aspectRatio: "3/4", hidden: true, relatedItems: ["RGB Controller"] },
       { type: "image", src: "/assets/Glass_Project_3127.jpg", title: "DNA-Inspired Kinetic Sculpture", credit: "SJSU · ART 141 · Topics in Advanced Glass", year: 2023, desc: "A DNA-inspired sculpture combining liquid-metal forms designed in Blender and 3D printed with a connecting wire framework. The printed forms create a tubular path for a separately printed ball, with the structure designed to guide its movement through the piece.", aspectRatio: "3/4" },
       { type: "image", src: "/assets/Glass_Project_3130.jpg", title: "Wire-Framed Glass Vase", credit: "SJSU · ART 141 · Topics in Advanced Glass", year: 2023, desc: "A glass vase shaped through heating and glassblowing within a handmade wire frame. The frame served as a boundary for the expanding glass, guiding the form of the vessel.", aspectRatio: "3/4", scale: 1.15 },
-      { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, Not Consumer", credit: "SJSU · ART 68 · Beginning Sculpture", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded, and finished.", aspectRatio: "5/4" },
+      { type: "image", src: "/assets/Shyon_Sculpture.jpg", title: "Product, Not Consumer", credit: "SJSU · ART 68 · Beginning Sculpture", year: 2024, desc: "Hand-fabricated steel sculpture referencing consumer tech culture, welded, ground, sanded, and finished.", aspectRatio: "5/4", relatedItems: ["Before Assembly"] },
+      { type: "image", src: "/assets/Product_Not_Consumer_Before.jpg", title: "Before Assembly", credit: "SJSU · ART 68 · Beginning Sculpture", year: 2024, desc: "Steel components laid out before welding and sculpting the finished piece.", aspectRatio: "3/4", hidden: true, relatedItems: ["Product, Not Consumer"] },
       { type: "image", src: "/assets/Adverstisement_Project.jpg", title: "Advertisement Project", credit: "SJSU · PHOT 125 · Advanced Photographic Media", year: 2024, desc: "A spec print advertisement for a fictional shaver brand. The rotary shaver is lit as the hero and its shadow runs back to the bloodied cartridge razor it replaces.", aspectRatio: "16/9" },
+      { type: "video", src: "/assets/BMW_Street_Render.mp4", poster: "/assets/BMW_Street_Render.jpg", playbackRate: 0.75, title: "BMW Street Render", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A detailed BMW M3 street scene combining modeling with camera animation, shot composition, and rendering. I built the car and the entire environment from scratch, extending the focus on detail into an animated scene.", aspectRatio: "16/9", relatedItems: ["Venom Character Sculpt", "The Broken NPC"] },
+      { type: "image", src: "/assets/Dark_Lane_Demo_Tapes_Homage.jpg", title: "Dark Lane Demo Tapes Homage", credit: "Independent Project", year: 2023, desc: "A personal Photoshop tribute to Drake’s Dark Lane Demo Tapes mixtape cover, reimagined in LEGO form. The image recreates the cover’s hooded portrait and dark atmosphere.", aspectRatio: "1179/1182", pages: ["/assets/Dark_Lane_Demo_Tapes_Homage.jpg", "/assets/Dark_Lane_Demo_Tapes_Original.jpg"], pageLabels: ["LEGO Homage", "Side-by-Side Comparison"], comparisonCredit: "Original cover: Drake, Dark Lane Demo Tapes. LEGO homage: Shyon Shiri." },
+      { type: "image", src: "/assets/Photoshop_Experiment_1.jpg", title: "First Photoshop Renditions", credit: "SJSU · ART 74 · Introduction to Digital Media", year: 2020, desc: "My first Photoshop experiments, combining photographs through layering, repetition, color shifts, and distortion. The two compositions explore fragmented landscapes and altered cityscapes.", aspectRatio: "7/5", pages: ["/assets/Photoshop_Experiment_1.jpg", "/assets/Photoshop_Experiment_2.jpg"], pageLabels: ["Landscape Collage", "Cityscape Study"] },
+      { type: "image", src: "/assets/early-portfolio/home.jpg", title: "Early Portfolio Website", credit: "SJSU · ART 101 · Digital Media Art", year: 2022, desc: "An early personal portfolio built in Google Sites to present creative coding, 3D, and music projects while learning GitHub.", aspectRatio: "2732/2048", pages: ["/assets/early-portfolio/home.jpg", "/assets/early-portfolio/creative-coding.jpg", "/assets/early-portfolio/coding-study-1.jpg", "/assets/early-portfolio/coding-study-2.jpg"], pageLabels: ["Homepage", "Creative Coding", "Coding Study 1", "Coding Study 2"] },
     ],
   },
   {
@@ -1186,6 +1193,12 @@ const GLOBAL_CSS = `
     }
   }
 
+  .ss-art-comparison { width: 100%; max-height: 100%; display: flex; flex-direction: column; gap: 16px; }
+  .ss-art-comparison-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; min-height: 0; }
+  .ss-art-comparison-item { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+  .ss-art-comparison-image { aspect-ratio: 1; min-height: 0; }
+  .ss-art-comparison-item p { margin: 0; text-align: center; font-size: 13px; color: var(--white); }
+  .ss-art-comparison-credit { margin: 0; text-align: center; font-size: 12px; line-height: 1.5; color: var(--mid); }
   .ss-booklet-reader { width: 100%; height: 100%; display: flex; flex-direction: column; min-height: 0; }
   .ss-booklet-track { display: flex; flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; }
   .ss-booklet-page { flex: 0 0 100%; min-width: 0; height: 100%; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
@@ -3532,7 +3545,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
 /* ─────────────────────────────────────────────────────────────
    MEDIA VIEWER (fullscreen single item)
 ───────────────────────────────────────────────────────────── */
-function BookletReader({ pages, title, labels }: { pages: string[]; title?: string; labels?: string[] }) {
+function BookletReader({ pages, title, labels, comparisonCredit }: { pages: string[]; title?: string; labels?: string[]; comparisonCredit?: string }) {
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const pageIndex = useRef(0);
@@ -3552,7 +3565,19 @@ function BookletReader({ pages, title, labels }: { pages: string[]; title?: stri
     <div ref={track} className="ss-booklet-track" tabIndex={0} role="region" aria-label={`${title}, scroll through ${labels ? "pieces" : "pages"}`}
       onScroll={e => { pageIndex.current = Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth); setIndex(pageIndex.current); }}
       onKeyDown={e => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); go(index + (e.key === "ArrowRight" ? 1 : -1)); } }}>
-      {pages.map((src, i) => <figure key={src} className="ss-booklet-page"><img src={src} alt={labels?.[i] ? `${title}, ${labels[i]}` : `${title}, page ${i + 1} of ${pages.length}`} loading={i ? "lazy" : "eager"} /></figure>)}
+      {pages.map((src, i) => <figure key={src} className="ss-booklet-page">
+        {comparisonCredit && i === 1 ? <div className="ss-art-comparison">
+          <div className="ss-art-comparison-pair">
+            {[{ src, label: "Original Cover" }, { src: pages[0], label: "LEGO Homage" }].map(art =>
+              <div className="ss-art-comparison-item" key={art.label}>
+                <div className="ss-art-comparison-image"><img src={art.src} alt={`${title}, ${art.label}`} loading="lazy" /></div>
+                <p>{art.label}</p>
+              </div>
+            )}
+          </div>
+          <p className="ss-art-comparison-credit">{comparisonCredit}</p>
+        </div> : <img src={src} alt={labels?.[i] ? `${title}, ${labels[i]}` : `${title}, page ${i + 1} of ${pages.length}`} loading={i ? "lazy" : "eager"} />}
+      </figure>)}
     </div>
     <div className="ss-booklet-controls">
       <button onClick={() => go(index - 1)} disabled={index === 0} aria-label={labels ? "Previous piece" : "Previous booklet page"}>←</button>
@@ -3618,10 +3643,11 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
           {/* Media */}
           <div className={`ss-viewer-canvas${displayedItem.pages ? " ss-booklet-media" : ""}`}
             style={{ "--asset-ratio": displayedItem.aspectRatio || "4/3" } as React.CSSProperties}>
-            {displayedItem.pages ? <BookletReader key={displayedItem.src} pages={displayedItem.pages} title={displayedItem.title} labels={displayedItem.pageLabels} /> : displayedItem.type === "video" ? (
+            {displayedItem.pages ? <BookletReader key={displayedItem.src} pages={displayedItem.pages} title={displayedItem.title} labels={displayedItem.pageLabels} comparisonCredit={displayedItem.comparisonCredit} /> : displayedItem.type === "video" ? (
               <video
                 src={displayedItem.src}
                 poster={displayedItem.poster}
+                onLoadedMetadata={e => { e.currentTarget.defaultPlaybackRate = displayedItem.playbackRate ?? 1; e.currentTarget.playbackRate = displayedItem.playbackRate ?? 1; }}
                 controls autoPlay muted playsInline
                 key={displayedItem.src}
                 style={{ 

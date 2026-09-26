@@ -1684,6 +1684,44 @@ IMG_2910.heic is also included at Shyon’s request as HMI Sensor System, Tools 
 linked from HMI Sensor System and mirrored in the Realm. Its original is archived alongside
 the other electronics sources.
 
+**BMW Street Render.** `0001-0250.MP4` is a 2024 ART 102 study of camera movement,
+shot composition, and scene rendering in preparation for the full animation, The Broken NPC. Shyon corrected its
+earlier attribution as an independent project. He created the car model, environment, layout,
+and entire scene from scratch. Both Selected Works views include the 1080p video.
+Both viewers play this video at 0.75× speed through its `playbackRate` setting.
+The site MP4 retains the original H.264 stream with fast-start metadata; original archived at
+`source-archive/bmw-street-render/0001-0250.MP4`.
+
+**Dark Lane Demo Tapes Homage.** `Untitled (5).JPG` is a self-directed Photoshop project
+from 2023, recreating Drake’s mixtape cover in LEGO form. It is not coursework. Included in
+both Selected Works lists; original: `source-archive/dark-lane-homage/Untitled (5).JPG`.
+The homage opens first, then a labeled side-by-side comparison with the supplied original cover.
+`comparisonCredit` enables the paired second page in the main viewer; the Realm uses a comparison extra.
+The supplied reference is archived as `original-cover.png` in the same directory.
+
+**Early Portfolio Website.** The 2022 Google Sites portfolio is ART 101, Digital Media Art,
+confirmed by Shyon after correcting an earlier ART 74 attribution. IMG_1570 is the cover/Homepage;
+IMG_1571 is Creative Coding. Two p5.js screenshots, `Image 10-8-22 at 12.07 PM.jpg` and
+`Image 10-8-22 at 12.08 PM.jpg`, follow as Coding Study 1 and 2. Both portfolio views match.
+Originals: `source-archive/early-portfolio/`.
+
+**First Photoshop Renditions.** IMG_0102 and IMG_0103 are Shyon’s first Photoshop images,
+from Fall 2020 ART 74, Introduction to Digital Media, confirmed by Shyon. They form one
+Selected Works project with Landscape Collage and Cityscape Study views, mirrored in the Realm.
+Originals: `source-archive/photoshop-experiments/`.
+
+**Studio Photography coursework.** The apparel and wordmark image (`Photography_1.jpg`)
+is PHOT 121, Introduction to Studio Lighting, taken in 2022. Both portfolio entries match.
+
+**Résumé project mockup.** Résumé Design includes Business Card Mockup as its fourth image,
+a Photoshop presentation of the cards in a realistic setting. It is also the gallery cover.
+The main-site viewer still starts with the résumé; the Realm uses the mockup first, then the résumé and card faces.
+Original: `source-archive/resume-design/IMG_1382.jpg`.
+
+**Sculpture process photo.** Product, Not Consumer links to a hidden supporting photo,
+Before Assembly, in Selected Works. The Realm includes the same photo as an extra.
+The finished sculpture stays the cover. The original HEIC is in `source-archive/sculpture-process/`.
+
 **Glass coursework.** Both projects are from Spring 2023, ART 141, Topics in Advanced Glass
 (topic: Image Making), taught by Cassandra Straubing and confirmed by Shyon. Image 3130 is Wire-Framed Glass Vase: heated and blown within a
 wire frame Shyon made to constrain and guide its shape. Image 3127 is DNA-Inspired Kinetic Sculpture: liquid-metal-style tubular forms designed in
@@ -1696,11 +1734,13 @@ asset, with two hidden supporting photo entries linked from its viewer: AirPods 
 and Phone and AirPods, In Blender. These document digital models on screen, not physical prints.
 The Realm carries the same photos as extras.
 
-**ART 102 progression.** Selected Works includes Cow Abduction with three original renders,
-Venom Character Sculpt (the second-to-last assignment), and The Broken NPC (the GTA
-final animation). All share SJSU · ART 102 · 3D Modeling and Printing, 2024. Their descriptions
-connect the progression; the main site also links them through `relatedItems`. Keep the matching
-`CREATIVE` entries in `public/lego.html` in sync.
+**ART 102 progression.** Cow Abduction assessed existing 3D skills; Venom Character Sculpt
+advanced detail; BMW Street Render combined detail with camera animation and scene rendering;
+The Broken NPC brought all the learned techniques together as the final animation. All share
+SJSU · ART 102 · 3D Modeling and Printing, 2024. Their descriptions and related-media links
+reflect that progression. Keep matching `CREATIVE` entries in `public/lego.html` in sync.
+ART 102 was a return to 3D after prior experience, not Shyon’s first exposure. Keep public copy
+focused on the work and techniques; do not add the earlier school history.
 
 **Project galleries and direct media previews are keyboard accessible.** Both contain focus
 and restore it on close. Gallery cards are native buttons; galleries scroll fully on short or
