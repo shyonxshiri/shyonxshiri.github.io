@@ -41,6 +41,12 @@
   #loader .bar{width:min(62vw,300px);height:10px;border-radius:99px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);overflow:hidden;}
   #loader .bar i{display:block;height:100%;width:0%;background:#38bdf8;border-radius:99px;transition:width .25s ease;}
   #loader .pct{font-weight:800;font-size:12px;letter-spacing:2px;color:#38bdf8;}
+  #loader.failed{z-index:70;}
+  #loader.failed .bar,#loader.failed .pct{display:none;}
+  #loader.failed .m{font-size:32px;}
+  #loader .message{max-width:32em;text-align:center;line-height:1.6;padding:0 20px;}
+  #loader .actions:not([hidden]){display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
+  #loader .actions button,#loader .actions a{padding:12px 18px;border:1px solid #38bdf8;border-radius:12px;background:#12151c;color:#f6f4ef;font:inherit;cursor:pointer;}
   #controls{position:fixed;inset:0;z-index:60;background:rgba(12,14,20,.82);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;transition:opacity .5s ease;}
   #controls.hide{opacity:0;pointer-events:none;}
   #controls .card{width:min(92vw,470px);padding:38px 44px 34px;background:rgba(26,29,38,.95);border:1px solid rgba(255,255,255,.12);border-radius:24px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45);}
@@ -202,7 +208,7 @@
 </head>
 <body>
   <div id="shopbg"></div>
-  <canvas id="c"></canvas>
+  <canvas id="c" tabindex="0" aria-label="LEGO portfolio. Use WASD to move and E to enter a building."></canvas>
   <div id="topright">
     <button id="snd" title="Sound" aria-label="Toggle sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
       stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/>
@@ -212,7 +218,10 @@
   </div>
   <div class="hint"><b>WASD</b> / arrows to walk &nbsp;·&nbsp; <b>Shift</b> run &nbsp;·&nbsp; <b>Space</b> hop &nbsp;·&nbsp; drag to look &nbsp;·&nbsp; <b>R</b> leave</div>
   <div id="cur"></div>
-  <div id="loader"><div class="wrap"><div class="m">BUILDING…</div><div class="bar"><i></i></div><div class="pct">0%</div></div></div>
+  <div id="loader"><div class="wrap"><div class="m" tabindex="-1">BUILDING…</div><div class="bar"><i></i></div><div class="pct">0%</div>
+    <p class="message" role="alert" hidden></p>
+    <div class="actions" hidden><button id="retryLoad">Try Again</button><a href="/">Back to Main Site</a></div>
+  </div></div>
   <div id="controls"><div class="card">
     <h2>CONTROLS</h2>
     <div class="row"><span>Move</span><b>WASD / Arrows</b></div>
@@ -1363,6 +1372,19 @@
   draco.setDecoderPath('/vendor/draco/');
   gltf.setDRACOLoader(draco);
   let loadedGround=false, loadedFig=false, groundTopY=0;
+  let essentialLoadFailed=false;
+  function failEssentialLoad(label){
+    essentialLoadFailed=true;
+    const loader=document.getElementById('loader');
+    loader.classList.remove('hide'); loader.classList.add('failed');
+    const title=loader.querySelector('.m'); title.textContent='Unable to Load';
+    const message=loader.querySelector('.message'); message.hidden=false;
+    message.textContent='The '+label+' could not load. Try again or browse the projects on the main site.';
+    loader.querySelector('.actions').hidden=false;
+    const controls=document.getElementById('controls'); controls.classList.add('hide'); controls.inert=true;
+    title.focus({preventScroll:true});
+  }
+  document.getElementById('retryLoad').addEventListener('click',()=>location.reload());
   // loading progress: item counts from the shared default manager; displayed percent only ever climbs
   const ldBar=document.querySelector('#loader .bar i'), ldPct=document.querySelector('#loader .pct'); let ldMax=0;
   // ── LOAD DIAGNOSTIC, silent unless something is actually wrong. The preview pane has no WebGL,
@@ -1374,7 +1396,7 @@
   const ldPend=new Set(), ldNote=document.createElement('div');
   ldNote.style.cssText='margin-top:16px;max-width:82vw;font:11px/1.6 ui-monospace,SFMono-Regular,monospace;'+
     'color:#ff9d9d;text-align:left;white-space:pre-wrap;word-break:break-word';
-  document.getElementById('loader').appendChild(ldNote);
+  document.querySelector('#loader .wrap').appendChild(ldNote);
   const ldSay=t=>{ ldNote.textContent += (ldNote.textContent?'\n':'') + t; };
   THREE.DefaultLoadingManager.onStart=(u)=>ldPend.add(u);
   THREE.DefaultLoadingManager.onProgress=(u,l,t)=>{ ldPend.delete(u);
@@ -1383,11 +1405,13 @@
   THREE.DefaultLoadingManager.onError=(u)=>ldSay('load error: '+u);
   window.addEventListener('error', e=>ldSay('js error: '+(e.message||e.error)+'  @ '+(e.filename||'').split('/').pop()+':'+e.lineno));
   window.addEventListener('unhandledrejection', e=>{ const r=e.reason; ldSay('unhandled: '+((r&&(r.message||r.stack))||r)); });
-  setTimeout(()=>{ if(document.getElementById('loader').classList.contains('hide')) return;
+  setTimeout(()=>{ if(essentialLoadFailed || document.getElementById('loader').classList.contains('hide')) return;
     ldSay('stalled at '+ldMax+'%  ground:'+(loadedGround?'ok':'waiting')+'  figure:'+(loadedFig?'ok':'waiting')
       +'\nstill loading: '+([...ldPend].map(u=>u.split('/').pop()).join(', ')||'nothing outstanding')
       +'\nif nothing is outstanding the dev server went down: restart it and hard reload'); }, 12000);
-  function ready(){ if(loadedGround && loadedFig) setTimeout(()=>document.getElementById('loader').classList.add('hide'), 300); }
+  function ready(){ if(loadedGround && loadedFig && !essentialLoadFailed) setTimeout(()=>{
+    if(!essentialLoadFailed) document.getElementById('loader').classList.add('hide');
+  }, 300); }
 
   // GROUND — fine 2x2 plates (0.739u). GREEN grass is the base; GREY is used for a 6-stud
   // sidewalk loop connecting the buildings, and for a foundation pad under each building.
@@ -2378,7 +2402,7 @@
       }, undefined, e=>console.warn('gravel load failed', e));
     })();
     loadedGround=true; ready();
-  }, undefined, e=>{ console.warn('ground load failed', e); loadedGround=true; ready(); });
+  }, undefined, e=>{ console.warn('ground load failed', e); failEssentialLoad('ground'); });
 
   // ── MY LEGO SUPER HERO ────────────────────────────────────────────────────────────────
   // A second BODY that swaps in over the figure: the whole minifig below the neck (torso,
@@ -3461,7 +3485,7 @@
     }, undefined, e=>{ console.warn('hair load failed', e); heroWait.hair=true; tryHero(); });
     loadHero(model);
     loadedFig=true; ready();
-  }, undefined, e=>{ console.warn('figure load failed', e); loadedFig=true; ready(); });
+  }, undefined, e=>{ console.warn('figure load failed', e); failEssentialLoad('character'); });
 
   // COFFEE SHOP — your real brick build (merged + Draco). Scaled so its stud pitch
   // (0.250) matches the ground plate (0.369): factor 1.4771 → studs register + bigger.
@@ -5309,7 +5333,7 @@
     {t:'Masking and Color Grading Study', credit:'SJSU · ART 105 · Advanced Digital Video', c:'#f4c430', img:'./assets/Masking_And_Color_Grading.jpg', video:'./assets/Masking_And_Color_Grading.mp4', year:2024, desc:'A compositing study combining three separate performances into one scene through masking and color grading in Adobe Premiere Pro and After Effects.'},
     {t:'Video Game Demo', credit:'SJSU · ART 105 · Advanced Digital Video', c:'#f4c430', img:'./assets/Shiri_VIdeo_Game.jpg', video:'./assets/Shiri_Video_Game.mp4', year:2024, desc:'A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.'},
     {t:'Venom Character Sculpt', credit:'SJSU · ART 102 · 3D Modeling and Printing', c:'#ff7ac2', img:'./assets/Venom.webp', year:2024, desc:'A sculpt of Venom’s head, modeled and rendered in Blender to develop greater detail and precision. Building on the opening Cow Abduction exercise, the project focused on more intricate forms, surface materials, and lighting.'},
-    {t:'Custom Phone Case', credit:'Started at SJSU · Independently developed', c:'#8b5cf6', img:'./assets/My_Case.jpg', year:2025, desc:'An accessory design developed beyond its original coursework into a finished 3D-printed case. An open lattice wraps around the camera and side buttons.'},
+    {t:'Custom Phone Case', credit:'Started at SJSU · Independently developed', c:'#8b5cf6', img:'./assets/My_Case.JPG', year:2025, desc:'An accessory design developed beyond its original coursework into a finished 3D-printed case. An open lattice wraps around the camera and side buttons.'},
     {t:'Custom AirPods Case', credit:'Started at SJSU · Independently developed', c:'#f97316', img:'./assets/Airpod_Case.JPG', year:2026, desc:'An accessory design developed beyond its original coursework into a finished 3D-printed sleeve. An open lattice wraps an AirPods Pro case, leaving the status light and hinge accessible.'},
     {t:'HMI Sensor System', credit:'SJSU · ART 106 · The Human Machine Interface', c:'#2ee078', img:'./assets/New_Radar_Sensor_front.jpg', video:'./assets/New_Radar_Sensor.mp4', year:2024, desc:'An ultrasonic sensing device with an LCD, speaker, and 3D-printed enclosure that translates sensor readings into visual and audio feedback.',
       builds:[{video:'./assets/HMI_Sensor_Original_Build.mp4',img:'./assets/HMI_Sensor_Original_Build.jpg',label:'Original Build'},{video:'./assets/New_Radar_Sensor.mp4',img:'./assets/New_Radar_Sensor_front.jpg',label:'Redesigned Build'}], extras:[{img:'./assets/Radar_Tools_And_Components.jpg',label:'HMI Sensor System, Tools and Components'},{video:'./assets/Radar_Speaker_Development.mp4',img:'./assets/Radar_Speaker_Development.jpg',label:'HMI Sensor System, Speaker Development'},{img:'./assets/New_Radar_Sensor_front.jpg', label:'Front'},{img:'./assets/New_Radar_Sensor_Back.jpg', label:'Back'},{img:'./assets/Programming_Cover_Pic.jpg', label:'Both Builds'}]},
@@ -5877,8 +5901,9 @@
     tweenCam(P.eye, P.look, 1.15, ()=>{ if(PIPE) PIPE.render(); else renderer.render(scene,camera);
       try{ shopbgEl.style.backgroundImage='url('+renderer.domElement.toDataURL('image/jpeg',0.9)+')'; }catch(e){}
       shopbgEl.classList.add('on'); for(const kk in PORTALS) PORTALS[kk].group.visible=(kk===k); mode='menu'; fading=false;
-      canvas.style.cursor='default'; }); }   // the panels are clicked, so the pointer comes back
+      canvas.style.cursor='default'; syncPowerHUD(); }); }   // the panels are clicked, so the pointer comes back
   function exitPortal(){ if(fading||mode!=='menu') return; const P=PORTALS[activePortal]; mode='hub'; shopbgEl.classList.remove('on');
+    syncPowerHUD();
     canvas.style.cursor='none';
     figBody.visible=true; velX=velZ=0;
     if(activePortal==='nabu' && savedPos && savedCam){   // NABU: pop back up exactly where you stood, camera as you left it
@@ -5962,9 +5987,9 @@
       a.textContent=l.label+' ↗'; cap.appendChild(a); });
     const many=vShots.length>1; navPrev.classList.toggle('on',many); navNext.classList.toggle('on',many);
     renderShot();
-    viewerEl.classList.add('on'); }
+    viewerEl.classList.add('on'); syncPowerHUD(); }
   function closeViewer(){ viewerOpen=false; stopShot();
-    viewerEl.querySelector('.media').innerHTML=''; viewerEl.classList.remove('on'); vShots=[]; vProj=null; }
+    viewerEl.querySelector('.media').innerHTML=''; viewerEl.classList.remove('on'); vShots=[]; vProj=null; syncPowerHUD(); }
   viewerEl.querySelector('.x').addEventListener('click', closeViewer);
   navPrev.addEventListener('click', e=>{ e.stopPropagation(); stepShot(-1); });
   navNext.addEventListener('click', e=>{ e.stopPropagation(); stepShot(1); });
@@ -6421,6 +6446,7 @@
   // ── controls ──
   const keys={}; let camYaw=0, camPitch=0.24, camDist=8.45;   // opening shot: straight down the path from the spawn, figure small in frame
   addEventListener('keydown', e=>{ const k=e.key.toLowerCase();
+    if(essentialLoadFailed) return;
     if(k==='q'){ if(viewerOpen) closeViewer(); else if(mode==='menu') exitPortal(); return; }
     // R is the way out of the Realm now that the top-right link is touch only. Same href the
     // link carried, and it works from inside a portal too, exactly as the link did.
@@ -6434,8 +6460,21 @@
     // there is nothing here for it to toggle (see the ghost's own vertical in the step block).
     if(k==='f'){ if(heroOn && mode==='hub' && !fading) setFly(!flying); return; }
     if(viewerOpen){ if(k==='arrowleft'){ stepShot(-1); return; } if(k==='arrowright'){ stepShot(1); return; } }
-    if(mode==='menu' && !viewerOpen){ if(k==='arrowleft'||k==='a'){ menuPan=clampPan(menuPan-PGAP); return; }
-      if(k==='arrowright'||k==='d'){ menuPan=clampPan(menuPan+PGAP); return; } }
+    if(mode==='menu' && !viewerOpen){
+      if(e.target instanceof Element && e.target.closest('button, a[href], input, textarea, select, [contenteditable="true"]')) return;
+      if(k==='arrowleft'||k==='a'){ e.preventDefault(); menuPan=clampPan(menuPan-PGAP); return; }
+      if(k==='arrowright'||k==='d'){ e.preventDefault(); menuPan=clampPan(menuPan+PGAP); return; }
+      if(k==='enter'||k===' '){
+        e.preventDefault();
+        if(!e.repeat && !fading && activePortal){
+          const P=PORTALS[activePortal], n=P.projects.length;
+          if(n){ const i=Math.max(0,Math.min(n-1,Math.round(menuPan/PGAP+(n-1)/2)));
+            menuPan=(i-(n-1)/2)*PGAP; openViewer(i); }
+        }
+        return;
+      }
+    }
+    if(viewerOpen) return;
     keys[k]=true;
     if(e.key===' '){ e.preventDefault();
       // a double tap of Space is the other way up: it reads as "jump, and keep going".
@@ -6578,7 +6617,14 @@
     if(looking()||lockPending) return;   // the lock took the gesture over; the drag lives on
     drag=false; mdrag=false; });
   addEventListener('mouseup',()=>{ if(!HAS_PE) endLook(); });
-  addEventListener('blur',()=>{ if(dragPid===null){ drag=false; mdrag=false; } });
+  function resetInput(){
+    for(const k of Object.keys(keys)) delete keys[k];
+    jumpQ=false; lastSpace=-Infinity; touchUp=false; touchDown=false;
+    lookId=null; joyId=null; joyX=joyY=0; joyRun=false; joyKnob.style.transform='';
+    endLook();
+  }
+  addEventListener('blur',resetInput);
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden) resetInput(); });
   // ══ THE CURSOR ════════════════════════════════════════════════════════════════════════════
   // The canvas hides the real pointer (#c is cursor:none), so this dot is the only thing on
   // screen telling you where the mouse is. Kept deliberately dumb: one transform per move, no
@@ -6615,7 +6661,7 @@
   canvas.addEventListener('touchend',lookEnd); canvas.addEventListener('touchcancel',lookEnd);
 
   // ── touch controls: virtual joystick + JUMP + contextual ENTER/BACK (coarse-pointer devices only) ──
-  const IS_TOUCH = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;
+  const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
   let joyX=0,joyY=0,joyRun=false,joyId=null;
   const joyEl=document.getElementById('joy'), joyKnob=document.getElementById('joyKnob'),
         btnJump=document.getElementById('btnJump'), btnAct=document.getElementById('btnAct'), btnBack=document.getElementById('btnBack'),
@@ -6668,7 +6714,11 @@
   // control panel shows first; Enter dismisses it
   const startBtn=document.getElementById('startBtn');
   let entered=false;   // the spawn greeting bubble waits for this so you watch it build
-  if(startBtn) startBtn.addEventListener('click',()=>{ document.getElementById('controls').classList.add('hide'); initAudio(); entered=true; });
+  if(startBtn) startBtn.addEventListener('click',()=>{
+    if(essentialLoadFailed) return;
+    const controls=document.getElementById('controls'); controls.classList.add('hide'); controls.inert=true;
+    canvas.focus({preventScroll:true}); initAudio(); entered=true;
+  });
 
   // ── loop: LEGO waddle (fused-leg minifig) + hop ──
   const clock=new THREE.Clock();
@@ -6843,8 +6893,11 @@
   const HINT_GHOST='<b>WASD</b> to drift &nbsp;·&nbsp; <b>Space</b> rise &nbsp;·&nbsp; <b>Shift</b> sink &nbsp;·&nbsp; <b>E</b> at the bones to return &nbsp;·&nbsp; <b>R</b> leave';
   function syncPowerHUD(){
     const hintEl=document.querySelector('.hint');
-    if(hintEl){ const want = flying ? HINT_FLY : (ghostOn ? HINT_GHOST
-      : (heroOn ? HINT_SUIT : (heroUnlocked ? HINT_SUITOFF : HINT_WALK)));
+    if(hintEl){ const want = mode==='menu'
+      ? (viewerOpen ? '<b>← →</b> browse images &nbsp;·&nbsp; <b>Q</b> close'
+        : '<b>← →</b> browse projects &nbsp;·&nbsp; <b>Enter</b> / <b>Space</b> open &nbsp;·&nbsp; <b>Q</b> back')
+      : (flying ? HINT_FLY : (ghostOn ? HINT_GHOST
+        : (heroOn ? HINT_SUIT : (heroUnlocked ? HINT_SUITOFF : HINT_WALK))));
       if(hintEl.innerHTML!==want) hintEl.innerHTML=want; }
     // No HUD pills left: the hint line carries T and F. TOUCH has neither a keyboard nor a hint
     // line, and since the chest stopped offering the suit it has no way to change outfit at all

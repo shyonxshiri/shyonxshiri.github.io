@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 // Check literal public URLs in every active entry point. Keep dynamic variants explicit.
@@ -20,7 +20,9 @@ for (const file of sources) {
 }
 references.add('/My Resume.pdf');
 references.add('/favicon.svg');
-const missing = [...references].filter(url => !existsSync(resolve('public', decodeURIComponent(url.slice(1)))));
+// Compare directory-entry names exactly, even on case-insensitive development disks.
+const publicFiles = new Set(walk('public').map(file => resolve(file)));
+const missing = [...references].filter(url => !publicFiles.has(resolve('public', decodeURIComponent(url.slice(1)))));
 if (missing.length) {
   console.error('Missing site assets:\n' + missing.join('\n'));
   process.exitCode = 1;

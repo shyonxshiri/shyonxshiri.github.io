@@ -51,7 +51,7 @@ Design direction: dark, minimal, editorial. Custom cursor, restrained motion, sy
   GLTFLoader, DRACOLoader, draco decoders, and `pp/` (post-processing passes lifted from the same
   release). Nothing external except Google Fonts.
 - `public/assets/` — current site media and active `.glb` models. `public/assets/story/` — storyboard stills. Seven PNGs are now pixel-identical lossless WebP files, with the originals archived. Everly previews use 640/1280px variants; the project viewer retains the full image.
-- `scripts/check-assets.mjs` — validates literal local assets and explicit dynamic filename patterns before deployment.
+- `scripts/check-assets.mjs` — validates literal local assets and explicit dynamic filename patterns before deployment, including exact filename case on case-insensitive development disks.
 - Off-screen storyboard images lazy-load. Work canvas pauses in hidden tabs. Legacy unused CSS and inert wheel/touch navigation handlers were removed without changing navigation behavior.
 - `docs/` — **the build output GitHub Pages serves.** Committed.
 - `vite.config.ts` — `outDir: "docs"`. There is NO CI: `.github/workflows/deploy.ml` was misnamed
@@ -506,7 +506,12 @@ interior is snapshotted and blurred as a backdrop, and LEGO-framed panels float 
 `menuScene`. The panel rows are browsable carousels (drag / wheel / arrows); `openPan` centres a
 RANDOM real panel on entry, never repeating the last one. Panels carry the real project media
 mirrored from `PROJECTS` in `src/App.tsx`, with `extras` shot sets stepped by ‹ ›, arrow keys or
-swipe. Q leaves.
+swipe. Enter or Space opens the selected panel; Q closes the viewer or leaves the carousel.
+The hint bar follows these modes. Held keys, queued jumps and touch/drag input reset on window
+blur or tab hiding. Touch controls follow the primary pointer, so touchscreen laptops retain
+mouse and keyboard controls.
+Ground and figure load failures keep a visible error with Try Again and Back to Main Site;
+failed assets never satisfy the loading success condition.
 **Each panel wears its project's NAME on a caption under the frame**, and that is a REVERSAL: the
 captions shipped, were dropped in `cc38584`, and were asked for back (user, 2026-08-31). They have
 to be their own plane, because the media plane is FULL BLEED (`texPanels` swaps the whole cover
@@ -1743,7 +1748,8 @@ ART 102 was a return to 3D after prior experience, not Shyon’s first exposure.
 focused on the work and techniques; do not add the earlier school history.
 
 **Project galleries and direct media previews are keyboard accessible.** Both contain focus
-and restore it on close. Gallery cards are native buttons; galleries scroll fully on short or
+and restore it on close; disabled controls are excluded from their focus boundaries.
+Gallery cards are native buttons; galleries scroll fully on short or
 narrow screens. MediaViewer remains above the gallery and navigation. On phones the image comes
 before its description. Preserve related-media links and external website links. The Realm's
 existing device capability gate is unchanged; its project previews remain available on mobile.

@@ -69,7 +69,7 @@ const PROJECTS: Project[] = [
       { type: "video", src: "/assets/Masking_And_Color_Grading.mp4", poster: "/assets/Masking_And_Color_Grading.jpg", title: "Masking and Color Grading Study", credit: "SJSU · ART 105 · Advanced Digital Video", year: 2024, desc: "A compositing study combining three separate performances into one scene through masking and color grading in Adobe Premiere Pro and After Effects.", aspectRatio: "16/9" },
       { type: "video", src: "/assets/Shiri_Video_Game.mp4", poster: "/assets/Shiri_VIdeo_Game.jpg", title: "Video Game Demo", credit: "SJSU · ART 105 · Advanced Digital Video", year: 2024, desc: "A mock retro driving game, animated and cut together in Adobe After Effects from pixel art frames of a neon city at night.", aspectRatio: "16/9" },
       { type: "image", src: "/assets/Venom.webp", title: "Venom Character Sculpt", credit: "SJSU · ART 102 · 3D Modeling and Printing", year: 2024, desc: "A sculpt of Venom’s head, modeled and rendered in Blender to develop greater detail and precision. Building on the opening Cow Abduction exercise, the project focused on more intricate forms, surface materials, and lighting.", aspectRatio: "16/9", relatedItems: ["Cow Abduction", "BMW Street Render", "The Broken NPC"] },
-      { type: "image", src: "/assets/My_Case.jpg", title: "Custom Phone Case", credit: "Started at SJSU · Independently developed", year: 2025, desc: "An accessory design developed beyond its original coursework into a finished 3D-printed case. An open lattice wraps around the camera and side buttons.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Concepts"] },
+      { type: "image", src: "/assets/My_Case.JPG", title: "Custom Phone Case", credit: "Started at SJSU · Independently developed", year: 2025, desc: "An accessory design developed beyond its original coursework into a finished 3D-printed case. An open lattice wraps around the camera and side buttons.", aspectRatio: "5/6", relatedItems: ["Apple Accessory Concepts"] },
       { type: "image", src: "/assets/Airpod_Case.JPG", title: "Custom AirPods Case", credit: "Started at SJSU · Independently developed", year: 2026, desc: "An accessory design developed beyond its original coursework into a finished 3D-printed sleeve. An open lattice wraps an AirPods Pro case, leaving the status light and hinge accessible.", aspectRatio: "4/5", relatedItems: ["Apple Accessory Concepts"] },
       { type: "image", src: "/assets/New_Radar_Sensor_front.jpg", title: "Ultrasonic Sensor, Front View", year: 2024, desc: "Front of the ultrasonic sensor enclosure. Paired ultrasonic transducers, a 16x2 character LCD, and a recessed speaker cone, all set into a 3D-printed shell.", aspectRatio: "4/3", hidden: true, relatedItems: ["Ultrasonic Sensor, Back View", "Ultrasonic Sensor and RGB Controller", "HMI Sensor System"] },
       { type: "image", src: "/assets/New_Radar_Sensor_Back.jpg", title: "Ultrasonic Sensor, Back View", year: 2024, desc: "Back of the ultrasonic sensor enclosure, showing the access panel, wiring routing, and the power and control cutouts.", aspectRatio: "4/3", hidden: true, relatedItems: ["Ultrasonic Sensor, Front View", "Ultrasonic Sensor and RGB Controller", "HMI Sensor System"] },
@@ -3303,7 +3303,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
       if (event.key !== "Tab" || !dialog) return;
       const controls = Array.from(dialog.querySelectorAll<HTMLElement>(
         'button, a[href], video[controls], [tabindex="0"]'
-      )).filter(element => element.getClientRects().length > 0);
+      )).filter(element => !element.matches(':disabled, [tabindex="-1"]') && element.getClientRects().length > 0);
       const first = controls[0], last = controls[controls.length - 1];
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault(); last?.focus();
@@ -3599,7 +3599,7 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
       if (event.key !== "Tab" || !dialog) return;
       const controls = Array.from(dialog.querySelectorAll<HTMLElement>(
         'button, a[href], video[controls], [tabindex="0"]'
-      )).filter(element => element.getClientRects().length > 0);
+      )).filter(element => !element.matches(':disabled, [tabindex="-1"]') && element.getClientRects().length > 0);
       const first = controls[0], last = controls[controls.length - 1];
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault(); last?.focus();
