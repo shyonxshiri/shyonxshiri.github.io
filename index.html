@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Shyon Shiri · Designer &amp; Developer</title>
+
+    <!-- ── SEO / link-preview meta ──────────────────────────── -->
+    <meta name="description" content="Shyon Shiri is a Graphic Designer and Developer working across 3D design, motion graphics, UI/UX, fabrication, cinematography, and code." />
+    <meta name="author" content="Shyon Shiri" />
+    <meta name="theme-color" content="#060606" />
+
+    <!-- Open Graph (LinkedIn / iMessage / Facebook) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Shyon Shiri · Designer &amp; Developer" />
+    <meta property="og:description" content="Brand identity, web development, and 3D design. Based in the Bay Area." />
+    <meta property="og:image" content="https://shyonshiri.com/assets/New_Shiri_Site_Pic.jpg" />
+    <meta property="og:url" content="https://shyonshiri.com/" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Shyon Shiri · Designer &amp; Developer" />
+    <meta name="twitter:description" content="Brand identity, web development, and 3D design. Based in the Bay Area." />
+    <meta name="twitter:image" content="https://shyonshiri.com/assets/New_Shiri_Site_Pic.jpg" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- ── Fonts: preconnect + non-blocking stylesheet ──────────
+         (Replaces the @import buried inside JS-injected CSS so
+          fonts start downloading on first paint, no FOUT shift.) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    />
+
+    <!-- ── Critical asset preload ──────────────────────────────
+         ONLY the hero the visitor actually sees first. The old
+         preloads pointed at files no longer used (IMG_2282.JPG,
+         Shyon_About_Pic.jpg, Camera_Work_Cover.JPG,
+         3D_Modeling_Cover.PNG) — that wasted bandwidth and did
+         NOT preload the real hero. -->
+    <link rel="preload" as="image" href="/assets/New_Shiri_Site_Pic.jpg" fetchpriority="high" />
+
+    <!-- Optimize rendering performance -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        position: fixed;
+      }
+
+      #root {
+        width: 100vw;
+        height: 100dvh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+      }
+
+      /* Enable GPU acceleration for animations */
+      .motion-div, [class*="motion"], video {
+        will-change: transform;
+        transform: translate3d(0, 0, 0);
+      }
+
+      /* Optimize video playback */
+      video {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- One rule decides whether the Realm is offered here and whether lego.html lets anyone in;
+         see public/realm-support.js. Plain script, not a module, so window.__realmSupported is
+         defined before React mounts and the first render already knows the answer. -->
+    <script src="/realm-support.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
