@@ -2929,11 +2929,11 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
   const cardH = Math.min(cardW * 1.32, Math.max(isMob ? 230 : 290, size.height * (isMob ? 0.42 : 0.50)));
   const sideX = cardW * (isDesktop ? 1.40 : isMob ? 1.08 : 1.24);
 
-  // Cover-derived hues: skeleton green, Everly's purple CTA, and NABU's blue chrome.
+  // Cover-derived hues: AirPods case charcoal/plum, Everly's purple CTA, and NABU's blue chrome.
   const WORK_BG_THEME: Record<string, { base: string; glow: string }> = {
     "creative-projects": {
-      base: "#041007",
-      glow: "radial-gradient(ellipse 70% 72% at 46% 43%, rgba(30,154,35,.34) 0%, rgba(18,120,21,.17) 40%, transparent 78%)",
+      base: "#171619",
+      glow: "radial-gradient(ellipse 70% 72% at 46% 43%, rgba(89,62,108,.34) 0%, rgba(61,48,70,.17) 40%, transparent 78%)",
     },
     "professional-services": {
       base: "#d9d2df",
