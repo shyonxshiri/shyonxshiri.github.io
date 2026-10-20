@@ -8,7 +8,7 @@ type SelectedWorkProps = {
 const selectedProjects = [
   {
     title: "Everly Care Home",
-    mediaTitle: "Everly Care Home",
+    mediaTitle: "Everly Care Home Branding and Website",
     role: "Branding and Web Development",
     description: "Designed the identity and built the website for a senior care community.",
     image: "/assets/Everly_Cover_Image.webp",

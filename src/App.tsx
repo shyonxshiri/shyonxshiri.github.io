@@ -95,13 +95,13 @@ const PROJECTS: Project[] = [
     img: "/assets/Everly_Cover_Image-1280.webp",
     size: "wide",
     media: [
-      { type: "image", src: "/assets/Mina_Website.webp", title: "minasech.net", year: 2025, desc: "Website design and React development, with a responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
-      { type: "image", src: "/assets/Everly_Cover_Image.webp", title: "Everly Care Home", year: 2026, desc: "Brand identity, responsive website design, development, and deployment for a senior care community.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
-      { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Luning Drive Listing", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
-      { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Colleen Drive Listing", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
-      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.webp", title: "Morning Star Drive Listing", year: 2022, desc: "A listing announcement co-branded with Compass, combining pricing, property specifications, and sales highlights.", aspectRatio: "4/5" },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner Redevelopment", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner, Existing Site"] },
-      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.webp", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26-acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner Redevelopment"] },
+      { type: "image", src: "/assets/Mina_Website.webp", title: "Mina’s Elderly Care Homes Website", year: 2025, desc: "Website design and React development, with a responsive interface.", link: "https://minasech.net", wide: true, aspectRatio: "16/9" },
+      { type: "image", src: "/assets/Everly_Cover_Image.webp", title: "Everly Care Home Branding and Website", year: 2026, desc: "Brand identity, responsive website design, development, and deployment for a senior care community.", link: "https://everlycarehome.com", wide: true, aspectRatio: "16/9" },
+      { type: "image", src: "/assets/RealEstate_Luning_Flyer.jpg", title: "Luning Drive Property Flyer", year: 2022, desc: "Property marketing flyer designed for Real Estate Experts, pairing a hero listing photo with clean typographic hierarchy, a status badge, and agent branding.", aspectRatio: "3/4" },
+      { type: "image", src: "/assets/RealEstate_Colleen_Flyer.jpg", title: "Colleen Drive Property Flyer", year: 2022, desc: "A dual-agent listing flyer combining property details, brand elements, and paired agent headshots in a balanced square format.", aspectRatio: "1/1" },
+      { type: "image", src: "/assets/RealEstate_MorningStar_Flyer.webp", title: "Morning Star Drive Property Flyer", year: 2022, desc: "A listing announcement co-branded with Compass, combining pricing, property specifications, and sales highlights.", aspectRatio: "4/5" },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Concept.jpg", title: "Moskowite Corner Concept Visualization", year: 2026, desc: "An AI-generated concept visualization for a real estate redevelopment study at Moskowite Corner, CA. It shows a closed gas station lot rebuilt as a fuel and retail stop, modeled from aerial references for a developer evaluating the property.", aspectRatio: "5/3", relatedItems: ["Moskowite Corner, Existing Site"] },
+      { type: "image", src: "/assets/RealEstate_MoskowiteCorner_Before.webp", title: "Moskowite Corner, Existing Site", year: 2026, desc: "The existing site before redevelopment. A closed 1.26-acre gas station lot with parking and an office building.", aspectRatio: "16/9", hidden: true, relatedItems: ["Moskowite Corner Concept Visualization"] },
     ],
   },
   {
@@ -1980,7 +1980,7 @@ function HomePage({ onNavigate, intro, initialSection }: {
             initial={REDUCE || !intro ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.38, delay: REDUCE || !intro ? 0 : 0.5, ease: APPLE_EASE }}>
             <p style={{ marginTop: 20, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}>
-              Browse the site using the navigation buttons or view it in LEGO form.
+              I’m a graphic designer and developer working across websites, visual identities, and physical objects.
             </p>
             <div className="ss-hero-actions">
               <button type="button" className="ss-hero-secondary" onClick={() => scrollToSection("open")} {...hover}>

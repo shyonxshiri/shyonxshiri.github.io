@@ -48,6 +48,10 @@ Design direction: dark, minimal, editorial. Custom cursor, restrained motion, sy
   (coverflow + `WorkParticles` + `WORK_BG_THEME`), `WorkModal`, `MediaViewer`.
   The Work page's Selected Works cover uses `Airpod_Case.JPG`, centered in the card,
   with a charcoal base and muted plum glow in `WORK_BG_THEME` to match the photo.
+  Freelance project titles name the client/property and deliverable (website, branding,
+  property flyer, or concept visualization), mirrored in the Realm. Update title-based links too.
+  The homepage introduces Shyon's design and development work; avoid navigation instructions
+  and the vague phrase “view it in LEGO form.” Keep “View My LEGO Portfolio” as the button.
 - `public/lego.html` — the Realm, one file. See §5, plus `CLAUDE-cars.md` and `CLAUDE-hero.md`.
 - `public/vendor/` — three.min.js r128 (byte-identical to the npm `three@0.128.0` release),
   GLTFLoader, DRACOLoader, draco decoders, and `pp/` (post-processing passes lifted from the same
