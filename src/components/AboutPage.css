@@ -5,12 +5,14 @@
 .ss-about-intro{grid-column:1;grid-row:1;align-self:center;position:relative;z-index:1;padding:145px 4vw 90px max(28px,8vw);max-width:760px}
 .ss-about-intro h2{font-size:clamp(60px,7.2vw,112px);letter-spacing:-.065em;line-height:1;margin:0 0 40px;font-weight:550;color:#232326}
 .ss-about-intro p{font-size:17px;line-height:1.65;color:#55535a;max-width:43ch;margin:22px 0 0;text-wrap:pretty}
-.ss-about-intro .ss-about-lead{font-size:clamp(23px,2vw,30px);line-height:1.4;letter-spacing:-.025em;color:#29282c;margin-bottom:28px}
+.ss-about-intro .ss-about-lead{font-size:clamp(23px,2vw,30px);line-height:1.3;letter-spacing:-.025em;color:#29282c;max-width:23ch;margin:0 0 28px;text-wrap:balance}
+.ss-about-description{max-width:42ch;display:grid;gap:16px}
+.ss-about-intro .ss-about-description p{margin:0}
 @media(min-width:1800px){.ss-about-intro{margin-left:auto;padding-left:40px;padding-right:65px}.ss-about-photo img{object-position:50% 25%}}
 @media(max-width:900px){.ss-about-hero{grid-template-columns:1.1fr 1fr;min-height:700px}.ss-about-intro{padding-left:36px;padding-right:24px}.ss-about-intro h2{font-size:68px}}
 @media(max-width:640px){.ss-about-hero{display:flex;flex-direction:column;min-height:0}.ss-about-intro{order:0;padding:128px 25px 38px;width:100%;max-width:none}.ss-about-intro h2{font-size:clamp(60px,15vw,84px);margin-bottom:28px}.ss-about-intro .ss-about-lead{font-size:25px}.ss-about-intro p{font-size:16px;max-width:38ch}.ss-about-photo{order:1;mask-image:linear-gradient(180deg,transparent,#000 9%,#000 72%,transparent),linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-composite:intersect;flex:none;width:100%;height:clamp(360px,115vw,570px)}.ss-about-photo img{object-position:center top}}
 
-.ss-about-intro .ss-about-education{font-size:13px;line-height:1.6;color:#68656b;margin-top:36px}
+.ss-about-intro .ss-about-education{font-size:13px;line-height:1.6;color:#68656b;margin-top:32px;padding-top:20px;border-top:1px solid #d5d2d8;max-width:100%;width:fit-content}
 
 .ss-about-film{--film-ink:#f3f3f3;--film-muted:#bfbfbf;display:grid;grid-template-columns:minmax(0,440px) minmax(0,840px);grid-template-rows:auto auto;justify-content:center;align-content:center;column-gap:clamp(32px,4vw,64px);row-gap:28px;min-height:700px;padding:100px max(28px,6vw);background:radial-gradient(ellipse at 86% 25%,rgba(110,110,110,.25),transparent 62%),linear-gradient(135deg,#262626 0%,#1c1c1c 48%,#101010 100%);color:var(--film-ink)}
 .ss-about-film-heading{grid-column:1;grid-row:1;align-self:end}

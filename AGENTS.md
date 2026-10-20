@@ -50,7 +50,7 @@ Design direction: dark, minimal, editorial. Custom cursor, restrained motion, sy
   with a charcoal base and muted plum glow in `WORK_BG_THEME` to match the photo.
   Freelance project titles name the client/property and deliverable (website, branding,
   property flyer, or concept visualization), mirrored in the Realm. Update title-based links too.
-  The homepage introduces Shyon's design and development work; avoid navigation instructions
+  The homepage introduction is “Welcome to my personal website. Explore my work, learn about me, or visit the interactive LEGO world I built to showcase my projects.” Avoid button-by-button navigation instructions
   and the vague phrase “view it in LEGO form.” Keep “View My LEGO Portfolio” as the button.
 - `public/lego.html` — the Realm, one file. See §5, plus `CLAUDE-cars.md` and `CLAUDE-hero.md`.
 - `public/vendor/` — three.min.js r128 (byte-identical to the npm `three@0.128.0` release),
@@ -1644,7 +1644,7 @@ The portrait keeps its left-edge fade on desktop. Its lower edge now blends into
 with a masked 6px blur and pale gradient. On phones, top, side, and bottom masks soften the
 rectangle. There is no divider before the film section and no dark shading overlay.
 The user rejected the duplicated “How I work” jump/heading and cross-page process/project summaries.
-About describes broad graphic design and technical experience, with education as a small supporting detail.
+About uses the approved paragraph “My work combines visual design with hands-on development and fabrication. I take projects from the first sketches through prototyping, testing, and production.” Keep this direct, natural first-person tone. Do not lead with location or substitute abstract phrases such as “My background in design informs.” The role statement uses balanced wrapping; education is a small supporting detail separated by a short rule.
 Do not center any single project or AI evaluation job in this biography. NABU is on hold, not a current
 professional identity; present it as portfolio work, not as an active business the user currently runs. The user does not want
 the AI evaluation job emphasized or included on About; career details belong in the résumé. No project

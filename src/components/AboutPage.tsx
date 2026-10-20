@@ -42,7 +42,9 @@ export default function AboutPage({ realmSupported, onViewOverview }: {
         <div className="ss-about-intro">
           <h2 id="ss-bio-heading">About Me.</h2>
           <p className="ss-about-lead">I am a Graphic Designer and Developer.</p>
-          <p>Based in the Bay Area, I work across visual communication, front-end development, 3D modeling, and physical fabrication. I work with both the design and technical requirements of a project, including typography, layout, prototyping, and production.</p>
+          <div className="ss-about-description">
+            <p>My work combines visual design with hands-on development and fabrication. I take projects from the first sketches through prototyping, testing, and production.</p>
+          </div>
           <p className="ss-about-education">BA in Graphic Design<br />San Jose State University, 2025</p>
         </div>
       </div>

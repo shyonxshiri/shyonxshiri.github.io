@@ -1980,7 +1980,7 @@ function HomePage({ onNavigate, intro, initialSection }: {
             initial={REDUCE || !intro ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.38, delay: REDUCE || !intro ? 0 : 0.5, ease: APPLE_EASE }}>
             <p style={{ marginTop: 20, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}>
-              I’m a graphic designer and developer working across websites, visual identities, and physical objects.
+              Welcome to my personal website. Explore my work, learn about me, or visit the interactive LEGO world I built to showcase my projects.
             </p>
             <div className="ss-hero-actions">
               <button type="button" className="ss-hero-secondary" onClick={() => scrollToSection("open")} {...hover}>
