@@ -48,15 +48,9 @@ const PROJECTS: Project[] = [
     id: "creative-projects",
     title: "Selected Works",
     tag: "Design, 3D & Craft",
-    img: "/assets/3D_Models_Cover_Pic.jpg",
+    img: "/assets/Airpod_Case.JPG",
     size: "tall",
-    // The file is cropped to the card's own aspect, so `cover` never trims the sides.
-    // But cardH is min(cardW*1.32, innerHeight*0.56): under a 896px viewport the card is
-    // SHORTER than that aspect and the crop turns vertical, centred, which clipped the
-    // skeleton's head. 37% is the one value that keeps the whole figure in frame all the
-    // way down to a 670px viewport, where the visible band equals the figure's height and
-    // nothing can fit. X is inert: the card can never be taller than the file.
-    objectPosition: "50% 37%",
+    objectPosition: "center",
     media: [
       { type: "image", src: "/assets/resume-design/business-card-mockup.jpg", title: "Résumé Design", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "2092/1392", desc: "A unique résumé and coordinating business card designed from scratch, with a consistent visual identity across both pieces. A Photoshop mockup presents the cards in a realistic setting.", pages: ["/assets/resume-design/resume.png", "/assets/resume-design/business-card-front.png", "/assets/resume-design/business-card-back.png", "/assets/resume-design/business-card-mockup.jpg"], pageLabels: ["Résumé", "Business Card, Front", "Business Card, Back", "Business Card Mockup"] },
       { type: "image", src: "/assets/procrastination-booklet/page-01.png", title: "Procrastination Booklet", credit: "SJSU · DSGD 83 · Digital Applications: Basics", year: 2022, aspectRatio: "1786/2200", desc: "A final project for my 2022 DSGD course at SJSU. I drew and developed the entire booklet from scratch in Adobe Illustrator, combining original illustrations, typography, and page layouts.", pages: Array.from({ length: 10 }, (_, i) => `/assets/procrastination-booklet/page-${String(i + 1).padStart(2, "0")}.png`) },
