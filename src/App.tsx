@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence, animate, useMotionValue, useTransform, useReducedMotion, type MotionValue, type Variants } from "framer-motion";
 import AboutPage from "./components/AboutPage";
+import { readPortfolioRoute, routeHash, mediaId, type PortfolioRoute } from "./portfolioNavigation";
 
 /* ─────────────────────────────────────────────────────────────
    TYPES
 ───────────────────────────────────────────────────────────── */
-type Page = "home" | "work" | "about" | "contact";
+type Page = PortfolioRoute["page"];
 
 type MediaItem = {
   type: "image" | "video";
@@ -180,19 +181,14 @@ const GLOBAL_CSS = `
      already documents: a universal selector beats INHERITANCE, and an !important in a
      stylesheet beats an inline style, so nothing downstream could ever put the pointer
      back. Two rules were silently dead because of it, and one of them mattered. */
-  html { cursor: none; }
-  a, button, input, textarea, select, label, summary, [role="button"] { cursor: inherit; }
-
-  /* THE POINTER IS HIDDEN FOR A MOUSE, NOT FOR A NARROW WINDOW. This used to ride the
-     768px and 640px layout breakpoints, which asks the wrong question exactly as the old
-     innerWidth gate on the Realm did: a desktop browser dragged under 768 got the dot
-     hidden by the media query AND the native arrow suppressed by the star rule above, so
-     it had NO POINTER AT ALL. Measured before the fix at 760 / 700 / 640 / 500. A finger
-     is a property of the DEVICE, so ask about the device. */
-  @media (hover: none), (pointer: coarse) {
-    html { cursor: auto; }
-    #ss-cursor-dot { display: none !important; }
-  }
+  /* Keep the native pointer until an actual mouse move activates the custom dot. */
+  html { cursor: auto; }
+  a, button, [role="button"] { cursor: pointer; }
+  html.ss-custom-cursor, html.ss-custom-cursor * { cursor: none !important; }
+  html.ss-custom-cursor video, html.ss-custom-cursor video *,
+  html.ss-custom-cursor select { cursor: auto !important; }
+  html.ss-custom-cursor input, html.ss-custom-cursor textarea,
+  html.ss-custom-cursor [contenteditable="true"] { cursor: text !important; }
 
   /* A picture is natively draggable, and an HTML5 drag is the one state where the browser
      draws its OWN cursor over the page and ignores cursor:none entirely: the arrow comes
@@ -260,49 +256,30 @@ const GLOBAL_CSS = `
     .ss-contact-description { font-size: clamp(12px, 1.5vw, 14px) !important; }
   }
 
-  /* ── THE CURSOR IS THE PLAIN WHITE DOT AGAIN ────────────────────────────────────────
-     Reverted at Shyon's request (2026-09-10). It wore the Realm's glass bubble for a day,
-     ported across on 2026-09-09; the Realm still wears that shape, this surface goes back
-     to the solid difference dot it had before.
-     WHAT COMES BACK WITH IT is the mix-blend-mode: difference trade, and it is accepted
-     rather than overlooked. Over a backdrop B a difference dot composites to B + a*(255-2B),
-     so it INVERTS (magenta over the green card artwork, cyan over the studio wall) and it
-     cancels exactly at B=127.5, measured at 26.8 dLum over the Work card art against 200+
-     on the flat page grounds. Work is the one page made entirely of mid-tone imagery, so
-     that is where it is thinnest. Do not "fix" this by adding a rim or a shadow: a
-     difference dot with either is neither thing. Put the bubble back instead, it is in
-     the Realm and in git.
-     NONE OF THE FOUR DEFECTS THAT PASS FIXED COMES BACK, because not one of them was the
-     dot's appearance: the pointer is still gated on (hover: none) rather than on a width
-     breakpoint, images and video still refuse a native HTML5 drag, the transition is still
-     held behind .ss-cursor-ready so the injected sheet cannot animate the first paint, and
-     the dot is still revealed by real movement rather than parking in the top left corner
-     of a fresh load. */
+  /* A small solid dot remains visible over dark, light, and mid-gray media. */
   #ss-cursor-dot {
     position: fixed; top: 0; left: 0; z-index: 99999;
-    width: 9px; height: 9px;
-    background: #ffffff;
-    border-radius: 50%;
-    pointer-events: none;
-    transform: translate(-50%,-50%);
-    opacity: 0;   /* shown on the first real pointer move, see the Cursor component */
-    mix-blend-mode: difference; /* always contrasts, on white or on dark */
+    width: 10px; height: 10px; background: #fff;
+    border: 1px solid #171717; border-radius: 50%;
+    pointer-events: none; opacity: 0;
+    transform: translate(-50%, -50%);
   }
-  /* THE TRANSITION IS HELD BACK UNTIL AFTER THE FIRST PAINT, and that is not a nicety.
-     This whole sheet is injected by a useEffect, so it lands AFTER the dot has already
-     rendered at the UA default opacity of 1: with the transition declared in the rule
-     above, the arrival of opacity:0 was ANIMATED, and the dot faded out of the top left
-     corner over .18s on every single load. Measured at 0.739 opacity a second after a
-     settled load, with no pointer event having fired at all. The class is added on the
-     frame after mount, so the first application of opacity:0 snaps and everything after
-     it eases. The Realm has no such rule because its CSS is a style block in the head,
-     parsed before its cursor element exists. */
-  #ss-cursor-dot.ss-cursor-ready { transition: opacity .18s ease; }
-  /* NO HOVER RULE, and that is the revert too: the prior pointer did not react to what it
-     was over. useCursorHover still puts .ss-hover on the body (it always did, and nothing
-     styled it then either), so a hover state is one rule away if it is ever wanted. A
-     scale on a difference dot is the one thing not to reach for: 2.2x of pure inversion
-     is a blob rather than a pointer. */
+  .ss-gallery-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .ss-gallery-search { flex: 1 1 240px; min-width: 0; display: flex; align-items: center; border: 1px solid #555; border-radius: 10px; background: #171719; }
+  .ss-gallery-search input { width: 100%; min-width: 0; border: 0; background: transparent; color: var(--white); font: inherit; font-size: 14px; padding: 12px; }
+  .ss-gallery-search input::placeholder { color: #b5b3b0; }
+  .ss-gallery-search:focus-within { outline: 2px solid var(--sky); outline-offset: 3px; }
+  .ss-gallery-search input:focus { outline: none; }
+  .ss-gallery-tools button, .ss-copy-link { min-height: 44px; padding: 10px 14px; border: 1px solid #555; border-radius: 10px; background: transparent; color: var(--white); font: 500 13px var(--sf); }
+  .ss-gallery-tools button[aria-pressed="true"] { background: #ede8e0; color: #171717; border-color: #ede8e0; }
+  /* Override the legacy global button reset only for these new controls. */
+  #root .ss-gallery-tools button, #root .ss-copy-link, #root .ss-gallery-empty button { border: 1px solid #666 !important; background: #171719 !important; }
+  #root .ss-gallery-tools button[aria-pressed="true"] { background: #ede8e0 !important; border-color: #ede8e0 !important; }
+  .ss-gallery-filters { display: flex; gap: 8px; }
+  .ss-gallery-count { color: #b5b3b0; font-size: 13px; margin: 0 0 14px; }
+  .ss-gallery-empty { padding: 24px 0; color: #c8c5c1; font-size: 15px; line-height: 1.6; }
+  .ss-gallery-empty button { margin-top: 12px; display: block; min-height: 44px; padding: 10px 16px; background: #252525; color: var(--white); border: 1px solid #666; border-radius: 10px; }
+  .ss-share-status { display: block; min-height: 20px; margin-top: 8px; color: #b5b3b0; font-size: 13px; }
 
   /* modal / viewer scrollbar hide */
   .ss-modal-grid { scrollbar-width: none; }
@@ -739,7 +716,7 @@ const GLOBAL_CSS = `
     position: absolute;
     width: 44px; height: 44px; padding: 0;
     display: grid; place-items: center;
-    background: none; border: 0; cursor: none;
+    background: none; border: 0; cursor: inherit;
   }
   /* A PIN HAS TO LOOK LIVE OR NOBODY FINDS OUT IT IS ONE. Four small blue dots on a
      photograph read as part of the photograph; the ring pushing out of each one is the only
@@ -977,7 +954,7 @@ const GLOBAL_CSS = `
   }
   .ss-cell {
     display: grid; row-gap: 7px; justify-items: start;
-    padding: 0; border: 0; background: none; text-align: left; cursor: none;
+    padding: 0; border: 0; background: none; text-align: left; cursor: inherit;
   }
   .ss-cell-shot {
     display: block; width: 100%; overflow: hidden;
@@ -1293,7 +1270,7 @@ const GLOBAL_CSS = `
   .ss-work-modal { border-radius: 26px !important; overflow-x: hidden; }
   /* masonry gallery (Work modal: creative + professional) — packs mixed
      aspect ratios tightly with no ragged gaps, shows every image uncropped */
-  .ss-scell { position: relative; border-radius: 14px; overflow: hidden; background: #111214; border: 1px solid rgba(245,242,237,.1); cursor: none; transition: transform .5s var(--ease-out), border-color .4s var(--ease-out), box-shadow .5s var(--ease-out); }
+  .ss-scell { position: relative; border-radius: 14px; overflow: hidden; background: #111214; border: 1px solid rgba(245,242,237,.1); cursor: inherit; transition: transform .5s var(--ease-out), border-color .4s var(--ease-out), box-shadow .5s var(--ease-out); }
   .ss-scell:hover { transform: translateY(-4px); border-color: var(--sky); box-shadow: 0 18px 44px rgba(0,0,0,.5); }
   .ss-scell .ss-sthumb { position: relative; width: 100%; background: #0a0a0c; overflow: hidden; }
   .ss-scell .ss-sthumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s var(--ease-out); }
@@ -1423,55 +1400,55 @@ const GLOBAL_CSS = `
 ───────────────────────────────────────────────────────────── */
 function Cursor() {
   const dotRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const dot = dotRef.current;
     if (!dot) return;
-
-    /* see the note on .ss-cursor-ready: the sheet is injected after first paint, so the
-       transitions may only be armed once opacity:0 has actually been applied. */
-    const armed = requestAnimationFrame(() => dot.classList.add("ss-cursor-ready"));
-
-    /* THE DOT STARTS HIDDEN. `left`/`top` are unset until the first move, so the element
-       resolves at 0,0 and its own -50% translate parks it at (-4.5, -4.5): a white speck
-       in the top left corner of every fresh load, half off the screen, until the pointer
-       is moved. Measured. It is shown on the first real move and hidden again whenever
-       the pointer leaves the window, so it never sits stranded where the mouse left. */
-    /* REVEALED BY REAL MOVEMENT, NOT BY THE FIRST EVENT. Chrome dispatches a mousemove
-       when a page loads under the pointer, and in a fresh tab the pointer has no position
-       yet, so that event arrives at 0,0 and flashed the dot in the top left corner,
-       which is the bug this guard exists to kill. Measured: opacity 0.74 at rest on two
-       runs in three. The delta is tracked HERE rather than read off the event's own
-       movementX/movementY, which is not populated by every source (a synthetic move over
-       CDP reports 0 for both, so a guard written on it never showed the cursor at all). */
-    let px = -1, py = -1;
-    const onMove = (e: MouseEvent) => {
-      dot.style.left = e.clientX + "px";
-      dot.style.top = e.clientY + "px";
-      if (px >= 0 && (e.clientX !== px || e.clientY !== py)) dot.style.opacity = "1";
-      px = e.clientX; py = e.clientY;
+    const root = document.documentElement;
+    const mouseCapable = window.matchMedia("(any-hover: hover) and (any-pointer: fine)");
+    const hide = () => {
+      root.classList.remove("ss-custom-cursor");
+      dot.style.opacity = "0";
     };
-    const onLeave = () => { dot.style.opacity = "0"; };
-
-    /* A native HTML5 drag is the one state where the browser paints its own cursor over
-       the page and `cursor: none` is ignored, so the arrow reappears mid gesture with a
-       ghost of the picture under it. Nothing here uses the drag-and-drop API (the
-       coverflow is pointer events), so cancelling it outright costs nothing and is what
-       covers Firefox, where the CSS `user-drag` property does not exist. */
-    const onDragStart = (e: DragEvent) => e.preventDefault();
-
-    window.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseleave", onLeave);
+    const move = (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (event.pointerType !== "mouse" || !mouseCapable.matches ||
+          target?.closest('video, input, textarea, select, [contenteditable="true"]')) {
+        hide(); return;
+      }
+      dot.style.left = event.clientX + "px";
+      dot.style.top = event.clientY + "px";
+      dot.style.opacity = "1";
+      root.classList.add("ss-custom-cursor");
+    };
+    const leave = (event: PointerEvent) => { if (!event.relatedTarget) hide(); };
+    const key = (event: KeyboardEvent) => { if (event.key === "Tab") hide(); };
+    const touch = (event: PointerEvent) => { if (event.pointerType !== "mouse") hide(); };
+    const onDragStart = (event: DragEvent) => {
+      if (event.target instanceof Element && event.target.closest("img, video")) event.preventDefault();
+    };
+    window.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("pointerout", leave);
+    window.addEventListener("pointerdown", touch, { passive: true });
+    window.addEventListener("blur", hide);
+    window.addEventListener("focus", hide);
+    window.addEventListener("keydown", key);
+    document.addEventListener("visibilitychange", hide);
     document.addEventListener("dragstart", onDragStart);
+    mouseCapable.addEventListener("change", hide);
     return () => {
-      cancelAnimationFrame(armed);
-      window.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseleave", onLeave);
+      hide();
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerout", leave);
+      window.removeEventListener("pointerdown", touch);
+      window.removeEventListener("blur", hide);
+      window.removeEventListener("focus", hide);
+      window.removeEventListener("keydown", key);
+      document.removeEventListener("visibilitychange", hide);
       document.removeEventListener("dragstart", onDragStart);
+      mouseCapable.removeEventListener("change", hide);
     };
   }, []);
-
-  return <div id="ss-cursor-dot" ref={dotRef} />;
+  return <div id="ss-cursor-dot" ref={dotRef} aria-hidden="true" />;
 }
 
 function useCursorHover() {
@@ -1547,14 +1524,52 @@ function PageTransition({ page, children }: { page: Page; children: (page: Page)
 }
 
 export default function App() {
-  const [page, setPage] = useState<Page>("home");
+  const [route, setRoute] = useState(() => readPortfolioRoute(window.location.hash, PROJECTS));
+  const page = route.page;
+  const modalProject = PROJECTS.find(project => project.id === route.projectId) ?? null;
+  const viewerItem = modalProject?.media.find(item => mediaId(item.src) === route.mediaId) ?? null;
+  const navigationSession = useRef(`${Date.now()}-${Math.random()}`);
+  const go = useCallback((next: PortfolioRoute, replace = false) => {
+    const hash = routeHash(next);
+    if (hash !== window.location.hash) {
+      const state = { portfolioParent: window.location.hash || "#home", portfolioSession: navigationSession.current };
+      if (replace) window.history.replaceState(state, "", hash);
+      else window.history.pushState(state, "", hash);
+    }
+    setRoute(next);
+  }, []);
+  const dismiss = useCallback((parent: PortfolioRoute) => {
+    if (window.history.state?.portfolioSession === navigationSession.current && window.history.state?.portfolioParent === routeHash(parent)) window.history.back();
+    else go(parent, true);
+  }, [go]);
+  const closeViewer = useCallback(() => dismiss({ page: "work", projectId: route.projectId }), [dismiss, route.projectId]);
+  const closeGallery = useCallback(() => dismiss({ page: "work" }), [dismiss]);
+  const openItem = useCallback((item: MediaItem) => {
+    const project = PROJECTS.find(project => project.media.includes(item));
+    if (project) go({ page: "work", projectId: project.id, mediaId: mediaId(item.src) });
+  }, [go]);
+  useEffect(() => {
+    const sync = () => setRoute(readPortfolioRoute(window.location.hash, PROJECTS));
+    window.addEventListener("popstate", sync);
+    window.addEventListener("hashchange", sync);
+    return () => {
+      window.removeEventListener("popstate", sync);
+      window.removeEventListener("hashchange", sync);
+    };
+  }, []);
+  useEffect(() => {
+    const title = viewerItem?.title || modalProject?.title || (page === "home" ? "Designer & Developer" : page.charAt(0).toUpperCase() + page.slice(1));
+    document.title = `${title} · Shyon Shiri`;
+  }, [page, modalProject, viewerItem]);
   const [homeSection, setHomeSection] = useState<"hero" | "open">("hero");
   const [realm] = useState(readRealmSupport);
   const hasNavigated = useRef(false);
-  const [modalProject, setModalProject] = useState<Project | null>(null);
-  const [viewerItem, setViewerItem] = useState<MediaItem | null>(null);
   // Every top-level introduction uses a dark ground.
   const lightPage = page === "about";
+  const surfaceRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (surfaceRef.current) surfaceRef.current.inert = Boolean(modalProject);
+  }, [modalProject]);
 
   /* inject global styles once */
   useEffect(() => {
@@ -1575,29 +1590,27 @@ export default function App() {
   const navigate = useCallback((next: Page, section: "hero" | "open" = "hero") => {
     if (next === page) return;
     hasNavigated.current = true;
-    setModalProject(null);
-    setViewerItem(null);
     setHomeSection(section);
-    setPage(next);
-  }, [page]);
+    go({ page: next });
+  }, [page, go]);
 
   /* keyboard nav */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // When viewing media, arrow keys navigate carousel
       if (viewerItem) {
-        if (e.key === "Escape") setViewerItem(null);
+        if (e.key === "Escape") closeViewer();
         return;
       }
       // When modal is open, close with Escape
       if (modalProject) {
-        if (e.key === "Escape") setModalProject(null);
+        if (e.key === "Escape") closeGallery();
         return;
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [viewerItem, modalProject]);
+  }, [viewerItem, modalProject, closeViewer, closeGallery]);
 
   return (
     <div
@@ -1625,6 +1638,7 @@ export default function App() {
       </svg>
       <Cursor />
 
+      <div ref={surfaceRef} aria-hidden={modalProject ? true : undefined}>
       {/* ── NAV ─────────────────────────────────────────────── */}
       <nav
         className={`ss-site-header${lightPage ? " ss-site-header-light" : ""}`}
@@ -1644,19 +1658,22 @@ export default function App() {
       <PageTransition page={page}>
         {visiblePage => <>
           {visiblePage === "home" && <HomePage onNavigate={navigate} intro={!hasNavigated.current} initialSection={homeSection} />}
-          {visiblePage === "work" && <WorkPage onCardClick={setModalProject} />}
+          {visiblePage === "work" && <WorkPage onCardClick={project => go({ page: "work", projectId: project.id })} />}
           {visiblePage === "about" && <AboutPage realmSupported={realm.ok} onViewOverview={() => navigate("home", "open")} />}
           {visiblePage === "contact" && <ContactPage />}
         </>}
       </PageTransition>
+      </div>
 
       {/* ── WORK MODAL ───────────────────────────────────────── */}
       <AnimatePresence>
         {modalProject && (
           <WorkModal
+            key={modalProject.id}
+            inactive={Boolean(viewerItem)}
             project={modalProject}
-            onClose={() => setModalProject(null)}
-            onMediaClick={setViewerItem}
+            onClose={closeGallery}
+            onMediaClick={openItem}
           />
         )}
       </AnimatePresence>
@@ -1664,7 +1681,7 @@ export default function App() {
       {/* ── MEDIA VIEWER ─────────────────────────────────────── */}
       <AnimatePresence>
         {viewerItem && (
-          <MediaViewer item={viewerItem} onClose={() => setViewerItem(null)} onItemClick={setViewerItem} />
+          <MediaViewer item={viewerItem} onClose={closeViewer} onItemClick={openItem} />
         )}
       </AnimatePresence>
     </div>
@@ -1696,7 +1713,7 @@ function NavLink({ label, active, onClick, onLight }: { label: string; active: b
            0.58 the three dim items measured 4.38 to 4.40 over the opener and 3.87 to 3.98 on
            About's cream. scratchpad/nav_contrast.cjs samples the rendered frame on all four
            pages; re-run it if this number moves. */
-        cursor: "none", opacity: active ? 1 : 0.86,
+        cursor: "inherit", opacity: active ? 1 : 0.86,
         /* ── THE HALO IS WHAT THE BAR USED TO BE. With no ground behind the nav the only
            thing separating a glyph from the picture is the glyph itself, so each one carries
            a soft shadow in the OPPOSITE tone to its own: dark under the white type, light
@@ -2130,7 +2147,7 @@ function HomePage({ onNavigate, intro, initialSection }: {
                   padding: "16px 30px", borderRadius: 980, minHeight: 46,
                   border: "1px solid rgba(245,242,237,.4)",
                   color: "var(--white)", textDecoration: "none",
-                  fontSize: 13, fontWeight: 600, cursor: "none",
+                  fontSize: 13, fontWeight: 600, cursor: "inherit",
                 }}
               >
                 <span>View My LEGO Portfolio</span><span>→</span>
@@ -2163,7 +2180,7 @@ function HomePage({ onNavigate, intro, initialSection }: {
                 fontFamily: "var(--sf)",
                 fontSize: 11.5, fontWeight: 590, letterSpacing: "0.05em", textTransform: "uppercase",
                 color: "rgba(245,242,237,.72)", textDecoration: "underline",
-                textUnderlineOffset: "4px", cursor: "none",
+                textUnderlineOffset: "4px", cursor: "inherit",
                 display: "inline-block",   // ss-tap needs a box to hang its hit area on
               }}
             >
@@ -2838,7 +2855,7 @@ function DeckRail({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement> })
             onClick={() => jump(i)}
             aria-label={sl.label}
             aria-current={i === active}
-            style={{ cursor: "none" }}
+            style={{ cursor: "inherit" }}
           >
             <span className="ss-deck-tip">{sl.label}</span>
           </button>
@@ -3058,7 +3075,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
                 {...hover}
                 style={{
                   position: "absolute", width: cardW, height: cardH,
-                  cursor: "none", transformStyle: "flat",
+                  cursor: "inherit", transformStyle: "flat",
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                 }}
               >
@@ -3095,7 +3112,7 @@ function WorkPage({ onCardClick }: { onCardClick: (p: Project) => void }) {
                 position: "absolute",
                 width: cardW, height: cardH,
                 borderRadius: 22, overflow: "hidden",
-                background: "#111", cursor: "none",
+                background: "#111", cursor: "inherit",
                 boxShadow: "0 30px 65px rgba(0,0,0,.5)",
                 transformStyle: "flat",
               }}
@@ -3247,7 +3264,7 @@ function ContactPage() {
                 padding: window.innerWidth <= 640 ? "16px 8px" : "26px 8px", textDecoration: "none",
                 borderBottom: "1px solid rgba(245,242,237,.14)",
                 transition: "background 0.3s ease, padding-left 0.3s ease",
-                cursor: "none",
+                cursor: "inherit",
               }}
               {...hover}
             >
@@ -3283,21 +3300,33 @@ function ContactPage() {
    rather than the card itself, and that is a redesign of the panel rather than a
    transition. Do not re-attempt the FLIP without solving that first.
    What is left is the plain lift the modal always had, on the site's one ease. */
-function WorkModal({ project, onClose, onMediaClick }: {
+function WorkModal({ project, onClose, onMediaClick, inactive = false }: {
+  inactive?: boolean;
   project: Project;
   onClose: () => void;
   onMediaClick: (item: MediaItem) => void;
 }) {
   const hover = useCursorHover();
+  const [query, setQuery] = useState("");
+  const [kind, setKind] = useState<"all" | "image" | "video">("all");
+  const visibleItems = project.media.filter(item => !item.hidden);
+  const filteredItems = visibleItems.filter(item =>
+    (kind === "all" || item.type === kind) &&
+    `${item.title || ""} ${item.desc || ""} ${item.year || ""}`.toLowerCase().includes(query.trim().toLowerCase())
+  );
+  const resetFilters = () => { setQuery(""); setKind("all"); };
   const dialogRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (dialogRef.current) dialogRef.current.inert = inactive;
+  }, [inactive]);
   useEffect(() => {
-    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousFocus = Array.from(document.querySelectorAll<HTMLElement>('[role="button"][aria-label]')).find(element => element.getAttribute("aria-label") === `Open ${project.title}`) || document.activeElement as HTMLElement | null;
     const dialog = dialogRef.current;
     dialog?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== "Tab" || !dialog) return;
       const controls = Array.from(dialog.querySelectorAll<HTMLElement>(
-        'button, a[href], video[controls], [tabindex="0"]'
+        'button, input, a[href], video[controls], [tabindex="0"]'
       )).filter(element => !element.matches(':disabled, [tabindex="-1"]') && element.getClientRects().length > 0);
       const first = controls[0], last = controls[controls.length - 1];
       if (event.shiftKey && document.activeElement === first) {
@@ -3309,7 +3338,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
     dialog?.addEventListener("keydown", trapFocus);
     return () => {
       dialog?.removeEventListener("keydown", trapFocus);
-      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+      requestAnimationFrame(() => { if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true }); });
     };
   }, []);
 
@@ -3332,7 +3361,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
 
   return (
     <motion.div
-      ref={dialogRef} role="dialog" aria-modal="true" aria-label={project.title}
+      ref={dialogRef} role="dialog" aria-modal={!inactive} aria-hidden={inactive ? true : undefined} aria-label={project.title}
       initial={{ opacity: 0 }} animate={{ opacity: 1, pointerEvents: "auto" }} exit={{ opacity: 0, pointerEvents: "none" }}
       transition={{ duration: REDUCE ? 0.001 : 0.4 }}
       onClick={onClose}
@@ -3363,10 +3392,10 @@ function WorkModal({ project, onClose, onMediaClick }: {
           className="ss-modal-close" aria-label="Close project gallery"
           style={{
             position: "absolute", top: 60, right: 20,
-            background: "none", border: "none", cursor: "none",
-            fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
+            background: "none", border: "none", cursor: "inherit",
+            fontFamily: "var(--sf)", fontSize: 13, fontWeight: 600,
             letterSpacing: "0.06em", textTransform: "uppercase",
-            color: "var(--mid)",
+            color: "#b5b3b0",
             transition: "color 0.3s ease",
             padding: "4px 8px",
             zIndex: 2001,
@@ -3392,12 +3421,23 @@ function WorkModal({ project, onClose, onMediaClick }: {
           </div>
         </div>
 
+        <div className="ss-gallery-tools">
+          <label className="ss-gallery-search">
+            <input type="search" aria-label="Search projects" placeholder="Search projects" value={query} onChange={event => setQuery(event.target.value)} />
+          </label>
+          <div className="ss-gallery-filters" role="group" aria-label="Media type">
+            {(["all", "image", "video"] as const).map(value => <button key={value} type="button" aria-pressed={kind === value} onClick={() => setKind(value)}>{value === "all" ? "All" : value === "image" ? "Images" : "Videos"}</button>)}
+          </div>
+        </div>
+        <p className="ss-gallery-count" role="status">{filteredItems.length} of {visibleItems.length} projects</p>
+        {filteredItems.length === 0 && <div className="ss-gallery-empty">No projects match your search.<button onClick={resetFilters}>Clear Filters</button></div>}
+
         {/* Asset grid — masonry for creative + professional; existing grid for others */}
         {["creative-projects", "professional-services"].includes(project.id) ? (
           <div style={{ position: "relative", flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <div className="ss-scroll" style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingRight: 8, display: "flex", gap: 14, alignItems: "flex-start" }}>
               {(() => {
-                const items = project.media.filter(item => !item.hidden);
+                const items = filteredItems;
                 const colCount = viewportWidth <= 640 ? 2 : viewportWidth <= 1023 ? 3 : 4;
                 const cols: MediaItem[][] = Array.from({ length: colCount }, () => []);
                 items.forEach((item, i) => cols[i % colCount].push(item));
@@ -3427,7 +3467,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
               gridAutoRows: "max-content",
             }}
           >
-            {project.media.filter(item => !item.hidden).map((item, i) => (
+            {filteredItems.map((item, i) => (
               <ModalTile key={i} item={item} onClick={() => onMediaClick(item)} />
             ))}
           </div>
@@ -3440,7 +3480,7 @@ function WorkModal({ project, onClose, onMediaClick }: {
             fontFamily: "var(--sf)",
             fontSize: 10,
             letterSpacing: 1,
-            color: "var(--mid)",
+            color: "#b5b3b0",
             textTransform: "uppercase",
           }}>
             Scroll to browse.
@@ -3460,7 +3500,7 @@ function StudioAssetCard({ item, onClick }: { item: MediaItem; onClick: () => vo
   const hover = useCursorHover();
   const ar = item.aspectRatio || "4/3";
   return (
-    <button type="button" aria-label={`View ${item.title}`}  className="ss-scell" onClick={onClick} {...hover}>
+    <button type="button" aria-label={`View ${item.title}`}  className="ss-scell" onClick={event => { event.currentTarget.focus({ preventScroll: true }); onClick(); }} {...hover}>
       <div className="ss-sthumb" style={{ aspectRatio: ar }}>
         <img src={item.type === "video" ? item.poster : item.src} alt={item.title} loading="lazy" />
         {item.type === "video" && (
@@ -3475,7 +3515,7 @@ function StudioAssetCard({ item, onClick }: { item: MediaItem; onClick: () => vo
       </div>
       <div className="ss-sbody">
         <div className="ss-asset-title" style={{ fontSize: 13, fontWeight: 600, color: "var(--white)", lineHeight: 1.25 }}>{item.title}</div>
-        <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--mid)", marginTop: 4 }}>{item.year}{item.credit && <span style={{ display: "block", lineHeight: 1.5 }}>{item.credit}</span>}</div>
+        <div style={{ fontFamily: "var(--sf)", fontSize: 13, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "#b5b3b0", marginTop: 4 }}>{item.year}{item.credit && <span style={{ display: "block", lineHeight: 1.5 }}>{item.credit}</span>}</div>
       </div>
     </button>
   );
@@ -3487,12 +3527,12 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
   return (
     <button type="button" aria-label={`View ${item.title}`}
       className="ss-tile"
-      onClick={onClick}
+      onClick={event => { event.currentTarget.focus({ preventScroll: true }); onClick(); }}
       style={{
         position: "relative", overflow: "hidden",
         background: "#111",
         minHeight: item.type === "video" ? "250px" : "auto",
-        cursor: "none",
+        cursor: "inherit",
         borderRadius: 12,
         aspectRatio: item.aspectRatio ? item.aspectRatio : undefined,
       }}
@@ -3531,7 +3571,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
         className="ss-tile-info"
       >
         <div className="ss-asset-title" style={{ fontSize: 14, color: "var(--white)", fontWeight: 600 }}>{item.title}</div>
-        <div style={{ fontFamily: "var(--sf)", fontSize: 11, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--sky)", marginTop: 2 }}>{item.year}{item.credit && <span style={{ display: "block", lineHeight: 1.5 }}>{item.credit}</span>}</div>
+        <div style={{ fontFamily: "var(--sf)", fontSize: 13, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "var(--sky)", marginTop: 2 }}>{item.year}{item.credit && <span style={{ display: "block", lineHeight: 1.5 }}>{item.credit}</span>}</div>
       </div>
     </button>
   );
@@ -3584,10 +3624,20 @@ function BookletReader({ pages, title, labels, comparisonCredit }: { pages: stri
 
 function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose: () => void; onItemClick?: (item: MediaItem) => void }) {
   const hover = useCursorHover();
+  const [shareStatus, setShareStatus] = useState("");
+  useEffect(() => { setShareStatus(""); }, [item.src]);
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareStatus("Project link copied.");
+    } catch {
+      setShareStatus("Copy the project link from your browser’s address bar.");
+    }
+  };
   
   const dialogRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousFocus = Array.from(document.querySelectorAll<HTMLButtonElement>(".ss-work-modal button[aria-label]")).find(element => element.getAttribute("aria-label") === `View ${item.title}`) || document.activeElement as HTMLElement | null;
     const dialog = dialogRef.current;
     dialog?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
     const trapFocus = (event: KeyboardEvent) => {
@@ -3605,7 +3655,7 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
     dialog?.addEventListener("keydown", trapFocus);
     return () => {
       dialog?.removeEventListener("keydown", trapFocus);
-      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+      requestAnimationFrame(() => { if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true }); });
     };
   }, []);
 
@@ -3679,12 +3729,14 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
 
         {/* Info */}
         <div className="ss-viewer-info">
+          <button type="button" className="ss-copy-link" onClick={copyLink}>Copy Project Link</button>
+          <span className="ss-share-status" role="status">{shareStatus}</span>
           <div id="ss-viewer-title" className="ss-asset-title">
             {item.title}
           </div>
-          <div style={{ fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--sky)", textTransform: "uppercase", marginBottom: 20 }}>
+          <div style={{ fontFamily: "var(--sf)", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", color: "var(--sky)", textTransform: "uppercase", marginBottom: 20 }}>
             {item.year}
-            {item.credit && <div style={{ marginTop: 8, textTransform: "none", letterSpacing: 0, lineHeight: 1.5, color: "var(--mid)" }}>{item.credit}</div>}
+            {item.credit && <div style={{ marginTop: 8, textTransform: "none", letterSpacing: 0, lineHeight: 1.5, color: "#b5b3b0" }}>{item.credit}</div>}
           </div>
           {item.desc && (
             <p style={{ fontFamily: "var(--sf)", fontSize: 16, lineHeight: 1.55, letterSpacing: "-0.005em", color: "rgba(245,242,237,.75)", fontWeight: 400, marginBottom: 32 }}>
@@ -3703,11 +3755,11 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
                   }}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
-                    fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
+                    fontFamily: "var(--sf)", fontSize: 13, fontWeight: 600,
                     letterSpacing: "0.06em", textTransform: "uppercase",
                     color: "var(--sky)", background: "none", border: "none",
                     borderBottom: "1px solid var(--sky)", paddingBottom: 2,
-                    cursor: "none", textDecoration: "none",
+                    cursor: "inherit", textDecoration: "none",
                     textAlign: "left",
                   }}
                   {...hover}
@@ -3726,11 +3778,11 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 marginTop: 28,
-                fontFamily: "var(--sf)", fontSize: 10.5, fontWeight: 600,
+                fontFamily: "var(--sf)", fontSize: 13, fontWeight: 600,
                 letterSpacing: "0.06em", textTransform: "uppercase",
                 color: "var(--sky)", textDecoration: "none",
                 borderBottom: "1px solid var(--sky)", paddingBottom: 2,
-                cursor: "none",
+                cursor: "inherit",
               }}
               {...hover}
             >
