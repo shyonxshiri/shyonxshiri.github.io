@@ -265,21 +265,15 @@ const GLOBAL_CSS = `
     transform: translate(-50%, -50%);
   }
   .ss-gallery-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; }
-  .ss-gallery-search { flex: 1 1 240px; min-width: 0; display: flex; align-items: center; border: 1px solid #555; border-radius: 10px; background: #171719; }
-  .ss-gallery-search input { width: 100%; min-width: 0; border: 0; background: transparent; color: var(--white); font: inherit; font-size: 14px; padding: 12px; }
-  .ss-gallery-search input::placeholder { color: #b5b3b0; }
-  .ss-gallery-search:focus-within { outline: 2px solid var(--sky); outline-offset: 3px; }
-  .ss-gallery-search input:focus { outline: none; }
-  .ss-gallery-tools button, .ss-copy-link { min-height: 44px; padding: 10px 14px; border: 1px solid #555; border-radius: 10px; background: transparent; color: var(--white); font: 500 13px var(--sf); }
+  .ss-gallery-tools button { min-height: 44px; padding: 10px 14px; border: 1px solid #555; border-radius: 10px; background: transparent; color: var(--white); font: 500 13px var(--sf); }
   .ss-gallery-tools button[aria-pressed="true"] { background: #ede8e0; color: #171717; border-color: #ede8e0; }
   /* Override the legacy global button reset only for these new controls. */
-  #root .ss-gallery-tools button, #root .ss-copy-link, #root .ss-gallery-empty button { border: 1px solid #666 !important; background: #171719 !important; }
+  #root .ss-gallery-tools button, #root .ss-gallery-empty button { border: 1px solid #666 !important; background: #171719 !important; }
   #root .ss-gallery-tools button[aria-pressed="true"] { background: #ede8e0 !important; border-color: #ede8e0 !important; }
   .ss-gallery-filters { display: flex; gap: 8px; }
   .ss-gallery-count { color: #b5b3b0; font-size: 13px; margin: 0 0 14px; }
   .ss-gallery-empty { padding: 24px 0; color: #c8c5c1; font-size: 15px; line-height: 1.6; }
   .ss-gallery-empty button { margin-top: 12px; display: block; min-height: 44px; padding: 10px 16px; background: #252525; color: var(--white); border: 1px solid #666; border-radius: 10px; }
-  .ss-share-status { display: block; min-height: 20px; margin-top: 8px; color: #b5b3b0; font-size: 13px; }
 
   /* modal / viewer scrollbar hide */
   .ss-modal-grid { scrollbar-width: none; }
@@ -3307,14 +3301,12 @@ function WorkModal({ project, onClose, onMediaClick, inactive = false }: {
   onMediaClick: (item: MediaItem) => void;
 }) {
   const hover = useCursorHover();
-  const [query, setQuery] = useState("");
   const [kind, setKind] = useState<"all" | "image" | "video">("all");
   const visibleItems = project.media.filter(item => !item.hidden);
   const filteredItems = visibleItems.filter(item =>
-    (kind === "all" || item.type === kind) &&
-    `${item.title || ""} ${item.desc || ""} ${item.year || ""}`.toLowerCase().includes(query.trim().toLowerCase())
+    kind === "all" || item.type === kind
   );
-  const resetFilters = () => { setQuery(""); setKind("all"); };
+  const resetFilters = () => { setKind("all"); };
   const dialogRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (dialogRef.current) dialogRef.current.inert = inactive;
@@ -3422,15 +3414,12 @@ function WorkModal({ project, onClose, onMediaClick, inactive = false }: {
         </div>
 
         <div className="ss-gallery-tools">
-          <label className="ss-gallery-search">
-            <input type="search" aria-label="Search projects" placeholder="Search projects" value={query} onChange={event => setQuery(event.target.value)} />
-          </label>
           <div className="ss-gallery-filters" role="group" aria-label="Media type">
             {(["all", "image", "video"] as const).map(value => <button key={value} type="button" aria-pressed={kind === value} onClick={() => setKind(value)}>{value === "all" ? "All" : value === "image" ? "Images" : "Videos"}</button>)}
           </div>
         </div>
         <p className="ss-gallery-count" role="status">{filteredItems.length} of {visibleItems.length} projects</p>
-        {filteredItems.length === 0 && <div className="ss-gallery-empty">No projects match your search.<button onClick={resetFilters}>Clear Filters</button></div>}
+        {filteredItems.length === 0 && <div className="ss-gallery-empty">No projects match this filter.<button onClick={resetFilters}>Clear Filters</button></div>}
 
         {/* Asset grid — masonry for creative + professional; existing grid for others */}
         {["creative-projects", "professional-services"].includes(project.id) ? (
@@ -3624,17 +3613,6 @@ function BookletReader({ pages, title, labels, comparisonCredit }: { pages: stri
 
 function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose: () => void; onItemClick?: (item: MediaItem) => void }) {
   const hover = useCursorHover();
-  const [shareStatus, setShareStatus] = useState("");
-  useEffect(() => { setShareStatus(""); }, [item.src]);
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setShareStatus("Project link copied.");
-    } catch {
-      setShareStatus("Copy the project link from your browser’s address bar.");
-    }
-  };
-  
   const dialogRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const previousFocus = Array.from(document.querySelectorAll<HTMLButtonElement>(".ss-work-modal button[aria-label]")).find(element => element.getAttribute("aria-label") === `View ${item.title}`) || document.activeElement as HTMLElement | null;
@@ -3729,8 +3707,6 @@ function MediaViewer({ item, onClose, onItemClick }: { item: MediaItem; onClose:
 
         {/* Info */}
         <div className="ss-viewer-info">
-          <button type="button" className="ss-copy-link" onClick={copyLink}>Copy Project Link</button>
-          <span className="ss-share-status" role="status">{shareStatus}</span>
           <div id="ss-viewer-title" className="ss-asset-title">
             {item.title}
           </div>
