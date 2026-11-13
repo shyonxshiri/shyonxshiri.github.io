@@ -3483,6 +3483,52 @@ function WorkModal({ project, onClose, onMediaClick, inactive = false }: {
 /* ─────────────────────────────────────────────────────────────
    MODAL TILE
 ───────────────────────────────────────────────────────────── */
+/* Grid previews. Large originals have a 960px wide WebP copy in /assets/thumbs/ (same base
+   name); tiles load that copy and the viewer still opens the full-resolution file. Cuts the
+   images a full gallery downloads from about 30MB to under 3MB. Regenerate a copy when its
+   original changes (ffmpeg -i in.jpg -vf "scale='min(960,iw)':-2" -quality 80 out.webp,
+   adding transpose=1 first for the phone photos stored sideways with EXIF rotation). */
+const THUMBS = new Map<string, string>([
+  ["/assets/Adverstisement_Project.jpg", "/assets/thumbs/Adverstisement_Project.webp"],
+  ["/assets/AirPods_Max_In_Blender.jpg", "/assets/thumbs/AirPods_Max_In_Blender.webp"],
+  ["/assets/Airpod_Case.JPG", "/assets/thumbs/Airpod_Case.webp"],
+  ["/assets/Apple_Accessories_In_Blender.jpg", "/assets/thumbs/Apple_Accessories_In_Blender.webp"],
+  ["/assets/BMW_Street_Render.jpg", "/assets/thumbs/BMW_Street_Render.webp"],
+  ["/assets/Cow_Abduction_1.jpg", "/assets/thumbs/Cow_Abduction_1.webp"],
+  ["/assets/Digital_Media_Cover.jpg", "/assets/thumbs/Digital_Media_Cover.webp"],
+  ["/assets/Everly_Cover_Image.webp", "/assets/thumbs/Everly_Cover_Image.webp"],
+  ["/assets/Glass_Project_3127.jpg", "/assets/thumbs/Glass_Project_3127.webp"],
+  ["/assets/Glass_Project_3130.jpg", "/assets/thumbs/Glass_Project_3130.webp"],
+  ["/assets/Max_Pic.JPG", "/assets/thumbs/Max_Pic.webp"],
+  ["/assets/Mina_Website.webp", "/assets/thumbs/Mina_Website.webp"],
+  ["/assets/My_Case.JPG", "/assets/thumbs/My_Case.webp"],
+  ["/assets/NABU_Puffer_Back.jpg", "/assets/thumbs/NABU_Puffer_Back.webp"],
+  ["/assets/NABU_Puffer_Front.jpg", "/assets/thumbs/NABU_Puffer_Front.webp"],
+  ["/assets/NABU_SALE_AD.jpg", "/assets/thumbs/NABU_SALE_AD.webp"],
+  ["/assets/New_LED_Box_Back.jpg", "/assets/thumbs/New_LED_Box_Back.webp"],
+  ["/assets/New_LED_Box_Front.jpg", "/assets/thumbs/New_LED_Box_Front.webp"],
+  ["/assets/New_Radar_Sensor_Back.jpg", "/assets/thumbs/New_Radar_Sensor_Back.webp"],
+  ["/assets/New_Radar_Sensor_front.jpg", "/assets/thumbs/New_Radar_Sensor_front.webp"],
+  ["/assets/Photography_1.jpg", "/assets/thumbs/Photography_1.webp"],
+  ["/assets/Photoshop_Experiment_1.jpg", "/assets/thumbs/Photoshop_Experiment_1.webp"],
+  ["/assets/Product_Not_Consumer_Before.jpg", "/assets/thumbs/Product_Not_Consumer_Before.webp"],
+  ["/assets/Programming_Cover_Pic.jpg", "/assets/thumbs/Programming_Cover_Pic.webp"],
+  ["/assets/RGB_Controller_Development.jpg", "/assets/thumbs/RGB_Controller_Development.webp"],
+  ["/assets/Radar_Tools_And_Components.jpg", "/assets/thumbs/Radar_Tools_And_Components.webp"],
+  ["/assets/RealEstate_Colleen_Flyer.jpg", "/assets/thumbs/RealEstate_Colleen_Flyer.webp"],
+  ["/assets/RealEstate_Luning_Flyer.jpg", "/assets/thumbs/RealEstate_Luning_Flyer.webp"],
+  ["/assets/RealEstate_MorningStar_Flyer.webp", "/assets/thumbs/RealEstate_MorningStar_Flyer.webp"],
+  ["/assets/RealEstate_MoskowiteCorner_Before.webp", "/assets/thumbs/RealEstate_MoskowiteCorner_Before.webp"],
+  ["/assets/RealEstate_MoskowiteCorner_Concept.jpg", "/assets/thumbs/RealEstate_MoskowiteCorner_Concept.webp"],
+  ["/assets/Shiri_VIdeo_Game.jpg", "/assets/thumbs/Shiri_VIdeo_Game.webp"],
+  ["/assets/Shyon_Sculpture.jpg", "/assets/thumbs/Shyon_Sculpture.webp"],
+  ["/assets/Stevie_Pic.JPG", "/assets/thumbs/Stevie_Pic.webp"],
+  ["/assets/Venom.webp", "/assets/thumbs/Venom.webp"],
+  ["/assets/early-portfolio/home.jpg", "/assets/thumbs/home.webp"],
+  ["/assets/resume-design/business-card-mockup.jpg", "/assets/thumbs/business-card-mockup.webp"],
+]);
+const thumbOf = (src?: string) => (src && THUMBS.get(src)) || src;
+
 /* Studio-style asset card (uniform grid cell + caption) — used for
    creative-projects and professional-services for site/studio consistency */
 function StudioAssetCard({ item, onClick }: { item: MediaItem; onClick: () => void }) {
@@ -3491,7 +3537,7 @@ function StudioAssetCard({ item, onClick }: { item: MediaItem; onClick: () => vo
   return (
     <button type="button" aria-label={`View ${item.title}`}  className="ss-scell" onClick={event => { event.currentTarget.focus({ preventScroll: true }); onClick(); }} {...hover}>
       <div className="ss-sthumb" style={{ aspectRatio: ar }}>
-        <img src={item.type === "video" ? item.poster : item.src} alt={item.title} loading="lazy" />
+        <img src={thumbOf(item.type === "video" ? item.poster : item.src)} alt={item.title} loading="lazy" decoding="async" />
         {item.type === "video" && (
           <div style={{
             position: "absolute", top: 12, right: 12, width: 34, height: 34, borderRadius: "50%",
@@ -3529,7 +3575,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
     >
       {item.type === "video" ? (
         <>
-          <img src={item.poster} alt={item.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src={thumbOf(item.poster)} alt={item.title} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           <div style={{
             position: "absolute", inset: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -3549,7 +3595,7 @@ function ModalTile({ item, onClick }: { item: MediaItem; onClick: () => void }) 
           </div>
         </>
       ) : (
-        <img src={item.src} alt={item.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: item.aspectRatio ? "cover" : "contain" }} />
+        <img src={thumbOf(item.src)} alt={item.title} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: item.aspectRatio ? "cover" : "contain" }} />
       )}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,

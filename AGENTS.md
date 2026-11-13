@@ -2190,6 +2190,16 @@ scrollbar. Confirmed IN ENGINE at a 660px window too (`scratchpad/about_panel.cj
 
 ## 8. Open work
 
+- **Realm frame rate (2026-11-12).** Static scenery (shop, both houses, ruins, planted trees,
+  lampposts, money bricks, every `loadProp` model) now has `frustumCulled=true`; it was `false`, so
+  623 meshes / ~18.7M tris went through the camera AND shadow passes every frame. Measured live on
+  an M-series Mac at 1024x768 2x: ~9 fps to ~100 fps (1,460 to 319 draw calls). Characters stay
+  unculled. `governPR()` above `loop()` steps the pixel ratio down by 0.25 (floor 1x) after three
+  one-second windows under 40 fps; it never steps up. `window.__pr()` reports it. Remaining
+  budget is still the trees (79k tris each) and the instanced flowers (~1.8M tris, unculled).
+- **Work gallery tiles load `/assets/thumbs/*.webp`** (960px copies, map `THUMBS` in App.tsx);
+  the viewer opens the originals. Five phone photos carry EXIF rotation 6, so their copies were
+  made with `transpose=1`. Regenerate a copy whenever its original changes.
 - **`garden.glb`, `aston.glb`, `ghost.glb` and `skeleton.glb` are IN the saved blend** as of
   2026-09-02. All four were exported selection-only from a LIVE session that was already dirty, so
   for a while the shipped glb was the only copy of each and a headless open of the saved file could

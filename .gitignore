@@ -168,3 +168,6 @@ scratchpad/**/*.pre*
 
 # Local originals retained after importing desktop files into site assets.
 /source-archive/
+
+# Files set aside for manual deletion
+/_to_delete/
