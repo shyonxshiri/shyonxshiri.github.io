@@ -2309,19 +2309,19 @@ const shotReveal: Variants = {
    slide moves when you point at a cell: revealing it only on hover made the grid jump
    every time the pointer crossed one. */
 const WORK_SHEET = [
-  { scene: "Assembly", src: "/assets/story/story_blender_shop_assembly.jpg",
+  { scene: "Assembly", src: "/assets/thumbs/story_blender_shop_assembly.webp",
     caption: "The coffee shop in progress, assembled from individual bricks on the same stud grid used by the engine." },
-  { scene: "Mesh Editing", src: "/assets/story/story_blender_ruins_edit.jpg",
+  { scene: "Mesh Editing", src: "/assets/thumbs/story_blender_ruins_edit.webp",
     caption: "Building the ruins in Edit Mode. The highlighted brick course forms the next section above the doorway." },
-  { scene: "Sculpting", src: "/assets/story/story_blender_hair_sculpt.jpg",
+  { scene: "Sculpting", src: "/assets/thumbs/story_blender_hair_sculpt.webp",
     caption: "The character's hair in Sculpt Mode under a clay material. Roughly 8,000 vertices shaped by hand, then exported with cleaned normals for smooth shading." },
-  { scene: "UV and Texturing", src: "/assets/story/story_blender_skull_uv.jpg",
+  { scene: "UV and Texturing", src: "/assets/thumbs/story_blender_skull_uv.webp",
     caption: "The skull’s UV layout on the left and its mapped texture on the right. Printed details are applied through the same workflow." },
-  { scene: "Figure Assembly", src: "/assets/story/story_blender_figure_exploded.jpg",
+  { scene: "Figure Assembly", src: "/assets/thumbs/story_blender_figure_exploded.webp",
     caption: "The minifig broken into its parts: hair, head, torso, and arms. The legs are a separate asset, attached to the hip pivots at runtime so the walk cycle can swing them." },
-  { scene: "Materials", src: "/assets/story/story_blender_house_nodes.jpg",
+  { scene: "Materials", src: "/assets/thumbs/story_blender_house_nodes.webp",
     caption: "The house during construction, with the node graph for its tinted window material below the viewport." },
-  { scene: "Render Preview", src: "/assets/story/story_blender_cottage_render.jpg",
+  { scene: "Render Preview", src: "/assets/thumbs/story_blender_cottage_render.webp",
     caption: "Checking the cottage’s materials and lighting in Blender before export." },
 ];
 

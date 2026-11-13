@@ -2200,6 +2200,8 @@ scrollbar. Confirmed IN ENGINE at a 660px window too (`scratchpad/about_panel.cj
 - **Work gallery tiles load `/assets/thumbs/*.webp`** (960px copies, map `THUMBS` in App.tsx);
   the viewer opens the originals. Five phone photos carry EXIF rotation 6, so their copies were
   made with `transpose=1`. Regenerate a copy whenever its original changes.
+- **The homepage's workshop sheet loads `/assets/thumbs/story_blender_*.webp`** (800px copies,
+  2.16MB to 0.22MB); the 2560px originals stay in `assets/story/` unreferenced.
 - **`garden.glb`, `aston.glb`, `ghost.glb` and `skeleton.glb` are IN the saved blend** as of
   2026-09-02. All four were exported selection-only from a LIVE session that was already dirty, so
   for a while the shipped glb was the only copy of each and a headless open of the saved file could
