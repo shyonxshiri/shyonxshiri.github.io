@@ -3291,7 +3291,8 @@ function WorkModal({ project, onClose, onMediaClick, inactive = false }: {
   onMediaClick: (item: MediaItem) => void;
 }) {
   const hover = useCursorHover();
-  const visibleItems = project.media.filter(item => !item.hidden);
+  // Oldest first. Sort is stable, so items from the same year keep their listed order.
+  const visibleItems = project.media.filter(item => !item.hidden).sort((a, b) => (a.year ?? 0) - (b.year ?? 0));
   const filteredItems = visibleItems;
   const dialogRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
