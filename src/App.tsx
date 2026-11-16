@@ -264,16 +264,6 @@ const GLOBAL_CSS = `
     pointer-events: none; opacity: 0;
     transform: translate(-50%, -50%);
   }
-  .ss-gallery-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; }
-  .ss-gallery-tools button { min-height: 44px; padding: 10px 14px; border: 1px solid #555; border-radius: 10px; background: transparent; color: var(--white); font: 500 13px var(--sf); }
-  .ss-gallery-tools button[aria-pressed="true"] { background: #ede8e0; color: #171717; border-color: #ede8e0; }
-  /* Override the legacy global button reset only for these new controls. */
-  #root .ss-gallery-tools button, #root .ss-gallery-empty button { border: 1px solid #666 !important; background: #171719 !important; }
-  #root .ss-gallery-tools button[aria-pressed="true"] { background: #ede8e0 !important; border-color: #ede8e0 !important; }
-  .ss-gallery-filters { display: flex; gap: 8px; }
-  .ss-gallery-count { color: #b5b3b0; font-size: 13px; margin: 0 0 14px; }
-  .ss-gallery-empty { padding: 24px 0; color: #c8c5c1; font-size: 15px; line-height: 1.6; }
-  .ss-gallery-empty button { margin-top: 12px; display: block; min-height: 44px; padding: 10px 16px; background: #252525; color: var(--white); border: 1px solid #666; border-radius: 10px; }
 
   /* modal / viewer scrollbar hide */
   .ss-modal-grid { scrollbar-width: none; }
@@ -3407,7 +3397,6 @@ function WorkModal({ project, onClose, onMediaClick, inactive = false }: {
           </div>
         </div>
 
-        <p className="ss-gallery-count" role="status">{filteredItems.length} of {visibleItems.length} projects</p>
 
         {/* Asset grid — masonry for creative + professional; existing grid for others */}
         {["creative-projects", "professional-services"].includes(project.id) ? (
