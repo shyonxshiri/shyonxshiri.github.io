@@ -1986,12 +1986,10 @@ function HomePage({ onNavigate, intro, initialSection }: {
 
         {/* Content */}
         <div className="ss-hero-intro" style={{ position: "absolute", bottom: isMobile ? "14vh" : "24vh", left: "8vw", right: "8vw", zIndex: 10, transition: "bottom 0.3s ease" }}>
-          <HeroName isMobile={isMobile} intro={intro} />
-
           <motion.div className="ss-hero-summary"
             initial={REDUCE || !intro ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.38, delay: REDUCE || !intro ? 0 : 0.5, ease: APPLE_EASE }}>
-            <p style={{ marginTop: 20, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}>
+            <p style={{ marginTop: 0, fontSize: 16, lineHeight: 1.5, color: "rgba(245,242,237,.82)" }}>
               Welcome to my personal website. Explore my work, learn about me, or visit the interactive LEGO world I built to showcase my projects.
             </p>
             <div className="ss-hero-actions">
@@ -3301,12 +3299,8 @@ function WorkModal({ project, onClose, onMediaClick, inactive = false }: {
   onMediaClick: (item: MediaItem) => void;
 }) {
   const hover = useCursorHover();
-  const [kind, setKind] = useState<"all" | "image" | "video">("all");
   const visibleItems = project.media.filter(item => !item.hidden);
-  const filteredItems = visibleItems.filter(item =>
-    kind === "all" || item.type === kind
-  );
-  const resetFilters = () => { setKind("all"); };
+  const filteredItems = visibleItems;
   const dialogRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (dialogRef.current) dialogRef.current.inert = inactive;
@@ -3413,13 +3407,7 @@ function WorkModal({ project, onClose, onMediaClick, inactive = false }: {
           </div>
         </div>
 
-        <div className="ss-gallery-tools">
-          <div className="ss-gallery-filters" role="group" aria-label="Media type">
-            {(["all", "image", "video"] as const).map(value => <button key={value} type="button" aria-pressed={kind === value} onClick={() => setKind(value)}>{value === "all" ? "All" : value === "image" ? "Images" : "Videos"}</button>)}
-          </div>
-        </div>
         <p className="ss-gallery-count" role="status">{filteredItems.length} of {visibleItems.length} projects</p>
-        {filteredItems.length === 0 && <div className="ss-gallery-empty">No projects match this filter.<button onClick={resetFilters}>Clear Filters</button></div>}
 
         {/* Asset grid — masonry for creative + professional; existing grid for others */}
         {["creative-projects", "professional-services"].includes(project.id) ? (
